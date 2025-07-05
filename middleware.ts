@@ -2,17 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Public routes that don't require authentication
-  const publicRoutes = ['/auth/signin', '/'];
-
-  if (publicRoutes.includes(pathname)) {
-    return NextResponse.next();
-  }
-
-  // For protected routes, we'll let the client-side handle authentication
-  // Firebase Auth handles this better on the client side
+  // For now, let all requests pass through
+  // Authentication will be handled client-side with Firebase Auth
   return NextResponse.next();
 }
 
