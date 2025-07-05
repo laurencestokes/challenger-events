@@ -1,0 +1,15 @@
+# Example .npmrc file - DO NOT commit your actual token
+# Copy this to .npmrc and replace with your actual token
+
+# Example .npmrc content for NPM_RC environment variable in Vercel
+# Copy this content and set it as the NPM_RC environment variable in Vercel
+
+# For GitHub Packages (if using @challengerco scope)
+@challengerco:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${NPM_TOKEN}
+
+# For regular npm (if needed)
+# //registry.npmjs.org/:_authToken=${NPM_TOKEN}
+
+# For local development, you can also create a .npmrc file with this content
+# and replace ${NPM_TOKEN} with your actual GitHub Personal Access Token 

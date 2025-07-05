@@ -1,0 +1,70 @@
+{
+  "name": "challenger-events",
+  "version": "0.1.0",
+  "description": "Challenger Events - Real-time fitness event management system",
+  "scripts": {
+    "dev": "next dev",
+    "build": "node scripts/build.js",
+    "start": "next start",
+    "lint": "next lint",
+    "analyze": "ts-node ./scripts/analyzePowerliftingData.ts",
+    "commit": "cz",
+    "prepare": "husky",
+    "check-types": "tsc --noEmit",
+    "prettier": "prettier --ignore-path .eslintignore \"**/*.+(js|json|ts|tsx)\"",
+    "format": "npm run prettier -- --write",
+    "check-format": "npm run prettier -- --check",
+    "validate": "npm run check-types && npm run check-format && npm run lint && npm run build",
+    "validate-parallel": "npm-run-all --parallel check-types check-format lint build"
+  },
+  "author": "",
+  "license": "ISC",
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.10.0",
+    "@challengerco/challenger-data": "^2.0.0",
+    "@hookform/resolvers": "^3.3.4",
+    "@prisma/client": "^6.11.1",
+    "@types/d3": "^7.4.3",
+    "@types/node": "^20.0.0",
+    "@types/qrcode": "^1.5.5",
+    "clsx": "^2.1.1",
+    "csv-parse": "^5.0.0",
+    "d3": "^7.9.0",
+    "next": "^14.2.15",
+    "next-auth": "^4.24.11",
+    "next-themes": "^0.3.0",
+    "prisma": "^6.11.1",
+    "qrcode": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.50.0",
+    "react-icons": "^5.3.0",
+    "resend": "^4.6.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "tailwind-merge": "^3.3.1",
+    "ts-node": "^10.0.0",
+    "typescript": "^5.0.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@types/react": "18.3.11",
+    "autoprefixer": "^10.4.20",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "8.57.1",
+    "eslint-config-next": "15.3.4",
+    "husky": "^9.1.7",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.4.47",
+    "prettier": "^3.5.3",
+    "tailwindcss": "^3.4.14"
+  }
+}
