@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signInWithEmail, signUpWithEmail } from '../../../lib/firebase-auth';
+import { signInWithEmail, signUpWithEmail, isEmailVerified } from '../../../lib/firebase-auth';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
@@ -22,10 +22,21 @@ export default function SignInPage() {
     try {
       if (isSignUp) {
         await signUpWithEmail(email, password, name);
+        // Redirect to verification page after sign up
+        router.push('/auth/verify-email');
       } else {
-        await signInWithEmail(email, password);
+        const userCredential = await signInWithEmail(email, password);
+
+        // Check if email is verified
+        if (!isEmailVerified(userCredential)) {
+          setError(
+            'Please verify your email address before signing in. Check your inbox for a verification link.',
+          );
+          return;
+        }
+
+        router.push('/dashboard');
       }
-      router.push('/dashboard');
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
       setError(errorMessage);

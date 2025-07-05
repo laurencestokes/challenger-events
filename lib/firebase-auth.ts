@@ -6,6 +6,7 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
   updateProfile,
+  sendEmailVerification as firebaseSendEmailVerification,
 } from 'firebase/auth';
 import { auth } from './firebase';
 import { createUser } from './firestore';
@@ -38,6 +39,9 @@ export const signUpWithEmail = async (
 
     // Update display name
     await updateProfile(user, { displayName: name });
+
+    // Send email verification
+    await sendEmailVerification(user);
 
     // Create user document in Firestore
     const userData = await createUser({
@@ -83,4 +87,23 @@ export const getCurrentUser = (): FirebaseUser | null => {
 
 export const onAuthStateChange = (callback: (user: FirebaseUser | null) => void) => {
   return onAuthStateChanged(auth, callback);
+};
+
+export const sendEmailVerification = async (user?: FirebaseUser) => {
+  try {
+    const currentUser = user || auth.currentUser;
+    if (!currentUser) {
+      throw new Error('No user to send verification email to');
+    }
+    await firebaseSendEmailVerification(currentUser);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Failed to send verification email';
+    throw new Error(errorMessage);
+  }
+};
+
+export const isEmailVerified = (user?: FirebaseUser): boolean => {
+  const currentUser = user || auth.currentUser;
+  return currentUser?.emailVerified || false;
 };
