@@ -26,7 +26,7 @@ export default function CreateEvent() {
         name,
         description: description || undefined,
         startDate: startDate ? new Date(startDate).toISOString() : undefined,
-        endDate: endDate ? new Date(endDate).toISOString() : undefined
+        endDate: endDate ? new Date(endDate).toISOString() : undefined,
       };
 
       await api.post('/api/events', eventData);
@@ -138,11 +138,7 @@ export default function CreateEvent() {
                 </div>
               </div>
 
-              {error && (
-                <div className="text-red-600 dark:text-red-400">
-                  {error}
-                </div>
-              )}
+              {error && <div className="text-red-600 dark:text-red-400">{error}</div>}
 
               <div className="flex justify-end space-x-4">
                 <button

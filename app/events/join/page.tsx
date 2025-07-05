@@ -29,7 +29,8 @@ export default function JoinEvent() {
       }, 2000);
     } catch (error: unknown) {
       setMessageType('error');
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred. Please try again.';
+      const errorMessage =
+        error instanceof Error ? error.message : 'An error occurred. Please try again.';
       setMessage(errorMessage);
     } finally {
       setIsLoading(false);
@@ -79,10 +80,11 @@ export default function JoinEvent() {
 
             {message && (
               <div
-                className={`text-sm text-center ${messageType === 'success'
-                  ? 'text-green-600 dark:text-green-400'
-                  : 'text-red-600 dark:text-red-400'
-                  }`}
+                className={`text-sm text-center ${
+                  messageType === 'success'
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-red-600 dark:text-red-400'
+                }`}
               >
                 {message}
               </div>

@@ -9,7 +9,7 @@ interface AuthUser {
   id: string;
   email: string;
   name?: string;
-  role: 'ADMIN' | 'COMPETITOR';
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'COMPETITOR' | 'VIEWER';
 }
 
 interface AuthContextType {

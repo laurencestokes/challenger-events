@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getEvent, updateEvent, deleteEvent, isAdmin } from '@/lib/firestore';
+import { getUserByUid, getEvent, updateEvent, deleteEvent, isAdmin, Event } from '@/lib/firestore';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -48,8 +48,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const updates: Partial<Event> = {};
     if (name !== undefined) updates.name = name;
     if (description !== undefined) updates.description = description;
-    if (startDate !== undefined) updates.startDate = startDate ? new Date(startDate) : null;
-    if (endDate !== undefined) updates.endDate = endDate ? new Date(endDate) : null;
+    if (startDate !== undefined) updates.startDate = startDate ? new Date(startDate) : undefined;
+    if (endDate !== undefined) updates.endDate = endDate ? new Date(endDate) : undefined;
     if (status !== undefined) updates.status = status;
 
     const updatedEvent = await updateEvent(params.id, updates);

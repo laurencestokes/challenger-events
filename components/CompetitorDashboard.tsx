@@ -158,7 +158,9 @@ export default function CompetitorDashboard() {
             </div>
           ) : events.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400">You haven&apos;t joined any events yet.</p>
+              <p className="text-gray-500 dark:text-gray-400">
+                You haven&apos;t joined any events yet.
+              </p>
               <Link
                 href="/events/join"
                 className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
@@ -181,12 +183,13 @@ export default function CompetitorDashboard() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${event.status === 'ACTIVE'
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                        : event.status === 'COMPLETED'
-                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                          : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                        }`}
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        event.status === 'ACTIVE'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                          : event.status === 'COMPLETED'
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                      }`}
                     >
                       {event.status}
                     </span>

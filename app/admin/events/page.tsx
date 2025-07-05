@@ -32,13 +32,13 @@ export default function ManageEvents() {
           'First event dates:',
           eventsData[0]
             ? {
-              startDate: eventsData[0].startDate,
-              endDate: eventsData[0].endDate,
-              createdAt: eventsData[0].createdAt,
-              startDateType: typeof eventsData[0].startDate,
-              endDateType: typeof eventsData[0].endDate,
-              createdAtType: typeof eventsData[0].createdAt,
-            }
+                startDate: eventsData[0].startDate,
+                endDate: eventsData[0].endDate,
+                createdAt: eventsData[0].createdAt,
+                startDateType: typeof eventsData[0].startDate,
+                endDateType: typeof eventsData[0].endDate,
+                createdAtType: typeof eventsData[0].createdAt,
+              }
             : 'No events',
         );
         setEvents(eventsData);
@@ -75,13 +75,19 @@ export default function ManageEvents() {
     // Handle Firestore Timestamp objects
     if (typeof dateString === 'object' && dateString !== null) {
       // Check if it's a Firestore Timestamp with seconds and nanoseconds
-      if ('seconds' in dateString && typeof (dateString as { seconds: number }).seconds === 'number') {
+      if (
+        'seconds' in dateString &&
+        typeof (dateString as { seconds: number }).seconds === 'number'
+      ) {
         const date = new Date((dateString as { seconds: number }).seconds * 1000); // Convert seconds to milliseconds
         return date.toLocaleDateString();
       }
 
       // Check if it has toDate method (Firestore SDK Timestamp)
-      if ('toDate' in dateString && typeof (dateString as { toDate: () => Date }).toDate === 'function') {
+      if (
+        'toDate' in dateString &&
+        typeof (dateString as { toDate: () => Date }).toDate === 'function'
+      ) {
         return (dateString as { toDate: () => Date }).toDate().toLocaleDateString();
       }
     }

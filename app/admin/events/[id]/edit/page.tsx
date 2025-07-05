@@ -46,16 +46,18 @@ export default function EditEvent({ params }: { params: { id: string } }) {
 
         // Format dates for input fields
         if (eventData.startDate) {
-          const startDate = 'seconds' in eventData.startDate
-            ? new Date((eventData.startDate as { seconds: number }).seconds * 1000)
-            : new Date(eventData.startDate as string);
+          const startDate =
+            'seconds' in eventData.startDate
+              ? new Date((eventData.startDate as { seconds: number }).seconds * 1000)
+              : new Date(eventData.startDate as string);
           setStartDate(startDate.toISOString().slice(0, 16));
         }
 
         if (eventData.endDate) {
-          const endDate = 'seconds' in eventData.endDate
-            ? new Date((eventData.endDate as { seconds: number }).seconds * 1000)
-            : new Date(eventData.endDate as string);
+          const endDate =
+            'seconds' in eventData.endDate
+              ? new Date((eventData.endDate as { seconds: number }).seconds * 1000)
+              : new Date(eventData.endDate as string);
           setEndDate(endDate.toISOString().slice(0, 16));
         }
       } catch (error: unknown) {
@@ -311,7 +313,9 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                 <select
                   id="status"
                   value={status}
-                  onChange={(e) => setStatus(e.target.value as 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED')}
+                  onChange={(e) =>
+                    setStatus(e.target.value as 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED')
+                  }
                   className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="DRAFT">Draft</option>
