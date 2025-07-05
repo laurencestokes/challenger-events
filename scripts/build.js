@@ -18,7 +18,7 @@ process.env.NEXT_PUBLIC_COMMIT_HASH = commitHash;
 console.log(`Building with commit hash: ${commitHash}`);
 
 // Run next build
-const buildProcess = spawn('next', ['build'], {
+const buildProcess = spawn('npx', ['next', 'build'], {
   stdio: 'inherit',
   env: { ...process.env, NEXT_PUBLIC_COMMIT_HASH: commitHash },
 });
