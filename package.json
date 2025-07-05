@@ -4,7 +4,7 @@
   "description": "Challenger Events - Real-time fitness event management system",
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/build.js",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "analyze": "ts-node ./scripts/analyzePowerliftingData.ts",
