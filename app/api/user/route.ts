@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { prisma } from '@/lib/prisma'
+import { getUserByEmail } from '@/lib/firestore'
 
 export async function GET(request: NextRequest) {
     try {
@@ -10,27 +10,22 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const user = await prisma.user.findUnique({
-            where: { email: session.user.email },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                role: true,
-                createdAt: true,
-                teams: {
-                    include: {
-                        team: true
-                    }
-                }
-            }
-        })
+        const user = await getUserByEmail(session.user.email)
 
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 })
         }
 
-        return NextResponse.json(user)
+        // Return user data without sensitive information
+        const userData = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            createdAt: user.createdAt
+        }
+
+        return NextResponse.json(userData)
     } catch (error) {
         console.error('Error fetching user:', error)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

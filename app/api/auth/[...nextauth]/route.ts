@@ -1,10 +1,8 @@
 import NextAuth from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import EmailProvider from "next-auth/providers/email";
-import { prisma } from "lib/prisma";
+import { createUser, getUserByEmail, updateUser } from "lib/firestore";
 
 const handler = NextAuth({
-    adapter: PrismaAdapter(prisma),
     providers: [
         EmailProvider({
             server: {
@@ -26,18 +24,39 @@ const handler = NextAuth({
         async session({ session, user }) {
             // Add user role and ID to session
             if (session.user) {
-                session.user.id = user.id;
-                session.user.role = user.role;
+                const firebaseUser = await getUserByEmail(session.user.email!)
+                if (firebaseUser) {
+                    (session.user as any).id = firebaseUser.id;
+                    (session.user as any).role = firebaseUser.role;
+                }
             }
             return session;
         },
         async jwt({ token, user, account, profile }) {
             // Add user role to JWT token
             if (user) {
-                token.role = user.role;
-                token.id = user.id;
+                const firebaseUser = await getUserByEmail(user.email!)
+                if (firebaseUser) {
+                    token.role = firebaseUser.role;
+                    token.id = firebaseUser.id;
+                }
             }
             return token;
+        },
+    },
+    events: {
+        async signIn({ user, account, profile, isNewUser }) {
+            if (isNewUser && user.email) {
+                // Create user in Firestore if they don't exist
+                const existingUser = await getUserByEmail(user.email)
+                if (!existingUser) {
+                    await createUser({
+                        email: user.email,
+                        name: user.name || undefined,
+                        role: 'COMPETITOR' // Default role
+                    })
+                }
+            }
         },
     },
     pages: {

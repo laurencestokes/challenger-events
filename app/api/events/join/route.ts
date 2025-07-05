@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { prisma } from '@/lib/prisma'
+import {
+    getEventByCode,
+    getUserByEmail,
+    getActivitiesByEvent,
+    createScore,
+    getScoresByUserAndEvent
+} from '@/lib/firestore'
 
 export async function POST(request: NextRequest) {
     try {
@@ -10,9 +16,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const user = await prisma.user.findUnique({
-            where: { email: session.user.email }
-        })
+        const user = await getUserByEmail(session.user.email)
 
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 })
@@ -26,12 +30,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Find event by code
-        const event = await prisma.event.findUnique({
-            where: { code: eventCode.toUpperCase() },
-            include: {
-                activities: true
-            }
-        })
+        const event = await getEventByCode(eventCode.toUpperCase())
 
         if (!event) {
             return NextResponse.json({ error: 'Event not found' }, { status: 404 })
@@ -41,29 +40,32 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Event has already ended' }, { status: 400 })
         }
 
-        // Check if user is already participating
-        const existingScore = await prisma.score.findFirst({
-            where: {
-                userId: user.id,
-                eventId: event.id
-            }
-        })
+        // Get activities for the event
+        const activities = await getActivitiesByEvent(event.id)
 
-        if (existingScore) {
+        if (activities.length === 0) {
+            return NextResponse.json({ error: 'Event has no activities' }, { status: 400 })
+        }
+
+        // Check if user is already participating
+        const existingScores = await getScoresByUserAndEvent(user.id, event.id)
+
+        if (existingScores.length > 0) {
             return NextResponse.json({ error: 'Already participating in this event' }, { status: 400 })
         }
 
         // Create initial scores for all activities (with 0 values)
-        const initialScores = event.activities.map(activity => ({
+        const initialScores = activities.map(activity => ({
             userId: user.id,
             eventId: event.id,
             activityId: activity.id,
             value: 0
         }))
 
-        await prisma.score.createMany({
-            data: initialScores
-        })
+        // Create all scores in batch
+        for (const scoreData of initialScores) {
+            await createScore(scoreData)
+        }
 
         return NextResponse.json({
             message: 'Successfully joined event',
