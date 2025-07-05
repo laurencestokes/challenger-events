@@ -99,9 +99,6 @@ temp/
 *.sqlite
 *.sqlite3
 
-# Prisma
-prisma/migrations/
-
 # Local development
 .env.local
 .env.development.local

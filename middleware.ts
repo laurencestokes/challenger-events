@@ -7,12 +7,13 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/admin/:path*',
-    '/events/:path*',
-    '/profile/:path*',
-    '/auth/:path*',
-  ],
-};
+// Temporarily disable middleware to fix deployment issues
+// export const config = {
+//     matcher: [
+//         '/dashboard/:path*',
+//         '/admin/:path*',
+//         '/events/:path*',
+//         '/profile/:path*',
+//         '/auth/:path*',
+//     ],
+// }
