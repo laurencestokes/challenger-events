@@ -188,10 +188,21 @@ export const getEventsByParticipant = async (userId: string) => {
 
   if (eventIds.length === 0) return [];
 
-  const eventsRef = collection(db, 'events');
-  const eventsQuery = query(eventsRef, where('__name__', 'in', eventIds));
-  const eventsSnapshot = await getDocs(eventsQuery);
-  return eventsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Event[];
+  // Fetch events by their document IDs
+  const events: Event[] = [];
+  for (const eventId of eventIds) {
+    const event = await getEvent(eventId);
+    if (event) {
+      events.push(event);
+    }
+  }
+
+  // Sort by createdAt (most recent first)
+  return events.sort((a, b) => {
+    const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
+    const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
+    return dateB.getTime() - dateA.getTime();
+  });
 };
 
 // Activity functions
