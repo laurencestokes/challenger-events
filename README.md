@@ -1,142 +1,166 @@
-# Challenger Fitness
+# Challenger Events 🏆
 
-A comprehensive fitness tracking and scoring application built with Next.js. Track your workouts, calculate performance scores, and monitor your fitness progress.
+A real-time fitness event management system that allows admins to create events and input scores for competitors, while competitors can view live leaderboards.
 
-## Features
+## ✨ Features
 
-- Next.js 14 with app router
-- Fitness tracking and scoring algorithms
-- Powerlifting and rowing standards
-- Interactive data visualization with D3.js
-- Responsive design with Tailwind CSS
-- Dark mode support with Next Themes
-- Modern UI components
+- **Magic Link Authentication** - No passwords required, just email verification
+- **Role-based Access Control** - Super Admin, Admin, Competitor, and Viewer roles
+- **Event Management** - Create events with unique codes and QR codes
+- **Real-time Leaderboards** - Live score updates using WebSockets
+- **Mobile Responsive** - Works seamlessly on all devices
+- **Dark Mode Support** - Built-in theme switching
 
-## Getting Started
+## 🚀 Quick Start
 
-1. Clone the repository
-2. Install dependencies `npm install`
-3. Run the development server `npm run dev`
+### Prerequisites
 
-## NPM Configuration
+- Node.js 18+ 
+- PostgreSQL database
+- Email provider (Resend, Gmail, etc.)
 
-This project uses the `@challengerco/challenger-data` package from GitHub Packages. Vercel can handle this using environment variables.
+### Installation
 
-### Setting up Vercel Deployment
-
-1. **Create a GitHub Personal Access Token:**
-   - Go to GitHub Settings → Developer settings → Personal access tokens
-   - Generate a new token with `read:packages` scope
-   - Copy the token (you won't see it again)
-
-2. **Configure Vercel Environment Variables:**
-   - Go to your Vercel project settings
-   - Navigate to Settings → Environment Variables
-   - Add `NPM_TOKEN` with your GitHub Personal Access Token
-   - Add `NPM_RC` with the content from `.npmrc.example` (the entire file content)
-   - Set both for Production, Preview, and Development environments
-
-3. **For Local Development:**
+1. **Clone the repository**
    ```bash
-   # Copy the example file
-   cp .npmrc.example .npmrc
-   
-   # Edit .npmrc and replace ${NPM_TOKEN} with your actual token
-   # Or set it as an environment variable:
-   export NPM_TOKEN=your_github_token_here
+   git clone <your-repo-url>
+   cd challenger-events
    ```
 
-### Troubleshooting
-
-- **"Package not found" errors:** Ensure your token has the correct permissions (`read:packages`)
-- **Authentication failures:** Verify your token hasn't expired
-- **CI/CD issues:** Check that both `NPM_TOKEN` and `NPM_RC` are properly configured in Vercel
-
-## Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run analyze` - Analyze powerlifting data
-- `npm run commit` - Create a conventional commit
-
-## Conventional Commits
-
-This project follows the [Conventional Commits](https://www.conventionalcommits.org/) specification to maintain a clean and automated changelog.
-
-### Commit Types
-
-- `feat` - New features
-- `fix` - Bug fixes
-- `docs` - Documentation changes
-- `style` - Code style changes (formatting, missing semicolons, etc.)
-- `refactor` - Code refactoring
-- `perf` - Performance improvements
-- `test` - Adding or updating tests
-- `chore` - Maintenance tasks, dependencies, etc.
-- `ci` - CI/CD changes
-- `build` - Build system changes
-- `revert` - Revert previous commits
-
-### Commit Format
-
-```
-<type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-### Examples
-
-```bash
-# Feature
-feat: add user authentication system
-
-# Bug fix
-fix: resolve scoring calculation error
-
-# Documentation
-docs: update API documentation
-
-# Breaking change
-feat!: change API response format
-
-# With scope
-feat(auth): add OAuth2 support
-fix(ui): resolve button alignment issue
-```
-
-### Making Commits
-
-1. **Interactive Mode (Recommended):**
+2. **Install dependencies**
    ```bash
-   npm run commit
-   ```
-   This will guide you through creating a conventional commit interactively.
-
-2. **Manual Mode:**
-   ```bash
-   git commit -m "feat: add new feature description"
+   npm install
    ```
 
-### Automated Changelog
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
 
-The conventional commit format enables automatic changelog generation. When you're ready to create a release:
+4. **Set up the database**
+   ```bash
+   npx prisma migrate dev
+   npx prisma generate
+   ```
 
-1. Use semantic versioning for your releases
-2. The changelog will be automatically generated based on your commit history
-3. Breaking changes will be clearly marked
+5. **Run the development server**
+   ```bash
+   npm run dev
+   ```
 
-## Tech Stack
+6. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
 
-- Next.js 14 with App Router
-- TypeScript
-- Tailwind CSS
-- D3.js for data visualization
-- React Hook Form with Zod validation
-- Next Themes for dark mode
+## 📋 Environment Variables
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/talhatahir)
+Create a `.env` file in the root directory:
+
+```env
+# Database
+DATABASE_URL="postgresql://username:password@localhost:5432/challenger_events"
+
+# NextAuth.js
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key-here"
+
+# Email Provider (Resend)
+RESEND_API_KEY="your-resend-api-key"
+
+# Super Admins (comma-separated emails)
+SUPER_ADMIN_EMAILS="admin@challenger.com,super@challenger.com"
+
+# Socket.io
+SOCKET_SECRET="your-socket-secret"
+```
+
+## 🏗️ Architecture
+
+### Tech Stack
+
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL
+- **Authentication**: NextAuth.js with magic links
+- **Real-time**: Socket.io
+- **Email**: Resend (or any SMTP provider)
+
+### Database Schema
+
+- **Users**: Authentication and role management
+- **Events**: Competition events with unique codes
+- **Activities**: Individual exercises/workouts within events
+- **Scores**: Competitor performance data
+- **Teams**: Group management (optional)
+- **Invitations**: Admin invitation system
+
+## 🎯 Usage
+
+### For Admins
+
+1. **Sign in** with your email (you'll receive a magic link)
+2. **Create events** with unique codes
+3. **Add activities** to events (workouts, exercises, etc.)
+4. **Input scores** for competitors
+5. **View real-time leaderboards**
+
+### For Competitors
+
+1. **Sign in** with your email
+2. **Join events** using event codes
+3. **View your performance** and leaderboards
+4. **Track progress** over time
+
+## 🔧 API Endpoints
+
+- `POST /api/events` - Create new events
+- `GET /api/events` - Fetch user's events
+- `POST /api/events/join` - Join an event with code
+- `POST /api/scores` - Submit scores (admin only)
+- `GET /api/events/[id]/leaderboard` - Get real-time leaderboard
+
+## 🔒 Security Features
+
+- Role-based access control
+- Event code validation
+- Rate limiting on score submissions
+- Audit logging for all changes
+- CSRF protection
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+
+1. Push to GitHub
+2. Connect to Vercel
+3. Set environment variables
+4. Deploy
+
+### Other Platforms
+
+- **Railway**: Easy PostgreSQL + deployment
+- **Render**: Free tier available
+- **DigitalOcean**: App Platform
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Support
+
+For issues or questions:
+1. Check the [GitHub issues](https://github.com/your-username/challenger-events/issues)
+2. Review the [SETUP.md](SETUP.md) documentation
+3. Contact the development team
+
+---
+
+Built with ❤️ by the Challenger Events team
