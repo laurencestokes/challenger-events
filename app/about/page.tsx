@@ -13,17 +13,20 @@ export default function AboutPage() {
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-4">Our Story</h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
-              Challenger Co was born from a simple frustration: why can&apos;t we compare ourselves fairly to anyone, regardless of size, age, or gender?
+              Challenger Co was born from a simple frustration: why can&apos;t we compare ourselves
+              fairly to anyone, regardless of size, age, or gender?
             </p>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
-              We&apos;re a team of fitness enthusiasts, data scientists, and competitive athletes who believe that true performance should be measured by output, not demographics.
+              We&apos;re a team of fitness enthusiasts, data scientists, and competitive athletes
+              who believe that true performance should be measured by output, not demographics.
             </p>
           </section>
 
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-4">Our Mission</h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
-              To break down the barriers in competitive sport and create a truly inclusive fitness community where anyone can challenge anyone.
+              To break down the barriers in competitive sport and create a truly inclusive fitness
+              community where anyone can challenge anyone.
             </p>
           </section>
 
@@ -66,7 +69,10 @@ export default function AboutPage() {
                 />
                 <h3 className="text-xl font-semibold mb-2">Joe - Founder</h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Former competitive weightlifter and S&C coach. Built Challenger to fix what most fitness competitions get wrong — repetitive formats, outdated divisions, no atmosphere. Joe leads the vision, the format design, and the push to turn data and competition into something people actually care about.
+                  Former competitive weightlifter and S&C coach. Built Challenger to fix what most
+                  fitness competitions get wrong — repetitive formats, outdated divisions, no
+                  atmosphere. Joe leads the vision, the format design, and the push to turn data and
+                  competition into something people actually care about.
                 </p>
               </div>
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center">
@@ -79,7 +85,10 @@ export default function AboutPage() {
                 />
                 <h3 className="text-xl font-semibold mb-2">Ben - Founder & Lead Scientist</h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  A researcher in experimental physics and the architect of our normalised scoring model. Ben blends deep statistical modelling with a focus on fairness, making it possible to compare performances across age, gender, and body type — without compromise.
+                  A researcher in experimental physics and the architect of our normalised scoring
+                  model. Ben blends deep statistical modelling with a focus on fairness, making it
+                  possible to compare performances across age, gender, and body type — without
+                  compromise.
                 </p>
               </div>
             </div>

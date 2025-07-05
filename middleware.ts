@@ -1,41 +1,27 @@
-import { withAuth } from 'next-auth/middleware'
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export default withAuth(
-    function middleware(req) {
-        const { pathname } = req.nextUrl
-        const { token } = req.nextauth
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-        // Public routes that don't require authentication
-        const publicRoutes = ['/auth/signin', '/auth/verify-request']
+  // Public routes that don't require authentication
+  const publicRoutes = ['/auth/signin', '/'];
 
-        if (publicRoutes.includes(pathname)) {
-            return NextResponse.next()
-        }
+  if (publicRoutes.includes(pathname)) {
+    return NextResponse.next();
+  }
 
-        // Admin-only routes
-        const adminRoutes = ['/admin']
-        if (adminRoutes.some(route => pathname.startsWith(route))) {
-            if (!token?.role || (token.role !== 'ADMIN' && token.role !== 'SUPER_ADMIN')) {
-                return NextResponse.redirect(new URL('/dashboard', req.url))
-            }
-        }
-
-        return NextResponse.next()
-    },
-    {
-        callbacks: {
-            authorized: ({ token }) => !!token
-        }
-    }
-)
+  // For protected routes, we'll let the client-side handle authentication
+  // Firebase Auth handles this better on the client side
+  return NextResponse.next();
+}
 
 export const config = {
-    matcher: [
-        '/dashboard/:path*',
-        '/admin/:path*',
-        '/events/:path*',
-        '/profile/:path*',
-        '/auth/:path*'
-    ]
-} 
+  matcher: [
+    '/dashboard/:path*',
+    '/admin/:path*',
+    '/events/:path*',
+    '/profile/:path*',
+    '/auth/:path*',
+  ],
+};

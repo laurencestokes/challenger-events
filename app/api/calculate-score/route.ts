@@ -13,19 +13,9 @@ export async function POST(request: Request) {
   const data = await request.json();
 
   // Calculate powerlifting scores using the new package
-  const squatResult = challengerData.squatScore(
-    data.squat,
-    data.sex,
-    data.age,
-    data.bodyMassKg,
-  );
+  const squatResult = challengerData.squatScore(data.squat, data.sex, data.age, data.bodyMassKg);
 
-  const benchResult = challengerData.benchScore(
-    data.bench,
-    data.sex,
-    data.age,
-    data.bodyMassKg,
-  );
+  const benchResult = challengerData.benchScore(data.bench, data.sex, data.age, data.bodyMassKg);
 
   const deadliftResult = challengerData.deadliftScore(
     data.deadlift,

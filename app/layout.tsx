@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Providers } from '../components/Providers';
+import { Providers } from '@/components/Providers';
 
 import 'styles/globals.css';
 
@@ -16,9 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className="bg-white dark:bg-black min-h-screen">
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

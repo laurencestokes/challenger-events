@@ -13,8 +13,12 @@ export default function Header() {
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold text-gray-900 dark:text-white">CHALLENGER FITNESS</span>
-            <span className="px-2 py-1 text-xs font-semibold bg-red-500 text-white rounded-full">BETA</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">
+              CHALLENGER FITNESS
+            </span>
+            <span className="px-2 py-1 text-xs font-semibold bg-red-500 text-white rounded-full">
+              BETA
+            </span>
           </Link>
         </div>
         <nav className="flex items-center">
@@ -57,7 +61,10 @@ export default function Header() {
             <ThemeSwitch />
             {/* Mobile Menu Button */}
             <div className="md:hidden ml-2">
-              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-800 dark:text-white p-2">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="text-gray-800 dark:text-white p-2"
+              >
                 {isMenuOpen ? <FiX size={20} /> : <FiMenu size={20} />}
               </button>
             </div>
@@ -69,16 +76,40 @@ export default function Header() {
         <div className="md:hidden bg-white dark:bg-black">
           <ul className="flex flex-col items-center space-y-4 py-4">
             <li>
-              <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-lg text-gray-800 dark:text-white">Home</Link>
+              <Link
+                href="/"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-lg text-gray-800 dark:text-white"
+              >
+                Home
+              </Link>
             </li>
             <li>
-              <Link href="/formula" onClick={() => setIsMenuOpen(false)} className="text-lg text-gray-800 dark:text-white">Score Calculator</Link>
+              <Link
+                href="/formula"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-lg text-gray-800 dark:text-white"
+              >
+                Score Calculator
+              </Link>
             </li>
             <li>
-              <Link href="/showdown" onClick={() => setIsMenuOpen(false)} className="text-lg text-gray-800 dark:text-white">The Showdown</Link>
+              <Link
+                href="/showdown"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-lg text-gray-800 dark:text-white"
+              >
+                The Showdown
+              </Link>
             </li>
             <li>
-              <Link href="/about" onClick={() => setIsMenuOpen(false)} className="text-lg text-gray-800 dark:text-white">About</Link>
+              <Link
+                href="/about"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-lg text-gray-800 dark:text-white"
+              >
+                About
+              </Link>
             </li>
           </ul>
         </div>

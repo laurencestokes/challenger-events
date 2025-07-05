@@ -1,27 +1,27 @@
-'use client'
+'use client';
 
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-import LoadingSpinner from '../components/LoadingSpinner'
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function Home() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    if (status === 'loading') return
+    if (loading) return;
 
-    if (status === 'authenticated') {
-      router.push('/dashboard')
+    if (user) {
+      router.push('/dashboard');
     } else {
-      router.push('/auth/signin')
+      router.push('/auth/signin');
     }
-  }, [status, router])
+  }, [user, loading, router]);
 
-  if (status === 'loading') {
-    return <LoadingSpinner />
+  if (loading) {
+    return <LoadingSpinner />;
   }
 
-  return null
+  return null;
 }

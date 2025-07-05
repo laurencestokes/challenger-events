@@ -3,12 +3,12 @@ const { spawn } = require('child_process');
 
 // Get the current git commit hash
 function getCommitHash() {
-    try {
-        return execSync('git rev-parse HEAD').toString().trim();
-    } catch (error) {
-        console.warn('Could not get git commit hash:', error.message);
-        return 'unknown';
-    }
+  try {
+    return execSync('git rev-parse HEAD').toString().trim();
+  } catch (error) {
+    console.warn('Could not get git commit hash:', error.message);
+    return 'unknown';
+  }
 }
 
 // Set environment variable and run next build
@@ -19,10 +19,10 @@ console.log(`Building with commit hash: ${commitHash}`);
 
 // Run next build
 const buildProcess = spawn('next', ['build'], {
-    stdio: 'inherit',
-    env: { ...process.env, NEXT_PUBLIC_COMMIT_HASH: commitHash }
+  stdio: 'inherit',
+  env: { ...process.env, NEXT_PUBLIC_COMMIT_HASH: commitHash },
 });
 
 buildProcess.on('close', (code) => {
-    process.exit(code);
-}); 
+  process.exit(code);
+});
