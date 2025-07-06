@@ -1,6 +1,6 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
+import { Firestore, getFirestore } from 'firebase/firestore';
+import { Auth, getAuth } from 'firebase/auth';
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -14,38 +14,53 @@ const requiredEnvVars = [
 
 const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
-// In development, log missing variables but don't throw
-if (missingVars.length > 0) {
+// Only validate in browser runtime, not during build
+if (typeof window !== 'undefined' && missingVars.length > 0) {
   if (process.env.NODE_ENV === 'development') {
     console.warn('⚠️ Missing Firebase environment variables:', missingVars);
     console.warn('Please check your .env file and ensure all Firebase variables are set.');
     console.warn('The app may not work correctly without these variables.');
   } else {
-    throw new Error(
-      `Missing required Firebase environment variables: ${missingVars.join(', ')}. ` +
-      'Please check your .env file and ensure all Firebase variables are set.'
-    );
+    console.error('❌ Missing Firebase environment variables:', missingVars);
+    console.error('Please check your deployment environment variables.');
+    // Don't throw during build, let it fail gracefully at runtime
   }
 }
 
+// Provide fallback values for build time
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  project_id: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || '',
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '',
+  project_id: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '',
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '',
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID, // Optional
 };
 
-// Initialize Firebase
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+// Only initialize Firebase if we have the required config
+let app: FirebaseApp | null = null;
+let db: Firestore | null = null;
+let auth: Auth | null = null;
+
+try {
+  // Check if we have the minimum required config
+  if (firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId) {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+    db = getFirestore(app);
+    auth = getAuth(app);
+  } else {
+    console.warn('⚠️ Firebase not initialized - missing required configuration');
+  }
+} catch (error) {
+  console.error('❌ Error initializing Firebase:', error);
+}
 
 // Initialize Firestore
-export const db = getFirestore(app);
+export { db };
 
 // Initialize Auth
-export const auth = getAuth(app);
+export { auth };
 
 export default app;
