@@ -28,5 +28,11 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
 
-      - name: Run validation scripts in parallel
-        run: npm run validate-parallel 
+      - name: Check TypeScript types
+        run: npm run check-types
+
+      - name: Check code formatting
+        run: npm run check-format
+
+      - name: Run ESLint
+        run: npm run lint 
