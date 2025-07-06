@@ -19,6 +19,9 @@ export interface AuthUser {
 }
 
 export const signInWithEmail = async (email: string, password: string) => {
+  if (!auth) {
+    throw new Error('Firebase Auth not initialized. Please check your environment variables.');
+  }
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return userCredential.user;
@@ -34,6 +37,12 @@ export const signUpWithEmail = async (
   name: string,
 ): Promise<AuthUser> => {
   try {
+    // Check if auth is initialized
+    if (!auth) {
+      console.error('❌ Firebase Auth not initialized');
+      throw new Error('Firebase Auth not initialized. Please check your environment variables.');
+    }
+
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
@@ -58,12 +67,16 @@ export const signUpWithEmail = async (
       role: userData.role,
     } as AuthUser;
   } catch (error: unknown) {
+    console.error('❌ Sign up error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Sign up failed';
     throw new Error(errorMessage);
   }
 };
 
 export const resetPassword = async (email: string): Promise<void> => {
+  if (!auth) {
+    throw new Error('Firebase Auth not initialized. Please check your environment variables.');
+  }
   try {
     await sendPasswordResetEmail(auth, email);
   } catch (error: unknown) {
@@ -73,6 +86,9 @@ export const resetPassword = async (email: string): Promise<void> => {
 };
 
 export const signOut = async (): Promise<void> => {
+  if (!auth) {
+    throw new Error('Firebase Auth not initialized. Please check your environment variables.');
+  }
   try {
     await firebaseSignOut(auth);
   } catch (error: unknown) {
@@ -82,14 +98,20 @@ export const signOut = async (): Promise<void> => {
 };
 
 export const getCurrentUser = (): FirebaseUser | null => {
-  return auth.currentUser;
+  return auth?.currentUser || null;
 };
 
 export const onAuthStateChange = (callback: (user: FirebaseUser | null) => void) => {
+  if (!auth) {
+    throw new Error('Firebase Auth not initialized. Please check your environment variables.');
+  }
   return onAuthStateChanged(auth, callback);
 };
 
 export const sendEmailVerification = async (user?: FirebaseUser) => {
+  if (!auth) {
+    throw new Error('Firebase Auth not initialized. Please check your environment variables.');
+  }
   try {
     const currentUser = user || auth.currentUser;
     if (!currentUser) {
@@ -104,6 +126,9 @@ export const sendEmailVerification = async (user?: FirebaseUser) => {
 };
 
 export const isEmailVerified = (user?: FirebaseUser): boolean => {
+  if (!auth) {
+    return false;
+  }
   const currentUser = user || auth.currentUser;
   return currentUser?.emailVerified || false;
 };

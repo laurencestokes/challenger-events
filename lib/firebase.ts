@@ -57,23 +57,8 @@ try {
   console.error('❌ Error initializing Firebase:', error);
 }
 
-// Create wrapper functions that handle null cases
-const getDbInstance = (): Firestore => {
-  if (!firestoreInstance) {
-    throw new Error('Firebase Firestore not initialized. Please check your environment variables.');
-  }
-  return firestoreInstance;
-};
-
-const getAuthInstance = (): Auth => {
-  if (!authInstance) {
-    throw new Error('Firebase Auth not initialized. Please check your environment variables.');
-  }
-  return authInstance;
-};
-
-// Export the instances
-export const db = getDbInstance();
-export const auth = getAuthInstance();
+// Export the instances with proper null checks
+export const db = firestoreInstance;
+export const auth = authInstance;
 
 export default app;
