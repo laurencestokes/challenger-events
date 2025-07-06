@@ -4,7 +4,7 @@ import { ChallengerData } from '@challengerco/challenger-data';
 const challengerData = new ChallengerData();
 
 // Convert sex format from 'M'/'F' to 'male'/'female'
-function convertSex(sex: 'M' | 'F'): 'male' | 'female' {
+export function convertSex(sex: 'M' | 'F'): 'male' | 'female' {
   return sex === 'M' ? 'male' : 'female';
 }
 
