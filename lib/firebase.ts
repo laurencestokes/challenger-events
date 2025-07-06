@@ -58,7 +58,7 @@ try {
 }
 
 // Export the instances with proper null checks
-export const db = firestoreInstance;
-export const auth = authInstance;
+export const db = firestoreInstance!;
+export const auth = authInstance!;
 
 export default app;
