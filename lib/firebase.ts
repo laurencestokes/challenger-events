@@ -1,6 +1,6 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { Firestore, getFirestore } from 'firebase/firestore';
-import { Auth, getAuth } from 'firebase/auth';
+import { Auth, getAuth as getFirebaseAuth } from 'firebase/auth';
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -12,7 +12,7 @@ const requiredEnvVars = [
   'NEXT_PUBLIC_FIREBASE_APP_ID',
 ];
 
-const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
 
 // Only validate in browser runtime, not during build
 if (typeof window !== 'undefined' && missingVars.length > 0) {
@@ -39,17 +39,17 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID, // Optional
 };
 
-// Only initialize Firebase if we have the required config
+// Initialize Firebase if we have the required config
 let app: FirebaseApp | null = null;
-let db: Firestore | null = null;
-let auth: Auth | null = null;
+let firestoreInstance: Firestore | null = null;
+let authInstance: Auth | null = null;
 
 try {
   // Check if we have the minimum required config
   if (firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId) {
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-    db = getFirestore(app);
-    auth = getAuth(app);
+    firestoreInstance = getFirestore(app);
+    authInstance = getFirebaseAuth(app);
   } else {
     console.warn('⚠️ Firebase not initialized - missing required configuration');
   }
@@ -57,10 +57,23 @@ try {
   console.error('❌ Error initializing Firebase:', error);
 }
 
-// Initialize Firestore
-export { db };
+// Create wrapper functions that handle null cases
+const getDbInstance = (): Firestore => {
+  if (!firestoreInstance) {
+    throw new Error('Firebase Firestore not initialized. Please check your environment variables.');
+  }
+  return firestoreInstance;
+};
 
-// Initialize Auth
-export { auth };
+const getAuthInstance = (): Auth => {
+  if (!authInstance) {
+    throw new Error('Firebase Auth not initialized. Please check your environment variables.');
+  }
+  return authInstance;
+};
+
+// Export the instances
+export const db = getDbInstance();
+export const auth = getAuthInstance();
 
 export default app;
