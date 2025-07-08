@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getEvent, updateEvent, deleteEvent, isAdmin, Event } from '@/lib/firestore';
+import {
+  getUserByUid,
+  getEvent,
+  updateEvent,
+  deleteEvent,
+  isAdmin,
+  Event,
+  getParticipationsByEvent,
+  getUser,
+  getScoresByUserAndEvent,
+} from '@/lib/firestore';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -9,7 +19,32 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    return NextResponse.json(event);
+    // Fetch participants for this event
+    const participations = await getParticipationsByEvent(params.id);
+    const participants = await Promise.all(
+      participations.map(async (participation) => {
+        const user = await getUser(participation.userId);
+        const scores = await getScoresByUserAndEvent(participation.userId, params.id);
+
+        // Calculate total score if there are scores
+        const totalScore =
+          scores.length > 0 ? scores.reduce((sum, score) => sum + score.value, 0) : undefined;
+
+        return {
+          id: participation.id,
+          name: user?.name || 'Unknown User',
+          email: user?.email || 'unknown@example.com',
+          joinedAt: participation.joinedAt,
+          score: totalScore,
+        };
+      }),
+    );
+
+    // Return event with participants
+    return NextResponse.json({
+      ...event,
+      participants,
+    });
   } catch (error) {
     console.error('Error fetching event:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

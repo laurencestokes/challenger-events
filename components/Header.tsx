@@ -4,9 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import ThemeSwitch from './ThemeSwitch';
 import { FiMenu, FiX } from 'react-icons/fi';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <header className="bg-white dark:bg-black shadow-sm dark:border-b dark:border-gray-800 sticky top-0 z-50">
@@ -16,7 +18,7 @@ export default function Header() {
             <span className="text-xl font-bold text-gray-900 dark:text-white">
               CHALLENGER FITNESS
             </span>
-            <span className="px-2 py-1 text-xs font-semibold bg-red-500 text-white rounded-full">
+            <span className="px-2 py-1 text-xs font-semibold bg-primary-600 text-white rounded-full">
               BETA
             </span>
           </Link>
@@ -32,30 +34,35 @@ export default function Header() {
                 Home
               </Link>
             </li>
-            <li>
-              <Link
-                href="/formula"
-                className="text-sm text-gray-800 dark:text-white px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                Score Calculator
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/showdown"
-                className="text-sm text-gray-800 dark:text-white px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                The Showdown
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/about"
-                className="text-sm text-gray-800 dark:text-white px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                About
-              </Link>
-            </li>
+            {user ? (
+              <>
+                <li>
+                  <Link
+                    href="/dashboard"
+                    className="text-sm text-gray-800 dark:text-white px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/events"
+                    className="text-sm text-gray-800 dark:text-white px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    Events
+                  </Link>
+                </li>
+              </>
+            ) : (
+              <li>
+                <Link
+                  href="/auth/signin"
+                  className="text-sm text-gray-800 dark:text-white px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  Sign In
+                </Link>
+              </li>
+            )}
           </ul>
           <div className="flex items-center">
             <ThemeSwitch />
@@ -84,33 +91,38 @@ export default function Header() {
                 Home
               </Link>
             </li>
-            <li>
-              <Link
-                href="/formula"
-                onClick={() => setIsMenuOpen(false)}
-                className="text-lg text-gray-800 dark:text-white"
-              >
-                Score Calculator
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/showdown"
-                onClick={() => setIsMenuOpen(false)}
-                className="text-lg text-gray-800 dark:text-white"
-              >
-                The Showdown
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/about"
-                onClick={() => setIsMenuOpen(false)}
-                className="text-lg text-gray-800 dark:text-white"
-              >
-                About
-              </Link>
-            </li>
+            {user ? (
+              <>
+                <li>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-lg text-gray-800 dark:text-white"
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/events"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-lg text-gray-800 dark:text-white"
+                  >
+                    Events
+                  </Link>
+                </li>
+              </>
+            ) : (
+              <li>
+                <Link
+                  href="/auth/signin"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-lg text-gray-800 dark:text-white"
+                >
+                  Sign In
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
       )}

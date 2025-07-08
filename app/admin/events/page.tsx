@@ -59,13 +59,13 @@ export default function ManageEvents() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200';
       case 'COMPLETED':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+        return 'bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200';
       case 'CANCELLED':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'bg-error-100 text-error-800 dark:bg-error-900 dark:text-error-200';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200';
     }
   };
 
@@ -115,8 +115,8 @@ export default function ManageEvents() {
   };
 
   return (
-    <ProtectedRoute requireAdmin>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
@@ -129,7 +129,7 @@ export default function ManageEvents() {
               </div>
               <Link
                 href="/admin/events/create"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
               >
                 Create New Event
               </Link>
@@ -137,26 +137,26 @@ export default function ManageEvents() {
           </div>
 
           {/* Events List */}
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+          <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-lg font-medium text-gray-900 dark:text-white">All Events</h2>
             </div>
             <div className="p-6">
               {isLoading ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
                   <p className="mt-2 text-gray-600 dark:text-gray-400">Loading events...</p>
                 </div>
               ) : error ? (
                 <div className="text-center py-8">
-                  <p className="text-red-600 dark:text-red-400">{error}</p>
+                  <p className="text-error-600 dark:text-error-400">{error}</p>
                 </div>
               ) : events.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500 dark:text-gray-400">No events found.</p>
                   <Link
                     href="/admin/events/create"
-                    className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                    className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-accent-400 hover:bg-accent-500 transition-colors"
                   >
                     Create Your First Event
                   </Link>
@@ -166,7 +166,7 @@ export default function ManageEvents() {
                   {events.map((event) => (
                     <div
                       key={event.id}
-                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow"
+                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-challenger transition-shadow"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
