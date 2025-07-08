@@ -47,7 +47,7 @@ export default function ProfilePage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -149,7 +149,9 @@ export default function ProfilePage() {
               {/* Account Information */}
               <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Account Information</h2>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    Account Information
+                  </h2>
                   <button
                     onClick={() => setIsEditing(!isEditing)}
                     className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium"
@@ -161,7 +163,10 @@ export default function ProfilePage() {
                 {isEditing ? (
                   <form onSubmit={handleSaveProfile} className="space-y-4">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <label
+                        htmlFor="name"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                      >
                         Full Name
                       </label>
                       <input
@@ -175,7 +180,10 @@ export default function ProfilePage() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <label
+                        htmlFor="email"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                      >
                         Email Address
                       </label>
                       <input
@@ -211,19 +219,29 @@ export default function ProfilePage() {
                 ) : (
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Full Name</h3>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        Full Name
+                      </h3>
                       <p className="text-gray-900 dark:text-white">{user.name || 'Not set'}</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Email Address</h3>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        Email Address
+                      </h3>
                       <p className="text-gray-900 dark:text-white">{user.email}</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Role</h3>
-                      <p className="text-gray-900 dark:text-white">{getRoleDisplayName(user.role)}</p>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        Role
+                      </h3>
+                      <p className="text-gray-900 dark:text-white">
+                        {getRoleDisplayName(user.role)}
+                      </p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">User ID</h3>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        User ID
+                      </h3>
                       <p className="text-gray-900 dark:text-white font-mono text-sm">{user.id}</p>
                     </div>
                   </div>
@@ -233,7 +251,9 @@ export default function ProfilePage() {
               {/* Event History */}
               <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Event History</h2>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    Event History
+                  </h2>
                   <span className="text-sm text-gray-500 dark:text-gray-400">
                     {userEvents.length} events
                   </span>
@@ -265,7 +285,9 @@ export default function ProfilePage() {
                         className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         <div className="flex-1">
-                          <h3 className="font-medium text-gray-900 dark:text-white">{event.name}</h3>
+                          <h3 className="font-medium text-gray-900 dark:text-white">
+                            {event.name}
+                          </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
                             Code: {event.code} • Joined: {formatDate(event.joinedAt)}
                           </p>
@@ -276,12 +298,15 @@ export default function ProfilePage() {
                               Score: {event.score}
                             </p>
                           )}
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${event.status === 'ACTIVE'
-                            ? 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200'
-                            : event.status === 'COMPLETED'
-                              ? 'bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200'
-                              : 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200'
-                            }`}>
+                          <span
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              event.status === 'ACTIVE'
+                                ? 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200'
+                                : event.status === 'COMPLETED'
+                                  ? 'bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200'
+                                  : 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200'
+                            }`}
+                          >
                             {event.status}
                           </span>
                         </div>
@@ -296,7 +321,9 @@ export default function ProfilePage() {
             <div className="space-y-6">
               {/* Quick Actions */}
               <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  Quick Actions
+                </h2>
                 <div className="space-y-3">
                   <Link
                     href="/dashboard"
@@ -315,7 +342,9 @@ export default function ProfilePage() {
 
               {/* Account Stats */}
               <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Account Stats</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  Account Stats
+                </h2>
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-500 dark:text-gray-400">Events Joined</span>
@@ -340,19 +369,26 @@ export default function ProfilePage() {
 
               {/* Account Security */}
               <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Account Security</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  Account Security
+                </h2>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500 dark:text-gray-400">Email Verified</span>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${firebaseUser?.emailVerified
-                      ? 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200'
-                      : 'bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-200'
-                      }`}>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        firebaseUser?.emailVerified
+                          ? 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200'
+                          : 'bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-200'
+                      }`}
+                    >
                       {firebaseUser?.emailVerified ? 'Verified' : 'Not Verified'}
                     </span>
                   </div>
                   <button
-                    onClick={() => {/* TODO: Implement password change */ }}
+                    onClick={() => {
+                      /* TODO: Implement password change */
+                    }}
                     className="block w-full text-left py-2 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-colors"
                   >
                     Change Password
