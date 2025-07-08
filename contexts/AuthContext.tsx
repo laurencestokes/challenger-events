@@ -10,6 +10,8 @@ interface AuthUser {
   email: string;
   name?: string;
   role: 'SUPER_ADMIN' | 'ADMIN' | 'COMPETITOR' | 'VIEWER';
+  createdAt?: unknown;
+  updatedAt?: unknown;
 }
 
 interface AuthContextType {
@@ -50,6 +52,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               email: userData.email,
               name: userData.name,
               role: userData.role,
+              createdAt: userData.createdAt,
+              updatedAt: userData.updatedAt,
             });
           }
         } catch (error) {
