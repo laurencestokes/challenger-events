@@ -2,7 +2,10 @@
 
 A real-time fitness event management system that allows admins to create events and input scores for competitors, while competitors can view live leaderboards.
 
+[![CI](https://github.com/challengerco/challenger-events/actions/workflows/ci.yml/badge.svg)](https://github.com/challengerco/challenger-events/actions/workflows/ci.yml)
+
 ![Challenger Logo](./challenger-logo.png)
+
 
 # Table of Contents
 
