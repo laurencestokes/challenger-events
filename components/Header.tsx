@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import ThemeSwitch from './ThemeSwitch';
-import { FiMenu, FiX, FiGrid, FiCalendar } from 'react-icons/fi';
+import { FiMenu, FiX, FiGrid, FiCalendar, FiUsers } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Header() {
@@ -56,6 +56,15 @@ export default function Header() {
                       >
                         <FiCalendar size={16} />
                         <span>Manage Events</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/admin/users"
+                        className="text-sm text-gray-800 dark:text-white px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center space-x-1"
+                      >
+                        <FiUsers size={16} />
+                        <span>Manage Users</span>
                       </Link>
                     </li>
                     <li>
@@ -138,6 +147,16 @@ export default function Header() {
                       >
                         <FiCalendar size={18} />
                         <span>Manage Events</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/admin/users"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="text-lg text-gray-800 dark:text-white flex items-center space-x-2"
+                      >
+                        <FiUsers size={18} />
+                        <span>Manage Users</span>
                       </Link>
                     </li>
                     <li>
