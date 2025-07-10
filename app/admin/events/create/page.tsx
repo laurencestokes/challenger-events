@@ -54,7 +54,7 @@ export default function CreateEvent() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="px-4 sm:px-6 lg:px-8 py-6">
         <div className="max-w-2xl mx-auto">
           <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-8">
             <div className="mb-8">

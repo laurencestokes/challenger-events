@@ -145,7 +145,7 @@ export default function EventDetails() {
   if (isLoading) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-8 py-6">
           <div className="max-w-7xl mx-auto">
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
@@ -160,7 +160,7 @@ export default function EventDetails() {
   if (error) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-8 py-6">
           <div className="max-w-7xl mx-auto">
             <div className="text-center py-8">
               <p className="text-error-600 dark:text-error-400">{error}</p>
@@ -180,7 +180,7 @@ export default function EventDetails() {
   if (!event) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-8 py-6">
           <div className="max-w-7xl mx-auto">
             <div className="text-center py-8">
               <p className="text-gray-500 dark:text-gray-400">Event not found.</p>
@@ -199,23 +199,32 @@ export default function EventDetails() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="px-4 sm:px-6 lg:px-8 py-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3 mb-2">
+                  <Link
+                    href="/dashboard"
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
+                  >
+                    Dashboard
+                  </Link>
+                  <span className="text-gray-400 dark:text-gray-500">/</span>
                   <Link
                     href="/admin/events"
-                    className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
                   >
-                    ← Back to Events
+                    Events
                   </Link>
+                  <span className="text-gray-400 dark:text-gray-500">/</span>
+                  <span className="text-gray-900 dark:text-white text-sm font-medium">
+                    {event.name}
+                  </span>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                  {event.name}
-                </h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{event.name}</h1>
                 <div className="flex items-center space-x-3 mt-2">
                   <span
                     className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(event.status)}`}

@@ -116,12 +116,24 @@ export default function ManageEvents() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="px-4 sm:px-6 lg:px-8 py-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
+                <div className="flex items-center space-x-3 mb-2">
+                  <Link
+                    href="/dashboard"
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
+                  >
+                    Dashboard
+                  </Link>
+                  <span className="text-gray-400 dark:text-gray-500">/</span>
+                  <span className="text-gray-900 dark:text-white text-sm font-medium">
+                    Manage Events
+                  </span>
+                </div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Events</h1>
                 <p className="mt-2 text-gray-600 dark:text-gray-400">
                   View and manage all your events
