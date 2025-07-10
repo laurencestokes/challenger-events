@@ -111,7 +111,11 @@ export default function ManageUsers() {
       await api.put(`/api/admin/users/${userId}`, { status: newStatus });
       // Update local state
       setUsers((prev) =>
-        prev.map((user) => (user.id === userId ? { ...user, status: newStatus as 'ACTIVE' | 'SUSPENDED' | 'PENDING' } : user)),
+        prev.map((user) =>
+          user.id === userId
+            ? { ...user, status: newStatus as 'ACTIVE' | 'SUSPENDED' | 'PENDING' }
+            : user,
+        ),
       );
     } catch (error: unknown) {
       console.error('Error updating user status:', error);
@@ -554,10 +558,11 @@ export default function ManageUsers() {
                                     user.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE',
                                   )
                                 }
-                                className={`text-sm ${user.status === 'ACTIVE'
+                                className={`text-sm ${
+                                  user.status === 'ACTIVE'
                                     ? 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300'
                                     : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
-                                  }`}
+                                }`}
                               >
                                 {user.status === 'ACTIVE' ? 'Suspend' : 'Activate'}
                               </button>

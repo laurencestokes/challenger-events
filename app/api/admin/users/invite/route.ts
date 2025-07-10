@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
+    const usersRef = collection(db, 'users');
     const existingUserQuery = query(usersRef, where('email', '==', email));
     const existingUserSnapshot = await getDocs(existingUserQuery);
 
