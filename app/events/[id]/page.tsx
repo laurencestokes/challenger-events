@@ -7,6 +7,8 @@ import { api } from '../../../lib/api-client';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Leaderboard from '@/components/Leaderboard';
+import TeamManagement from '@/components/TeamManagement';
+import TeamDebug from '@/components/TeamDebug';
 
 interface Event {
   id: string;
@@ -18,6 +20,9 @@ interface Event {
   createdAt: unknown;
   description?: string;
   participants?: Participant[];
+  isTeamEvent?: boolean;
+  teamScoringMethod?: 'SUM' | 'AVERAGE' | 'BEST';
+  maxTeamSize?: number;
 }
 
 interface Participant {
@@ -297,6 +302,30 @@ export default function EventPage() {
 
               {/* Leaderboard */}
               <Leaderboard eventId={eventId} />
+
+              {/* Team Management - Only show for team events */}
+              {event.isTeamEvent && (
+                <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                    Team Management
+                  </h2>
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      This is a team event.{' '}
+                      {event.teamScoringMethod === 'SUM'
+                        ? 'Team scores are calculated by summing all member scores.'
+                        : event.teamScoringMethod === 'AVERAGE'
+                          ? 'Team scores are calculated by averaging member scores.'
+                          : 'Team scores are calculated by taking the best individual score.'}
+                      {event.maxTeamSize && ` Maximum team size: ${event.maxTeamSize} members.`}
+                    </p>
+                  </div>
+                  <TeamManagement eventId={eventId} />
+                </div>
+              )}
+
+              {/* Team Debug - Temporary for fixing team participation */}
+              <TeamDebug eventId={eventId} />
             </div>
 
             {/* Sidebar */}

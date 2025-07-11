@@ -5,7 +5,10 @@ import {
   getScoresByEvent,
   getUser,
   getParticipationsByEvent,
+  getTeamsByEvent,
+  getTeamMembers,
 } from '@/lib/firestore';
+import { calculateTeamScore, calculateTeamOverallScore } from '@/utils/teamScoring';
 
 interface LeaderboardEntry {
   userId: string;
@@ -20,6 +23,8 @@ interface LeaderboardEntry {
     };
   };
   rank: number;
+  teamId?: string;
+  teamName?: string;
 }
 
 interface WorkoutLeaderboard {
@@ -31,14 +36,45 @@ interface WorkoutLeaderboard {
     email: string;
     score: number;
     rank: number;
+    teamId?: string;
+    teamName?: string;
+  }[];
+}
+
+interface TeamLeaderboardEntry {
+  teamId: string;
+  teamName: string;
+  totalScore: number;
+  workoutScores: {
+    [activityId: string]: {
+      score: number;
+      rank: number;
+      activityName: string;
+    };
+  };
+  rank: number;
+}
+
+interface TeamWorkoutLeaderboard {
+  activityId: string;
+  activityName: string;
+  entries: {
+    teamId: string;
+    teamName: string;
+    score: number;
+    rank: number;
   }[];
 }
 
 interface LeaderboardData {
   eventId: string;
   eventName: string;
+  isTeamEvent: boolean;
+  teamScoringMethod?: 'SUM' | 'AVERAGE' | 'BEST';
   overallLeaderboard: LeaderboardEntry[];
   workoutLeaderboards: WorkoutLeaderboard[];
+  teamOverallLeaderboard?: TeamLeaderboardEntry[];
+  teamWorkoutLeaderboards?: TeamWorkoutLeaderboard[];
 }
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
@@ -71,10 +107,33 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       allUserIds.map(async (userId) => {
         const user = await getUser(userId);
         console.log(`Fetching user ${userId}:`, user); // Debug log
+
+        // Get team information if this is a team event
+        let teamId: string | undefined;
+        let teamName: string | undefined;
+
+        if (event.isTeamEvent) {
+          // Find the participation record for this user in this event
+          const participation = participations.find((p) => p.userId === userId);
+          console.log(`User ${userId} participation:`, participation); // Debug log
+          if (participation?.teamId) {
+            // Get team details directly
+            const { getTeam } = await import('@/lib/firestore');
+            const team = await getTeam(participation.teamId);
+            console.log(`Team for user ${userId}:`, team); // Debug log
+            if (team) {
+              teamId = team.id;
+              teamName = team.name;
+            }
+          }
+        }
+
         return {
           id: userId,
           name: user?.name || 'Unknown User',
           email: user?.email || 'unknown@example.com',
+          teamId,
+          teamName,
         };
       }),
     );
@@ -93,6 +152,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             email: participant?.email || 'unknown@example.com',
             score: score.calculatedScore || 0,
             rank: 0, // Will be calculated below
+            teamId: participant?.teamId,
+            teamName: participant?.teamName,
           };
         })
         .sort((a, b) => b.score - a.score); // Sort by score descending
@@ -149,6 +210,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         totalScore,
         workoutScores,
         rank: 0, // Will be calculated below
+        teamId: participant.teamId,
+        teamName: participant.teamName,
       };
     });
 
@@ -158,11 +221,113 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       entry.rank = index + 1;
     });
 
+    // Calculate team leaderboards if this is a team event
+    let teamOverallLeaderboard: TeamLeaderboardEntry[] | undefined;
+    let teamWorkoutLeaderboards: TeamWorkoutLeaderboard[] | undefined;
+
+    if (event.isTeamEvent) {
+      const teams = await getTeamsByEvent(eventId);
+
+      // Calculate team workout leaderboards
+      teamWorkoutLeaderboards = await Promise.all(
+        activities.map(async (activity) => {
+          const teamScores: {
+            teamId: string;
+            teamName: string;
+            score: number;
+            rank: number;
+          }[] = [];
+
+          for (const team of teams) {
+            const teamMembers = await getTeamMembers(team.id);
+            const teamScore = calculateTeamScore(
+              scores,
+              teamMembers,
+              team,
+              activity.id,
+              event.teamScoringMethod || 'SUM',
+            );
+
+            if (teamScore) {
+              teamScores.push({
+                teamId: team.id,
+                teamName: team.name,
+                score: teamScore.totalScore,
+                rank: 0, // Will be calculated below
+              });
+            }
+          }
+
+          // Sort by score and assign ranks
+          teamScores.sort((a, b) => b.score - a.score);
+          teamScores.forEach((entry, index) => {
+            entry.rank = index + 1;
+          });
+
+          return {
+            activityId: activity.id,
+            activityName: activity.name,
+            entries: teamScores,
+          };
+        }),
+      );
+
+      // Calculate team overall leaderboard
+      const teamOverallScores: TeamLeaderboardEntry[] = [];
+
+      for (const team of teams) {
+        const teamMembers = await getTeamMembers(team.id);
+        const teamOverallScore = calculateTeamOverallScore(
+          scores,
+          teamMembers,
+          team,
+          activities,
+          event.teamScoringMethod || 'SUM',
+        );
+
+        if (teamOverallScore) {
+          // Add workout scores with ranks
+          for (const activity of activities) {
+            const workoutLeaderboard = teamWorkoutLeaderboards.find(
+              (wl) => wl.activityId === activity.id,
+            );
+            const rank = workoutLeaderboard?.entries.find((e) => e.teamId === team.id)?.rank || 0;
+
+            teamOverallScore.workoutScores[activity.id] = {
+              score: teamOverallScore.workoutScores[activity.id]?.score || 0,
+              rank,
+              activityName: activity.name,
+            };
+          }
+
+          teamOverallScores.push({
+            teamId: team.id,
+            teamName: team.name,
+            totalScore: teamOverallScore.totalScore,
+            workoutScores: teamOverallScore.workoutScores,
+            rank: 0, // Will be calculated below
+          });
+        }
+      }
+
+      // Sort and rank team overall scores
+      teamOverallScores.sort((a, b) => b.totalScore - a.totalScore);
+      teamOverallScores.forEach((entry, index) => {
+        entry.rank = index + 1;
+      });
+
+      teamOverallLeaderboard = teamOverallScores;
+    }
+
     const leaderboardData: LeaderboardData = {
       eventId,
       eventName: event.name,
+      isTeamEvent: event.isTeamEvent,
+      teamScoringMethod: event.teamScoringMethod,
       overallLeaderboard,
       workoutLeaderboards,
+      teamOverallLeaderboard,
+      teamWorkoutLeaderboards,
     };
 
     return NextResponse.json(leaderboardData);

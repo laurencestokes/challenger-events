@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, description, startDate, endDate } = body;
+    const { name, description, startDate, endDate, isTeamEvent, teamScoringMethod, maxTeamSize } =
+      body;
 
     if (!name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
@@ -51,6 +52,9 @@ export async function POST(request: NextRequest) {
       endDate: endDate ? new Date(endDate) : undefined,
       adminIds: [user.id],
       status: 'DRAFT',
+      isTeamEvent: isTeamEvent ?? true, // Default to true
+      teamScoringMethod: isTeamEvent ? teamScoringMethod : undefined,
+      maxTeamSize: isTeamEvent ? maxTeamSize : undefined,
     });
 
     return NextResponse.json(event);

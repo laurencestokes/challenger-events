@@ -83,7 +83,16 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const body = await request.json();
-    const { name, description, startDate, endDate, status } = body;
+    const {
+      name,
+      description,
+      startDate,
+      endDate,
+      status,
+      isTeamEvent,
+      teamScoringMethod,
+      maxTeamSize,
+    } = body;
 
     const updates: Partial<Event> = {};
     if (name !== undefined) updates.name = name;
@@ -91,6 +100,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (startDate !== undefined) updates.startDate = startDate ? new Date(startDate) : undefined;
     if (endDate !== undefined) updates.endDate = endDate ? new Date(endDate) : undefined;
     if (status !== undefined) updates.status = status;
+    if (isTeamEvent !== undefined) updates.isTeamEvent = isTeamEvent;
+    if (teamScoringMethod !== undefined) updates.teamScoringMethod = teamScoringMethod;
+    if (maxTeamSize !== undefined) updates.maxTeamSize = maxTeamSize;
 
     const updatedEvent = await updateEvent(params.id, updates);
 

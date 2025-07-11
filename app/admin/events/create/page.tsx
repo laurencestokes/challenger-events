@@ -15,6 +15,9 @@ export default function CreateEvent() {
   const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [isTeamEvent, setIsTeamEvent] = useState(true);
+  const [teamScoringMethod, setTeamScoringMethod] = useState<'SUM' | 'AVERAGE' | 'BEST'>('SUM');
+  const [maxTeamSize, setMaxTeamSize] = useState<number>(4);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +30,9 @@ export default function CreateEvent() {
         description: description || undefined,
         startDate: startDate ? new Date(startDate).toISOString() : undefined,
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
+        isTeamEvent,
+        teamScoringMethod: isTeamEvent ? teamScoringMethod : undefined,
+        maxTeamSize: isTeamEvent ? maxTeamSize : undefined,
       };
 
       await api.post('/api/events', eventData);
@@ -135,6 +141,74 @@ export default function CreateEvent() {
                     value={endDate}
                     onChange={handleInputChange}
                   />
+                </div>
+              </div>
+
+              {/* Team Event Settings */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  Team Competition Settings
+                </h3>
+
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="isTeamEvent"
+                      checked={isTeamEvent}
+                      onChange={(e) => setIsTeamEvent(e.target.checked)}
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    />
+                    <label
+                      htmlFor="isTeamEvent"
+                      className="ml-2 block text-sm text-gray-900 dark:text-white"
+                    >
+                      Enable team competition
+                    </label>
+                  </div>
+
+                  {isTeamEvent && (
+                    <div className="space-y-4 pl-6 border-l-2 border-gray-200 dark:border-gray-700">
+                      <div>
+                        <label
+                          htmlFor="teamScoringMethod"
+                          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >
+                          Team Scoring Method
+                        </label>
+                        <select
+                          id="teamScoringMethod"
+                          value={teamScoringMethod}
+                          onChange={(e) =>
+                            setTeamScoringMethod(e.target.value as 'SUM' | 'AVERAGE' | 'BEST')
+                          }
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                        >
+                          <option value="SUM">Sum of all member scores</option>
+                          <option value="AVERAGE">Average of member scores</option>
+                          <option value="BEST">Best individual score</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="maxTeamSize"
+                          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >
+                          Maximum Team Size
+                        </label>
+                        <input
+                          type="number"
+                          id="maxTeamSize"
+                          min="2"
+                          max="10"
+                          value={maxTeamSize}
+                          onChange={(e) => setMaxTeamSize(Number(e.target.value))}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

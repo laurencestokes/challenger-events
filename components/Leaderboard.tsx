@@ -16,6 +16,8 @@ interface LeaderboardEntry {
     };
   };
   rank: number;
+  teamId?: string;
+  teamName?: string;
 }
 
 interface WorkoutLeaderboard {
@@ -27,14 +29,45 @@ interface WorkoutLeaderboard {
     email: string;
     score: number;
     rank: number;
+    teamId?: string;
+    teamName?: string;
+  }[];
+}
+
+interface TeamLeaderboardEntry {
+  teamId: string;
+  teamName: string;
+  totalScore: number;
+  workoutScores: {
+    [activityId: string]: {
+      score: number;
+      rank: number;
+      activityName: string;
+    };
+  };
+  rank: number;
+}
+
+interface TeamWorkoutLeaderboard {
+  activityId: string;
+  activityName: string;
+  entries: {
+    teamId: string;
+    teamName: string;
+    score: number;
+    rank: number;
   }[];
 }
 
 interface LeaderboardData {
   eventId: string;
   eventName: string;
+  isTeamEvent: boolean;
+  teamScoringMethod?: 'SUM' | 'AVERAGE' | 'BEST';
   overallLeaderboard: LeaderboardEntry[];
   workoutLeaderboards: WorkoutLeaderboard[];
+  teamOverallLeaderboard?: TeamLeaderboardEntry[];
+  teamWorkoutLeaderboards?: TeamWorkoutLeaderboard[];
 }
 
 interface LeaderboardProps {
@@ -108,6 +141,16 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
       id: workout.activityId,
       name: workout.activityName,
     })),
+    // Add team leaderboards if this is a team event
+    ...(leaderboardData.isTeamEvent
+      ? [
+          { id: 'team-overall', name: 'Team Overall' },
+          ...(leaderboardData.teamWorkoutLeaderboards || []).map((workout) => ({
+            id: `team-${workout.activityId}`,
+            name: `Team ${workout.activityName}`,
+          })),
+        ]
+      : []),
   ];
 
   const renderOverallLeaderboard = () => (
@@ -125,7 +168,7 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                   Rank
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Competitor
+                  {leaderboardData.isTeamEvent ? 'Competitor / Team' : 'Competitor'}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Total Score
@@ -157,6 +200,11 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                         {entry.name}
                       </div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">{entry.email}</div>
+                      {entry.teamId && entry.teamName && (
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          Team: {entry.teamName}
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -213,7 +261,7 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                     Rank
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Competitor
+                    {leaderboardData.isTeamEvent ? 'Competitor / Team' : 'Competitor'}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Score
@@ -238,6 +286,163 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
                           {entry.email}
+                        </div>
+                        {entry.teamId && entry.teamName && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Team: {entry.teamName}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-bold text-gray-900 dark:text-white">
+                        {entry.score ? entry.score.toFixed(1) : '0.0'}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderTeamOverallLeaderboard = () => {
+    if (!leaderboardData.teamOverallLeaderboard) return null;
+
+    return (
+      <div className="space-y-4">
+        {leaderboardData.teamOverallLeaderboard.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500 dark:text-gray-400">No team scores submitted yet.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Rank
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Team
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Total Score
+                  </th>
+                  {leaderboardData.workoutLeaderboards.map((workout) => (
+                    <th
+                      key={workout.activityId}
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                    >
+                      {workout.activityName}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {leaderboardData.teamOverallLeaderboard.map((entry) => (
+                  <tr key={entry.teamId} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <span className="text-lg mr-2">{getRankIcon(entry.rank)}</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                          {entry.rank}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {entry.teamName}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          Scoring: {leaderboardData.teamScoringMethod || 'SUM'}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-bold text-gray-900 dark:text-white">
+                        {entry.totalScore ? entry.totalScore.toFixed(1) : '0.0'}
+                      </div>
+                    </td>
+                    {leaderboardData.workoutLeaderboards.map((workout) => {
+                      const workoutScore = entry.workoutScores[workout.activityId];
+                      return (
+                        <td key={workout.activityId} className="px-6 py-4 whitespace-nowrap">
+                          {workoutScore ? (
+                            <div className="text-sm">
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                {workoutScore.score ? workoutScore.score.toFixed(1) : '0.0'}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                Rank: {workoutScore.rank}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-sm text-gray-400 dark:text-gray-500">-</div>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderTeamWorkoutLeaderboard = (workoutId: string) => {
+    const teamWorkoutId = workoutId.replace('team-', '');
+    const workout = leaderboardData.teamWorkoutLeaderboards?.find(
+      (w) => w.activityId === teamWorkoutId,
+    );
+    if (!workout) return null;
+
+    return (
+      <div className="space-y-4">
+        {workout.entries.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500 dark:text-gray-400">
+              No team scores submitted for this workout yet.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Rank
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Team
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Score
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {workout.entries.map((entry) => (
+                  <tr key={entry.teamId} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <span className="text-lg mr-2">{getRankIcon(entry.rank)}</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                          {entry.rank}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {entry.teamName}
                         </div>
                       </div>
                     </td>
@@ -283,7 +488,13 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
 
       {/* Tab Content */}
       <div className="p-6">
-        {activeTab === 'overall' ? renderOverallLeaderboard() : renderWorkoutLeaderboard(activeTab)}
+        {activeTab === 'overall'
+          ? renderOverallLeaderboard()
+          : activeTab === 'team-overall'
+            ? renderTeamOverallLeaderboard()
+            : activeTab.startsWith('team-')
+              ? renderTeamWorkoutLeaderboard(activeTab)
+              : renderWorkoutLeaderboard(activeTab)}
       </div>
     </div>
   );

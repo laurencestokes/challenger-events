@@ -38,6 +38,9 @@ export interface Event {
   startDate?: Date;
   endDate?: Date;
   adminIds: string[];
+  isTeamEvent: boolean; // Whether this event supports team competition
+  teamScoringMethod?: 'SUM' | 'AVERAGE' | 'BEST'; // How team scores are calculated
+  maxTeamSize?: number; // Maximum number of members per team
   createdAt: Date;
   updatedAt: Date;
 }
@@ -88,6 +91,7 @@ export interface Participation {
   id: string;
   userId: string;
   eventId: string;
+  teamId?: string; // Optional team participation
   joinedAt: Date;
 }
 
@@ -360,4 +364,116 @@ export const checkUserParticipation = async (userId: string, eventId: string) =>
   );
   const querySnapshot = await getDocs(q);
   return !querySnapshot.empty;
+};
+
+export const getUserParticipation = async (userId: string, eventId: string) => {
+  const participationsRef = collection(db, 'participations');
+  const q = query(
+    participationsRef,
+    where('userId', '==', userId),
+    where('eventId', '==', eventId),
+  );
+  const querySnapshot = await getDocs(q);
+  if (!querySnapshot.empty) {
+    const doc = querySnapshot.docs[0];
+    return { id: doc.id, ...doc.data() } as Participation;
+  }
+  return null;
+};
+
+export const updateParticipation = async (
+  participationId: string,
+  updates: Partial<Participation>,
+) => {
+  const participationRef = doc(db, 'participations', participationId);
+  await updateDoc(participationRef, {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
+// Team functions
+export const createTeam = async (teamData: Omit<Team, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const teamRef = collection(db, 'teams');
+  const docRef = await addDoc(teamRef, {
+    ...teamData,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...teamData };
+};
+
+export const getTeam = async (teamId: string) => {
+  const teamRef = doc(db, 'teams', teamId);
+  const teamSnap = await getDoc(teamRef);
+  if (teamSnap.exists()) {
+    return { id: teamSnap.id, ...teamSnap.data() } as Team;
+  }
+  return null;
+};
+
+export const getTeamsByEvent = async (eventId: string) => {
+  // Get all participations for this event that have teamId
+  const participationsRef = collection(db, 'participations');
+  const q = query(participationsRef, where('eventId', '==', eventId));
+  const querySnapshot = await getDocs(q);
+
+  const teamIds = [
+    ...new Set(
+      querySnapshot.docs.map((doc) => doc.data().teamId).filter((teamId) => teamId !== undefined),
+    ),
+  ];
+
+  if (teamIds.length === 0) return [];
+
+  // Fetch team details
+  const teams: Team[] = [];
+  for (const teamId of teamIds) {
+    const team = await getTeam(teamId);
+    if (team) {
+      teams.push(team);
+    }
+  }
+
+  return teams;
+};
+
+export const addTeamMember = async (
+  teamId: string,
+  userId: string,
+  role: 'CAPTAIN' | 'MEMBER' = 'MEMBER',
+) => {
+  const teamMemberRef = collection(db, 'teamMembers');
+  const docRef = await addDoc(teamMemberRef, {
+    teamId,
+    userId,
+    role,
+    joinedAt: serverTimestamp(),
+  });
+  return { id: docRef.id, teamId, userId, role };
+};
+
+export const getTeamMembers = async (teamId: string) => {
+  const teamMembersRef = collection(db, 'teamMembers');
+  const q = query(teamMembersRef, where('teamId', '==', teamId));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as TeamMember[];
+};
+
+export const getUserTeams = async (userId: string) => {
+  const teamMembersRef = collection(db, 'teamMembers');
+  const q = query(teamMembersRef, where('userId', '==', userId));
+  const querySnapshot = await getDocs(q);
+
+  const teamIds = querySnapshot.docs.map((doc) => doc.data().teamId);
+  const teams: Team[] = [];
+
+  for (const teamId of teamIds) {
+    const team = await getTeam(teamId);
+    if (team) {
+      teams.push(team);
+    }
+  }
+
+  return teams;
 };
