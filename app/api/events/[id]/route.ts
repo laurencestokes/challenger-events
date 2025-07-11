@@ -28,12 +28,17 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
         // Calculate total score if there are scores
         const totalScore =
-          scores.length > 0 ? scores.reduce((sum, score) => sum + score.value, 0) : undefined;
+          scores.length > 0
+            ? scores.reduce((sum, score) => sum + score.calculatedScore, 0)
+            : undefined;
 
         return {
-          id: participation.id,
+          id: participation.userId,
           name: user?.name || 'Unknown User',
           email: user?.email || 'unknown@example.com',
+          bodyweight: user?.bodyweight,
+          age: user?.age,
+          sex: user?.sex,
           joinedAt: participation.joinedAt,
           score: totalScore,
         };

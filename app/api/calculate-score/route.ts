@@ -1,86 +1,108 @@
 import { NextResponse } from 'next/server';
-import { ChallengerData } from '@challengerco/challenger-data';
-
-// Initialize the challenger data instance
-const challengerData = new ChallengerData();
+import { getScoringSystemById } from '@/constants/scoringSystems';
+import {
+  calculateSquatScoreNew,
+  calculateBenchScoreNew,
+  calculateDeadliftScoreNew,
+  calculateRowingScoreNew,
+  convertSex,
+} from '@/utils/scoring';
 
 function timeToSeconds(timeStr: string): number {
   const [minutes, seconds] = timeStr.split(':').map(Number);
   return minutes * 60 + seconds;
 }
 
+function timeToWatts(timeStr: string): number {
+  const timeSeconds = timeToSeconds(timeStr);
+  // Note: This would need to be implemented based on your ChallengerData package
+  // For now, using a simple conversion
+  return 500 / timeSeconds; // Simple watts approximation
+}
+
 export async function POST(request: Request) {
   const data = await request.json();
+  const { scoringSystemId, value, bodyweight, age, sex } = data;
 
-  // Calculate powerlifting scores using the new package
-  const squatResult = challengerData.squatScore(data.squat, data.sex, data.age, data.bodyMassKg);
+  if (!scoringSystemId || value === undefined) {
+    return NextResponse.json(
+      { error: 'Scoring system ID and value are required' },
+      { status: 400 },
+    );
+  }
 
-  const benchResult = challengerData.benchScore(data.bench, data.sex, data.age, data.bodyMassKg);
+  const scoringSystem = getScoringSystemById(scoringSystemId);
+  if (!scoringSystem) {
+    return NextResponse.json({ error: 'Scoring system not found' }, { status: 404 });
+  }
 
-  const deadliftResult = challengerData.deadliftScore(
-    data.deadlift,
-    data.sex,
-    data.age,
-    data.bodyMassKg,
-  );
+  try {
+    let result;
 
-  // Calculate rowing score using the new package
-  // Convert time to pace (seconds per 500m), then to watts
-  const rowTimeSeconds = timeToSeconds(data.rowTime);
-  const rowPace = rowTimeSeconds * 2; // Convert 2km time to 500m pace
-  const rowWatts = ChallengerData.paceToWatts(rowPace);
-  const rowResult = challengerData.rowingScore(rowWatts, data.sex, data.age, data.bodyMassKg);
+    // Convert sex format if needed
+    const sexConverted = convertSex(sex as 'M' | 'F');
 
-  // Calculate ski score (using rowing as proxy for now - you may need to add ski data to the package)
-  const skiTimeSeconds = timeToSeconds(data.skiTime);
-  const skiPace = skiTimeSeconds; // Assuming 500m ski time
-  const skiWatts = ChallengerData.paceToWatts(skiPace);
-  const skiResult = challengerData.rowingScore(skiWatts, data.sex, data.age, data.bodyMassKg);
+    switch (scoringSystem.calculationFunction) {
+      case 'squatScore':
+        result = calculateSquatScoreNew(value, sexConverted, age, bodyweight);
+        break;
+      case 'benchScore':
+        result = calculateBenchScoreNew(value, sexConverted, age, bodyweight);
+        break;
+      case 'deadliftScore':
+        result = calculateDeadliftScoreNew(value, sexConverted, age, bodyweight);
+        break;
+      case 'rowingScore':
+        // For rowing, convert time to watts first
+        const rowingWatts = timeToWatts(value);
+        result = calculateRowingScoreNew(rowingWatts, sexConverted, age, bodyweight);
+        break;
+      case 'customWeight':
+        // Simple weight-based scoring (no age/sex adjustments)
+        result = { score: value, percentile: 50 };
+        break;
+      case 'customTime':
+        // Time-based scoring (faster is better)
+        const timeSeconds = timeToSeconds(value);
+        result = { score: 1000 / timeSeconds, percentile: 50 }; // Simple inverse scoring
+        break;
+      case 'customReps':
+        // Rep-based scoring (more reps is better)
+        result = { score: value, percentile: 50 };
+        break;
+      case 'customDistance':
+        // Distance-based scoring (longer distance is better)
+        result = { score: value, percentile: 50 };
+        break;
+      case 'rowingDistance':
+        // For rowing distance, we can use a simple scoring based on distance
+        // This could be enhanced with more sophisticated calculations
+        result = { score: value, percentile: 50 };
+        break;
+      case 'rowingScoreDistance':
+        // For distance-based rowing, convert distance to equivalent time
+        // Assuming a 2-minute time period, calculate equivalent 500m pace
+        const distanceInMeters = value;
+        const timeInSeconds = 120; // 2 minutes
+        const pacePer500m = (timeInSeconds / distanceInMeters) * 500;
+        const distanceWatts = timeToWatts(pacePer500m.toString());
+        result = calculateRowingScoreNew(distanceWatts, sexConverted, age, bodyweight);
+        break;
+      default:
+        return NextResponse.json({ error: 'Unsupported scoring system' }, { status: 400 });
+    }
 
-  // Calculate run score (using rowing as proxy for now - you may need to add run data to the package)
-  const runTimeSeconds = timeToSeconds(data.runTime);
-  const runPace = runTimeSeconds * 2; // Convert 1500m time to 500m equivalent pace
-  const runWatts = ChallengerData.paceToWatts(runPace);
-  const runResult = challengerData.rowingScore(runWatts, data.sex, data.age, data.bodyMassKg);
-
-  const strengthTotal = (squatResult.score + benchResult.score + deadliftResult.score) / 3;
-  const enduranceTotal = (rowResult.score + skiResult.score + runResult.score) / 3;
-  const overall = (strengthTotal + enduranceTotal) / 2;
-
-  return NextResponse.json({
-    strength: {
-      squat: {
-        score: squatResult.score,
-        percentile: squatResult.percentile,
+    return NextResponse.json({
+      score: result.score,
+      percentile: result.percentile,
+      scoringSystem: {
+        id: scoringSystem.id,
+        name: scoringSystem.name,
+        category: scoringSystem.category,
       },
-      bench: {
-        score: benchResult.score,
-        percentile: benchResult.percentile,
-      },
-      deadlift: {
-        score: deadliftResult.score,
-        percentile: deadliftResult.percentile,
-      },
-      total: strengthTotal,
-    },
-    endurance: {
-      row: {
-        score: rowResult.score,
-        percentile: rowResult.percentile,
-        watts: rowWatts,
-      },
-      ski: {
-        score: skiResult.score,
-        percentile: skiResult.percentile,
-        watts: skiWatts,
-      },
-      run: {
-        score: runResult.score,
-        percentile: runResult.percentile,
-        watts: runWatts,
-      },
-      total: enduranceTotal,
-    },
-    overall,
-  });
+    });
+  } catch (error) {
+    console.error('Error calculating score:', error);
+    return NextResponse.json({ error: 'Failed to calculate score' }, { status: 500 });
+  }
 }

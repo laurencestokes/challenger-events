@@ -6,6 +6,11 @@ import { useAuth } from '../../../../contexts/AuthContext';
 import { api } from '../../../../lib/api-client';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import AddWorkoutModal from '@/components/AddWorkoutModal';
+import EditWorkoutModal from '@/components/EditWorkoutModal';
+import ConfirmModal from '@/components/ConfirmModal';
+import Leaderboard from '@/components/Leaderboard';
+import ScoreSubmissionModal from '@/components/ScoreSubmissionModal';
 
 interface Event {
   id: string;
@@ -17,6 +22,31 @@ interface Event {
   createdAt: unknown;
   description?: string;
   participants?: Participant[];
+}
+
+interface Activity {
+  id: string;
+  eventId: string;
+  name: string;
+  description?: string;
+  type: 'TIME' | 'REPS' | 'WEIGHT' | 'DISTANCE' | 'CUSTOM';
+  scoringSystemId?: string;
+  unit?: string;
+  order: number;
+  createdAt: Date;
+}
+
+interface ScoringSystem {
+  id: string;
+  name: string;
+  description: string;
+  category: 'STRENGTH' | 'ENDURANCE' | 'MIXED';
+  inputType: 'WEIGHT' | 'TIME' | 'DISTANCE' | 'REPS' | 'CUSTOM';
+  unit?: string;
+  requiresBodyweight: boolean;
+  requiresAge: boolean;
+  requiresSex: boolean;
+  calculationFunction: string;
 }
 
 interface Participant {
@@ -31,16 +61,31 @@ export default function EventDetails() {
   const params = useParams();
   const { user } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [scoringSystems, setScoringSystems] = useState<ScoringSystem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showAddWorkoutModal, setShowAddWorkoutModal] = useState(false);
+  const [showEditWorkoutModal, setShowEditWorkoutModal] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [showScoreSubmissionModal, setShowScoreSubmissionModal] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [leaderboardKey, setLeaderboardKey] = useState(0);
 
   const eventId = params.id as string;
 
   useEffect(() => {
     const fetchEventDetails = async () => {
       try {
-        const eventData = await api.get(`/api/events/${eventId}`);
+        const [eventData, activitiesData, scoringSystemsData] = await Promise.all([
+          api.get(`/api/events/${eventId}`),
+          api.get(`/api/events/${eventId}/activities`),
+          api.get('/api/scoring-systems'),
+        ]);
+
         setEvent(eventData);
+        setActivities(activitiesData);
+        setScoringSystems(scoringSystemsData);
       } catch (error: unknown) {
         console.error('Error fetching event details:', error);
         const errorMessage =
@@ -246,12 +291,20 @@ export default function EventDetails() {
                   </button>
                 )}
                 {event.status === 'ACTIVE' && (
-                  <button
-                    onClick={handleCancelEvent}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-error-600 hover:bg-error-700 transition-colors"
-                  >
-                    Cancel Event
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setShowScoreSubmissionModal(true)}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                    >
+                      Submit Score
+                    </button>
+                    <button
+                      onClick={handleCancelEvent}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-error-600 hover:bg-error-700 transition-colors"
+                    >
+                      Cancel Event
+                    </button>
+                  </>
                 )}
                 <Link
                   href={`/admin/events/${event.id}/edit`}
@@ -356,6 +409,90 @@ export default function EventDetails() {
                   </div>
                 )}
               </div>
+
+              {/* Workouts */}
+              <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Workouts</h2>
+                  <button
+                    onClick={() => setShowAddWorkoutModal(true)}
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                  >
+                    Add Workout
+                  </button>
+                </div>
+                {activities.length > 0 ? (
+                  <div className="space-y-3">
+                    {activities.map((activity) => {
+                      const scoringSystem = scoringSystems.find(
+                        (sys) => sys.id === activity.scoringSystemId,
+                      );
+                      return (
+                        <div
+                          key={activity.id}
+                          className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
+                        >
+                          <div>
+                            <h3 className="font-medium text-gray-900 dark:text-white">
+                              {activity.name}
+                            </h3>
+                            {activity.description && (
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {activity.description}
+                              </p>
+                            )}
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                Type: {activity.type}
+                              </span>
+                              {activity.unit && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  Unit: {activity.unit}
+                                </span>
+                              )}
+                              {scoringSystem && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  Scoring: {scoringSystem.name}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => {
+                                setSelectedActivity(activity);
+                                setShowEditWorkoutModal(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedActivity(activity);
+                                setShowDeleteConfirmModal(true);
+                              }}
+                              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 text-sm"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 dark:text-gray-400">No workouts added yet.</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                      Add workouts to define the exercises and scoring systems for this event.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Leaderboard */}
+              <Leaderboard key={leaderboardKey} eventId={eventId} />
             </div>
 
             {/* Sidebar */}
@@ -412,6 +549,79 @@ export default function EventDetails() {
             </div>
           </div>
         </div>
+
+        {/* Add Workout Modal */}
+        {showAddWorkoutModal && (
+          <AddWorkoutModal
+            eventId={eventId}
+            scoringSystems={scoringSystems}
+            onClose={() => setShowAddWorkoutModal(false)}
+            onWorkoutAdded={(newActivity) => {
+              setActivities([...activities, newActivity]);
+              setShowAddWorkoutModal(false);
+            }}
+          />
+        )}
+
+        {/* Edit Workout Modal */}
+        {showEditWorkoutModal && selectedActivity && (
+          <EditWorkoutModal
+            activity={selectedActivity}
+            eventId={eventId}
+            scoringSystems={scoringSystems}
+            onClose={() => {
+              setShowEditWorkoutModal(false);
+              setSelectedActivity(null);
+            }}
+            onWorkoutUpdated={(updatedActivity) => {
+              setActivities(
+                activities.map((a) => (a.id === updatedActivity.id ? updatedActivity : a)),
+              );
+              setShowEditWorkoutModal(false);
+              setSelectedActivity(null);
+            }}
+          />
+        )}
+
+        {/* Delete Confirmation Modal */}
+        <ConfirmModal
+          isOpen={showDeleteConfirmModal}
+          title="Delete Workout"
+          message={`Are you sure you want to delete "${selectedActivity?.name}"? This action cannot be undone.`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          isDestructive={true}
+          onConfirm={async () => {
+            if (selectedActivity) {
+              try {
+                await api.delete(`/api/events/${eventId}/activities/${selectedActivity.id}`);
+                setActivities(activities.filter((a) => a.id !== selectedActivity.id));
+                setShowDeleteConfirmModal(false);
+                setSelectedActivity(null);
+              } catch (error) {
+                console.error('Error deleting activity:', error);
+                setError('Failed to delete workout');
+                setShowDeleteConfirmModal(false);
+                setSelectedActivity(null);
+              }
+            }
+          }}
+          onCancel={() => {
+            setShowDeleteConfirmModal(false);
+            setSelectedActivity(null);
+          }}
+        />
+
+        {/* Score Submission Modal */}
+        <ScoreSubmissionModal
+          eventId={eventId}
+          isOpen={showScoreSubmissionModal}
+          onClose={() => setShowScoreSubmissionModal(false)}
+          onScoreSubmitted={() => {
+            // Refresh the leaderboard by changing the key
+            setLeaderboardKey((prev) => prev + 1);
+          }}
+        />
       </div>
     </ProtectedRoute>
   );

@@ -8,7 +8,6 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy,
   limit,
   onSnapshot,
   serverTimestamp,
@@ -23,6 +22,9 @@ export interface User {
   name?: string;
   email: string;
   role: 'SUPER_ADMIN' | 'ADMIN' | 'COMPETITOR' | 'VIEWER';
+  bodyweight?: number;
+  age?: number;
+  sex?: 'M' | 'F';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -46,10 +48,12 @@ export interface Activity {
   name: string;
   description?: string;
   type: 'TIME' | 'REPS' | 'WEIGHT' | 'DISTANCE' | 'CUSTOM';
+  scoringSystemId?: string; // Reference to scoring system
   maxScore?: number;
   unit?: string;
   order: number;
   createdAt: Date;
+  updatedAt?: Date;
 }
 
 export interface Score {
@@ -57,7 +61,8 @@ export interface Score {
   userId: string;
   eventId: string;
   activityId: string;
-  value: number;
+  rawValue: number; // The raw input value (e.g., 180kg)
+  calculatedScore: number; // The calculated score from the scoring system
   notes?: string;
   submittedAt: Date;
   updatedAt: Date;
@@ -209,18 +214,40 @@ export const getEventsByParticipant = async (userId: string) => {
 // Activity functions
 export const createActivity = async (activityData: Omit<Activity, 'id' | 'createdAt'>) => {
   const activityRef = collection(db, 'activities');
+
+  // Filter out undefined values to avoid Firestore errors
+  const cleanActivityData = Object.fromEntries(
+    Object.entries(activityData).filter(([, value]) => value !== undefined),
+  );
+
   const docRef = await addDoc(activityRef, {
-    ...activityData,
+    ...cleanActivityData,
     createdAt: serverTimestamp(),
   });
-  return { id: docRef.id, ...activityData };
+  return { id: docRef.id, ...activityData, createdAt: new Date() };
 };
 
 export const getActivitiesByEvent = async (eventId: string) => {
   const activitiesRef = collection(db, 'activities');
-  const q = query(activitiesRef, where('eventId', '==', eventId), orderBy('order', 'asc'));
+  const q = query(activitiesRef, where('eventId', '==', eventId));
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Activity[];
+  const activities = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Activity[];
+
+  // Sort by order on the client side to avoid index requirement
+  return activities.sort((a, b) => (a.order || 0) - (b.order || 0));
+};
+
+export const updateActivity = async (activityId: string, updates: Partial<Activity>) => {
+  const activityRef = doc(db, 'activities', activityId);
+  await updateDoc(activityRef, {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
+export const deleteActivity = async (activityId: string) => {
+  const activityRef = doc(db, 'activities', activityId);
+  await deleteDoc(activityRef);
 };
 
 // Score functions
