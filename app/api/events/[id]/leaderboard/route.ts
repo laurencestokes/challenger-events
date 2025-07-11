@@ -98,7 +98,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const participationUserIds = participations.map((p) => p.userId);
 
     // Get all unique user IDs from scores
-    const scoreUserIds = [...new Set(scores.map((score) => score.userId))];
+    const scoreUserIds = Array.from(new Set(scores.map((score) => score.userId)));
 
     // Combine both sets of user IDs
     const allUserIds = Array.from(new Set([...participationUserIds, ...scoreUserIds]));

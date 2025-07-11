@@ -26,7 +26,9 @@ export async function GET(request: NextRequest) {
 
         // Calculate total score
         const totalScore =
-          scores.length > 0 ? scores.reduce((sum, score) => sum + score.value, 0) : undefined;
+          scores.length > 0
+            ? scores.reduce((sum, score) => sum + (score.calculatedScore || 0), 0)
+            : undefined;
 
         // Get participation details (we'll need to fetch this separately)
         // For now, we'll use the event creation date as joined date

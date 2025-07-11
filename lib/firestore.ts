@@ -418,11 +418,11 @@ export const getTeamsByEvent = async (eventId: string) => {
   const q = query(participationsRef, where('eventId', '==', eventId));
   const querySnapshot = await getDocs(q);
 
-  const teamIds = [
-    ...new Set(
+  const teamIds = Array.from(
+    new Set(
       querySnapshot.docs.map((doc) => doc.data().teamId).filter((teamId) => teamId !== undefined),
     ),
-  ];
+  );
 
   if (teamIds.length === 0) return [];
 

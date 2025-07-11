@@ -63,7 +63,7 @@ export default function TeamDebug({ eventId }: TeamDebugProps) {
     setIsLoading(true);
     setMessage('');
     try {
-      const data = await api.post(`/api/events/${eventId}/fix-team-participation`);
+      const data = await api.post(`/api/events/${eventId}/fix-team-participation`, {});
       setMessageType('success');
       setMessage(data.message);
       // Refresh debug data
