@@ -101,7 +101,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const scoreUserIds = [...new Set(scores.map((score) => score.userId))];
 
     // Combine both sets of user IDs
-    const allUserIds = [...new Set([...participationUserIds, ...scoreUserIds])];
+    const allUserIds = Array.from(new Set([...participationUserIds, ...scoreUserIds]));
 
     const participants = await Promise.all(
       allUserIds.map(async (userId) => {
