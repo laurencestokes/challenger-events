@@ -18,7 +18,9 @@ export async function GET(request: Request) {
     }
 
     if (inputType) {
-      systems = getScoringSystemsByInputType(inputType as 'WEIGHT' | 'TIME' | 'DISTANCE' | 'REPS' | 'CUSTOM');
+      systems = getScoringSystemsByInputType(
+        inputType as 'WEIGHT' | 'TIME' | 'DISTANCE' | 'REPS' | 'CUSTOM',
+      );
     }
 
     return NextResponse.json(systems);

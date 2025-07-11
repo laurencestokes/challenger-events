@@ -135,7 +135,11 @@ export default function AddWorkoutModal({
               <select
                 id="type"
                 value={type}
-                onChange={(e) => handleTypeChange(e.target.value as 'TIME' | 'REPS' | 'WEIGHT' | 'DISTANCE' | 'CUSTOM')}
+                onChange={(e) =>
+                  handleTypeChange(
+                    e.target.value as 'TIME' | 'REPS' | 'WEIGHT' | 'DISTANCE' | 'CUSTOM',
+                  )
+                }
                 required
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
               >

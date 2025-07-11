@@ -183,10 +183,10 @@ export default function ScoreSubmissionModal({
                 {(!competitorDetails.bodyweight ||
                   !competitorDetails.age ||
                   !competitorDetails.sex) && (
-                    <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                      ⚠️ Missing competitor details may affect scoring calculation
-                    </p>
-                  )}
+                  <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                    ⚠️ Missing competitor details may affect scoring calculation
+                  </p>
+                )}
               </div>
             )}
 
