@@ -26,6 +26,9 @@ export default function ProfilePage() {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
+    bodyweight: user?.bodyweight?.toString() || '',
+    age: user?.age?.toString() || '',
+    sex: user?.sex || '',
   });
 
   useEffect(() => {
@@ -47,7 +50,7 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -57,8 +60,28 @@ export default function ProfilePage() {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement profile update functionality
-    setIsEditing(false);
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const updateData = {
+        name: formData.name,
+        bodyweight: formData.bodyweight ? Number(formData.bodyweight) : undefined,
+        age: formData.age ? Number(formData.age) : undefined,
+        sex: formData.sex || undefined,
+      };
+
+      await api.put('/api/user/profile', updateData);
+      setIsEditing(false);
+      // Refresh user data
+      window.location.reload();
+    } catch (error: unknown) {
+      console.error('Error updating profile:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update profile';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const formatDate = (dateString: unknown) => {
@@ -204,6 +227,79 @@ export default function ProfilePage() {
                           Email cannot be changed
                         </p>
                       </div>
+
+                      {/* Competitor Stats */}
+                      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                          Competitor Stats
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                          These details help calculate accurate scores for workouts that require
+                          age, sex, and bodyweight adjustments.
+                        </p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label
+                              htmlFor="bodyweight"
+                              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                            >
+                              Bodyweight (kg)
+                            </label>
+                            <input
+                              type="number"
+                              id="bodyweight"
+                              name="bodyweight"
+                              value={formData.bodyweight}
+                              onChange={handleInputChange}
+                              min="0"
+                              step="0.1"
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-800"
+                              placeholder="e.g., 75.5"
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              htmlFor="age"
+                              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                            >
+                              Age
+                            </label>
+                            <input
+                              type="number"
+                              id="age"
+                              name="age"
+                              value={formData.age}
+                              onChange={handleInputChange}
+                              min="0"
+                              max="120"
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-800"
+                              placeholder="e.g., 25"
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              htmlFor="sex"
+                              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                            >
+                              Sex
+                            </label>
+                            <select
+                              id="sex"
+                              name="sex"
+                              value={formData.sex}
+                              onChange={handleInputChange}
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-800"
+                            >
+                              <option value="">Select...</option>
+                              <option value="M">Male</option>
+                              <option value="F">Female</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
                       <div className="flex space-x-3">
                         <button
                           type="submit"
@@ -247,6 +343,41 @@ export default function ProfilePage() {
                           User ID
                         </h3>
                         <p className="text-gray-900 dark:text-white font-mono text-sm">{user.id}</p>
+                      </div>
+
+                      {/* Competitor Stats Display */}
+                      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                          Competitor Stats
+                        </h3>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              Bodyweight
+                            </span>
+                            <p className="text-sm text-gray-900 dark:text-white">
+                              {user.bodyweight ? `${user.bodyweight}kg` : '--'}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">Age</span>
+                            <p className="text-sm text-gray-900 dark:text-white">
+                              {user.age || '--'}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">Sex</span>
+                            <p className="text-sm text-gray-900 dark:text-white">
+                              {user.sex === 'M' ? 'Male' : user.sex === 'F' ? 'Female' : '--'}
+                            </p>
+                          </div>
+                        </div>
+                        {(!user.bodyweight || !user.age || !user.sex) && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            💡 Click "Edit" above to add your competitor stats for more accurate
+                            scoring
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}
@@ -371,6 +502,38 @@ export default function ProfilePage() {
                       </span>
                     </div>
                   </div>
+                </div>
+
+                {/* Competitor Stats Summary */}
+                <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    Competitor Stats
+                  </h2>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Bodyweight</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        {user.bodyweight ? `${user.bodyweight}kg` : '--'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Age</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        {user.age || '--'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Sex</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        {user.sex === 'M' ? 'Male' : user.sex === 'F' ? 'Female' : '--'}
+                      </span>
+                    </div>
+                  </div>
+                  {(!user.bodyweight || !user.age || !user.sex) && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
+                      💡 Add your stats for better scoring
+                    </p>
+                  )}
                 </div>
 
                 {/* Account Security */}
