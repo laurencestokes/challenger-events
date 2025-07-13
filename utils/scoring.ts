@@ -3,6 +3,17 @@ import { ChallengerData } from '@challengerco/challenger-data';
 // Initialize the challenger data instance
 const challengerData = new ChallengerData();
 
+// Export the paceToWatts function using the static method
+export const paceToWatts = (pace: number): number => {
+  try {
+    return ChallengerData.paceToWatts(pace);
+  } catch (error) {
+    console.error('Error in paceToWatts:', error);
+    // Fallback implementation
+    return Math.pow(2.8 / (pace / 500), 3);
+  }
+};
+
 // Convert sex format from 'M'/'F' to 'male'/'female'
 export function convertSex(sex: 'M' | 'F'): 'male' | 'female' {
   return sex === 'M' ? 'male' : 'female';
@@ -157,5 +168,11 @@ export function calculateRowingScoreNew(
   age: number,
   weight: number,
 ) {
-  return challengerData.rowingScore(watts, sex, age, weight);
+  try {
+    return challengerData.rowingScore(watts, sex, age, weight);
+  } catch (error) {
+    console.error('Error in calculateRowingScoreNew:', error);
+    // Return a fallback result
+    return { score: watts, percentile: 50 };
+  }
 }

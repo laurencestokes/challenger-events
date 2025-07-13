@@ -4,21 +4,17 @@ import {
   calculateSquatScoreNew,
   calculateBenchScoreNew,
   calculateDeadliftScoreNew,
-  calculateRowingScoreNew,
   convertSex,
+  paceToWatts,
 } from '@/utils/scoring';
+import { ChallengerData } from '@challengerco/challenger-data';
+
+const challengerData = new ChallengerData();
 import { convertFirestoreTimestamp } from '@/lib/utils';
 
 function timeToSeconds(timeStr: string): number {
   const [minutes, seconds] = timeStr.split(':').map(Number);
   return minutes * 60 + seconds;
-}
-
-function timeToWatts(timeStr: string): number {
-  const timeSeconds = timeToSeconds(timeStr);
-  // Note: This would need to be implemented based on your ChallengerData package
-  // For now, using a simple conversion
-  return 500 / timeSeconds; // Simple watts approximation
 }
 
 export async function POST(request: Request) {
@@ -69,21 +65,24 @@ export async function POST(request: Request) {
         break;
       case 'rowingScore':
         // For 500m row, value is in seconds; for others, value may be mm:ss
-        let rowingWatts;
+        let pace;
         if (scoringSystemId === 'rowing_500m') {
-          // Value is already in seconds
-          rowingWatts = 500 / Number(value);
+          // Value is already in seconds - this is the pace per 500m
+          pace = Number(value);
         } else {
-          // Value is mm:ss string
-          rowingWatts = timeToWatts(value);
+          // Value is mm:ss string - for 2km row, convert to pace per 500m
+          const totalTimeSeconds = timeToSeconds(value);
+          pace = totalTimeSeconds / 4; // 2km = 4 x 500m
         }
-        result = calculateRowingScoreNew(rowingWatts, sexConverted, age, bodyweight);
+        // Convert pace to watts, then calculate rowing score
+        const watts = paceToWatts(pace);
+        result = challengerData.rowingScore(watts, sexConverted, age, bodyweight);
         break;
       case 'rowingScoreSeconds':
-        // For 500m row, value is already in seconds, convert to watts
-        const secondsValue = Number(value);
-        const wattsFromSeconds = 500 / secondsValue; // Simple watts approximation
-        result = calculateRowingScoreNew(wattsFromSeconds, sexConverted, age, bodyweight);
+        // For 500m row, value is already in seconds - this is the pace per 500m
+        const paceSeconds = Number(value);
+        const wattsFromSeconds = paceToWatts(paceSeconds);
+        result = challengerData.rowingScore(wattsFromSeconds, sexConverted, age, bodyweight);
         break;
       case 'customWeight':
         // Simple weight-based scoring (no age/sex adjustments)
@@ -113,8 +112,8 @@ export async function POST(request: Request) {
         const distanceInMeters = value;
         const timeInSeconds = 120; // 2 minutes
         const pacePer500m = (timeInSeconds / distanceInMeters) * 500;
-        const distanceWatts = timeToWatts(pacePer500m.toString());
-        result = calculateRowingScoreNew(distanceWatts, sexConverted, age, bodyweight);
+        const distanceWatts = paceToWatts(pacePer500m);
+        result = challengerData.rowingScore(distanceWatts, sexConverted, age, bodyweight);
         break;
       default:
         return NextResponse.json({ error: 'Unsupported scoring system' }, { status: 400 });
@@ -131,6 +130,20 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Error calculating score:', error);
-    return NextResponse.json({ error: 'Failed to calculate score' }, { status: 500 });
+    console.error('Error details:', {
+      scoringSystemId,
+      value,
+      bodyweight,
+      age,
+      sex,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return NextResponse.json(
+      {
+        error: 'Failed to calculate score',
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
+    );
   }
 }
