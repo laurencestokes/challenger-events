@@ -157,10 +157,11 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
                 return (
                   <div
                     key={team.id}
-                    className={`relative flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${isSelected
+                    className={`relative flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                      isSelected
                         ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-md'
                         : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-sm'
-                      }`}
+                    }`}
                     onClick={() => handleSelectTeam(team.id)}
                   >
                     {/* Selection indicator */}
@@ -178,10 +179,11 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
 
                     <div className="flex items-center space-x-4">
                       <div
-                        className={`flex items-center justify-center w-5 h-5 rounded-full border-2 ${isSelected
+                        className={`flex items-center justify-center w-5 h-5 rounded-full border-2 ${
+                          isSelected
                             ? 'border-primary-500 bg-primary-500'
                             : 'border-gray-300 dark:border-gray-600'
-                          }`}
+                        }`}
                       >
                         {isSelected && <div className="w-2 h-2 bg-white rounded-full"></div>}
                       </div>
