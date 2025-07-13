@@ -176,7 +176,10 @@ export default function ScoreSubmissionModal({
                             const birthDate = convertFirestoreTimestamp(
                               competitorDetails.dateOfBirth,
                             );
-                            return birthDate ? calculateAgeFromDateOfBirth(birthDate) : 'Not set';
+                            const calculatedAge = birthDate
+                              ? calculateAgeFromDateOfBirth(birthDate)
+                              : null;
+                            return calculatedAge || 'Not set';
                           })()
                         : 'Not set'}
                     </span>

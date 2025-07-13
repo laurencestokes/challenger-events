@@ -52,11 +52,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           name: user?.name || 'Unknown User',
           email: user?.email || 'unknown@example.com',
           bodyweight: user?.bodyweight,
-          age: calculatedAge,
+          dateOfBirth: user?.dateOfBirth,
           sex: user?.sex,
+          age: calculatedAge,
           joinedAt: participation.joinedAt,
           score: totalScore,
         };
+
+
       }),
     );
 
