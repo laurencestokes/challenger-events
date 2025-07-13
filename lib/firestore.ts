@@ -298,6 +298,26 @@ export const getScoresByUserAndEvent = async (userId: string, eventId: string) =
   return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Score[];
 };
 
+export const getScoreByUserActivityAndEvent = async (
+  userId: string,
+  activityId: string,
+  eventId: string,
+) => {
+  const scoresRef = collection(db, 'scores');
+  const q = query(
+    scoresRef,
+    where('userId', '==', userId),
+    where('activityId', '==', activityId),
+    where('eventId', '==', eventId),
+  );
+  const querySnapshot = await getDocs(q);
+  if (!querySnapshot.empty) {
+    const doc = querySnapshot.docs[0];
+    return { id: doc.id, ...doc.data() } as Score;
+  }
+  return null;
+};
+
 // Real-time listeners
 export const subscribeToEventScores = (eventId: string, callback: (scores: Score[]) => void) => {
   const scoresRef = collection(db, 'scores');

@@ -3,9 +3,11 @@ import {
   getUserByUid,
   isAdmin,
   createScore,
+  updateScore,
   getEvent,
   getActivitiesByEvent,
   getUser,
+  getScoreByUserActivityAndEvent,
 } from '@/lib/firestore';
 
 export async function POST(request: NextRequest) {
@@ -87,15 +89,37 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create the score
-    const score = await createScore({
-      userId: competitorId,
-      eventId,
-      activityId,
-      rawValue: Number(rawValue),
-      calculatedScore,
-      notes: notes || '',
-    });
+    // Check if a score already exists for this user, activity, and event
+    const existingScore = await getScoreByUserActivityAndEvent(competitorId, activityId, eventId);
+
+    let score;
+    if (existingScore) {
+      // Update the existing score
+      await updateScore(existingScore.id, {
+        rawValue: Number(rawValue),
+        calculatedScore,
+        notes: notes || '',
+      });
+      score = {
+        id: existingScore.id,
+        userId: competitorId,
+        eventId,
+        activityId,
+        rawValue: Number(rawValue),
+        calculatedScore,
+        notes: notes || '',
+      };
+    } else {
+      // Create a new score
+      score = await createScore({
+        userId: competitorId,
+        eventId,
+        activityId,
+        rawValue: Number(rawValue),
+        calculatedScore,
+        notes: notes || '',
+      });
+    }
 
     return NextResponse.json({
       id: score.id,
