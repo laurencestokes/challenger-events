@@ -6,6 +6,7 @@ import {
   calculateDeadliftScoreNew,
   convertSex,
   paceToWatts,
+  epleyFormula,
 } from '@/utils/scoring';
 import { ChallengerData } from '@challengerco/challenger-data';
 
@@ -62,6 +63,51 @@ export async function POST(request: Request) {
         break;
       case 'deadliftScore':
         result = calculateDeadliftScoreNew(value, sexConverted, age, bodyweight);
+        break;
+      case 'squatScoreReps':
+        // Convert rep-based weight to 1RM using Epley formula
+        const { weight, reps } = data;
+        const oneRM = epleyFormula(weight, reps);
+        result = calculateSquatScoreNew(oneRM, sexConverted, age, bodyweight);
+        break;
+      case 'benchScoreReps':
+        // Convert rep-based weight to 1RM using Epley formula
+        const { weight: benchWeight, reps: benchReps } = data;
+        const benchOneRM = epleyFormula(benchWeight, benchReps);
+        result = calculateBenchScoreNew(benchOneRM, sexConverted, age, bodyweight);
+        break;
+      case 'deadliftScoreReps':
+        // Convert rep-based weight to 1RM using Epley formula
+        const { weight: dlWeight, reps: dlReps } = data;
+        const dlOneRM = epleyFormula(dlWeight, dlReps);
+        result = calculateDeadliftScoreNew(dlOneRM, sexConverted, age, bodyweight);
+        break;
+      case 'squat':
+        // Handle rep-based squat scoring
+        if (data.reps && data.reps > 1) {
+          const squatOneRM = epleyFormula(data.value, data.reps);
+          result = calculateSquatScoreNew(squatOneRM, sexConverted, age, bodyweight);
+        } else {
+          result = calculateSquatScoreNew(value, sexConverted, age, bodyweight);
+        }
+        break;
+      case 'bench':
+        // Handle rep-based bench scoring
+        if (data.reps && data.reps > 1) {
+          const benchOneRM = epleyFormula(data.value, data.reps);
+          result = calculateBenchScoreNew(benchOneRM, sexConverted, age, bodyweight);
+        } else {
+          result = calculateBenchScoreNew(value, sexConverted, age, bodyweight);
+        }
+        break;
+      case 'deadlift':
+        // Handle rep-based deadlift scoring
+        if (data.reps && data.reps > 1) {
+          const deadliftOneRM = epleyFormula(data.value, data.reps);
+          result = calculateDeadliftScoreNew(deadliftOneRM, sexConverted, age, bodyweight);
+        } else {
+          result = calculateDeadliftScoreNew(value, sexConverted, age, bodyweight);
+        }
         break;
       case 'rowingScore':
         // For 500m row, value is in seconds; for others, value may be mm:ss

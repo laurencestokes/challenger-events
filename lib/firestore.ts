@@ -54,6 +54,7 @@ export interface Activity {
   scoringSystemId?: string; // Reference to scoring system
   maxScore?: number;
   unit?: string;
+  reps?: number; // Number of reps for strength exercises (1-10)
   order: number;
   createdAt: Date;
   updatedAt?: Date;

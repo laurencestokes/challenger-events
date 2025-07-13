@@ -554,7 +554,6 @@ export default function EventDetails() {
         {showAddWorkoutModal && (
           <AddWorkoutModal
             eventId={eventId}
-            scoringSystems={scoringSystems}
             onClose={() => setShowAddWorkoutModal(false)}
             onWorkoutAdded={(newActivity) => {
               setActivities([...activities, newActivity]);

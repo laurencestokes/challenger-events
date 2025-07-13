@@ -44,7 +44,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const body = await request.json();
     console.log('Request body:', body);
 
-    const { name, description, type, scoringSystemId, unit, order } = body;
+    const { name, description, type, scoringSystemId, unit, reps, order } = body;
 
     if (!name || !type) {
       return NextResponse.json({ error: 'Name and type are required' }, { status: 400 });
@@ -66,6 +66,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       type,
       scoringSystemId,
       unit,
+      reps,
       order: activityOrder,
     });
 

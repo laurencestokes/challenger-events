@@ -62,6 +62,23 @@ export async function POST(request: NextRequest) {
     let calculatedScore = Number(rawValue); // Default to raw value if no scoring system
     if (activity.scoringSystemId) {
       try {
+        // For rep-based strength exercises, calculate 1RM first
+        let valueForScoring = Number(rawValue);
+        if (activity.reps && activity.reps > 1) {
+          // Import epleyFormula for the calculation
+          const { epleyFormula } = await import('@/utils/scoring');
+          valueForScoring = epleyFormula(Number(rawValue), activity.reps);
+        }
+
+        // Prepare scoring request body
+        const scoringRequestBody = {
+          scoringSystemId: activity.scoringSystemId,
+          value: valueForScoring, // Use calculated 1RM for scoring
+          bodyweight: competitor.bodyweight || 70,
+          dateOfBirth: competitor.dateOfBirth,
+          sex: competitor.sex || 'M',
+        };
+
         const scoringResponse = await fetch(
           `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/calculate-score`,
           {
@@ -69,13 +86,7 @@ export async function POST(request: NextRequest) {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              scoringSystemId: activity.scoringSystemId,
-              value: Number(rawValue),
-              bodyweight: competitor.bodyweight || 70,
-              dateOfBirth: competitor.dateOfBirth,
-              sex: competitor.sex || 'M',
-            }),
+            body: JSON.stringify(scoringRequestBody),
           },
         );
 
