@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api-client';
 import { calculateAgeFromDateOfBirth, convertFirestoreTimestamp } from '@/lib/utils';
+import { SCORING_SYSTEMS } from '@/constants/scoringSystems';
 
 interface Activity {
   id: string;
@@ -10,6 +11,7 @@ interface Activity {
   description?: string;
   type: 'TIME' | 'REPS' | 'WEIGHT' | 'DISTANCE' | 'CUSTOM';
   unit?: string;
+  scoringSystemId?: string;
 }
 
 interface Participant {
@@ -79,11 +81,19 @@ export default function ScoreSubmissionModal({
     setError('');
 
     try {
+      // Parse the score value based on input type
+      let rawValue: number;
+      if (isTimeInput()) {
+        rawValue = parseTimeInput(scoreValue);
+      } else {
+        rawValue = Number(scoreValue);
+      }
+
       await api.post('/api/scores', {
         eventId,
         competitorId: selectedCompetitor,
         activityId: selectedActivity,
-        rawValue: Number(scoreValue),
+        rawValue,
         notes,
       });
 
@@ -106,13 +116,59 @@ export default function ScoreSubmissionModal({
 
   const getActivityUnit = (activityId: string) => {
     const activity = activities.find((a) => a.id === activityId);
-    return activity?.unit || '';
+
+    // If activity has a unit, use it
+    if (activity?.unit) {
+      return activity.unit;
+    }
+
+    // Fallback: get unit from scoring system
+    if (activity?.scoringSystemId) {
+      const scoringSystem = SCORING_SYSTEMS.find((sys) => sys.id === activity.scoringSystemId);
+      return scoringSystem?.unit || '';
+    }
+
+    return '';
+  };
+
+  const getSelectedActivity = () => {
+    return activities.find((a) => a.id === selectedActivity);
+  };
+
+  const isTimeInput = () => {
+    const activity = getSelectedActivity();
+    return activity?.unit === 'seconds';
+  };
+
+  const isWeightInput = () => {
+    const activity = getSelectedActivity();
+    return activity?.unit === 'kg';
+  };
+
+  const parseTimeInput = (timeStr: string): number => {
+    // Handle mm:ss format (e.g., "2:30" -> 150 seconds)
+    if (timeStr.includes(':')) {
+      const [minutes, seconds] = timeStr.split(':').map(Number);
+      return minutes * 60 + seconds;
+    }
+    // Handle seconds only (e.g., "120" -> 120 seconds)
+    return Number(timeStr);
   };
 
   const handleCompetitorChange = (competitorId: string) => {
     setSelectedCompetitor(competitorId);
     const competitor = participants.find((p) => p.id === competitorId);
     setCompetitorDetails(competitor || null);
+  };
+
+  const handleScoreChange = (value: string) => {
+    if (isTimeInput()) {
+      // For time input, allow mm:ss format
+      setScoreValue(value);
+    } else {
+      // For other inputs, only allow numbers
+      setScoreValue(value.replace(/[^0-9.]/g, ''));
+    }
   };
 
   if (!isOpen) return null;
@@ -236,16 +292,40 @@ export default function ScoreSubmissionModal({
                   </span>
                 )}
               </label>
-              <input
-                type="number"
-                id="score"
-                value={scoreValue}
-                onChange={(e) => setScoreValue(e.target.value)}
-                required
-                step="0.01"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
-                placeholder="Enter score"
-              />
+              <div className="mt-1 relative">
+                <input
+                  type={isTimeInput() ? 'text' : 'number'}
+                  id="score"
+                  value={scoreValue}
+                  onChange={(e) => handleScoreChange(e.target.value)}
+                  required
+                  step={isTimeInput() ? undefined : '0.01'}
+                  className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                  placeholder={
+                    isTimeInput()
+                      ? 'Enter time (e.g., 2:30 or 150)'
+                      : isWeightInput()
+                        ? 'Enter weight in kg'
+                        : 'Enter score'
+                  }
+                />
+                {selectedActivity && (
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                      {getActivityUnit(selectedActivity)}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {selectedActivity && (
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  {isTimeInput()
+                    ? 'Enter time as mm:ss (e.g., 2:30) or seconds (e.g., 150)'
+                    : isWeightInput()
+                      ? `Enter weight in ${getActivityUnit(selectedActivity)}`
+                      : `Enter score in ${getActivityUnit(selectedActivity)}`}
+                </p>
+              )}
             </div>
 
             <div>

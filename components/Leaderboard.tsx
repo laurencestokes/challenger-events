@@ -90,6 +90,17 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
     return activity?.unit || '';
   };
 
+  const formatRawValue = (rawValue: number, unit: string) => {
+    // For rowing events with seconds unit, convert to mm:ss format
+    if (unit === 'seconds' && rawValue > 0) {
+      const minutes = Math.floor(rawValue / 60);
+      const seconds = Math.floor(rawValue % 60);
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+    // For other units, use the standard format
+    return `${rawValue.toFixed(1)} ${unit}`;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -237,7 +248,10 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                             </div>
                             <div className="text-xs text-gray-500 dark:text-gray-400">
                               {workoutScore.rawValue
-                                ? `${workoutScore.rawValue.toFixed(1)} ${getActivityUnit(workout.activityId)}`
+                                ? formatRawValue(
+                                    workoutScore.rawValue,
+                                    getActivityUnit(workout.activityId),
+                                  )
                                 : ''}
                             </div>
                             <div className="text-xs text-gray-400 dark:text-gray-500">
@@ -314,8 +328,15 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-bold text-gray-900 dark:text-white">
-                        {entry.score ? entry.score.toFixed(1) : '0.0'}
+                      <div className="text-sm">
+                        <div className="font-bold text-gray-900 dark:text-white">
+                          {entry.score ? entry.score.toFixed(1) : '0.0'}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {entry.rawValue
+                            ? formatRawValue(entry.rawValue, getActivityUnit(workout.activityId))
+                            : ''}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -466,8 +487,15 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-bold text-gray-900 dark:text-white">
-                        {entry.score ? entry.score.toFixed(1) : '0.0'}
+                      <div className="text-sm">
+                        <div className="font-bold text-gray-900 dark:text-white">
+                          {entry.score ? entry.score.toFixed(1) : '0.0'}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {entry.rawValue
+                            ? formatRawValue(entry.rawValue, getActivityUnit(teamWorkoutId))
+                            : ''}
+                        </div>
                       </div>
                     </td>
                   </tr>
