@@ -21,12 +21,14 @@ interface AuthContextType {
   user: AuthUser | null;
   firebaseUser: FirebaseUser | null;
   loading: boolean;
+  initialized: boolean; // Add this to track if auth has been initialized
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   firebaseUser: null,
   loading: true,
+  initialized: false,
 });
 
 export const useAuth = () => {
@@ -41,6 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<AuthUser | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange(async (firebaseUser) => {
@@ -61,6 +64,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               createdAt: userData.createdAt,
               updatedAt: userData.updatedAt,
             });
+          } else {
+            setUser(null);
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
@@ -71,12 +76,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       setLoading(false);
+      setInitialized(true);
     });
 
     return () => unsubscribe();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, firebaseUser, loading }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, firebaseUser, loading, initialized }}>
+      {children}
+    </AuthContext.Provider>
   );
 };
