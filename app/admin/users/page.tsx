@@ -16,13 +16,17 @@ interface User {
   lastLoginAt?: unknown;
   eventsJoined?: number;
   totalScore?: number;
-  status: 'ACTIVE' | 'SUSPENDED' | 'PENDING';
+  status: 'ACTIVE' | 'SUSPENDED';
+  verificationStatus?: 'PENDING' | 'VERIFIED' | 'REJECTED' | 'NEEDS_REVERIFICATION';
+  verificationNotes?: string;
+  verifiedBy?: string;
+  verifiedAt?: unknown;
 }
 
 interface UserStats {
   totalUsers: number;
   activeUsers: number;
-  pendingUsers: number;
+  suspendedUsers: number;
   roleDistribution: {
     ADMIN: number;
     COMPETITOR: number;
@@ -42,6 +46,7 @@ export default function ManageUsers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [verificationFilter, setVerificationFilter] = useState('ALL');
 
   // UI state
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -90,8 +95,12 @@ export default function ManageUsers() {
       filtered = filtered.filter((user) => user.status === statusFilter);
     }
 
+    if (verificationFilter !== 'ALL') {
+      filtered = filtered.filter((user) => user.verificationStatus === verificationFilter);
+    }
+
     setFilteredUsers(filtered);
-  }, [users, searchTerm, roleFilter, statusFilter]);
+  }, [users, searchTerm, roleFilter, statusFilter, verificationFilter]);
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
@@ -112,14 +121,41 @@ export default function ManageUsers() {
       // Update local state
       setUsers((prev) =>
         prev.map((user) =>
-          user.id === userId
-            ? { ...user, status: newStatus as 'ACTIVE' | 'SUSPENDED' | 'PENDING' }
-            : user,
+          user.id === userId ? { ...user, status: newStatus as 'ACTIVE' | 'SUSPENDED' } : user,
         ),
       );
     } catch (error: unknown) {
       console.error('Error updating user status:', error);
       setError('Failed to update user status');
+    }
+  };
+
+  const handleVerificationChange = async (
+    userId: string,
+    verificationStatus: string,
+    verificationNotes?: string,
+  ) => {
+    try {
+      await api.put(`/api/admin/users/${userId}/verify`, {
+        verificationStatus,
+        verificationNotes,
+      });
+      // Update local state
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId
+            ? {
+                ...user,
+                verificationStatus: verificationStatus as 'PENDING' | 'VERIFIED' | 'REJECTED',
+                verificationNotes,
+                verifiedAt: new Date(),
+              }
+            : user,
+        ),
+      );
+    } catch (error: unknown) {
+      console.error('Error updating verification status:', error);
+      setError('Failed to update verification status');
     }
   };
 
@@ -194,7 +230,12 @@ export default function ManageUsers() {
       return 'Invalid date';
     }
 
-    return date.toLocaleDateString();
+    // Format as DD/MM/YYYY
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
   };
 
   const getStatusColor = (status: string) => {
@@ -203,10 +244,22 @@ export default function ManageUsers() {
         return 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200';
       case 'SUSPENDED':
         return 'bg-error-100 text-error-800 dark:bg-error-900 dark:text-error-200';
-      case 'PENDING':
-        return 'bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-200';
       default:
         return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200';
+    }
+  };
+
+  const getVerificationColor = (status: string) => {
+    switch (status) {
+      case 'VERIFIED':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'REJECTED':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'NEEDS_REVERIFICATION':
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      case 'PENDING':
+      default:
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
     }
   };
 
@@ -327,9 +380,11 @@ export default function ManageUsers() {
                     </div>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending</p>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Suspended
+                    </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                      {stats.pendingUsers}
+                      {stats.suspendedUsers}
                     </p>
                   </div>
                 </div>
@@ -390,6 +445,7 @@ export default function ManageUsers() {
                   <option value="COMPETITOR">Competitor</option>
                   <option value="VIEWER">Viewer</option>
                 </select>
+
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
@@ -398,7 +454,17 @@ export default function ManageUsers() {
                   <option value="ALL">All Status</option>
                   <option value="ACTIVE">Active</option>
                   <option value="SUSPENDED">Suspended</option>
-                  <option value="PENDING">Pending</option>
+                </select>
+                <select
+                  value={verificationFilter}
+                  onChange={(e) => setVerificationFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                >
+                  <option value="ALL">All Verification</option>
+                  <option value="PENDING">Pending Verification</option>
+                  <option value="VERIFIED">Verified</option>
+                  <option value="REJECTED">Rejected</option>
+                  <option value="NEEDS_REVERIFICATION">Needs Re-verification</option>
                 </select>
               </div>
             </div>
@@ -480,7 +546,10 @@ export default function ManageUsers() {
                           Role
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Status
+                          Account Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Weight Verification
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           Events
@@ -537,6 +606,32 @@ export default function ManageUsers() {
                             >
                               {user.status}
                             </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center space-x-2">
+                              <span
+                                className={`px-2 py-1 text-xs font-medium rounded-full ${getVerificationColor(user.verificationStatus || 'PENDING')}`}
+                              >
+                                {user.verificationStatus || 'PENDING'}
+                              </span>
+                              {(user.verificationStatus === 'PENDING' ||
+                                user.verificationStatus === 'NEEDS_REVERIFICATION') && (
+                                <div className="flex space-x-1">
+                                  <button
+                                    onClick={() => handleVerificationChange(user.id, 'VERIFIED')}
+                                    className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700"
+                                  >
+                                    ✓
+                                  </button>
+                                  <button
+                                    onClick={() => handleVerificationChange(user.id, 'REJECTED')}
+                                    className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+                                  >
+                                    ✗
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {user.eventsJoined || 0} events

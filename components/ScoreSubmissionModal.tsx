@@ -23,6 +23,17 @@ interface Participant {
   sex?: 'M' | 'F';
 }
 
+interface CompetitionVerification {
+  id: string;
+  userId: string;
+  eventId: string;
+  bodyweight: number;
+  verifiedBy: string;
+  verifiedAt: unknown;
+  verificationNotes?: string;
+  status: 'PENDING' | 'VERIFIED' | 'REJECTED';
+}
+
 interface ScoreSubmissionModalProps {
   eventId: string;
   isOpen: boolean;
@@ -47,6 +58,8 @@ export default function ScoreSubmissionModal({
   const [scoreValue, setScoreValue] = useState('');
   const [notes, setNotes] = useState('');
   const [competitorDetails, setCompetitorDetails] = useState<Participant | null>(null);
+  const [competitionVerification, setCompetitionVerification] =
+    useState<CompetitionVerification | null>(null);
 
   const fetchEventData = useCallback(async () => {
     try {
@@ -155,10 +168,26 @@ export default function ScoreSubmissionModal({
     return Number(timeStr);
   };
 
-  const handleCompetitorChange = (competitorId: string) => {
+  const handleCompetitorChange = async (competitorId: string) => {
     setSelectedCompetitor(competitorId);
     const competitor = participants.find((p) => p.id === competitorId);
     setCompetitorDetails(competitor || null);
+
+    // Fetch competition verification data if competitor is selected
+    if (competitorId) {
+      try {
+        const verificationData = await api.get(`/api/events/${eventId}/competition-verification`);
+        const verification = verificationData.verifications?.find(
+          (v: CompetitionVerification) => v.userId === competitorId,
+        );
+        setCompetitionVerification(verification || null);
+      } catch (error) {
+        console.error('Error fetching competition verification:', error);
+        setCompetitionVerification(null);
+      }
+    } else {
+      setCompetitionVerification(null);
+    }
   };
 
   const handleScoreChange = (value: string) => {
@@ -215,13 +244,23 @@ export default function ScoreSubmissionModal({
                 <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Competitor Details
                 </h4>
-                <div className="grid grid-cols-3 gap-2 text-xs">
+                <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400">Bodyweight:</span>
+                    <span className="text-gray-500 dark:text-gray-400">Profile Weight:</span>
                     <span className="ml-1 text-gray-900 dark:text-white">
                       {competitorDetails.bodyweight
                         ? `${competitorDetails.bodyweight}kg`
                         : 'Not set'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">Competition Weight:</span>
+                    <span
+                      className={`ml-1 ${competitionVerification?.status === 'VERIFIED' ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-900 dark:text-white'}`}
+                    >
+                      {competitionVerification?.status === 'VERIFIED'
+                        ? `${competitionVerification.bodyweight}kg`
+                        : 'Not weighed in'}
                     </span>
                   </div>
                   <div>
@@ -247,6 +286,12 @@ export default function ScoreSubmissionModal({
                     </span>
                   </div>
                 </div>
+                {competitionVerification?.status === 'VERIFIED' && (
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                    ✅ Score will be calculated using competition weight (
+                    {competitionVerification.bodyweight}kg)
+                  </p>
+                )}
                 {(!competitorDetails.bodyweight ||
                   !competitorDetails.dateOfBirth ||
                   !competitorDetails.sex) && (

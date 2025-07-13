@@ -172,7 +172,7 @@ export default function EventLeaderboard() {
     if (availableTabs.length > 0 && !availableTabs.find((tab) => tab.id === activeTab)) {
       setActiveTab(availableTabs[0].id);
     }
-  }, [viewMode, leaderboardData]);
+  }, [viewMode, leaderboardData, activeTab, getAvailableTabs]);
 
   if (isLoading) {
     return (

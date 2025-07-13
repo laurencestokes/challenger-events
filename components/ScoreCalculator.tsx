@@ -77,7 +77,8 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
   // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
-      Object.values(timeoutRefs.current).forEach((timeout) => {
+      const timeouts = Object.values(timeoutRefs.current);
+      timeouts.forEach((timeout) => {
         if (timeout) clearTimeout(timeout);
       });
     };

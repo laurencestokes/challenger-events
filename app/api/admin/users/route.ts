@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     const users = [];
     let totalUsers = 0;
     let activeUsers = 0;
-    let pendingUsers = 0;
+    let suspendedUsers = 0;
     const roleDistribution = {
       ADMIN: 0,
       COMPETITOR: 0,
@@ -50,6 +50,10 @@ export async function GET(request: NextRequest) {
         emailVerified: userData.emailVerified || false,
         lastLoginAt: userData.lastLoginAt,
         status: userData.status || 'ACTIVE',
+        verificationStatus: userData.verificationStatus || 'PENDING',
+        verificationNotes: userData.verificationNotes,
+        verifiedBy: userData.verifiedBy,
+        verifiedAt: userData.verifiedAt,
         eventsJoined: userData.eventsJoined || 0,
         totalScore: userData.totalScore || 0,
       };
@@ -58,7 +62,7 @@ export async function GET(request: NextRequest) {
       totalUsers++;
 
       if (user.status === 'ACTIVE') activeUsers++;
-      if (user.status === 'PENDING') pendingUsers++;
+      if (user.status === 'SUSPENDED') suspendedUsers++;
 
       roleDistribution[user.role as keyof typeof roleDistribution]++;
     }
@@ -66,7 +70,7 @@ export async function GET(request: NextRequest) {
     const stats = {
       totalUsers,
       activeUsers,
-      pendingUsers,
+      suspendedUsers: suspendedUsers,
       roleDistribution,
     };
 
@@ -124,7 +128,7 @@ export async function POST(request: NextRequest) {
     const newUser = {
       email,
       role,
-      status: 'PENDING',
+      status: 'ACTIVE',
       emailVerified: false,
       createdAt: new Date(),
       eventsJoined: 0,

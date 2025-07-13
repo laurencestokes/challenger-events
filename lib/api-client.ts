@@ -41,7 +41,8 @@ export async function apiRequest(url: string, options: RequestInit = {}) {
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Network error' }));
-    throw new Error(error.error || 'Request failed');
+    console.error('API Error Response:', error);
+    throw new Error(error.error || error.details || 'Request failed');
   }
 
   return response.json();

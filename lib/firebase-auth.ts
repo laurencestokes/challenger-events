@@ -58,6 +58,7 @@ export const signUpWithEmail = async (
       email: user.email!,
       name: name,
       role: 'COMPETITOR',
+      verificationStatus: 'PENDING',
     });
 
     return {

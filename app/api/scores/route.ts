@@ -8,6 +8,8 @@ import {
   getActivitiesByEvent,
   getUser,
   getScoreByUserActivityAndEvent,
+  checkCompetitionVerificationRequired,
+  getCompetitionVerification,
 } from '@/lib/firestore';
 
 export async function POST(request: NextRequest) {
@@ -58,6 +60,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Competitor not found' }, { status: 404 });
     }
 
+    // Check if competitor is verified (only for competitors)
+    if (competitor.role === 'COMPETITOR' && competitor.verificationStatus !== 'VERIFIED') {
+      const statusMessage =
+        competitor.verificationStatus === 'NEEDS_REVERIFICATION'
+          ? 'Competitor needs re-verification due to profile changes. Please contact an administrator.'
+          : 'Competitor verification required. Please contact an administrator to verify this competitor before submitting scores.';
+
+      return NextResponse.json(
+        {
+          error: statusMessage,
+          requiresVerification: true,
+        },
+        { status: 403 },
+      );
+    }
+
+    // Check if competitor has been weighed and verified for this specific competition
+    const needsCompetitionVerification = await checkCompetitionVerificationRequired(
+      competitorId,
+      eventId,
+    );
+    if (needsCompetitionVerification) {
+      return NextResponse.json(
+        {
+          error:
+            'Competitor must be weighed and verified for this competition before submitting scores. Please contact an administrator.',
+          requiresCompetitionVerification: true,
+        },
+        { status: 403 },
+      );
+    }
+
     // Calculate the scoring system result
     let calculatedScore = Number(rawValue); // Default to raw value if no scoring system
     if (activity.scoringSystemId) {
@@ -70,11 +104,18 @@ export async function POST(request: NextRequest) {
           valueForScoring = epleyFormula(Number(rawValue), activity.reps);
         }
 
+        // Get competition weight if available, otherwise use profile weight
+        let bodyweightForScoring = competitor.bodyweight || 70;
+        const competitionVerification = await getCompetitionVerification(competitorId, eventId);
+        if (competitionVerification && competitionVerification.status === 'VERIFIED') {
+          bodyweightForScoring = competitionVerification.bodyweight;
+        }
+
         // Prepare scoring request body
         const scoringRequestBody = {
           scoringSystemId: activity.scoringSystemId,
           value: valueForScoring, // Use calculated 1RM for scoring
-          bodyweight: competitor.bodyweight || 70,
+          bodyweight: bodyweightForScoring,
           dateOfBirth: competitor.dateOfBirth,
           sex: competitor.sex || 'M',
         };

@@ -1,9 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, updateUser } from '@/lib/firestore';
+import { getUserByUid, updateUserWithReverificationCheck } from '@/lib/firestore';
+
+export async function GET(request: NextRequest) {
+  try {
+    const authHeader = request.headers.get('authorization');
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = authHeader.split('Bearer ')[1];
+    const user = await getUserByUid(userId);
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
 
 export async function PUT(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -18,61 +41,21 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { name, bodyweight, dateOfBirth, sex } = body;
 
-    // Validate input
-    const updates: Partial<{
-      name: string;
-      bodyweight: number | null;
-      dateOfBirth: Date | null;
-      sex: 'M' | 'F' | null;
-    }> = {};
-
-    if (name !== undefined) {
-      updates.name = name;
-    }
-
-    if (bodyweight !== undefined) {
-      if (bodyweight === null) {
-        updates.bodyweight = null; // Clear the field
-      } else {
-        const weight = Number(bodyweight);
-        if (isNaN(weight) || weight < 0) {
-          return NextResponse.json({ error: 'Invalid bodyweight' }, { status: 400 });
-        }
-        updates.bodyweight = weight;
-      }
-    }
-
-    if (dateOfBirth !== undefined) {
-      if (dateOfBirth === null) {
-        updates.dateOfBirth = null; // Clear the field
-      } else {
-        const birthDate = new Date(dateOfBirth);
-        if (isNaN(birthDate.getTime()) || birthDate > new Date()) {
-          return NextResponse.json({ error: 'Invalid date of birth' }, { status: 400 });
-        }
-        updates.dateOfBirth = birthDate;
-      }
-    }
-
-    if (sex !== undefined) {
-      if (sex === null) {
-        updates.sex = null; // Clear the field
-      } else if (sex !== 'M' && sex !== 'F') {
-        return NextResponse.json({ error: 'Invalid sex value' }, { status: 400 });
-      } else {
-        updates.sex = sex;
-      }
-    }
-
-    await updateUser(user.id, updates);
-
-    return NextResponse.json({
-      message: 'Profile updated successfully',
-      user: { ...user, ...updates },
+    // Update user profile with re-verification check
+    await updateUserWithReverificationCheck(userId, {
+      name: name || user.name,
+      bodyweight: bodyweight !== undefined ? bodyweight : user.bodyweight,
+      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : user.dateOfBirth,
+      sex: sex !== undefined ? sex : user.sex,
+      updatedAt: new Date(),
     });
+
+    // Get the updated user data
+    const updatedUser = await getUserByUid(userId);
+
+    return NextResponse.json(updatedUser);
   } catch (error) {
     console.error('Error updating user profile:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ error: `Internal server error: ${errorMessage}` }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

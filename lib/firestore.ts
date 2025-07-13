@@ -13,18 +13,22 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
-export { db };
+export { db, serverTimestamp };
 
 // Types
 export interface User {
   id: string;
-  uid?: string;
-  name?: string;
+  uid: string;
+  name: string;
   email: string;
-  role: 'SUPER_ADMIN' | 'ADMIN' | 'COMPETITOR' | 'VIEWER';
-  bodyweight?: number | null;
-  dateOfBirth?: Date | null;
-  sex?: 'M' | 'F' | null;
+  role: 'ADMIN' | 'COMPETITOR';
+  bodyweight?: number;
+  dateOfBirth?: Date;
+  sex?: 'M' | 'F';
+  verificationStatus: 'PENDING' | 'VERIFIED' | 'REJECTED' | 'NEEDS_REVERIFICATION';
+  verificationNotes?: string;
+  verifiedBy?: string; // Admin ID who verified
+  verifiedAt?: unknown; // Can be Date or Firestore timestamp
   createdAt: Date;
   updatedAt: Date;
 }
@@ -105,6 +109,17 @@ export interface Participation {
   eventId: string;
   teamId?: string; // Optional team participation
   joinedAt: Date;
+}
+
+export interface CompetitionVerification {
+  id: string;
+  userId: string;
+  eventId: string;
+  bodyweight: number;
+  verifiedBy: string;
+  verifiedAt: Date;
+  verificationNotes?: string;
+  status: 'PENDING' | 'VERIFIED' | 'REJECTED';
 }
 
 // User functions
@@ -564,4 +579,92 @@ export const getUserTeams = async (userId: string) => {
   }
 
   return teams;
+};
+
+export const checkIfNeedsReverification = async (
+  userId: string,
+  newBodyweight: number,
+): Promise<boolean> => {
+  const user = await getUser(userId);
+  if (!user || user.role !== 'COMPETITOR') return false;
+
+  // If user was previously verified and weight has changed significantly (>2kg), needs re-verification
+  if (user.verificationStatus === 'VERIFIED' && user.bodyweight) {
+    const weightDifference = Math.abs(newBodyweight - user.bodyweight);
+    return weightDifference > 2; // More than 2kg change
+  }
+
+  return false;
+};
+
+export const updateUserWithReverificationCheck = async (
+  userId: string,
+  updates: Partial<User>,
+): Promise<void> => {
+  // Check if this is a weight update that might need re-verification
+  if (updates.bodyweight && updates.bodyweight !== undefined) {
+    const needsReverification = await checkIfNeedsReverification(userId, updates.bodyweight);
+    if (needsReverification) {
+      updates.verificationStatus = 'NEEDS_REVERIFICATION';
+      updates.verificationNotes = `Weight changed from ${(await getUser(userId))?.bodyweight}kg to ${updates.bodyweight}kg. Re-verification required.`;
+    }
+  }
+
+  await updateUser(userId, updates);
+};
+
+export const createCompetitionVerification = async (
+  verificationData: Omit<CompetitionVerification, 'id' | 'verifiedAt'>,
+) => {
+  const verificationRef = collection(db, 'competitionVerifications');
+  const docRef = await addDoc(verificationRef, {
+    ...verificationData,
+    verifiedAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...verificationData };
+};
+
+export const getCompetitionVerification = async (userId: string, eventId: string) => {
+  const verificationRef = collection(db, 'competitionVerifications');
+  const q = query(
+    verificationRef,
+    where('userId', '==', userId),
+    where('eventId', '==', eventId),
+    limit(1),
+  );
+  const querySnapshot = await getDocs(q);
+  if (!querySnapshot.empty) {
+    const doc = querySnapshot.docs[0];
+    return { id: doc.id, ...doc.data() } as CompetitionVerification;
+  }
+  return null;
+};
+
+export const updateCompetitionVerification = async (
+  verificationId: string,
+  updates: Partial<CompetitionVerification>,
+) => {
+  const verificationRef = doc(db, 'competitionVerifications', verificationId);
+  await updateDoc(verificationRef, {
+    ...updates,
+    verifiedAt: serverTimestamp(),
+  });
+};
+
+export const getCompetitionVerificationsByEvent = async (eventId: string) => {
+  const verificationRef = collection(db, 'competitionVerifications');
+  const q = query(verificationRef, where('eventId', '==', eventId));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as CompetitionVerification[];
+};
+
+export const checkCompetitionVerificationRequired = async (
+  userId: string,
+  eventId: string,
+): Promise<boolean> => {
+  const verification = await getCompetitionVerification(userId, eventId);
+  return !verification || verification.status !== 'VERIFIED';
 };

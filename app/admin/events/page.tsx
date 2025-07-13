@@ -224,6 +224,12 @@ export default function ManageEvents() {
                             </button>
                           )}
                           <Link
+                            href={`/admin/events/${event.id}/competition-verification`}
+                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                          >
+                            Weigh In
+                          </Link>
+                          <Link
                             href={`/admin/events/${event.id}`}
                             className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium"
                           >
