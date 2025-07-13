@@ -11,6 +11,7 @@ interface LeaderboardEntry {
   workoutScores: {
     [activityId: string]: {
       score: number;
+      rawValue: number;
       rank: number;
       activityName: string;
     };
@@ -28,6 +29,7 @@ interface WorkoutLeaderboard {
     name: string;
     email: string;
     score: number;
+    rawValue: number;
     rank: number;
     teamId?: string;
     teamName?: string;
@@ -41,6 +43,7 @@ interface TeamLeaderboardEntry {
   workoutScores: {
     [activityId: string]: {
       score: number;
+      rawValue: number;
       rank: number;
       activityName: string;
     };
@@ -55,6 +58,7 @@ interface TeamWorkoutLeaderboard {
     teamId: string;
     teamName: string;
     score: number;
+    rawValue: number;
     rank: number;
   }[];
 }
@@ -79,22 +83,32 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overall' | string>('overall');
+  const [activities, setActivities] = useState<{ id: string; unit: string }[]>([]);
+
+  const getActivityUnit = (activityId: string) => {
+    const activity = activities.find((a) => a.id === activityId);
+    return activity?.unit || '';
+  };
 
   useEffect(() => {
-    const fetchLeaderboard = async () => {
+    const fetchData = async () => {
       try {
-        const data = await api.get(`/api/events/${eventId}/leaderboard`);
-        setLeaderboardData(data);
+        const [leaderboardData, activitiesData] = await Promise.all([
+          api.get(`/api/events/${eventId}/leaderboard`),
+          api.get(`/api/events/${eventId}/activities`),
+        ]);
+        setLeaderboardData(leaderboardData);
+        setActivities(activitiesData);
       } catch (error: unknown) {
-        console.error('Error fetching leaderboard:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch leaderboard';
+        console.error('Error fetching data:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
         setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchLeaderboard();
+    fetchData();
   }, [eventId]);
 
   const getRankIcon = (rank: number) => {
@@ -222,6 +236,11 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                               {workoutScore.score ? workoutScore.score.toFixed(1) : '0.0'}
                             </div>
                             <div className="text-xs text-gray-500 dark:text-gray-400">
+                              {workoutScore.rawValue
+                                ? `${workoutScore.rawValue.toFixed(1)} ${getActivityUnit(workout.activityId)}`
+                                : ''}
+                            </div>
+                            <div className="text-xs text-gray-400 dark:text-gray-500">
                               Rank: {workoutScore.rank}
                             </div>
                           </div>
@@ -377,7 +396,7 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                               <div className="font-medium text-gray-900 dark:text-white">
                                 {workoutScore.score ? workoutScore.score.toFixed(1) : '0.0'}
                               </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                              <div className="text-xs text-gray-400 dark:text-gray-500">
                                 Rank: {workoutScore.rank}
                               </div>
                             </div>

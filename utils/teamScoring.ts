@@ -21,6 +21,7 @@ export interface TeamOverallScore {
   workoutScores: {
     [activityId: string]: {
       score: number;
+      rawValue: number;
       rank: number;
       activityName: string;
     };
@@ -82,7 +83,7 @@ export const calculateTeamOverallScore = (
   scoringMethod: 'SUM' | 'AVERAGE' | 'BEST' = 'SUM',
 ): TeamOverallScore | null => {
   const workoutScores: {
-    [activityId: string]: { score: number; rank: number; activityName: string };
+    [activityId: string]: { score: number; rawValue: number; rank: number; activityName: string };
   } = {};
   let totalScore = 0;
 
@@ -90,8 +91,20 @@ export const calculateTeamOverallScore = (
   for (const activity of activities) {
     const teamScore = calculateTeamScore(scores, teamMembers, team, activity.id, scoringMethod);
     if (teamScore) {
+      // Calculate average raw value for team (for display purposes)
+      const memberScores = scores.filter(
+        (score) =>
+          score.activityId === activity.id &&
+          teamMembers.some((member) => member.userId === score.userId),
+      );
+      const averageRawValue =
+        memberScores.length > 0
+          ? memberScores.reduce((sum, score) => sum + score.rawValue, 0) / memberScores.length
+          : 0;
+
       workoutScores[activity.id] = {
         score: teamScore.totalScore,
+        rawValue: averageRawValue,
         rank: 0, // Will be calculated by caller
         activityName: activity.name,
       };

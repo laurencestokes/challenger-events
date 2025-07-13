@@ -18,6 +18,7 @@ interface LeaderboardEntry {
   workoutScores: {
     [activityId: string]: {
       score: number;
+      rawValue: number;
       rank: number;
       activityName: string;
     };
@@ -35,6 +36,7 @@ interface WorkoutLeaderboard {
     name: string;
     email: string;
     score: number;
+    rawValue: number;
     rank: number;
     teamId?: string;
     teamName?: string;
@@ -48,6 +50,7 @@ interface TeamLeaderboardEntry {
   workoutScores: {
     [activityId: string]: {
       score: number;
+      rawValue: number;
       rank: number;
       activityName: string;
     };
@@ -148,6 +151,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             name: participant?.name || 'Unknown User',
             email: participant?.email || 'unknown@example.com',
             score: score.calculatedScore || 0,
+            rawValue: score.rawValue || 0,
             rank: 0, // Will be calculated below
             teamId: participant?.teamId,
             teamName: participant?.teamName,
@@ -179,7 +183,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
       // Create workout scores object
       const workoutScores: {
-        [activityId: string]: { score: number; rank: number; activityName: string };
+        [activityId: string]: {
+          score: number;
+          rawValue: number;
+          rank: number;
+          activityName: string;
+        };
       } = {};
 
       participantScores.forEach((score) => {
@@ -194,6 +203,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
           workoutScores[score.activityId] = {
             score: score.calculatedScore || 0,
+            rawValue: score.rawValue || 0,
             rank,
             activityName: activity.name,
           };
@@ -292,6 +302,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
             teamOverallScore.workoutScores[activity.id] = {
               score: teamOverallScore.workoutScores[activity.id]?.score || 0,
+              rawValue: teamOverallScore.workoutScores[activity.id]?.rawValue || 0,
               rank,
               activityName: activity.name,
             };

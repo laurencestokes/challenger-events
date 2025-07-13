@@ -66,7 +66,7 @@ export const SCORING_SYSTEMS: ScoringSystem[] = [
     description: '500m rowing scoring based on time, age, and sex',
     category: 'ENDURANCE',
     inputType: 'TIME',
-    unit: 'mm:ss',
+    unit: 'seconds',
     requiresBodyweight: true,
     requiresAge: true,
     requiresSex: true,

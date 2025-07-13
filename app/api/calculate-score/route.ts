@@ -68,9 +68,22 @@ export async function POST(request: Request) {
         result = calculateDeadliftScoreNew(value, sexConverted, age, bodyweight);
         break;
       case 'rowingScore':
-        // For rowing, convert time to watts first
-        const rowingWatts = timeToWatts(value);
+        // For 500m row, value is in seconds; for others, value may be mm:ss
+        let rowingWatts;
+        if (scoringSystemId === 'rowing_500m') {
+          // Value is already in seconds
+          rowingWatts = 500 / Number(value);
+        } else {
+          // Value is mm:ss string
+          rowingWatts = timeToWatts(value);
+        }
         result = calculateRowingScoreNew(rowingWatts, sexConverted, age, bodyweight);
+        break;
+      case 'rowingScoreSeconds':
+        // For 500m row, value is already in seconds, convert to watts
+        const secondsValue = Number(value);
+        const wattsFromSeconds = 500 / secondsValue; // Simple watts approximation
+        result = calculateRowingScoreNew(wattsFromSeconds, sexConverted, age, bodyweight);
         break;
       case 'customWeight':
         // Simple weight-based scoring (no age/sex adjustments)
