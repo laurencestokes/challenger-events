@@ -7,6 +7,9 @@ import { convertFirestoreTimestamp, calculateAgeFromDateOfBirth } from '../../li
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 interface User {
   id: string;
@@ -22,17 +25,57 @@ interface User {
   createdAt: unknown;
 }
 
+// Zod schema for validation
+const today = new Date();
+const minBirthDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
+const maxBirthDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+const ProfileSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  bodyweight: z.string().refine((val) => {
+    const num = Number(val);
+    return !isNaN(num) && num >= 40 && num <= 250;
+  }, 'Bodyweight must be between 40kg and 250kg'),
+  dateOfBirth: z
+    .string()
+    .transform((val) => {
+      // Extract just the date part if it's a full ISO string
+      if (val && val.includes('T')) {
+        return val.split('T')[0];
+      }
+      return val;
+    })
+    .refine((val) => {
+      if (!val) return false;
+      const date = new Date(val);
+      return date >= minBirthDate && date <= maxBirthDate;
+    }, 'Age must be between 18 and 100 years'),
+  sex: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.enum(['M', 'F'], { required_error: 'Sex is required' }),
+  ),
+});
+
+type ProfileFormType = z.infer<typeof ProfileSchema>;
+
 export default function Profile() {
   const { user } = useAuth();
   const [profile, setProfile] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    bodyweight: '',
-    dateOfBirth: '',
-    sex: '',
+  const {
+    register,
+    handleSubmit: rhfHandleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ProfileFormType>({
+    resolver: zodResolver(ProfileSchema),
+    defaultValues: {
+      name: '',
+      bodyweight: '',
+      dateOfBirth: '',
+      sex: undefined,
+    },
   });
 
   useEffect(() => {
@@ -40,18 +83,6 @@ export default function Profile() {
       try {
         const profileData = await api.get('/api/user/profile');
         setProfile(profileData);
-        // Helper function to convert Firestore timestamp to date string
-        const convertToDateString = (date: unknown): string => {
-          const dateObj = convertFirestoreTimestamp(date);
-          return dateObj ? dateObj.toISOString().split('T')[0] : '';
-        };
-
-        setFormData({
-          name: profileData.name || '',
-          bodyweight: profileData.bodyweight?.toString() || '',
-          dateOfBirth: convertToDateString(profileData.dateOfBirth),
-          sex: profileData.sex || '',
-        });
       } catch (error: unknown) {
         console.error('Error fetching profile:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to fetch profile';
@@ -66,18 +97,36 @@ export default function Profile() {
     }
   }, [user]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const updatedProfile = await api.put('/api/user/profile', {
-        name: formData.name,
-        bodyweight: formData.bodyweight ? Number(formData.bodyweight) : undefined,
-        dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined,
-        sex: formData.sex || undefined,
+  // When profile loads, reset form values
+  useEffect(() => {
+    if (profile) {
+      reset({
+        name: profile.name || '',
+        bodyweight: profile.bodyweight?.toString() || '',
+        dateOfBirth: profile.dateOfBirth
+          ? convertFirestoreTimestamp(profile.dateOfBirth)?.toISOString().split('T')[0] || ''
+          : '',
+        sex: profile.sex as 'M' | 'F' | undefined,
       });
+    }
+  }, [profile, reset]);
 
+  const onSubmit = async (data: ProfileFormType) => {
+    setIsLoading(true);
+    setError('');
+    try {
+      // Handle date transformation manually
+      let processedDateOfBirth = data.dateOfBirth;
+      if (data.dateOfBirth && data.dateOfBirth.includes('T')) {
+        processedDateOfBirth = data.dateOfBirth.split('T')[0];
+      }
+
+      const updatedProfile = await api.put('/api/user/profile', {
+        name: data.name,
+        bodyweight: Number(data.bodyweight),
+        dateOfBirth: processedDateOfBirth || undefined,
+        sex: data.sex,
+      });
       setProfile(updatedProfile);
       setIsEditing(false);
     } catch (error: unknown) {
@@ -182,18 +231,19 @@ export default function Profile() {
                 </div>
                 <div className="p-6">
                   {isEditing ? (
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={rhfHandleSubmit(onSubmit)} className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Name
                         </label>
                         <input
                           type="text"
-                          value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          {...register('name')}
                           className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
-                          required
                         />
+                        {errors.name && (
+                          <p className="text-xs text-red-600 mt-1">{errors.name.message}</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -201,11 +251,13 @@ export default function Profile() {
                         </label>
                         <input
                           type="number"
-                          value={formData.bodyweight}
-                          onChange={(e) => setFormData({ ...formData, bodyweight: e.target.value })}
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
                           step="0.1"
+                          {...register('bodyweight')}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
                         />
+                        {errors.bodyweight && (
+                          <p className="text-xs text-red-600 mt-1">{errors.bodyweight.message}</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -213,26 +265,28 @@ export default function Profile() {
                         </label>
                         <input
                           type="date"
-                          value={formData.dateOfBirth}
-                          onChange={(e) =>
-                            setFormData({ ...formData, dateOfBirth: e.target.value })
-                          }
+                          {...register('dateOfBirth')}
                           className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
                         />
+                        {errors.dateOfBirth && (
+                          <p className="text-xs text-red-600 mt-1">{errors.dateOfBirth.message}</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Sex
                         </label>
                         <select
-                          value={formData.sex}
-                          onChange={(e) => setFormData({ ...formData, sex: e.target.value })}
+                          {...register('sex')}
                           className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
                         >
                           <option value="">Select...</option>
                           <option value="M">Male</option>
                           <option value="F">Female</option>
                         </select>
+                        {errors.sex && (
+                          <p className="text-xs text-red-600 mt-1">{errors.sex.message}</p>
+                        )}
                       </div>
                       <div className="flex justify-end space-x-3">
                         <button

@@ -31,7 +31,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     if (
       !verificationStatus ||
-      !['VERIFIED', 'REJECTED', 'NEEDS_REVERIFICATION'].includes(verificationStatus)
+      !['PENDING', 'VERIFIED', 'REJECTED', 'NEEDS_REVERIFICATION'].includes(verificationStatus)
     ) {
       return NextResponse.json({ error: 'Invalid verification status' }, { status: 400 });
     }

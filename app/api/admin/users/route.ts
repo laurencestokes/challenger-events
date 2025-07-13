@@ -56,6 +56,9 @@ export async function GET(request: NextRequest) {
         verifiedAt: userData.verifiedAt,
         eventsJoined: userData.eventsJoined || 0,
         totalScore: userData.totalScore || 0,
+        bodyweight: userData.bodyweight,
+        dateOfBirth: userData.dateOfBirth,
+        sex: userData.sex,
       };
 
       users.push(user);

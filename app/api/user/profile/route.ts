@@ -41,14 +41,31 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { name, bodyweight, dateOfBirth, sex } = body;
 
-    // Update user profile with re-verification check
-    await updateUserWithReverificationCheck(userId, {
+    // Convert dateOfBirth string to Date object if provided
+    let processedDateOfBirth: Date | undefined;
+    if (dateOfBirth) {
+      try {
+        processedDateOfBirth = new Date(dateOfBirth);
+        // Validate the date
+        if (isNaN(processedDateOfBirth.getTime())) {
+          return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
+        }
+      } catch (error) {
+        return NextResponse.json({ error: 'Invalid date format', details: error }, { status: 400 });
+      }
+    }
+
+    const updates = {
       name: name || user.name,
       bodyweight: bodyweight !== undefined ? bodyweight : user.bodyweight,
-      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : user.dateOfBirth,
+      dateOfBirth: processedDateOfBirth || user.dateOfBirth,
       sex: sex !== undefined ? sex : user.sex,
       updatedAt: new Date(),
-    });
+    };
+
+    // Update user profile with re-verification check
+    // Use the document ID (user.id) instead of the uid (userId)
+    await updateUserWithReverificationCheck(user.id, updates);
 
     // Get the updated user data
     const updatedUser = await getUserByUid(userId);

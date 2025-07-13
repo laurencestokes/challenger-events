@@ -21,6 +21,9 @@ interface User {
   verificationNotes?: string;
   verifiedBy?: string;
   verifiedAt?: unknown;
+  bodyweight?: number;
+  dateOfBirth?: unknown;
+  sex?: 'M' | 'F';
 }
 
 interface UserStats {
@@ -261,6 +264,34 @@ export default function ManageUsers() {
       default:
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
     }
+  };
+
+  const calculateAge = (dateOfBirth: unknown) => {
+    if (!dateOfBirth) return undefined;
+    let birthDate: Date | undefined;
+    if (typeof dateOfBirth === 'string' || typeof dateOfBirth === 'number') {
+      birthDate = new Date(dateOfBirth);
+    } else if (typeof dateOfBirth === 'object' && dateOfBirth !== null) {
+      if (
+        'seconds' in dateOfBirth &&
+        typeof (dateOfBirth as { seconds: number }).seconds === 'number'
+      ) {
+        birthDate = new Date((dateOfBirth as { seconds: number }).seconds * 1000);
+      } else if (
+        'toDate' in dateOfBirth &&
+        typeof (dateOfBirth as { toDate: () => Date }).toDate === 'function'
+      ) {
+        birthDate = (dateOfBirth as { toDate: () => Date }).toDate();
+      }
+    }
+    if (!birthDate || isNaN(birthDate.getTime())) return undefined;
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
   };
 
   return (
@@ -609,28 +640,47 @@ export default function ManageUsers() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center space-x-2">
-                              <span
-                                className={`px-2 py-1 text-xs font-medium rounded-full ${getVerificationColor(user.verificationStatus || 'PENDING')}`}
-                              >
-                                {user.verificationStatus || 'PENDING'}
-                              </span>
-                              {(user.verificationStatus === 'PENDING' ||
-                                user.verificationStatus === 'NEEDS_REVERIFICATION') && (
-                                <div className="flex space-x-1">
-                                  <button
-                                    onClick={() => handleVerificationChange(user.id, 'VERIFIED')}
-                                    className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700"
-                                  >
-                                    ✓
-                                  </button>
-                                  <button
-                                    onClick={() => handleVerificationChange(user.id, 'REJECTED')}
-                                    className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
-                                  >
-                                    ✗
-                                  </button>
+                              <div className="relative group">
+                                <span
+                                  className={`px-2 py-1 text-xs font-medium rounded-full cursor-help ${getVerificationColor(user.verificationStatus || 'PENDING')}`}
+                                >
+                                  {user.verificationStatus || 'PENDING'}
+                                </span>
+                                {/* Hover tooltip */}
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                  <div className="mt-1 text-gray-300">
+                                    <span className="font-medium">Bodyweight:</span>{' '}
+                                    {user.bodyweight !== undefined
+                                      ? `${user.bodyweight} kg`
+                                      : 'Not set'}
+                                  </div>
+                                  <div className="mt-1 text-gray-300">
+                                    <span className="font-medium">Age:</span>{' '}
+                                    {user.dateOfBirth !== undefined &&
+                                    user.dateOfBirth !== null &&
+                                    calculateAge(user.dateOfBirth) !== undefined
+                                      ? `${calculateAge(user.dateOfBirth)} years`
+                                      : 'Not set'}
+                                  </div>
+                                  <div className="mt-1 text-gray-300">
+                                    <span className="font-medium">Sex:</span>{' '}
+                                    {user.sex ? user.sex : 'Not set'}
+                                  </div>
+                                  {/* Arrow pointing down */}
+                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
                                 </div>
-                              )}
+                              </div>
+                              {/* Verification Status Toggle */}
+                              <select
+                                value={user.verificationStatus || 'PENDING'}
+                                onChange={(e) => handleVerificationChange(user.id, e.target.value)}
+                                className="text-xs border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700"
+                              >
+                                <option value="PENDING">Pending</option>
+                                <option value="VERIFIED">Verified</option>
+                                <option value="REJECTED">Rejected</option>
+                                <option value="NEEDS_REVERIFICATION">Needs Re-verification</option>
+                              </select>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
