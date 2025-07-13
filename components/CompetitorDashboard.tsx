@@ -224,12 +224,20 @@ export default function CompetitorDashboard() {
                     >
                       {event.status}
                     </span>
-                    <Link
-                      href={`/events/${event.id}`}
-                      className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                    >
-                      View Leaderboard
-                    </Link>
+                    <div className="flex items-center space-x-2">
+                      <Link
+                        href={`/events/${event.id}`}
+                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                      >
+                        View Details
+                      </Link>
+                      <Link
+                        href={`/events/${event.id}/leaderboard`}
+                        className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                      >
+                        Leaderboard
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))}
