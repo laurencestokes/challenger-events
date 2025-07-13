@@ -60,3 +60,51 @@ export function calculateScorePercentage(score: number, maxScore: number): numbe
   if (maxScore === 0) return 0;
   return Math.round((score / maxScore) * 100);
 }
+
+export function calculateAgeFromDateOfBirth(dateOfBirth: Date): number {
+  const today = new Date();
+  let age = today.getFullYear() - dateOfBirth.getFullYear();
+  const monthDiff = today.getMonth() - dateOfBirth.getMonth();
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
+    age--;
+  }
+
+  return age;
+}
+
+export function convertFirestoreTimestamp(timestamp: unknown): Date | null {
+  if (!timestamp) return null;
+
+  // Handle Firestore Timestamp objects
+  if (typeof timestamp === 'object' && timestamp !== null) {
+    // Check if it's a Firestore Timestamp with seconds and nanoseconds
+    if ('seconds' in timestamp && typeof (timestamp as { seconds: number }).seconds === 'number') {
+      return new Date((timestamp as { seconds: number }).seconds * 1000);
+    } else if (
+      'toDate' in timestamp &&
+      typeof (timestamp as { toDate: () => Date }).toDate === 'function'
+    ) {
+      return (timestamp as { toDate: () => Date }).toDate();
+    }
+  }
+
+  // Handle regular Date objects
+  if (timestamp instanceof Date) {
+    return timestamp;
+  }
+
+  // Handle string dates
+  if (typeof timestamp === 'string') {
+    const date = new Date(timestamp);
+    return isNaN(date.getTime()) ? null : date;
+  }
+
+  // Handle number timestamps
+  if (typeof timestamp === 'number') {
+    const date = new Date(timestamp);
+    return isNaN(date.getTime()) ? null : date;
+  }
+
+  return null;
+}

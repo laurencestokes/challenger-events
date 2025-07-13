@@ -106,7 +106,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const participants = await Promise.all(
       allUserIds.map(async (userId) => {
         const user = await getUser(userId);
-        console.log(`Fetching user ${userId}:`, user); // Debug log
 
         // Get team information if this is a team event
         let teamId: string | undefined;
@@ -115,12 +114,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         if (event.isTeamEvent) {
           // Find the participation record for this user in this event
           const participation = participations.find((p) => p.userId === userId);
-          console.log(`User ${userId} participation:`, participation); // Debug log
           if (participation?.teamId) {
             // Get team details directly
             const { getTeam } = await import('@/lib/firestore');
             const team = await getTeam(participation.teamId);
-            console.log(`Team for user ${userId}:`, team); // Debug log
             if (team) {
               teamId = team.id;
               teamName = team.name;

@@ -16,14 +16,14 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, bodyweight, age, sex } = body;
+    const { name, bodyweight, dateOfBirth, sex } = body;
 
     // Validate input
     const updates: Partial<{
       name: string;
-      bodyweight: number;
-      age: number;
-      sex: 'M' | 'F';
+      bodyweight: number | null;
+      dateOfBirth: Date | null;
+      sex: 'M' | 'F' | null;
     }> = {};
 
     if (name !== undefined) {
@@ -31,26 +31,37 @@ export async function PUT(request: NextRequest) {
     }
 
     if (bodyweight !== undefined) {
-      const weight = Number(bodyweight);
-      if (isNaN(weight) || weight < 0) {
-        return NextResponse.json({ error: 'Invalid bodyweight' }, { status: 400 });
+      if (bodyweight === null) {
+        updates.bodyweight = null; // Clear the field
+      } else {
+        const weight = Number(bodyweight);
+        if (isNaN(weight) || weight < 0) {
+          return NextResponse.json({ error: 'Invalid bodyweight' }, { status: 400 });
+        }
+        updates.bodyweight = weight;
       }
-      updates.bodyweight = weight;
     }
 
-    if (age !== undefined) {
-      const ageNum = Number(age);
-      if (isNaN(ageNum) || ageNum < 0 || ageNum > 120) {
-        return NextResponse.json({ error: 'Invalid age' }, { status: 400 });
+    if (dateOfBirth !== undefined) {
+      if (dateOfBirth === null) {
+        updates.dateOfBirth = null; // Clear the field
+      } else {
+        const birthDate = new Date(dateOfBirth);
+        if (isNaN(birthDate.getTime()) || birthDate > new Date()) {
+          return NextResponse.json({ error: 'Invalid date of birth' }, { status: 400 });
+        }
+        updates.dateOfBirth = birthDate;
       }
-      updates.age = ageNum;
     }
 
     if (sex !== undefined) {
-      if (sex !== 'M' && sex !== 'F') {
+      if (sex === null) {
+        updates.sex = null; // Clear the field
+      } else if (sex !== 'M' && sex !== 'F') {
         return NextResponse.json({ error: 'Invalid sex value' }, { status: 400 });
+      } else {
+        updates.sex = sex;
       }
-      updates.sex = sex;
     }
 
     await updateUser(user.id, updates);

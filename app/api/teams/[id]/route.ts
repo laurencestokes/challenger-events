@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserByUid, getTeam, getTeamMembers, getUser } from '@/lib/firestore';
+import { convertFirestoreTimestamp } from '@/lib/utils';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -52,11 +53,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         id: team.id,
         name: team.name,
         description: team.description,
-        createdAt: team.createdAt?.toDate ? team.createdAt.toDate() : team.createdAt,
+        createdAt: convertFirestoreTimestamp(team.createdAt),
       },
       members: membersWithDetails.map((member) => ({
         ...member,
-        joinedAt: member.joinedAt?.toDate ? member.joinedAt.toDate() : member.joinedAt,
+        joinedAt: convertFirestoreTimestamp(member.joinedAt),
       })),
     });
   } catch (error) {

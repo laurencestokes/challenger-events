@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api-client';
+import { calculateAgeFromDateOfBirth, convertFirestoreTimestamp } from '@/lib/utils';
 
 interface Activity {
   id: string;
@@ -16,7 +17,7 @@ interface Participant {
   name: string;
   email: string;
   bodyweight?: number;
-  age?: number;
+  dateOfBirth?: Date;
   sex?: 'M' | 'F';
 }
 
@@ -170,7 +171,14 @@ export default function ScoreSubmissionModal({
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Age:</span>
                     <span className="ml-1 text-gray-900 dark:text-white">
-                      {competitorDetails.age || 'Not set'}
+                      {competitorDetails.dateOfBirth
+                        ? (() => {
+                            const birthDate = convertFirestoreTimestamp(
+                              competitorDetails.dateOfBirth,
+                            );
+                            return birthDate ? calculateAgeFromDateOfBirth(birthDate) : 'Not set';
+                          })()
+                        : 'Not set'}
                     </span>
                   </div>
                   <div>
@@ -181,7 +189,7 @@ export default function ScoreSubmissionModal({
                   </div>
                 </div>
                 {(!competitorDetails.bodyweight ||
-                  !competitorDetails.age ||
+                  !competitorDetails.dateOfBirth ||
                   !competitorDetails.sex) && (
                   <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
                     ⚠️ Missing competitor details may affect scoring calculation

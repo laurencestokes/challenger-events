@@ -10,6 +10,7 @@ import {
   getUser,
   getScoresByUserAndEvent,
 } from '@/lib/firestore';
+import { convertFirestoreTimestamp } from '@/lib/utils';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -32,12 +33,26 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             ? scores.reduce((sum, score) => sum + score.calculatedScore, 0)
             : undefined;
 
+        // Calculate age from date of birth
+        let calculatedAge: number | undefined;
+        if (user?.dateOfBirth) {
+          const birthDate = convertFirestoreTimestamp(user.dateOfBirth);
+          if (birthDate) {
+            const today = new Date();
+            calculatedAge = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+              calculatedAge--;
+            }
+          }
+        }
+
         return {
           id: participation.userId,
           name: user?.name || 'Unknown User',
           email: user?.email || 'unknown@example.com',
           bodyweight: user?.bodyweight,
-          age: user?.age,
+          age: calculatedAge,
           sex: user?.sex,
           joinedAt: participation.joinedAt,
           score: totalScore,

@@ -7,6 +7,7 @@ import {
   calculateRowingScoreNew,
   convertSex,
 } from '@/utils/scoring';
+import { convertFirestoreTimestamp } from '@/lib/utils';
 
 function timeToSeconds(timeStr: string): number {
   const [minutes, seconds] = timeStr.split(':').map(Number);
@@ -22,13 +23,27 @@ function timeToWatts(timeStr: string): number {
 
 export async function POST(request: Request) {
   const data = await request.json();
-  const { scoringSystemId, value, bodyweight, age, sex } = data;
+  const { scoringSystemId, value, bodyweight, dateOfBirth, sex } = data;
 
   if (!scoringSystemId || value === undefined) {
     return NextResponse.json(
       { error: 'Scoring system ID and value are required' },
       { status: 400 },
     );
+  }
+
+  // Calculate age from date of birth
+  let age = 25; // Default age
+  if (dateOfBirth) {
+    const birthDate = convertFirestoreTimestamp(dateOfBirth);
+    if (birthDate) {
+      const today = new Date();
+      age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+    }
   }
 
   const scoringSystem = getScoringSystemById(scoringSystemId);

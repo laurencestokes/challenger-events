@@ -10,9 +10,9 @@ interface AuthUser {
   email: string;
   name?: string;
   role: 'SUPER_ADMIN' | 'ADMIN' | 'COMPETITOR' | 'VIEWER';
-  bodyweight?: number;
-  age?: number;
-  sex?: 'M' | 'F';
+  bodyweight?: number | null;
+  dateOfBirth?: Date | null;
+  sex?: 'M' | 'F' | null;
   createdAt?: unknown;
   updatedAt?: unknown;
 }
@@ -56,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               name: userData.name,
               role: userData.role,
               bodyweight: userData.bodyweight,
-              age: userData.age,
+              dateOfBirth: userData.dateOfBirth,
               sex: userData.sex,
               createdAt: userData.createdAt,
               updatedAt: userData.updatedAt,

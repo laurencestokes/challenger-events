@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
               scoringSystemId: activity.scoringSystemId,
               value: Number(rawValue),
               bodyweight: competitor.bodyweight || 70,
-              age: competitor.age || 25,
+              dateOfBirth: competitor.dateOfBirth,
               sex: competitor.sex || 'M',
             }),
           },

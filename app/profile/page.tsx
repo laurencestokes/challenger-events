@@ -7,6 +7,7 @@ import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { calculateAgeFromDateOfBirth, convertFirestoreTimestamp } from '@/lib/utils';
 
 interface UserEvent {
   id: string;
@@ -24,12 +25,30 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    bodyweight: user?.bodyweight?.toString() || '',
-    age: user?.age?.toString() || '',
-    sex: user?.sex || '',
+    name: '',
+    email: '',
+    bodyweight: '',
+    dateOfBirth: '',
+    sex: '',
   });
+
+  // Update form data when user data loads
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        bodyweight: user.bodyweight?.toString() || '',
+        dateOfBirth: user.dateOfBirth
+          ? (() => {
+              const birthDate = convertFirestoreTimestamp(user.dateOfBirth);
+              return birthDate ? birthDate.toISOString().split('T')[0] : '';
+            })()
+          : '',
+        sex: user.sex || '',
+      });
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchUserEvents = async () => {
@@ -64,12 +83,42 @@ export default function ProfilePage() {
     setError('');
 
     try {
-      const updateData = {
-        name: formData.name,
-        bodyweight: formData.bodyweight ? Number(formData.bodyweight) : undefined,
-        age: formData.age ? Number(formData.age) : undefined,
-        sex: formData.sex || undefined,
-      };
+      // Only include fields that have values or have been changed
+      const updateData: Partial<{
+        name: string;
+        email: string;
+        bodyweight: number | null;
+        dateOfBirth: string | Date | null;
+        sex: string | null;
+      }> = {};
+
+      // Always include name if it's not empty (allow clearing by sending empty string)
+      if (formData.name !== undefined) {
+        updateData.name = formData.name.trim();
+      }
+
+      // Include bodyweight if it has a value, or if it's empty (to clear it)
+      if (formData.bodyweight !== undefined) {
+        if (formData.bodyweight.trim()) {
+          updateData.bodyweight = Number(formData.bodyweight);
+        } else {
+          updateData.bodyweight = null; // Clear the field
+        }
+      }
+
+      // Include dateOfBirth if it has a value, or if it's empty (to clear it)
+      if (formData.dateOfBirth !== undefined) {
+        if (formData.dateOfBirth.trim()) {
+          updateData.dateOfBirth = new Date(formData.dateOfBirth);
+        } else {
+          updateData.dateOfBirth = null; // Clear the field
+        }
+      }
+
+      // Include sex if it has a value, or if it's empty (to clear it)
+      if (formData.sex !== undefined) {
+        updateData.sex = formData.sex || null;
+      }
 
       await api.put('/api/user/profile', updateData);
       setIsEditing(false);
@@ -261,21 +310,19 @@ export default function ProfilePage() {
 
                           <div>
                             <label
-                              htmlFor="age"
+                              htmlFor="dateOfBirth"
                               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                             >
-                              Age
+                              Date of Birth
                             </label>
                             <input
-                              type="number"
-                              id="age"
-                              name="age"
-                              value={formData.age}
+                              type="date"
+                              id="dateOfBirth"
+                              name="dateOfBirth"
+                              value={formData.dateOfBirth}
                               onChange={handleInputChange}
-                              min="0"
-                              max="120"
+                              max={new Date().toISOString().split('T')[0]}
                               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-800"
-                              placeholder="e.g., 25"
                             />
                           </div>
 
@@ -362,7 +409,14 @@ export default function ProfilePage() {
                           <div>
                             <span className="text-xs text-gray-500 dark:text-gray-400">Age</span>
                             <p className="text-sm text-gray-900 dark:text-white">
-                              {user.age || '--'}
+                              {user.dateOfBirth
+                                ? (() => {
+                                    const birthDate = convertFirestoreTimestamp(user.dateOfBirth);
+                                    return birthDate
+                                      ? calculateAgeFromDateOfBirth(birthDate)
+                                      : '--';
+                                  })()
+                                : '--'}
                             </p>
                           </div>
                           <div>
@@ -372,7 +426,7 @@ export default function ProfilePage() {
                             </p>
                           </div>
                         </div>
-                        {(!user.bodyweight || !user.age || !user.sex) && (
+                        {(!user.bodyweight || !user.dateOfBirth || !user.sex) && (
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                             💡 Click "Edit" above to add your competitor stats for more accurate
                             scoring
@@ -519,7 +573,12 @@ export default function ProfilePage() {
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-500 dark:text-gray-400">Age</span>
                       <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {user.age || '--'}
+                        {user.dateOfBirth
+                          ? (() => {
+                              const birthDate = convertFirestoreTimestamp(user.dateOfBirth);
+                              return birthDate ? calculateAgeFromDateOfBirth(birthDate) : '--';
+                            })()
+                          : '--'}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -529,7 +588,7 @@ export default function ProfilePage() {
                       </span>
                     </div>
                   </div>
-                  {(!user.bodyweight || !user.age || !user.sex) && (
+                  {(!user.bodyweight || !user.dateOfBirth || !user.sex) && (
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
                       💡 Add your stats for better scoring
                     </p>

@@ -22,9 +22,9 @@ export interface User {
   name?: string;
   email: string;
   role: 'SUPER_ADMIN' | 'ADMIN' | 'COMPETITOR' | 'VIEWER';
-  bodyweight?: number;
-  age?: number;
-  sex?: 'M' | 'F';
+  bodyweight?: number | null;
+  dateOfBirth?: Date | null;
+  sex?: 'M' | 'F' | null;
   createdAt: Date;
   updatedAt: Date;
 }
