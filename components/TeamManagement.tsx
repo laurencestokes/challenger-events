@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api-client';
 
 interface Team {
@@ -17,30 +17,20 @@ interface TeamManagementProps {
 
 export default function TeamManagement({ eventId, onTeamJoined }: TeamManagementProps) {
   const [teams, setTeams] = useState<Team[]>([]);
-  const [userTeams, setUserTeams] = useState<Team[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showJoinModal, setShowJoinModal] = useState(false);
-  const [joinTeamId, setJoinTeamId] = useState('');
 
   // Form state for creating team
   const [teamName, setTeamName] = useState('');
   const [teamDescription, setTeamDescription] = useState('');
 
-  useEffect(() => {
-    fetchTeams();
-  }, []);
-
-  const fetchTeams = async () => {
+  const fetchTeams = useCallback(async () => {
     try {
       setIsLoading(true);
-      const [teamsData, userTeamsData] = await Promise.all([
-        api.get('/api/teams'),
-        api.get('/api/teams/user'),
-      ]);
+      const teamsData = await api.get('/api/teams');
       setTeams(teamsData.teams || []);
-      setUserTeams(userTeamsData.teams || []);
     } catch (error: unknown) {
       console.error('Error fetching teams:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch teams';
@@ -48,7 +38,29 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  const fetchCurrentTeamSelection = useCallback(async () => {
+    if (!eventId) return;
+
+    try {
+      // Get user's participation details for this event
+      const participationResponse = await api.get(`/api/events/${eventId}/debug-participation`);
+      if (participationResponse.participation?.teamId) {
+        setSelectedTeamId(participationResponse.participation.teamId);
+      }
+    } catch (error: unknown) {
+      console.error('Error fetching current team selection:', error);
+      // Don't show error to user, just log it
+    }
+  }, [eventId]);
+
+  useEffect(() => {
+    fetchTeams();
+    if (eventId) {
+      fetchCurrentTeamSelection();
+    }
+  }, [eventId, fetchTeams, fetchCurrentTeamSelection]);
 
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,22 +90,23 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
     }
   };
 
-  const handleJoinTeam = async () => {
-    if (!joinTeamId) return;
+  const handleSelectTeam = async (teamId: string) => {
+    if (!eventId) return;
 
     try {
-      // Join team for this specific event
+      setSelectedTeamId(teamId);
+
+      // Update participation to select this team for the event
       await api.post(`/api/events/${eventId}/join-team`, {
-        teamId: joinTeamId,
+        teamId: teamId,
       });
 
-      setShowJoinModal(false);
-      setJoinTeamId('');
+      // Refresh teams to show updated state
       fetchTeams();
-      onTeamJoined?.(joinTeamId);
+      onTeamJoined?.(teamId);
     } catch (error: unknown) {
-      console.error('Error joining team:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to join team';
+      console.error('Error selecting team:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to select team';
       setError(errorMessage);
     }
   };
@@ -115,80 +128,139 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
         </div>
       )}
 
-      {/* User's Teams */}
-      {userTeams.length > 0 && (
+      {/* Team Selection for Event */}
+      {eventId && (
         <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Teams</h3>
-          <div className="space-y-3">
-            {userTeams.map((team) => (
-              <div
-                key={team.id}
-                className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Select Your Team for This Event
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            Choose a team to compete with in this event. You can only be on one team per event.
+          </p>
+
+          {teams.length === 0 ? (
+            <div className="text-center py-4">
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                No teams available for this event.
+              </p>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md"
               >
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">{team.name}</h4>
-                  {team.description && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{team.description}</p>
-                  )}
-                </div>
-                <span className="text-xs text-gray-500 dark:text-gray-400">Member</span>
+                Create First Team
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {teams.map((team) => {
+                const isSelected = selectedTeamId === team.id;
+                return (
+                  <div
+                    key={team.id}
+                    className={`relative flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${isSelected
+                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-md'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-sm'
+                      }`}
+                    onClick={() => handleSelectTeam(team.id)}
+                  >
+                    {/* Selection indicator */}
+                    {isSelected && (
+                      <div className="absolute -top-2 -left-2 w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    )}
+
+                    <div className="flex items-center space-x-4">
+                      <div
+                        className={`flex items-center justify-center w-5 h-5 rounded-full border-2 ${isSelected
+                            ? 'border-primary-500 bg-primary-500'
+                            : 'border-gray-300 dark:border-gray-600'
+                          }`}
+                      >
+                        {isSelected && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <h4 className="font-semibold text-gray-900 dark:text-white">
+                            {team.name}
+                          </h4>
+                          {isSelected && (
+                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200 rounded-full">
+                              ✓ Selected
+                            </span>
+                          )}
+                        </div>
+                        {team.description && (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {team.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right side indicator */}
+                    <div className="flex items-center space-x-2">
+                      {isSelected ? (
+                        <div className="flex items-center space-x-1 text-primary-600 dark:text-primary-400">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          <span className="text-sm font-medium">Your Team</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectTeam(team.id);
+                          }}
+                          className="px-3 py-1 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-md transition-colors"
+                        >
+                          Select
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Selection summary */}
+          {selectedTeamId && (
+            <div className="mt-4 p-3 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <svg
+                  className="w-5 h-5 text-success-600 dark:text-success-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="text-sm font-medium text-success-800 dark:text-success-200">
+                  You're competing with:{' '}
+                  <span className="font-semibold">
+                    {teams.find((t) => t.id === selectedTeamId)?.name}
+                  </span>
+                </span>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       )}
-
-      {/* Available Teams */}
-      <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Available Teams</h3>
-          <div className="space-x-2">
-            <button
-              onClick={() => setShowJoinModal(true)}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md"
-            >
-              Join Team
-            </button>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
-            >
-              Create Team
-            </button>
-          </div>
-        </div>
-
-        {teams.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-            No teams available. Create the first team!
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {teams.map((team) => (
-              <div
-                key={team.id}
-                className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
-              >
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">{team.name}</h4>
-                  {team.description && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{team.description}</p>
-                  )}
-                </div>
-                <button
-                  onClick={() => {
-                    setJoinTeamId(team.id);
-                    setShowJoinModal(true);
-                  }}
-                  className="px-3 py-1 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
-                >
-                  Join
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
       {/* Create Team Modal */}
       {showCreateModal && (
@@ -248,56 +320,6 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Join Team Modal */}
-      {showJoinModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Join Team</h3>
-              <div className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="teamSelect"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Select Team
-                  </label>
-                  <select
-                    id="teamSelect"
-                    value={joinTeamId}
-                    onChange={(e) => setJoinTeamId(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
-                  >
-                    <option value="">Choose a team...</option>
-                    {teams.map((team) => (
-                      <option key={team.id} value={team.id}>
-                        {team.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowJoinModal(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleJoinTeam}
-                    disabled={!joinTeamId}
-                    className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
-                  >
-                    Join Team
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>

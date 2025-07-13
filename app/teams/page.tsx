@@ -1,7 +1,7 @@
 'use client';
 
 import ProtectedRoute from '@/components/ProtectedRoute';
-import TeamManagement from '@/components/TeamManagement';
+import TeamsPageComponent from '@/components/TeamsPage';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -22,7 +22,7 @@ export default function TeamsPage() {
                 </p>
               </div>
 
-              <TeamManagement />
+              <TeamsPageComponent />
             </div>
           </div>
         </div>

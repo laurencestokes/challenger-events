@@ -87,6 +87,17 @@ export interface TeamMember {
   joinedAt: Date;
 }
 
+export interface TeamInvitation {
+  id: string;
+  teamId: string;
+  email: string;
+  code: string;
+  invitedBy: string; // User ID of who sent the invitation
+  status: 'PENDING' | 'ACCEPTED' | 'EXPIRED';
+  expiresAt: Date;
+  createdAt: Date;
+}
+
 export interface Participation {
   id: string;
   userId: string;
@@ -412,6 +423,12 @@ export const getTeam = async (teamId: string) => {
   return null;
 };
 
+export const getAllTeams = async () => {
+  const teamsRef = collection(db, 'teams');
+  const querySnapshot = await getDocs(teamsRef);
+  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Team[];
+};
+
 export const getTeamsByEvent = async (eventId: string) => {
   // Get all participations for this event that have teamId
   const participationsRef = collection(db, 'participations');
@@ -436,6 +453,56 @@ export const getTeamsByEvent = async (eventId: string) => {
   }
 
   return teams;
+};
+
+// Team invitation functions
+export const createTeamInvitation = async (
+  invitationData: Omit<TeamInvitation, 'id' | 'createdAt'>,
+) => {
+  const invitationRef = collection(db, 'teamInvitations');
+  const docRef = await addDoc(invitationRef, {
+    ...invitationData,
+    createdAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...invitationData };
+};
+
+export const getTeamInvitationByCode = async (code: string) => {
+  const invitationsRef = collection(db, 'teamInvitations');
+  const q = query(invitationsRef, where('code', '==', code), limit(1));
+  const querySnapshot = await getDocs(q);
+  if (!querySnapshot.empty) {
+    const doc = querySnapshot.docs[0];
+    return { id: doc.id, ...doc.data() } as TeamInvitation;
+  }
+  return null;
+};
+
+export const getTeamInvitationsByTeam = async (teamId: string) => {
+  const invitationsRef = collection(db, 'teamInvitations');
+  const q = query(invitationsRef, where('teamId', '==', teamId));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as TeamInvitation[];
+};
+
+export const updateTeamInvitation = async (
+  invitationId: string,
+  updates: Partial<TeamInvitation>,
+) => {
+  const invitationRef = doc(db, 'teamInvitations', invitationId);
+  await updateDoc(invitationRef, {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
+export const generateInvitationCode = (): string => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 };
 
 export const addTeamMember = async (
