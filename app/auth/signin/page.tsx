@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../../../contexts/AuthContext';
 import { signInWithEmail, signUpWithEmail, isEmailVerified } from '../../../lib/firebase-auth';
 
 export default function SignInPage() {
@@ -12,6 +13,28 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { user } = useAuth();
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
+
+  // Show loading while checking authentication
+  if (user) {
+    return (
+      <div className="py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8 mx-auto">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">Redirecting to dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

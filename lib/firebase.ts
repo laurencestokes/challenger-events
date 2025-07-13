@@ -14,16 +14,12 @@ const requiredEnvVars = [
 
 const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
 
-// Only validate in browser runtime, not during build
+// Only validate in browser runtime during development, not during build
 if (typeof window !== 'undefined' && missingVars.length > 0) {
   if (process.env.NODE_ENV === 'development') {
     console.warn('⚠️ Missing Firebase environment variables:', missingVars);
     console.warn('Please check your .env file and ensure all Firebase variables are set.');
     console.warn('The app may not work correctly without these variables.');
-  } else {
-    console.error('❌ Missing Firebase environment variables:', missingVars);
-    console.error('Please check your deployment environment variables.');
-    // Don't throw during build, let it fail gracefully at runtime
   }
 }
 
