@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useParams } from 'next/navigation';
 import { api } from '@/lib/api-client';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
