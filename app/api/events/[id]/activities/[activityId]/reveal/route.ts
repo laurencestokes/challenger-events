@@ -50,14 +50,14 @@ export async function POST(
     await revealHiddenWorkout(params.activityId);
 
     // Broadcast the reveal event to all connected clients
-    const revealMessage = {
+    const revealMessage = JSON.stringify({
       type: 'workout_revealed',
       eventId: params.id,
       workoutId: params.activityId,
       workoutName: activity.name,
       timestamp: new Date().toISOString(),
       message: `Workout "${activity.name}" has been revealed!`,
-    };
+    });
 
     broadcastToEvent(params.id, revealMessage);
     console.log('Broadcasted workout reveal to connected clients');
