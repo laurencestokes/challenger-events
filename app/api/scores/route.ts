@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
           bodyweightForScoring = competitionVerification.bodyweight;
         }
 
-        // Prepare scoring request body
+        // Call the calculate-score API directly
         const scoringRequestBody = {
           scoringSystemId: activity.scoringSystemId,
           value: valueForScoring, // Use calculated 1RM for scoring
@@ -120,20 +120,35 @@ export async function POST(request: NextRequest) {
           sex: competitor.sex || 'M',
         };
 
-        const scoringResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/calculate-score`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(scoringRequestBody),
+        // Use the same domain for internal API calls
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL ||
+          (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+
+        const scoringResponse = await fetch(`${baseUrl}/api/calculate-score`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        );
+          body: JSON.stringify(scoringRequestBody),
+        });
 
         if (scoringResponse.ok) {
           const scoringResult = await scoringResponse.json();
           calculatedScore = scoringResult.score;
+          console.log('Score calculated successfully:', {
+            rawValue,
+            calculatedScore,
+            scoringSystemId: activity.scoringSystemId,
+            baseUrl,
+          });
+        } else {
+          const errorText = await scoringResponse.text();
+          console.error('Scoring API error:', {
+            status: scoringResponse.status,
+            error: errorText,
+            baseUrl,
+            scoringRequestBody,
+          });
         }
       } catch (error) {
         console.error('Error calculating score:', error);

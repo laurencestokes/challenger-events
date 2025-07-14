@@ -193,7 +193,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Unsupported scoring system' }, { status: 400 });
     }
 
-    return NextResponse.json({
+    const response = {
       score: result.score,
       percentile: result.percentile,
       scoringSystem: {
@@ -201,7 +201,15 @@ export async function POST(request: Request) {
         name: scoringSystem.name,
         category: scoringSystem.category,
       },
+    };
+
+    console.log('Calculate-score response:', {
+      scoringSystemId,
+      value,
+      result: response,
     });
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Error calculating score:', error);
     console.error('Error details:', {
