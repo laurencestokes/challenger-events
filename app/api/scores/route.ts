@@ -111,45 +111,27 @@ export async function POST(request: NextRequest) {
           bodyweightForScoring = competitionVerification.bodyweight;
         }
 
-        // Call the calculate-score API directly
-        const scoringRequestBody = {
-          scoringSystemId: activity.scoringSystemId,
-          value: valueForScoring, // Use calculated 1RM for scoring
-          bodyweight: bodyweightForScoring,
-          dateOfBirth: competitor.dateOfBirth,
-          sex: competitor.sex || 'M',
-        };
+        // Use the shared score calculation function
+        const { calculateScore } = await import('@/utils/scoreCalculation');
 
-        // Use the same domain for internal API calls
-        const baseUrl =
-          process.env.NEXT_PUBLIC_APP_URL ||
-          (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+        try {
+          const scoringResult = await calculateScore(
+            activity.scoringSystemId,
+            valueForScoring,
+            bodyweightForScoring,
+            competitor.dateOfBirth,
+            competitor.sex || 'M',
+          );
 
-        const scoringResponse = await fetch(`${baseUrl}/api/calculate-score`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(scoringRequestBody),
-        });
-
-        if (scoringResponse.ok) {
-          const scoringResult = await scoringResponse.json();
           calculatedScore = scoringResult.score;
           console.log('Score calculated successfully:', {
             rawValue,
             calculatedScore,
             scoringSystemId: activity.scoringSystemId,
-            baseUrl,
           });
-        } else {
-          const errorText = await scoringResponse.text();
-          console.error('Scoring API error:', {
-            status: scoringResponse.status,
-            error: errorText,
-            baseUrl,
-            scoringRequestBody,
-          });
+        } catch (error) {
+          console.error('Scoring calculation error:', error);
+          // Continue with raw value if scoring calculation fails
         }
       } catch (error) {
         console.error('Error calculating score:', error);
