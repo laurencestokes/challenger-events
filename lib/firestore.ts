@@ -285,6 +285,15 @@ export const getActivitiesByEvent = async (
   return activities.sort((a, b) => (a.order || 0) - (b.order || 0));
 };
 
+export const getActivity = async (activityId: string) => {
+  const activityRef = doc(db, 'activities', activityId);
+  const activitySnap = await getDoc(activityRef);
+  if (activitySnap.exists()) {
+    return { id: activitySnap.id, ...activitySnap.data() } as Activity;
+  }
+  return null;
+};
+
 export const updateActivity = async (activityId: string, updates: Partial<Activity>) => {
   const activityRef = doc(db, 'activities', activityId);
   await updateDoc(activityRef, {

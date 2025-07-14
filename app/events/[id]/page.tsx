@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../lib/api-client';
+import NotificationToast from '@/components/NotificationToast';
+import { useSSE } from '@/hooks/useSSE';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Leaderboard from '@/components/Leaderboard';
@@ -42,6 +44,31 @@ export default function EventPage() {
   const [isJoined, setIsJoined] = useState(false);
 
   const eventId = params.id as string;
+
+  // SSE and notification state
+  const { isConnected, lastEvent } = useSSE(eventId);
+  const [notification, setNotification] = useState<{
+    show: boolean;
+    message: string;
+    type: 'success' | 'info' | 'warning' | 'error';
+  }>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
+
+  // Handle SSE events
+  useEffect(() => {
+    console.log('SSE: lastEvent changed:', lastEvent);
+    if (lastEvent?.type === 'workout_revealed' && lastEvent.workoutName) {
+      console.log('SSE: Triggering notification for workout reveal:', lastEvent.workoutName);
+      setNotification({
+        show: true,
+        message: `🎉 New workout revealed: ${lastEvent.workoutName}!`,
+        type: 'success',
+      });
+    }
+  }, [lastEvent]);
 
   useEffect(() => {
     const fetchEventDetails = async () => {
@@ -392,6 +419,27 @@ export default function EventPage() {
           </div>
         </div>
       </div>
+
+      {/* SSE Connection Status (for debugging) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-4 left-4 z-40">
+          <div
+            className={`px-3 py-1 rounded-full text-xs ${
+              isConnected ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`}
+          >
+            SSE: {isConnected ? 'Connected' : 'Disconnected'}
+          </div>
+        </div>
+      )}
+
+      {/* Notification Toast */}
+      <NotificationToast
+        show={notification.show}
+        message={notification.message}
+        type={notification.type}
+        onClose={() => setNotification((prev) => ({ ...prev, show: false }))}
+      />
     </ProtectedRoute>
   );
 }

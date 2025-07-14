@@ -5,6 +5,8 @@ import { useParams } from 'next/navigation';
 import { api } from '@/lib/api-client';
 import { formatTimeWithMilliseconds } from '@/utils/scoring';
 import ScoreCalculator from '@/components/ScoreCalculator';
+import NotificationToast from '@/components/NotificationToast';
+import { useSSE } from '@/hooks/useSSE';
 import Link from 'next/link';
 
 interface Activity {
@@ -98,24 +100,52 @@ export default function EventLeaderboard() {
   const [activeTab, setActiveTab] = useState<'overall' | 'team-overall' | string>('overall');
   const [viewMode, setViewMode] = useState<'individual' | 'team'>('individual');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [leaderboardData, activitiesData] = await Promise.all([
-          api.get(`/api/events/${eventId}/leaderboard`),
-          api.get(`/api/events/${eventId}/activities`),
-        ]);
-        setLeaderboardData(leaderboardData);
-        setActivities(activitiesData);
-      } catch (error: unknown) {
-        console.error('Error fetching data:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // SSE and notification state
+  const { isConnected, lastEvent } = useSSE(eventId);
+  const [notification, setNotification] = useState<{
+    show: boolean;
+    message: string;
+    type: 'success' | 'info' | 'warning' | 'error';
+  }>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
 
+  // Handle SSE events
+  useEffect(() => {
+    console.log('SSE: lastEvent changed:', lastEvent);
+    if (lastEvent?.type === 'workout_revealed' && lastEvent.workoutName) {
+      console.log('SSE: Triggering notification for workout reveal:', lastEvent.workoutName);
+      setNotification({
+        show: true,
+        message: `🎉 New workout revealed: ${lastEvent.workoutName}!`,
+        type: 'success',
+      });
+
+      // Refresh activities to show the newly revealed workout
+      fetchData();
+    }
+  }, [lastEvent]);
+
+  const fetchData = async () => {
+    try {
+      const [leaderboardData, activitiesData] = await Promise.all([
+        api.get(`/api/events/${eventId}/leaderboard`),
+        api.get(`/api/events/${eventId}/activities`),
+      ]);
+      setLeaderboardData(leaderboardData);
+      setActivities(activitiesData);
+    } catch (error: unknown) {
+      console.error('Error fetching data:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [eventId]);
 
@@ -232,6 +262,27 @@ export default function EventLeaderboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* SSE Connection Status (for debugging) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-4 left-4 z-40">
+          <div
+            className={`px-3 py-1 rounded-full text-xs ${
+              isConnected ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`}
+          >
+            SSE: {isConnected ? 'Connected' : 'Disconnected'}
+          </div>
+        </div>
+      )}
+
+      {/* Notification Toast */}
+      <NotificationToast
+        show={notification.show}
+        message={notification.message}
+        type={notification.type}
+        onClose={() => setNotification((prev) => ({ ...prev, show: false }))}
+      />
+
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
