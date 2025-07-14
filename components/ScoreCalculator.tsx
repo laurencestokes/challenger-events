@@ -64,9 +64,9 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
     if (user) {
       const age = user.dateOfBirth
         ? (() => {
-          const birthDate = convertFirestoreTimestamp(user.dateOfBirth);
-          return birthDate ? calculateAgeFromDateOfBirth(birthDate) : 25;
-        })()
+            const birthDate = convertFirestoreTimestamp(user.dateOfBirth);
+            return birthDate ? calculateAgeFromDateOfBirth(birthDate) : 25;
+          })()
         : 25;
 
       setUserProfile({
