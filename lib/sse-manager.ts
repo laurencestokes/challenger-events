@@ -19,15 +19,25 @@ export function removeSSEClient(eventId: string, controller: ReadableStreamDefau
 }
 
 export function broadcastToEvent(eventId: string, message: string) {
+  console.log('SSE Manager: Broadcasting to event:', eventId);
+  console.log('SSE Manager: Message:', message);
+
   const clients = connectedClients.get(eventId);
+  console.log('SSE Manager: Number of connected clients:', clients?.length || 0);
+
   if (clients) {
-    const messageStr = `data: ${JSON.stringify(message)}\n\n`;
+    const messageStr = `data: ${message}\n\n`;
+    console.log('SSE Manager: Sending message to clients:', messageStr);
+
     clients.forEach((controller) => {
       try {
         controller.enqueue(new TextEncoder().encode(messageStr));
+        console.log('SSE Manager: Message sent to client successfully');
       } catch (error) {
-        console.error('Error broadcasting to client:', error);
+        console.error('SSE Manager: Error broadcasting to client:', error);
       }
     });
+  } else {
+    console.log('SSE Manager: No connected clients for event:', eventId);
   }
 }
