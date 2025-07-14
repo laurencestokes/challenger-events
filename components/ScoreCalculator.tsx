@@ -23,6 +23,7 @@ interface ScoreCalculatorProps {
 interface CalculatorState {
   [activityId: string]: {
     value: number;
+    inputValue: string; // For time inputs, store the raw input string
     score: number | null;
     loading: boolean;
     error: string | null;
@@ -46,8 +47,10 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
     const initialState: CalculatorState = {};
     activities.forEach((activity) => {
       const defaultValue = getDefaultValue(activity);
+      const unit = getActivityUnit(activity.id);
       initialState[activity.id] = {
         value: defaultValue,
+        inputValue: unit === 'seconds' ? formatValue(defaultValue, unit) : defaultValue.toString(),
         score: null,
         loading: false,
         error: null,
@@ -61,9 +64,9 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
     if (user) {
       const age = user.dateOfBirth
         ? (() => {
-            const birthDate = convertFirestoreTimestamp(user.dateOfBirth);
-            return birthDate ? calculateAgeFromDateOfBirth(birthDate) : 25;
-          })()
+          const birthDate = convertFirestoreTimestamp(user.dateOfBirth);
+          return birthDate ? calculateAgeFromDateOfBirth(birthDate) : 25;
+        })()
         : 25;
 
       setUserProfile({
@@ -85,22 +88,47 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
   }, []);
 
   const getDefaultValue = (activity: Activity): number => {
+    // Check for specific activity types first
+    if (activity.scoringSystemId === 'rowing_4min') {
+      return 1000; // Default 4-minute row distance: 1000m
+    }
+
+    if (activity.scoringSystemId === 'rowing_500m_distance') {
+      return 300; // Default 500m row distance: 300m
+    }
+
+    // Generic defaults based on unit
     switch (activity.unit) {
       case 'kg':
         return 100; // Default weight
       case 'seconds':
         return 120; // Default time (2 minutes)
+      case 'm':
+        return 500; // Default distance in meters
       default:
         return 10;
     }
   };
 
   const getMinMaxValues = (activity: Activity): { min: number; max: number } => {
+    // Check for specific activity types first
+    if (activity.scoringSystemId === 'rowing_4min') {
+      return { min: 100, max: 1800 }; // 4-minute row: 100m to 1800m
+    }
+
+    // Check for other specific activity types
+    if (activity.scoringSystemId === 'rowing_500m_distance') {
+      return { min: 100, max: 500 }; // 500m row distance: 100m to 500m
+    }
+
+    // Generic ranges based on unit
     switch (activity.unit) {
       case 'kg':
         return { min: 20, max: 300 };
       case 'seconds':
         return { min: 60, max: 300 }; // 1-5 minutes
+      case 'm':
+        return { min: 50, max: 2000 }; // Distance in meters
       default:
         return { min: 1, max: 100 };
     }
@@ -110,6 +138,10 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
     if (unit === 'seconds') {
       const minutes = Math.floor(value / 60);
       const seconds = Math.floor(value % 60);
+      const milliseconds = Math.round((value % 1) * 10); // Get tenths of seconds
+      if (milliseconds > 0) {
+        return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds}`;
+      }
       return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
     return `${value.toFixed(1)} ${unit}`;
@@ -117,8 +149,19 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
 
   const parseTimeInput = (timeStr: string): number => {
     if (timeStr.includes(':')) {
-      const [minutes, seconds] = timeStr.split(':').map(Number);
-      return minutes * 60 + seconds;
+      const [minutes, secondsPart] = timeStr.split(':');
+      const minutesNum = Number(minutes);
+
+      // Handle seconds with optional milliseconds
+      let secondsNum = 0;
+      if (secondsPart.includes('.')) {
+        const [seconds, milliseconds] = secondsPart.split('.');
+        secondsNum = Number(seconds) + Number(milliseconds) / 10;
+      } else {
+        secondsNum = Number(secondsPart);
+      }
+
+      return minutesNum * 60 + secondsNum;
     }
     return Number(timeStr);
   };
@@ -172,9 +215,14 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
   };
 
   const handleValueChange = (activityId: string, newValue: number) => {
+    const unit = getActivityUnit(activityId);
     setCalculatorState((prev) => ({
       ...prev,
-      [activityId]: { ...prev[activityId], value: newValue },
+      [activityId]: {
+        ...prev[activityId],
+        value: newValue,
+        inputValue: unit === 'seconds' ? formatValue(newValue, unit) : newValue.toString(),
+      },
     }));
 
     // Clear existing timeout for this activity
@@ -190,9 +238,30 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
   };
 
   const handleTimeInputChange = (activityId: string, timeStr: string) => {
+    // Update the input value immediately for responsive typing
+    setCalculatorState((prev) => ({
+      ...prev,
+      [activityId]: { ...prev[activityId], inputValue: timeStr },
+    }));
+
     const seconds = parseTimeInput(timeStr);
     if (!isNaN(seconds) && seconds > 0) {
-      handleValueChange(activityId, seconds);
+      // Update the actual value and trigger calculation
+      setCalculatorState((prev) => ({
+        ...prev,
+        [activityId]: { ...prev[activityId], value: seconds },
+      }));
+
+      // Clear existing timeout for this activity
+      if (timeoutRefs.current[activityId]) {
+        clearTimeout(timeoutRefs.current[activityId]!);
+      }
+
+      // Set new timeout for debounced calculation
+      timeoutRefs.current[activityId] = setTimeout(() => {
+        calculateScore(activityId, seconds);
+        timeoutRefs.current[activityId] = null;
+      }, 500);
     }
   };
 
@@ -267,13 +336,13 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
                 {isTimeInput ? (
                   <div>
                     <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                      Time (mm:ss)
+                      Time (mm:ss.ms)
                     </label>
                     <input
                       type="text"
-                      value={formatValue(state.value, unit)}
+                      value={state.inputValue}
                       onChange={(e) => handleTimeInputChange(activity.id, e.target.value)}
-                      placeholder="2:30"
+                      placeholder="1:30.5"
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     />
                   </div>
