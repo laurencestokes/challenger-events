@@ -7,6 +7,7 @@ import { getUserByEmail } from '../lib/firestore';
 
 interface AuthUser {
   id: string;
+  uid: string;
   email: string;
   name?: string;
   role: 'SUPER_ADMIN' | 'ADMIN' | 'COMPETITOR' | 'VIEWER';
@@ -55,6 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (userData) {
             setUser({
               id: userData.id,
+              uid: firebaseUser.uid,
               email: userData.email,
               name: userData.name,
               role: userData.role,

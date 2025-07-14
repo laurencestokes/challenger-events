@@ -37,6 +37,7 @@ export interface Event {
   id: string;
   name: string;
   description?: string;
+  brief?: string; // Custom brief content for the event
   code: string;
   status: 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
   startDate?: Date;

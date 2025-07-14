@@ -108,6 +108,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       isTeamEvent,
       teamScoringMethod,
       maxTeamSize,
+      brief,
     } = body;
 
     const updates: Partial<Event> = {};
@@ -119,6 +120,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (isTeamEvent !== undefined) updates.isTeamEvent = isTeamEvent;
     if (teamScoringMethod !== undefined) updates.teamScoringMethod = teamScoringMethod;
     if (maxTeamSize !== undefined) updates.maxTeamSize = maxTeamSize;
+    if (brief !== undefined) updates.brief = brief;
 
     const updatedEvent = await updateEvent(params.id, updates);
 

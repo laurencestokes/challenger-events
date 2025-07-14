@@ -59,7 +59,11 @@ export async function POST(
       message: `Workout "${activity.name}" has been revealed!`,
     });
 
+    console.log('SSE: Broadcasting reveal message:', revealMessage);
+    console.log('SSE: Event ID for broadcast:', params.id);
+
     broadcastToEvent(params.id, revealMessage);
+    console.log('SSE: Broadcast completed');
     console.log('Broadcasted workout reveal to connected clients');
 
     console.log('Workout revealed successfully');
