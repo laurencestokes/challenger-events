@@ -191,7 +191,7 @@ export default function EventDetails() {
 
   const handleRevealWorkout = async (activityId: string) => {
     try {
-      await api.post(`/api/events/${eventId}/activities/${activityId}/reveal`);
+      await api.post(`/api/events/${eventId}/activities/${activityId}/reveal`, {});
       // Update the activity in the local state
       setActivities(
         activities.map((activity) =>
