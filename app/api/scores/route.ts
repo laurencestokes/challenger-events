@@ -47,8 +47,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    // Validate that the activity exists
-    const activities = await getActivitiesByEvent(eventId);
+    // Validate that the activity exists (admin can submit scores for hidden workouts)
+    const activities = await getActivitiesByEvent(eventId, { includeHiddenWorkouts: true }); // Include hidden for admin score submission
     const activity = activities.find((a) => a.id === activityId);
     if (!activity) {
       return NextResponse.json({ error: 'Activity not found' }, { status: 404 });

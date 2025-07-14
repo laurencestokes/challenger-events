@@ -33,6 +33,8 @@ interface Activity {
   scoringSystemId?: string;
   unit?: string;
   order: number;
+  isHidden?: boolean;
+  revealedAt?: Date;
   createdAt: Date;
 }
 
@@ -184,6 +186,23 @@ export default function EventDetails() {
     } catch (error: unknown) {
       console.error('Error cancelling event:', error);
       setError('Failed to cancel event');
+    }
+  };
+
+  const handleRevealWorkout = async (activityId: string) => {
+    try {
+      await api.post(`/api/events/${eventId}/activities/${activityId}/reveal`);
+      // Update the activity in the local state
+      setActivities(
+        activities.map((activity) =>
+          activity.id === activityId
+            ? { ...activity, isHidden: false, revealedAt: new Date() }
+            : activity,
+        ),
+      );
+    } catch (error: unknown) {
+      console.error('Error revealing workout:', error);
+      setError('Failed to reveal workout');
     }
   };
 
@@ -430,12 +449,28 @@ export default function EventDetails() {
                       return (
                         <div
                           key={activity.id}
-                          className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
+                          className={`flex items-center justify-between p-3 border rounded-lg ${
+                            activity.isHidden
+                              ? 'border-yellow-300 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-900/20'
+                              : 'border-gray-200 dark:border-gray-700'
+                          }`}
                         >
                           <div>
-                            <h3 className="font-medium text-gray-900 dark:text-white">
-                              {activity.name}
-                            </h3>
+                            <div className="flex items-center space-x-2">
+                              <h3 className="font-medium text-gray-900 dark:text-white">
+                                {activity.name}
+                              </h3>
+                              {activity.isHidden && (
+                                <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                  Hidden
+                                </span>
+                              )}
+                              {activity.revealedAt && (
+                                <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                  Revealed
+                                </span>
+                              )}
+                            </div>
                             {activity.description && (
                               <p className="text-sm text-gray-500 dark:text-gray-400">
                                 {activity.description}
@@ -456,8 +491,21 @@ export default function EventDetails() {
                                 </span>
                               )}
                             </div>
+                            {activity.isHidden && (
+                              <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                                ⚠️ This workout is hidden from competitors
+                              </p>
+                            )}
                           </div>
                           <div className="flex items-center space-x-2">
+                            {activity.isHidden && (
+                              <button
+                                onClick={() => handleRevealWorkout(activity.id)}
+                                className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 text-sm"
+                              >
+                                Reveal
+                              </button>
+                            )}
                             <button
                               onClick={() => {
                                 setSelectedActivity(activity);

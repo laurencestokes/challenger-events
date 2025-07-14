@@ -44,7 +44,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const body = await request.json();
     console.log('Request body:', body);
 
-    const { name, description, type, scoringSystemId, unit, reps, order } = body;
+    const { name, description, type, scoringSystemId, unit, reps, order, isHidden } = body;
 
     if (!name || !type) {
       return NextResponse.json({ error: 'Name and type are required' }, { status: 400 });
@@ -53,7 +53,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // Get existing activities to determine order if not provided
     let activityOrder = order;
     if (activityOrder === undefined) {
-      const existingActivities = await getActivitiesByEvent(params.id);
+      const existingActivities = await getActivitiesByEvent(params.id, {
+        includeHiddenWorkouts: false,
+      });
       activityOrder = existingActivities.length;
     }
 
@@ -68,6 +70,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       unit,
       reps,
       order: activityOrder,
+      isHidden: isHidden ?? false,
     });
 
     console.log('Activity created:', activity);
@@ -108,9 +111,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
+    // Check if user is admin for this event to determine if they should see hidden workouts
+    const isEventAdmin = event.adminIds.includes(user.id);
+    const includeHidden = isEventAdmin;
+
     // Get activities for the event
-    console.log('Fetching activities for event:', params.id);
-    const activities = await getActivitiesByEvent(params.id);
+    console.log('Fetching activities for event:', params.id, 'includeHidden:', includeHidden);
+    const activities = await getActivitiesByEvent(params.id, {
+      includeHiddenWorkouts: includeHidden,
+    });
     console.log('Activities found:', activities.length);
 
     return NextResponse.json(activities);

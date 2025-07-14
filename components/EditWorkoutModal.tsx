@@ -13,6 +13,8 @@ interface Activity {
   scoringSystemId?: string;
   unit?: string;
   order: number;
+  isHidden?: boolean;
+  revealedAt?: Date;
   createdAt: Date;
 }
 
@@ -40,6 +42,7 @@ export default function EditWorkoutModal({
     return EVENT_TYPES.find((type) => type.scoringSystemId === activity.scoringSystemId) || null;
   });
   const [reps, setReps] = useState<number>(1);
+  const [isHidden, setIsHidden] = useState(activity.isHidden || false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +64,7 @@ export default function EditWorkoutModal({
         unit: selectedEventType.unit,
         reps: selectedEventType.supportsReps ? reps : undefined,
         order: activity.order,
+        isHidden,
       };
 
       await api.put(`/api/events/${eventId}/activities/${activity.id}`, activityData);
@@ -178,6 +182,28 @@ export default function EditWorkoutModal({
                 placeholder="Optional description"
               />
             </div>
+
+            <div className="flex items-center">
+              <input
+                id="isHidden"
+                type="checkbox"
+                checked={isHidden}
+                onChange={(e) => setIsHidden(e.target.checked)}
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+              />
+              <label
+                htmlFor="isHidden"
+                className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+              >
+                Hidden Workout
+              </label>
+            </div>
+            {isHidden && (
+              <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                ⚠️ This workout will be hidden from competitors until you reveal it during the
+                event.
+              </p>
+            )}
 
             {error && <div className="text-sm text-red-600 dark:text-red-400">{error}</div>}
 

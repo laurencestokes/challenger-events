@@ -90,8 +90,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    // Get all activities for this event
-    const activities = await getActivitiesByEvent(eventId);
+    // Get all activities for this event (excluding hidden workouts for non-admins)
+    const activities = await getActivitiesByEvent(eventId, { includeHiddenWorkouts: false });
 
     // Get all scores for this event
     const scores = await getScoresByEvent(eventId);

@@ -60,6 +60,8 @@ export interface Activity {
   unit?: string;
   reps?: number; // Number of reps for strength exercises (1-10)
   order: number;
+  isHidden?: boolean; // Whether this workout is hidden from competitors
+  revealedAt?: Date; // When the workout was revealed (null if still hidden)
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -258,11 +260,26 @@ export const createActivity = async (activityData: Omit<Activity, 'id' | 'create
   return { id: docRef.id, ...activityData, createdAt: new Date() };
 };
 
-export const getActivitiesByEvent = async (eventId: string) => {
+/**
+ * Fetch activities for an event, with options for including hidden workouts.
+ * @param eventId - The event ID
+ * @param options - Options object
+ *   - includeHiddenWorkouts: Whether to include hidden workouts (default: false)
+ */
+export const getActivitiesByEvent = async (
+  eventId: string,
+  options: { includeHiddenWorkouts?: boolean } = {},
+) => {
+  const { includeHiddenWorkouts = false } = options;
   const activitiesRef = collection(db, 'activities');
   const q = query(activitiesRef, where('eventId', '==', eventId));
   const querySnapshot = await getDocs(q);
-  const activities = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Activity[];
+  let activities = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Activity[];
+
+  // Filter out hidden workouts unless explicitly requested
+  if (!includeHiddenWorkouts) {
+    activities = activities.filter((activity) => !activity.isHidden);
+  }
 
   // Sort by order on the client side to avoid index requirement
   return activities.sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -279,6 +296,15 @@ export const updateActivity = async (activityId: string, updates: Partial<Activi
 export const deleteActivity = async (activityId: string) => {
   const activityRef = doc(db, 'activities', activityId);
   await deleteDoc(activityRef);
+};
+
+export const revealHiddenWorkout = async (activityId: string) => {
+  const activityRef = doc(db, 'activities', activityId);
+  await updateDoc(activityRef, {
+    isHidden: false,
+    revealedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
 };
 
 // Score functions

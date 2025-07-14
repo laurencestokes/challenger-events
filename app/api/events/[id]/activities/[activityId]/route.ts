@@ -30,7 +30,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, description, type, scoringSystemId, unit, order } = body;
+    const { name, description, type, scoringSystemId, unit, order, isHidden } = body;
 
     if (!name || !type) {
       return NextResponse.json({ error: 'Name and type are required' }, { status: 400 });
@@ -43,6 +43,7 @@ export async function PUT(
       scoringSystemId,
       unit,
       order,
+      isHidden: isHidden ?? false,
     });
 
     return NextResponse.json({ success: true });
