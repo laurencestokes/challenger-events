@@ -7,7 +7,12 @@ jest.mock('@challengerco/challenger-data', () => ({
     benchScore: jest.fn().mockReturnValue({ score: 80, percentile: 40 }),
     deadliftScore: jest.fn().mockReturnValue({ score: 120, percentile: 60 }),
     rowingScore: jest.fn().mockReturnValue({ score: 90, percentile: 45 }),
+    rowing500mScore: jest.fn().mockReturnValue({ score: 85, percentile: 42 }),
+    rowing4minScore: jest.fn().mockReturnValue({ score: 95, percentile: 48 }),
+    bikeScore: jest.fn().mockReturnValue({ score: 88, percentile: 44 }),
+    skiScore: jest.fn().mockReturnValue({ score: 92, percentile: 46 }),
   })),
+  paceToWatts: jest.fn().mockReturnValue(200), // Legacy function
 }));
 
 describe('Scoring Utilities', () => {

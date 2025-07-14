@@ -3,7 +3,7 @@ import { ChallengerData } from '@challengerco/challenger-data';
 // Initialize the challenger data instance
 const challengerData = new ChallengerData();
 
-// Export the paceToWatts function using the static method
+// Legacy paceToWatts function - kept for backward compatibility but no longer used
 export const paceToWatts = (pace: number): number => {
   try {
     return ChallengerData.paceToWatts(pace);
@@ -169,16 +169,87 @@ export function calculateDeadliftScoreNew(
 }
 
 export function calculateRowingScoreNew(
-  watts: number,
+  timeInSeconds: number,
   sex: 'male' | 'female',
   age: number,
   weight: number,
 ) {
   try {
-    return challengerData.rowingScore(watts, sex, age, weight);
+    return challengerData.rowing500mScore(timeInSeconds, sex, age, weight);
   } catch (error) {
     console.error('Error in calculateRowingScoreNew:', error);
     // Return a fallback result
-    return { score: watts, percentile: 50 };
+    return { score: timeInSeconds, percentile: 50 };
   }
+}
+
+export function calculateRowing4minScoreNew(
+  distance: number,
+  sex: 'male' | 'female',
+  age: number,
+  weight: number,
+) {
+  try {
+    return challengerData.rowing4minScore(distance, sex, age, weight);
+  } catch (error) {
+    console.error('Error in calculateRowing4minScoreNew:', error);
+    // Return a fallback result
+    return { score: distance, percentile: 50 };
+  }
+}
+
+export function calculateBikeScoreNew(timeInSeconds: number, sex: 'male' | 'female', age: number) {
+  try {
+    return challengerData.bikeScore(timeInSeconds, sex, age);
+  } catch (error) {
+    console.error('Error in calculateBikeScoreNew:', error);
+    // Return a fallback result
+    return { score: timeInSeconds, percentile: 50 };
+  }
+}
+
+export function calculateSkiScoreNew(timeInSeconds: number, sex: 'male' | 'female', age: number) {
+  try {
+    return challengerData.skiScore(timeInSeconds, sex, age);
+  } catch (error) {
+    console.error('Error in calculateSkiScoreNew:', error);
+    // Return a fallback result
+    return { score: timeInSeconds, percentile: 50 };
+  }
+}
+
+// Utility function to format time with milliseconds
+export function formatTimeWithMilliseconds(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  const milliseconds = Math.round((remainingSeconds % 1) * 10);
+  const wholeSeconds = Math.floor(remainingSeconds);
+
+  if (minutes > 0) {
+    return `${minutes}:${wholeSeconds.toString().padStart(2, '0')}.${milliseconds}`;
+  } else {
+    return `${wholeSeconds}.${milliseconds}`;
+  }
+}
+
+// Utility function to parse time with milliseconds
+export function parseTimeWithMilliseconds(timeStr: string): number {
+  // Handle mm:ss.ms format (e.g., "1:26.3" -> 86.3 seconds)
+  if (timeStr.includes(':')) {
+    const [minutes, secondsPart] = timeStr.split(':');
+    const minutesNum = Number(minutes);
+
+    // Handle seconds with potential milliseconds
+    if (secondsPart.includes('.')) {
+      const [seconds, milliseconds] = secondsPart.split('.');
+      const secondsNum = Number(seconds);
+      const millisecondsNum = Number(milliseconds);
+      return minutesNum * 60 + secondsNum + millisecondsNum / 10; // Assuming 1 decimal place
+    } else {
+      const secondsNum = Number(secondsPart);
+      return minutesNum * 60 + secondsNum;
+    }
+  }
+  // Handle seconds only (e.g., "86.3" -> 86.3 seconds)
+  return Number(timeStr);
 }

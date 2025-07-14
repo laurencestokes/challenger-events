@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { api } from '../lib/api-client';
+import { EVENT_TYPES, EventType } from '../constants/eventTypes';
 
 interface Activity {
   id: string;
@@ -15,23 +16,9 @@ interface Activity {
   createdAt: Date;
 }
 
-interface ScoringSystem {
-  id: string;
-  name: string;
-  description: string;
-  category: 'STRENGTH' | 'ENDURANCE' | 'MIXED';
-  inputType: 'WEIGHT' | 'TIME' | 'DISTANCE' | 'REPS' | 'CUSTOM';
-  unit?: string;
-  requiresBodyweight: boolean;
-  requiresAge: boolean;
-  requiresSex: boolean;
-  calculationFunction: string;
-}
-
 interface EditWorkoutModalProps {
   activity: Activity;
   eventId: string;
-  scoringSystems: ScoringSystem[];
   onClose: () => void;
   onWorkoutUpdated: (updatedActivity: Activity) => void;
 }
@@ -39,7 +26,6 @@ interface EditWorkoutModalProps {
 export default function EditWorkoutModal({
   activity,
   eventId,
-  scoringSystems,
   onClose,
   onWorkoutUpdated,
 }: EditWorkoutModalProps) {
@@ -49,27 +35,31 @@ export default function EditWorkoutModal({
   // Form state
   const [name, setName] = useState(activity.name);
   const [description, setDescription] = useState(activity.description || '');
-  const [type, setType] = useState<'TIME' | 'REPS' | 'WEIGHT' | 'DISTANCE' | 'CUSTOM'>(
-    activity.type,
-  );
-  const [scoringSystemId, setScoringSystemId] = useState<string>(activity.scoringSystemId || '');
-  const [unit, setUnit] = useState<string>(activity.unit || '');
-
-  // Filter scoring systems based on selected type
-  const filteredScoringSystems = scoringSystems.filter((system) => system.inputType === type);
+  const [selectedEventType, setSelectedEventType] = useState<EventType | null>(() => {
+    // Find the event type that matches the current activity
+    return EVENT_TYPES.find((type) => type.scoringSystemId === activity.scoringSystemId) || null;
+  });
+  const [reps, setReps] = useState<number>(1);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
+    if (!selectedEventType) {
+      setError('Please select an event type');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const activityData = {
-        name,
-        description: description || undefined,
-        type,
-        scoringSystemId: scoringSystemId || undefined,
-        unit: unit || undefined,
+        name: name || selectedEventType.name,
+        description: description || selectedEventType.description,
+        type: selectedEventType.inputType,
+        scoringSystemId: selectedEventType.scoringSystemId,
+        unit: selectedEventType.unit,
+        reps: selectedEventType.supportsReps ? reps : undefined,
         order: activity.order,
       };
 
@@ -89,13 +79,14 @@ export default function EditWorkoutModal({
     }
   };
 
-  const handleTypeChange = (newType: 'TIME' | 'REPS' | 'WEIGHT' | 'DISTANCE' | 'CUSTOM') => {
-    setType(newType);
-    // Only reset scoring system if the new type doesn't support the current one
-    if (!filteredScoringSystems.find((sys) => sys.id === scoringSystemId)) {
-      setScoringSystemId('');
+  const handleEventTypeChange = (eventTypeId: string) => {
+    const eventType = EVENT_TYPES.find((type) => type.id === eventTypeId);
+    setSelectedEventType(eventType || null);
+    if (eventType) {
+      setName(eventType.name);
+      setDescription(eventType.description);
+      setReps(eventType.defaultReps || 1);
     }
-    setUnit(''); // Reset unit when type changes
   };
 
   return (
@@ -106,19 +97,68 @@ export default function EditWorkoutModal({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
+                htmlFor="eventType"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Event Type *
+              </label>
+              <select
+                id="eventType"
+                value={selectedEventType?.id || ''}
+                onChange={(e) => handleEventTypeChange(e.target.value)}
+                required
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+              >
+                <option value="">Select an event type</option>
+                {EVENT_TYPES.map((eventType) => (
+                  <option key={eventType.id} value={eventType.id}>
+                    {eventType.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {selectedEventType?.supportsReps && (
+              <div>
+                <label
+                  htmlFor="reps"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Number of Reps
+                </label>
+                <select
+                  id="reps"
+                  value={reps}
+                  onChange={(e) => setReps(Number(e.target.value))}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                >
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((rep) => (
+                    <option key={rep} value={rep}>
+                      {rep} {rep === 1 ? 'rep' : 'reps'}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Your weight will be converted to estimated 1RM using the Epley formula for
+                  scoring.
+                </p>
+              </div>
+            )}
+
+            <div>
+              <label
                 htmlFor="name"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                Workout Name *
+                Workout Name
               </label>
               <input
                 type="text"
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                required
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
-                placeholder="e.g., Back Squat, 2km Row"
+                placeholder="Custom name (optional)"
               />
             </div>
 
@@ -135,87 +175,7 @@ export default function EditWorkoutModal({
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
-                placeholder="Optional description of the workout"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="type"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
-                Input Type *
-              </label>
-              <select
-                id="type"
-                value={type}
-                onChange={(e) =>
-                  handleTypeChange(
-                    e.target.value as 'TIME' | 'REPS' | 'WEIGHT' | 'DISTANCE' | 'CUSTOM',
-                  )
-                }
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
-              >
-                <option value="WEIGHT">Weight (kg)</option>
-                <option value="TIME">Time (mm:ss)</option>
-                <option value="REPS">Reps</option>
-                <option value="DISTANCE">Distance (m)</option>
-                <option value="CUSTOM">Custom</option>
-              </select>
-            </div>
-
-            <div>
-              <label
-                htmlFor="scoringSystem"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
-                Scoring System
-              </label>
-              <select
-                id="scoringSystem"
-                value={scoringSystemId}
-                onChange={(e) => setScoringSystemId(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
-              >
-                <option value="">No scoring system</option>
-                {filteredScoringSystems.map((system) => (
-                  <option key={system.id} value={system.id}>
-                    {system.name} - {system.description}
-                  </option>
-                ))}
-              </select>
-              {filteredScoringSystems.length === 0 && type !== 'CUSTOM' && (
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  No scoring systems available for this input type.
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="unit"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
-                Unit
-              </label>
-              <input
-                type="text"
-                id="unit"
-                value={unit}
-                onChange={(e) => setUnit(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
-                placeholder={
-                  type === 'WEIGHT'
-                    ? 'kg'
-                    : type === 'TIME'
-                      ? 'mm:ss'
-                      : type === 'REPS'
-                        ? 'reps'
-                        : type === 'DISTANCE'
-                          ? 'm'
-                          : 'unit'
-                }
+                placeholder="Optional description"
               />
             </div>
 
@@ -231,8 +191,8 @@ export default function EditWorkoutModal({
               </button>
               <button
                 type="submit"
-                disabled={isLoading}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
+                disabled={isLoading || !selectedEventType}
+                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Updating...' : 'Update Workout'}
               </button>

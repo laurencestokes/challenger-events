@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api-client';
 import { calculateAgeFromDateOfBirth, convertFirestoreTimestamp } from '@/lib/utils';
 import { SCORING_SYSTEMS } from '@/constants/scoringSystems';
+import { parseTimeWithMilliseconds } from '@/utils/scoring';
 
 interface Activity {
   id: string;
@@ -159,13 +160,7 @@ export default function ScoreSubmissionModal({
   };
 
   const parseTimeInput = (timeStr: string): number => {
-    // Handle mm:ss format (e.g., "2:30" -> 150 seconds)
-    if (timeStr.includes(':')) {
-      const [minutes, seconds] = timeStr.split(':').map(Number);
-      return minutes * 60 + seconds;
-    }
-    // Handle seconds only (e.g., "120" -> 120 seconds)
-    return Number(timeStr);
+    return parseTimeWithMilliseconds(timeStr);
   };
 
   const handleCompetitorChange = async (competitorId: string) => {
@@ -192,8 +187,12 @@ export default function ScoreSubmissionModal({
 
   const handleScoreChange = (value: string) => {
     if (isTimeInput()) {
-      // For time input, allow mm:ss format
-      setScoreValue(value);
+      // For time input, allow mm:ss.ms format (e.g., "1:26.3") or ss.ms format (e.g., "86.3")
+      // Allow digits, colons, and one decimal point
+      const timeRegex = /^[0-9]*:?[0-9]*\.?[0-9]*$/;
+      if (timeRegex.test(value) || value === '') {
+        setScoreValue(value);
+      }
     } else {
       // For other inputs, only allow numbers
       setScoreValue(value.replace(/[^0-9.]/g, ''));

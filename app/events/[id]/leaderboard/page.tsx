@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api-client';
+import { formatTimeWithMilliseconds } from '@/utils/scoring';
 import ScoreCalculator from '@/components/ScoreCalculator';
 import Link from 'next/link';
 
@@ -124,11 +125,9 @@ export default function EventLeaderboard() {
   };
 
   const formatRawValue = (rawValue: number, unit: string) => {
-    // For rowing events with seconds unit, convert to mm:ss format
+    // For time events with seconds unit, convert to mm:ss.ms format
     if (unit === 'seconds' && rawValue > 0) {
-      const minutes = Math.floor(rawValue / 60);
-      const seconds = Math.floor(rawValue % 60);
-      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      return formatTimeWithMilliseconds(rawValue);
     }
     // For other units, use the standard format
     return `${rawValue.toFixed(1)} ${unit}`;

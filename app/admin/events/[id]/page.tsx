@@ -567,7 +567,6 @@ export default function EventDetails() {
           <EditWorkoutModal
             activity={selectedActivity}
             eventId={eventId}
-            scoringSystems={scoringSystems}
             onClose={() => {
               setShowEditWorkoutModal(false);
               setSelectedActivity(null);
