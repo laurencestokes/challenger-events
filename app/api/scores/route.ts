@@ -121,7 +121,8 @@ export async function POST(request: NextRequest) {
         };
 
         // Use the same domain for internal API calls
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL ||
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL ||
           (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
         const scoringResponse = await fetch(`${baseUrl}/api/calculate-score`, {
