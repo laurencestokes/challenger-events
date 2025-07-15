@@ -43,7 +43,10 @@ export async function POST(request: NextRequest) {
     }
     const { activityId, rawValue, notes } = await request.json();
     if (!activityId || rawValue === undefined) {
-      return NextResponse.json({ error: 'Activity ID and raw value are required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Activity ID and raw value are required' },
+        { status: 400 },
+      );
     }
     // Find the activity and scoring system
     const activity = EVENT_TYPES.find((a) => a.id === activityId);
@@ -88,4 +91,4 @@ export async function POST(request: NextRequest) {
     console.error('Error submitting personal score:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-} 
+}

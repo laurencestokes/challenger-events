@@ -9,7 +9,12 @@ interface AddScoreModalProps {
   initialActivityId?: string;
 }
 
-export default function AddScoreModal({ isOpen, onClose, onScoreAdded, initialActivityId }: AddScoreModalProps) {
+export default function AddScoreModal({
+  isOpen,
+  onClose,
+  onScoreAdded,
+  initialActivityId,
+}: AddScoreModalProps) {
   const [activityId, setActivityId] = useState(initialActivityId || '');
   const [rawValue, setRawValue] = useState('');
   const [notes, setNotes] = useState('');
@@ -67,13 +72,22 @@ export default function AddScoreModal({ isOpen, onClose, onScoreAdded, initialAc
           aria-label="Close"
         >
           <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Add Personal Score</h2>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+          Add Personal Score
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Test</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Test
+            </label>
             <select
               value={activityId}
               onChange={(e) => setActivityId(e.target.value)}
@@ -82,7 +96,9 @@ export default function AddScoreModal({ isOpen, onClose, onScoreAdded, initialAc
             >
               <option value="">Select a test...</option>
               {EVENT_TYPES.map((type) => (
-                <option key={type.id} value={type.id}>{type.name}</option>
+                <option key={type.id} value={type.id}>
+                  {type.name}
+                </option>
               ))}
             </select>
           </div>
@@ -104,7 +120,9 @@ export default function AddScoreModal({ isOpen, onClose, onScoreAdded, initialAc
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes (optional)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Notes (optional)
+            </label>
             <input
               type="text"
               value={notes}
@@ -126,4 +144,4 @@ export default function AddScoreModal({ isOpen, onClose, onScoreAdded, initialAc
       </div>
     </div>
   );
-} 
+}

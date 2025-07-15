@@ -1,7 +1,12 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getEventsByParticipant, getScoresByUserAndEvent, getActivitiesByEvent } from '@/lib/firestore';
+import {
+  getUserByUid,
+  getEventsByParticipant,
+  getScoresByUserAndEvent,
+  getActivitiesByEvent,
+} from '@/lib/firestore';
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,9 +32,9 @@ export async function GET(request: NextRequest) {
         const scores = await getScoresByUserAndEvent(user.id, event.id);
         // Fetch activities for this event to map activityId to testId
         const activities = await getActivitiesByEvent(event.id);
-        const activityMap = Object.fromEntries(activities.map(a => [a.id, a]));
+        const activityMap = Object.fromEntries(activities.map((a) => [a.id, a]));
         // Attach testId to each score
-        const scoresWithTestId = scores.map(score => {
+        const scoresWithTestId = scores.map((score) => {
           const activity = activityMap[score.activityId];
           // Use 'scoringSystemId' (should match EVENT_TYPES id), then 'type', then fallback to activity.id
           const testId = activity?.scoringSystemId || activity?.type || activity?.id;
