@@ -70,11 +70,14 @@ export interface Activity {
 export interface Score {
   id: string;
   userId: string;
-  eventId: string;
+  eventId?: string | null; // Optional or null for personal scores
   activityId: string;
   rawValue: number; // The raw input value (e.g., 180kg)
   calculatedScore: number; // The calculated score from the scoring system
   notes?: string;
+  verified: boolean; // New: whether the score is verified
+  verifiedAt?: Date; // New: when the score was verified
+  verifiedBy?: string; // New: who verified the score (admin id)
   submittedAt: Date;
   updatedAt: Date;
 }

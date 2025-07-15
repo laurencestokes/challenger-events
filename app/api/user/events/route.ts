@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getEventsByParticipant, getScoresByUserAndEvent } from '@/lib/firestore';
+import { getUserByUid, getEventsByParticipant, getScoresByUserAndEvent, getActivitiesByEvent } from '@/lib/firestore';
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,11 +25,27 @@ export async function GET(request: NextRequest) {
     const eventsWithDetails = await Promise.all(
       userEvents.map(async (event) => {
         const scores = await getScoresByUserAndEvent(user.id, event.id);
+        // Fetch activities for this event to map activityId to testId
+        const activities = await getActivitiesByEvent(event.id);
+        const activityMap = Object.fromEntries(activities.map(a => [a.id, a]));
+        // Attach testId to each score
+        const scoresWithTestId = scores.map(score => {
+          const activity = activityMap[score.activityId];
+          // Use 'scoringSystemId' (should match EVENT_TYPES id), then 'type', then fallback to activity.id
+          const testId = activity?.scoringSystemId || activity?.type || activity?.id;
+          return {
+            ...score,
+            testId,
+            reps: activity?.reps, // also attach reps if relevant
+            workoutName: activity?.name,
+            workoutDescription: activity?.description,
+          };
+        });
 
         // Calculate total score
         const totalScore =
-          scores.length > 0
-            ? scores.reduce((sum, score) => sum + (score.calculatedScore || 0), 0)
+          scoresWithTestId.length > 0
+            ? scoresWithTestId.reduce((sum, score) => sum + (score.calculatedScore || 0), 0)
             : undefined;
 
         // Get participation details (we'll need to fetch this separately)
@@ -37,8 +53,8 @@ export async function GET(request: NextRequest) {
         // TODO: Implement proper participation tracking
 
         return {
-          id: event.id,
-          name: event.name,
+          ...event,
+          scores: scoresWithTestId, // Attach scores with testId
           code: event.code,
           status: event.status,
           joinedAt: event.createdAt, // This should be the actual join date

@@ -94,14 +94,15 @@ export async function POST(request: NextRequest) {
 
     // Calculate the scoring system result
     let calculatedScore = Number(rawValue); // Default to raw value if no scoring system
+    const reps = activity.reps || 1;
     if (activity.scoringSystemId) {
       try {
         // For rep-based strength exercises, calculate 1RM first
         let valueForScoring = Number(rawValue);
-        if (activity.reps && activity.reps > 1) {
+        if (reps > 1) {
           // Import epleyFormula for the calculation
           const { epleyFormula } = await import('@/utils/scoring');
-          valueForScoring = epleyFormula(Number(rawValue), activity.reps);
+          valueForScoring = epleyFormula(Number(rawValue), reps);
         }
 
         // Get competition weight if available, otherwise use profile weight
@@ -149,6 +150,7 @@ export async function POST(request: NextRequest) {
         rawValue: Number(rawValue),
         calculatedScore,
         notes: notes || '',
+        verified: true,
       });
       score = {
         id: existingScore.id,
@@ -158,6 +160,7 @@ export async function POST(request: NextRequest) {
         rawValue: Number(rawValue),
         calculatedScore,
         notes: notes || '',
+        verified: true,
       };
     } else {
       // Create a new score
@@ -168,6 +171,7 @@ export async function POST(request: NextRequest) {
         rawValue: Number(rawValue),
         calculatedScore,
         notes: notes || '',
+        verified: true,
       });
     }
 

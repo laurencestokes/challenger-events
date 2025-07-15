@@ -10,6 +10,10 @@ import Footer from '@/components/Footer';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Accordion from '@/components/ui/Accordion';
+import { EVENT_TYPES } from '@/constants/eventTypes';
+import type { Score, Team } from '@/lib/firestore';
+import AddScoreModal from '@/components/ui/AddScoreModal';
 
 interface User {
   id: string;
@@ -23,6 +27,16 @@ interface User {
   verificationNotes?: string;
   verifiedAt?: unknown;
   createdAt: unknown;
+}
+
+interface EventWithScores {
+  id: string;
+  name: string;
+  code: string;
+  status: string;
+  joinedAt: unknown;
+  score?: number;
+  scores?: Score[];
 }
 
 // Zod schema for validation
@@ -57,6 +71,36 @@ const ProfileSchema = z.object({
 
 type ProfileFormType = z.infer<typeof ProfileSchema>;
 
+// Helper to get display units for each test
+function getDisplayUnit(typeId: string) {
+  switch (typeId) {
+    case 'squat':
+    case 'bench':
+    case 'deadlift':
+      return 'kg';
+    case 'rowing_500m':
+    case 'bike_500m':
+    case 'ski_500m':
+      return 'seconds';
+    case 'rowing_4min':
+      return 'm';
+    default:
+      return '';
+  }
+}
+
+function getReps(score: unknown): number | undefined {
+  if (typeof score === 'object' && score !== null && 'reps' in score && typeof (score as { reps?: unknown }).reps === 'number') {
+    return (score as { reps: number }).reps;
+  }
+  return undefined;
+}
+
+// Type guard to check for workoutName property
+function hasWorkoutName(obj: unknown): obj is { workoutName: string } {
+  return typeof obj === 'object' && obj !== null && 'workoutName' in obj && typeof (obj as { workoutName?: unknown }).workoutName === 'string';
+}
+
 export default function Profile() {
   const { user } = useAuth();
   const [profile, setProfile] = useState<User | null>(null);
@@ -78,6 +122,12 @@ export default function Profile() {
     },
   });
 
+  const [eventScores, setEventScores] = useState<EventWithScores[]>([]); // event objects with .scores
+  const [personalScores, setPersonalScores] = useState<Score[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [showAddScoreModal, setShowAddScoreModal] = useState(false);
+  const [addScoreActivityId, setAddScoreActivityId] = useState<string | undefined>(undefined);
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -94,6 +144,12 @@ export default function Profile() {
 
     if (user) {
       fetchProfile();
+      // Fetch event scores
+      api.get('/api/user/events').then(setEventScores).catch(() => {});
+      // Fetch personal scores
+      api.get('/api/user/scores').then(setPersonalScores).catch(() => {});
+      // Fetch teams
+      api.get('/api/teams/user').then((res) => setTeams(res.teams || [])).catch(() => {});
     }
   }, [user]);
 
@@ -162,28 +218,173 @@ export default function Profile() {
     return calculateAgeFromDateOfBirth(birthDate);
   };
 
-  if (isLoading) {
-    return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-          <Header />
-          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">Loading profile...</p>
-            </div>
-          </div>
-          <Footer />
-        </div>
-      </ProtectedRoute>
-    );
-  }
+  // Helper to merge and group scores by activity
+  const getAllScoresByActivity = () => {
+    // Flatten event scores into activity scores
+    type ScoreWithEvent = Score & { event?: EventWithScores; testId?: string };
+    const eventActivityScores: ScoreWithEvent[] = [];
+    eventScores.forEach((event) => {
+      (event.scores || []).forEach((score: ScoreWithEvent) => {
+        eventActivityScores.push({ ...score, event });
+      });
+    });
+    // Combine with personal scores
+    const allScores: ScoreWithEvent[] = [...eventActivityScores, ...personalScores];
+    // Group by testId (if present) or activityId
+    const grouped: Record<string, ScoreWithEvent[]> = {};
+    allScores.forEach((score) => {
+      const key = (typeof (score as ScoreWithEvent).testId === 'string' && (score as ScoreWithEvent).testId)
+        || score.activityId;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(score);
+    });
+    return grouped;
+  };
 
-  return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Header />
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  // Render scores for each test
+  const renderScores = () => {
+    const grouped = getAllScoresByActivity();
+    return (
+      <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {EVENT_TYPES.map((type) => {
+            const scores = grouped[type.id] || [];
+
+            // Filter event scores for lifts to only use 1RM (reps === 1 or reps undefined)
+            let validScores = scores;
+            if (["squat", "bench", "deadlift"].includes(type.id)) {
+              validScores = scores.filter((score) => {
+                const reps = getReps(score) ?? (score.event ? getReps(score.event) : undefined);
+                if (score.event && reps !== undefined) {
+                  return true; // Now include all reps for event scores
+                }
+                // If not from event, always include
+                return true;
+              });
+            }
+
+            // Find the best verified and best unverified scores
+            const verifiedScores = validScores.filter(s => s.event || s.verified);
+            const unverifiedScores = validScores.filter(s => !s.event && !s.verified);
+            let bestVerified = verifiedScores[0];
+            if (verifiedScores.length > 0) {
+              bestVerified = verifiedScores.reduce((prev, curr) =>
+                curr.calculatedScore > prev.calculatedScore ? curr : prev
+              );
+            }
+            let bestUnverified = unverifiedScores[0];
+            if (unverifiedScores.length > 0) {
+              bestUnverified = unverifiedScores.reduce((prev, curr) =>
+                curr.calculatedScore > prev.calculatedScore ? curr : prev
+              );
+            }
+            // Decide what to show
+            const showBoth = bestUnverified && bestVerified && bestUnverified.calculatedScore > bestVerified.calculatedScore;
+            const showVerified = bestVerified;
+            const showUnverified = showBoth ? bestUnverified : null;
+
+            return (
+              <div key={type.id} className="border rounded p-4 bg-gray-50 dark:bg-gray-700 flex flex-col justify-between h-full">
+                <div>
+                  <div className="font-semibold text-gray-900 dark:text-white mb-1">{type.name}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">{type.description}</div>
+                  {showVerified || showUnverified ? (
+                    <>
+                      {showVerified && (
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className="text-lg font-bold text-primary-600 dark:text-primary-400">
+                            {showVerified.calculatedScore}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">Challenger Score</span>
+                          <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Verified</span>
+                        </div>
+                      )}
+                      {showVerified && (
+                        <div className="text-xs text-gray-700 dark:text-gray-300 mb-1">
+                          Raw: {getReps(showVerified) && getReps(showVerified)! > 1
+                            ? `${showVerified.rawValue}kg x ${getReps(showVerified)}`
+                            : `${showVerified.rawValue} ${getDisplayUnit(type.id)}`}
+                        </div>
+                      )}
+                      {showVerified && showVerified.event && (
+                        <div className="text-xs text-gray-400">
+                          from event: {showVerified.event?.name || 'Event'}{hasWorkoutName(showVerified) ? `, workout: ${showVerified.workoutName}` : ''}
+                        </div>
+                      )}
+                      {showUnverified && (
+                        <div className="flex items-center space-x-2 mb-1 mt-4">
+                          <span className="text-lg font-bold text-primary-600 dark:text-primary-400">
+                            {showUnverified.calculatedScore}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">Challenger Score</span>
+                          <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Unverified</span>
+                        </div>
+                      )}
+                      {showUnverified && (
+                        <div className="text-xs text-gray-700 dark:text-gray-300 mb-1">
+                          Raw: {getReps(showUnverified) && getReps(showUnverified)! > 1
+                            ? `${showUnverified.rawValue}kg x ${getReps(showUnverified)}`
+                            : `${showUnverified.rawValue} ${getDisplayUnit(type.id)}`}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-xs text-gray-400 mb-1">No score yet</div>
+                  )}
+                </div>
+                <div className="flex justify-end mt-2">
+                  <button
+                    className="px-2 py-1 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 flex items-center"
+                    onClick={() => {
+                      setAddScoreActivityId(type.id);
+                      setShowAddScoreModal(true);
+                    }}
+                  >
+                    <span className="mr-1">+</span> Add
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <AddScoreModal
+          isOpen={showAddScoreModal}
+          initialActivityId={addScoreActivityId}
+          onClose={() => setShowAddScoreModal(false)}
+          onScoreAdded={() => {
+            // Refresh personal scores
+            api.get('/api/user/scores').then(setPersonalScores).catch(() => {});
+          }}
+        />
+      </div>
+    );
+  };
+
+  // Render teams
+  const renderTeams = () => (
+    <div className="space-y-4">
+      {teams.length === 0 ? (
+        <div className="text-gray-500 dark:text-gray-400">You are not in any teams.</div>
+      ) : (
+        teams.map((team) => (
+          <div key={team.id} className="border rounded p-4 bg-gray-50 dark:bg-gray-700">
+            <div className="font-semibold text-gray-900 dark:text-white">{team.name}</div>
+            {team.description && (
+              <div className="text-xs text-gray-500 dark:text-gray-400">{team.description}</div>
+            )}
+          </div>
+        ))
+      )}
+    </div>
+  );
+
+  // Accordion sections
+  const accordionSections = [
+    {
+      id: 'profile-info',
+      title: 'Profile Information',
+      content: (
+        <div>
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">My Profile</h1>
@@ -420,6 +621,48 @@ export default function Profile() {
               </div>
             </div>
           </div>
+        </div>
+      ),
+    },
+    {
+      id: 'my-scores',
+      title: 'My Scores',
+      content: renderScores(),
+    },
+    {
+      id: 'my-teams',
+      title: 'My Teams',
+      content: renderTeams(),
+    },
+  ];
+
+  if (isLoading) {
+    return (
+      <ProtectedRoute>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+          <Header />
+          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">Loading profile...</p>
+            </div>
+          </div>
+          <Footer />
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  return (
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        <div className="max-w-3xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">My Profile</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-8">
+            Manage your profile information, scores, and teams
+          </p>
+          <Accordion sections={accordionSections} defaultOpenId="profile-info" />
         </div>
         <Footer />
       </div>
