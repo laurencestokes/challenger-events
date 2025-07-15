@@ -86,6 +86,20 @@ export async function POST(request: NextRequest) {
       verified: false,
       eventId: null,
     });
+    // Trigger on-demand revalidation for the user's public profile page
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/revalidate/profile/${user.uid}`,
+        {
+          method: 'POST',
+          headers: {
+            'x-revalidate-secret': process.env.REVALIDATE_SECRET || '',
+          },
+        },
+      );
+    } catch (err) {
+      console.error('Failed to revalidate public profile page:', err);
+    }
     return NextResponse.json(score);
   } catch (error) {
     console.error('Error submitting personal score:', error);

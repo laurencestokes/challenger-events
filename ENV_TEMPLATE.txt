@@ -21,3 +21,4 @@ SOCKET_SECRET="your-socket-secret"
 RESEND_API_KEY="re_1234567890abcdef"
 FROM_EMAIL="noreply@yourdomain.com"
 NEXT_PUBLIC_APP_URL="https://yourdomain.com" 
+REVALIDATE_SECRET=your-strong-random-secret 

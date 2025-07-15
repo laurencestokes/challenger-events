@@ -31,6 +31,10 @@ export interface User {
   verifiedAt?: unknown; // Can be Date or Firestore timestamp
   createdAt: Date;
   updatedAt: Date;
+  publicProfileShowAge?: boolean;
+  publicProfileShowBodyweight?: boolean;
+  publicProfileShowSex?: boolean;
+  publicProfileEnabled?: boolean;
 }
 
 export interface Event {

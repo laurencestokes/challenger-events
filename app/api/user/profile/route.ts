@@ -39,7 +39,16 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, bodyweight, dateOfBirth, sex } = body;
+    const {
+      name,
+      bodyweight,
+      dateOfBirth,
+      sex,
+      publicProfileEnabled,
+      publicProfileShowAge,
+      publicProfileShowBodyweight,
+      publicProfileShowSex,
+    } = body;
 
     // Convert dateOfBirth string to Date object if provided
     let processedDateOfBirth: Date | undefined;
@@ -60,6 +69,10 @@ export async function PUT(request: NextRequest) {
       bodyweight: bodyweight !== undefined ? bodyweight : user.bodyweight,
       dateOfBirth: processedDateOfBirth || user.dateOfBirth,
       sex: sex !== undefined ? sex : user.sex,
+      publicProfileEnabled,
+      publicProfileShowAge,
+      publicProfileShowBodyweight,
+      publicProfileShowSex,
       updatedAt: new Date(),
     };
 
@@ -69,6 +82,20 @@ export async function PUT(request: NextRequest) {
 
     // Get the updated user data
     const updatedUser = await getUserByUid(userId);
+    // Trigger on-demand revalidation for the user's public profile page
+    if (updatedUser) {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        await fetch(`${baseUrl}/api/revalidate/profile/${updatedUser.uid}`, {
+          method: 'POST',
+          headers: {
+            'x-revalidate-secret': process.env.REVALIDATE_SECRET || '',
+          },
+        });
+      } catch (err) {
+        console.error('Failed to revalidate public profile page:', err);
+      }
+    }
 
     return NextResponse.json(updatedUser);
   } catch (error) {

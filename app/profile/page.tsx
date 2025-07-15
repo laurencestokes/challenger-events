@@ -14,6 +14,7 @@ import Accordion from '@/components/ui/Accordion';
 import { EVENT_TYPES } from '@/constants/eventTypes';
 import type { Score, Team } from '@/lib/firestore';
 import AddScoreModal from '@/components/ui/AddScoreModal';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface User {
   id: string;
@@ -27,6 +28,10 @@ interface User {
   verificationNotes?: string;
   verifiedAt?: unknown;
   createdAt: unknown;
+  publicProfileEnabled?: boolean;
+  publicProfileShowAge?: boolean;
+  publicProfileShowBodyweight?: boolean;
+  publicProfileShowSex?: boolean;
 }
 
 interface EventWithScores {
@@ -138,6 +143,12 @@ export default function Profile() {
   const [showAddScoreModal, setShowAddScoreModal] = useState(false);
   const [addScoreActivityId, setAddScoreActivityId] = useState<string | undefined>(undefined);
 
+  // State for public profile stat toggles
+  const [showAge, setShowAge] = useState<boolean>(false);
+  const [showBodyweight, setShowBodyweight] = useState<boolean>(false);
+  const [showSex, setShowSex] = useState<boolean>(false);
+  const [publicProfileEnabled, setPublicProfileEnabled] = useState<boolean>(false);
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -183,6 +194,11 @@ export default function Profile() {
           : '',
         sex: profile.sex as 'M' | 'F' | undefined,
       });
+      // When profile loads, set stat toggles
+      setShowAge(!!profile.publicProfileShowAge);
+      setShowBodyweight(!!profile.publicProfileShowBodyweight);
+      setShowSex(!!profile.publicProfileShowSex);
+      setPublicProfileEnabled(!!profile.publicProfileEnabled);
     }
   }, [profile, reset]);
 
@@ -201,6 +217,10 @@ export default function Profile() {
         bodyweight: Number(data.bodyweight),
         dateOfBirth: processedDateOfBirth || undefined,
         sex: data.sex,
+        publicProfileEnabled,
+        publicProfileShowAge: !!showAge,
+        publicProfileShowBodyweight: !!showBodyweight,
+        publicProfileShowSex: !!showSex,
       });
       setProfile(updatedProfile);
       setIsEditing(false);
@@ -267,6 +287,19 @@ export default function Profile() {
     const grouped = getAllScoresByActivity();
     return (
       <div>
+        {/* Public profile button */}
+        {user && (
+          <div className="mb-4 flex justify-end">
+            <a
+              href={`/public/profile/${user.uid}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
+            >
+              View My Public Profile
+            </a>
+          </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {EVENT_TYPES.map((type) => {
             const scores = grouped[type.id] || [];
@@ -300,12 +333,19 @@ export default function Profile() {
               );
             }
             // Decide what to show
-            const showBoth =
-              bestUnverified &&
-              bestVerified &&
-              bestUnverified.calculatedScore > bestVerified.calculatedScore;
             const showVerified = bestVerified;
-            const showUnverified = showBoth ? bestUnverified : null;
+            let showUnverified = null;
+            // If there is no verified score but there is an unverified, show the unverified
+            if (!showVerified && bestUnverified) {
+              showUnverified = bestUnverified;
+            } else if (
+              showVerified &&
+              bestUnverified &&
+              bestUnverified.calculatedScore > showVerified.calculatedScore
+            ) {
+              // If both exist and unverified is better, show both
+              showUnverified = bestUnverified;
+            }
 
             return (
               <div
@@ -344,10 +384,16 @@ export default function Profile() {
                       )}
                       {showVerified && showVerified.event && (
                         <div className="text-xs text-gray-400">
-                          from event: {showVerified.event?.name || 'Event'}
-                          {hasWorkoutName(showVerified)
-                            ? `, workout: ${showVerified.workoutName}`
-                            : ''}
+                          <span className="font-semibold">Event:</span>{' '}
+                          {showVerified.event?.name || 'Event'}
+                          {hasWorkoutName(showVerified) ? (
+                            <>
+                              <span className="font-semibold">, Workout:</span>{' '}
+                              {showVerified.workoutName}
+                            </>
+                          ) : (
+                            ''
+                          )}
                         </div>
                       )}
                       {showUnverified && (
@@ -439,7 +485,6 @@ export default function Profile() {
               Manage your profile information and verification status
             </p>
           </div>
-
           {error && (
             <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
               <div className="flex">
@@ -459,7 +504,6 @@ export default function Profile() {
               </div>
             </div>
           )}
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Profile Information */}
             <div className="lg:col-span-2">
@@ -668,6 +712,128 @@ export default function Profile() {
               </div>
             </div>
           </div>
+        </div>
+      ),
+    },
+    {
+      id: 'public-profile',
+      title: 'Public Profile',
+      content: (
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Public Profile Settings</h3>
+          <div className="mb-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={publicProfileEnabled}
+                onChange={(e) => setPublicProfileEnabled(e.target.checked)}
+              />
+              Make my profile public
+            </label>
+          </div>
+          {publicProfileEnabled && (
+            <>
+              <div className="mb-4">
+                <h4 className="text-md font-semibold mb-2">Show on Public Profile</h4>
+                <div className="flex flex-col gap-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={showAge}
+                      onChange={(e) => setShowAge(e.target.checked)}
+                    />
+                    Show Age
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={showBodyweight}
+                      onChange={(e) => setShowBodyweight(e.target.checked)}
+                    />
+                    Show Bodyweight
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={showSex}
+                      onChange={(e) => setShowSex(e.target.checked)}
+                    />
+                    Show Sex
+                  </label>
+                </div>
+              </div>
+              <div className="mb-4">
+                <h4 className="text-md font-semibold mb-2">Share your public profile</h4>
+                <div className="flex flex-col items-center gap-2">
+                  <a
+                    href={`/public/profile/${user?.uid}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
+                  >
+                    View Public Profile
+                  </a>
+                  <QRCodeSVG
+                    value={`${window.location.origin}/public/profile/${user?.uid}`}
+                    size={120}
+                  />
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`${window.location.origin}/public/profile/${user?.uid}`}
+                      className="border rounded px-2 py-1 text-sm w-64 bg-gray-100 dark:bg-gray-800"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          `${window.location.origin}/public/profile/${user?.uid}`,
+                        );
+                      }}
+                      className="px-2 py-1 text-sm bg-primary-500 text-white rounded hover:bg-primary-600"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+          {/* Save button for public profile settings */}
+          <div className="flex justify-end mt-4">
+            <button
+              type="button"
+              disabled={isLoading}
+              className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
+              onClick={async () => {
+                setIsLoading(true);
+                setError('');
+                try {
+                  const updatedProfile = await api.put('/api/user/profile', {
+                    name: profile?.name,
+                    bodyweight: profile?.bodyweight,
+                    dateOfBirth: profile?.dateOfBirth
+                      ? convertFirestoreTimestamp(profile.dateOfBirth)?.toISOString().split('T')[0]
+                      : undefined,
+                    sex: profile?.sex,
+                    publicProfileEnabled,
+                    publicProfileShowAge: !!showAge,
+                    publicProfileShowBodyweight: !!showBodyweight,
+                    publicProfileShowSex: !!showSex,
+                  });
+                  setProfile(updatedProfile);
+                } catch {
+                  setError('Failed to update public profile settings');
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+            >
+              {isLoading ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+          {error && <div className="mt-2 text-red-600 text-sm">{error}</div>}
         </div>
       ),
     },

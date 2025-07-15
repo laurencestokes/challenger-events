@@ -174,6 +174,18 @@ export async function POST(request: NextRequest) {
         verified: true,
       });
     }
+    // Trigger on-demand revalidation for the competitor's public profile page
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+      await fetch(`${baseUrl}/api/revalidate/profile/${competitor.uid}`, {
+        method: 'POST',
+        headers: {
+          'x-revalidate-secret': process.env.REVALIDATE_SECRET || '',
+        },
+      });
+    } catch (err) {
+      console.error('Failed to revalidate public profile page:', err);
+    }
 
     return NextResponse.json({
       id: score.id,
