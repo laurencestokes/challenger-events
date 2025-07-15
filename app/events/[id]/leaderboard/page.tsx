@@ -8,6 +8,7 @@ import ScoreCalculator from '@/components/ScoreCalculator';
 import NotificationToast from '@/components/NotificationToast';
 import { useSSE } from '@/hooks/useSSE';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Activity {
   id: string;
@@ -89,9 +90,28 @@ interface TeamWorkoutLeaderboard {
   }[];
 }
 
+interface CompetitionVerification {
+  userId: string;
+  eventId: string;
+  bodyweight: number;
+  status: string;
+  verifiedAt?: string | Date;
+  verificationNotes?: string;
+}
+
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  bodyweight?: number;
+  dateOfBirth?: unknown;
+  sex?: 'M' | 'F';
+}
+
 export default function EventLeaderboard() {
   const params = useParams();
   const eventId = params.id as string;
+  const { user } = useAuth();
 
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -99,6 +119,9 @@ export default function EventLeaderboard() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overall' | 'team-overall' | string>('overall');
   const [viewMode, setViewMode] = useState<'individual' | 'team'>('individual');
+  const [competitionVerification, setCompetitionVerification] =
+    useState<CompetitionVerification | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   // SSE and notification state
   const { isConnected, lastEvent } = useSSE(eventId);
@@ -136,6 +159,23 @@ export default function EventLeaderboard() {
       ]);
       setLeaderboardData(leaderboardData);
       setActivities(activitiesData);
+      // Fetch user profile and competition verification if user is logged in
+      if (user) {
+        const [profile, verification] = await Promise.all([
+          api.get('/api/user/profile'),
+          api.get(`/api/events/${eventId}/competition-verification`),
+        ]);
+        setUserProfile(profile);
+        // Find this user's verification
+        if (verification && Array.isArray(verification.verifications)) {
+          const myVerification = verification.verifications.find(
+            (v: CompetitionVerification) => v.userId === user.id && v.status === 'VERIFIED',
+          );
+          setCompetitionVerification(myVerification || null);
+        } else {
+          setCompetitionVerification(null);
+        }
+      }
     } catch (error: unknown) {
       console.error('Error fetching data:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
@@ -147,7 +187,8 @@ export default function EventLeaderboard() {
 
   useEffect(() => {
     fetchData();
-  }, [eventId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId, user]);
 
   const getActivityUnit = (activityId: string) => {
     const activity = activities.find((a) => a.id === activityId);
@@ -202,6 +243,10 @@ export default function EventLeaderboard() {
       setActiveTab(availableTabs[0].id);
     }
   }, [viewMode, leaderboardData, activeTab, getAvailableTabs]);
+
+  // Determine which bodyweight to use for calculations
+  const bodyweightForScoring = competitionVerification?.bodyweight || userProfile?.bodyweight || 70;
+  const sexForScoring = userProfile?.sex || 'M';
 
   if (isLoading) {
     return (
@@ -510,7 +555,16 @@ export default function EventLeaderboard() {
                 </p>
               </div>
               <div className="p-6">
-                <ScoreCalculator activities={activities} />
+                <ScoreCalculator
+                  activities={activities}
+                  userProfileOverride={{
+                    bodyweight: bodyweightForScoring,
+                    dateOfBirth: userProfile?.dateOfBirth,
+                    sex: sexForScoring,
+                    competitionVerification,
+                    profileBodyweight: userProfile?.bodyweight,
+                  }}
+                />
               </div>
             </div>
           </div>

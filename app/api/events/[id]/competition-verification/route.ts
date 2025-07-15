@@ -18,14 +18,19 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const userId = authHeader.split('Bearer ')[1];
     const user = await getUserByUid(userId);
 
-    if (!user || !isAdmin(user.role)) {
-      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get all verifications for this event
-    const verifications = await getCompetitionVerificationsByEvent(params.id);
-
-    return NextResponse.json({ verifications });
+    if (isAdmin(user.role)) {
+      // Admin: return all verifications for the event
+      const verifications = await getCompetitionVerificationsByEvent(params.id);
+      return NextResponse.json({ verifications });
+    } else {
+      // Non-admin: return only this user's verification for the event
+      const verification = await getCompetitionVerification(user.id, params.id);
+      return NextResponse.json({ verifications: verification ? [verification] : [] });
+    }
   } catch (error) {
     console.error('Error fetching competition verifications:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

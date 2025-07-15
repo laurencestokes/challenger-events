@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api-client';
 import { SCORING_SYSTEMS } from '@/constants/scoringSystems';
-import { calculateAgeFromDateOfBirth, convertFirestoreTimestamp } from '@/lib/utils';
+import { convertFirestoreTimestamp } from '@/lib/utils';
 
 interface Activity {
   id: string;
@@ -16,8 +16,21 @@ interface Activity {
   reps?: number;
 }
 
+interface CompetitionVerification {
+  bodyweight: number;
+  status: string;
+  verifiedAt?: string | Date;
+}
+
 interface ScoreCalculatorProps {
   activities: Activity[];
+  userProfileOverride?: {
+    bodyweight: number;
+    dateOfBirth?: unknown;
+    sex: 'M' | 'F';
+    competitionVerification?: CompetitionVerification | null;
+    profileBodyweight?: number;
+  };
 }
 
 interface CalculatorState {
@@ -30,13 +43,15 @@ interface CalculatorState {
   };
 }
 
-export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
+export default function ScoreCalculator({ activities, userProfileOverride }: ScoreCalculatorProps) {
   const { user } = useAuth();
   const [calculatorState, setCalculatorState] = useState<CalculatorState>({});
   const [userProfile, setUserProfile] = useState({
     bodyweight: 70,
-    age: 25,
+    dateOfBirth: undefined as unknown,
     sex: 'M' as 'M' | 'F',
+    competitionVerification: null as CompetitionVerification | null,
+    profileBodyweight: undefined as number | undefined,
   });
 
   // Store timeout IDs for proper debouncing
@@ -59,23 +74,29 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
     setCalculatorState(initialState);
   }, [activities]);
 
-  // Set user profile from auth context
+  // Set user profile from auth context or override
   useEffect(() => {
-    if (user) {
-      const age = user.dateOfBirth
-        ? (() => {
-            const birthDate = convertFirestoreTimestamp(user.dateOfBirth);
-            return birthDate ? calculateAgeFromDateOfBirth(birthDate) : 25;
-          })()
-        : 25;
-
+    if (userProfileOverride) {
+      setUserProfile({
+        bodyweight: userProfileOverride.bodyweight,
+        dateOfBirth: userProfileOverride.dateOfBirth,
+        sex: userProfileOverride.sex,
+        competitionVerification: userProfileOverride.competitionVerification || null,
+        profileBodyweight:
+          typeof userProfileOverride.profileBodyweight === 'number'
+            ? userProfileOverride.profileBodyweight
+            : undefined,
+      });
+    } else if (user) {
       setUserProfile({
         bodyweight: user.bodyweight || 70,
-        age: age,
+        dateOfBirth: user.dateOfBirth,
         sex: user.sex || 'M',
+        competitionVerification: null,
+        profileBodyweight: typeof user.bodyweight === 'number' ? user.bodyweight : undefined,
       });
     }
-  }, [user]);
+  }, [user, userProfileOverride]);
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -180,7 +201,7 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
         scoringSystemId: activity.scoringSystemId,
         value,
         bodyweight: userProfile.bodyweight,
-        age: userProfile.age,
+        dateOfBirth: userProfile.dateOfBirth,
         sex: userProfile.sex,
         reps: activity.reps,
       });
@@ -285,11 +306,20 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
             <span className="text-gray-500 dark:text-gray-400">Bodyweight:</span>
             <div className="font-medium text-gray-900 dark:text-white">
               {userProfile.bodyweight} kg
+              {userProfile.competitionVerification &&
+                userProfile.competitionVerification.bodyweight && (
+                  <span className="ml-2 text-xs text-green-600 dark:text-green-400">
+                    (Competition weigh-in)
+                  </span>
+                )}
             </div>
-          </div>
-          <div>
-            <span className="text-gray-500 dark:text-gray-400">Age:</span>
-            <div className="font-medium text-gray-900 dark:text-white">{userProfile.age} years</div>
+            {userProfile.competitionVerification &&
+              userProfile.profileBodyweight &&
+              userProfile.competitionVerification.bodyweight !== userProfile.profileBodyweight && (
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Profile weight: {userProfile.profileBodyweight} kg
+                </div>
+              )}
           </div>
           <div>
             <span className="text-gray-500 dark:text-gray-400">Sex:</span>
@@ -298,7 +328,13 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
             </div>
           </div>
         </div>
-        {(!userProfile.bodyweight || userProfile.age === 25) && (
+        {userProfile.competitionVerification &&
+          userProfile.competitionVerification.status === 'VERIFIED' && (
+            <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+              ✅ Competition weigh-in verified. All calculations use this weight.
+            </p>
+          )}
+        {(!userProfile.bodyweight || userProfile.dateOfBirth === undefined) && (
           <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">
             ⚠️ Update your profile for accurate scoring
           </p>
