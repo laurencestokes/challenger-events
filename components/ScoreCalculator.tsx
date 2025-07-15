@@ -176,16 +176,9 @@ export default function ScoreCalculator({ activities }: ScoreCalculatorProps) {
     }));
 
     try {
-      // For rep-based strength exercises, calculate 1RM first
-      let valueForScoring = value;
-      if (activity.reps && activity.reps > 1) {
-        const { epleyFormula } = await import('@/utils/scoring');
-        valueForScoring = epleyFormula(value, activity.reps);
-      }
-
       const response = await api.post('/api/calculate-score', {
         scoringSystemId: activity.scoringSystemId,
-        value: valueForScoring,
+        value,
         bodyweight: userProfile.bodyweight,
         age: userProfile.age,
         sex: userProfile.sex,

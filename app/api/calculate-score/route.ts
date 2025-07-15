@@ -1,49 +1,22 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { calculateScore } from '@/utils/scoreCalculation';
+import { epleyFormula } from '@/utils/scoring';
 
-export async function POST(request: Request) {
-  const data = await request.json();
-  const { scoringSystemId, value, bodyweight, dateOfBirth, sex } = data;
-
-  if (!scoringSystemId || value === undefined) {
-    return NextResponse.json(
-      { error: 'Scoring system ID and value are required' },
-      { status: 400 },
-    );
-  }
-
+export async function POST(request: NextRequest) {
   try {
-    const result = await calculateScore(scoringSystemId, value, bodyweight, dateOfBirth, sex);
-
-    const response = {
-      score: result.score,
-      percentile: result.percentile,
-      scoringSystem: result.scoringSystem,
-    };
-
-    console.log('Calculate-score response:', {
-      scoringSystemId,
-      value,
-      result: response,
-    });
-
-    return NextResponse.json(response);
-  } catch (error) {
-    console.error('Error calculating score:', error);
-    console.error('Error details:', {
-      scoringSystemId,
-      value,
-      bodyweight,
-      dateOfBirth,
-      sex,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return NextResponse.json(
-      {
-        error: 'Failed to calculate score',
-        details: error instanceof Error ? error.message : String(error),
-      },
-      { status: 500 },
-    );
+    const { scoringSystemId, value, bodyweight, age, sex, reps } = await request.json();
+    let valueForScoring = Number(value);
+    // If reps > 1, apply Epley formula for strength exercises
+    if (
+      reps &&
+      reps > 1 &&
+      ['squat', 'bench', 'deadlift'].some((id) => scoringSystemId.includes(id))
+    ) {
+      valueForScoring = epleyFormula(Number(value), reps);
+    }
+    const result = await calculateScore(scoringSystemId, valueForScoring, bodyweight, age, sex);
+    return NextResponse.json(result);
+  } catch {
+    return NextResponse.json({ error: 'Failed to calculate score' }, { status: 400 });
   }
 }
