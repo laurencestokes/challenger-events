@@ -33,13 +33,13 @@ export function useSSE(eventId: string): UseSSEReturn {
       return;
     }
 
-    console.log('SSE: Attempting to connect to', `/api/events/${eventId}/workout-reveals`);
+    console.info('SSE: Attempting to connect to', `/api/events/${eventId}/workout-reveals`);
     console.log('SSE: Using user ID:', user.id);
 
     const connectSSE = () => {
       try {
         const url = `/api/events/${eventId}/workout-reveals`;
-        console.log('SSE: Connecting to URL:', url);
+        console.info('SSE: Connecting to URL:', url);
 
         // Use fetch with proper authentication
         fetch(url, {
@@ -51,7 +51,7 @@ export function useSSE(eventId: string): UseSSEReturn {
           },
         })
           .then(async (response) => {
-            console.log('SSE: Fetch response status:', response.status);
+            console.info('SSE: Fetch response status:', response.status);
             console.log('SSE: Response headers:', Object.fromEntries(response.headers.entries()));
 
             if (!response.ok) {
@@ -87,11 +87,11 @@ export function useSSE(eventId: string): UseSSEReturn {
                     if (line.startsWith('data: ')) {
                       try {
                         const data = JSON.parse(line.slice(6));
-                        console.log('SSE: Received data:', data);
+                        console.info('SSE: Received data:', data);
                         setLastEvent(data);
 
                         if (data.type === 'connected') {
-                          console.log('SSE: Connected successfully');
+                          console.info('SSE: Connected successfully');
                           setIsConnected(true);
                           setError(null);
                         }

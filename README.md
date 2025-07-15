@@ -367,27 +367,6 @@ const getUserEvents = async () => {
   const response = await fetch('/api/events');
   return response.json();
 };
-```
-
-### Real-time Updates
-
-```typescript
-import { io } from 'socket.io-client';
-
-const socket = io('http://localhost:3001');
-
-// Listen for score updates
-socket.on('scoreUpdate', (data) => {
-  console.log('New score:', data);
-  // Update leaderboard
-});
-
-// Listen for event updates
-socket.on('eventUpdate', (data) => {
-  console.log('Event updated:', data);
-  // Refresh event data
-});
-```
 
 ## 🛠️ Development
 

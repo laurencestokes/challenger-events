@@ -4,7 +4,7 @@ import { addSSEClient, removeSSEClient } from '@/lib/sse-manager';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    console.log('SSE: Received request for event:', params.id);
+    console.info('SSE: Received request for event:', params.id);
 
     const authHeader = request.headers.get('authorization');
     console.log('SSE: Auth header present:', !!authHeader);
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     console.log('SSE: User ID from token:', userId);
 
     const user = await getUser(userId);
-    console.log('SSE: User found in database:', !!user);
+    console.info('SSE: User found in database:', !!user);
 
     if (!user) {
       console.log('SSE: User not found in database for ID:', userId);
@@ -27,14 +27,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     // Check if event exists
     const event = await getEvent(params.id);
-    console.log('SSE: Event found in database:', !!event);
+    console.info('SSE: Event found in database:', !!event);
 
     if (!event) {
       console.log('SSE: Event not found in database for ID:', params.id);
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    console.log('SSE: Setting up SSE connection for event:', params.id);
+    console.info('SSE: Setting up SSE connection for event:', params.id);
 
     // Set up SSE headers
     const response = new Response(

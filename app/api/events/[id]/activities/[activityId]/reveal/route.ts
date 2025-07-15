@@ -7,20 +7,15 @@ export async function POST(
   { params }: { params: { id: string; activityId: string } },
 ) {
   try {
-    console.log('POST /api/events/[id]/activities/[activityId]/reveal - params:', params);
-
     const authHeader = request.headers.get('authorization');
-    console.log('Auth header:', authHeader ? 'present' : 'missing');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const userId = authHeader.split('Bearer ')[1];
-    console.log('User ID:', userId);
 
     const user = await getUserByUid(userId);
-    console.log('User found:', !!user, 'Role:', user?.role);
 
     if (!user || !isAdmin(user.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -28,13 +23,11 @@ export async function POST(
 
     // Check if event exists and user has admin access
     const event = await getEvent(params.id);
-    console.log('Event found:', !!event);
 
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    console.log('User ID:', user.id, 'Event admin IDs:', event.adminIds);
     if (!event.adminIds.includes(user.id)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -46,7 +39,6 @@ export async function POST(
     }
 
     // Reveal the hidden workout
-    console.log('Revealing workout:', params.activityId);
     await revealHiddenWorkout(params.activityId);
 
     // Broadcast the reveal event to all connected clients
@@ -59,14 +51,8 @@ export async function POST(
       message: `Workout "${activity.name}" has been revealed!`,
     });
 
-    console.log('SSE: Broadcasting reveal message:', revealMessage);
-    console.log('SSE: Event ID for broadcast:', params.id);
-
     broadcastToEvent(params.id, revealMessage);
-    console.log('SSE: Broadcast completed');
-    console.log('Broadcasted workout reveal to connected clients');
 
-    console.log('Workout revealed successfully');
     return NextResponse.json({
       success: true,
       workoutName: activity.name,

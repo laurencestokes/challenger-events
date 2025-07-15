@@ -27,20 +27,6 @@ export default function ManageEvents() {
     const fetchEvents = async () => {
       try {
         const eventsData = await api.get('/api/events');
-        console.log('Events data:', eventsData);
-        console.log(
-          'First event dates:',
-          eventsData[0]
-            ? {
-                startDate: eventsData[0].startDate,
-                endDate: eventsData[0].endDate,
-                createdAt: eventsData[0].createdAt,
-                startDateType: typeof eventsData[0].startDate,
-                endDateType: typeof eventsData[0].endDate,
-                createdAtType: typeof eventsData[0].createdAt,
-              }
-            : 'No events',
-        );
         setEvents(eventsData);
       } catch (error: unknown) {
         console.error('Error fetching events:', error);

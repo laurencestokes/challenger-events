@@ -135,8 +135,6 @@ export default function PublicProfilePage({ params }: { params: { userid: string
 
   const { user, scores } = data;
 
-  console.log('data', data);
-
   // Flatten event scores into activity scores, attaching event info
   type ScoreWithEvent = Score & { event?: EventWithScores; testId?: string };
   const eventActivityScores: ScoreWithEvent[] = [];

@@ -137,9 +137,7 @@ export default function EventLeaderboard() {
 
   // Handle SSE events
   useEffect(() => {
-    console.log('SSE: lastEvent changed:', lastEvent);
     if (lastEvent?.type === 'workout_revealed' && lastEvent.workoutName) {
-      console.log('SSE: Triggering notification for workout reveal:', lastEvent.workoutName);
       setNotification({
         show: true,
         message: `🎉 New workout revealed: ${lastEvent.workoutName}!`,

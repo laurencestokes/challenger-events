@@ -125,11 +125,6 @@ export async function POST(request: NextRequest) {
           );
 
           calculatedScore = scoringResult.score;
-          console.log('Score calculated successfully:', {
-            rawValue,
-            calculatedScore,
-            scoringSystemId: activity.scoringSystemId,
-          });
         } catch (error) {
           console.error('Scoring calculation error:', error);
           // Continue with raw value if scoring calculation fails

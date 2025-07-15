@@ -64,7 +64,6 @@ export async function POST(request: NextRequest) {
 
     // TODO: Send invitation email
     // This would typically integrate with an email service like SendGrid, AWS SES, etc.
-    console.log(`Invitation sent to ${email} with role ${role}`);
 
     return NextResponse.json({
       message: 'User invited successfully',
