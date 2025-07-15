@@ -208,7 +208,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
   const overallVerifiedTotal = strengthVerifiedTotal + enduranceVerifiedTotal;
 
   // Helper to render a score card (matches private profile logic)
-  function renderScoreCard(type: { id: string, description: string, name: string }) {
+  function renderScoreCard(type: { id: string; description: string; name: string }) {
     const scores = allScores.filter((s) => (s.testId ?? s.activityId) === type.id);
     // Filter event scores for lifts to only use 1RM (reps === 1 or reps undefined)
     let validScores = scores;
