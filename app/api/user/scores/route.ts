@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    const { activityId, rawValue, notes } = await request.json();
+    const { activityId, rawValue, reps, notes } = await request.json();
     if (!activityId || rawValue === undefined) {
       return NextResponse.json(
         { error: 'Activity ID and raw value are required' },
@@ -55,13 +55,13 @@ export async function POST(request: NextRequest) {
     }
     // Calculate score using the scoring system and user profile
     let calculatedScore = Number(rawValue);
-    const reps = activity.defaultReps || 1;
+    const repsToUse = reps || activity.defaultReps || 1;
     if (activity.scoringSystemId) {
       try {
         let valueForScoring = Number(rawValue);
-        if (reps > 1) {
+        if (repsToUse > 1) {
           const { epleyFormula } = await import('@/utils/scoring');
-          valueForScoring = epleyFormula(Number(rawValue), reps);
+          valueForScoring = epleyFormula(Number(rawValue), repsToUse);
         }
         const scoringResult = await calculateScore(
           activity.scoringSystemId,
@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
       activityId,
       rawValue: Number(rawValue), // Always save as entered
       calculatedScore,
+      reps: repsToUse, // Save the reps used for this score
       notes: notes || '',
       verified: false,
       eventId: null,
@@ -100,7 +101,10 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       console.error('Failed to revalidate public profile page:', err);
     }
-    return NextResponse.json(score);
+    return NextResponse.json({
+      ...score,
+      reps: repsToUse, // Include reps in the response
+    });
   } catch (error) {
     console.error('Error submitting personal score:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

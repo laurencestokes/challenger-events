@@ -440,14 +440,14 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
           height: 16px;
           width: 16px;
           border-radius: 50%;
-          background: #3b82f6;
+          background: #f97316;
           cursor: pointer;
         }
         .slider::-moz-range-thumb {
           height: 16px;
           width: 16px;
           border-radius: 50%;
-          background: #3b82f6;
+          background: #f97316;
           cursor: pointer;
           border: none;
         }

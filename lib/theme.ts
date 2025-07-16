@@ -1,21 +1,21 @@
 // Challenger Co. Brand Theme Configuration
-// Modern Premium Fitness Brand - Charcoal & Gold System
+// Modern Premium Fitness Brand - Orange & Black System
 
 export const challengerTheme = {
-  // Primary Brand Colors - Black & White Logo Alignment
+  // Primary Brand Colors - High-Energy Orange
   colors: {
     primary: {
-      50: '#fafafa',
-      100: '#f5f5f5',
-      200: '#e5e5e5',
-      300: '#d4d4d4',
-      400: '#a3a3a3',
-      500: '#737373', // Main brand gray
-      600: '#525252',
-      700: '#404040',
-      800: '#262626', // Dark gray/black
-      900: '#171717',
-      950: '#0a0a0a',
+      50: '#fff7ed',
+      100: '#ffedd5',
+      200: '#fed7aa',
+      300: '#fdba74',
+      400: '#fb923c',
+      500: '#f97316', // High-energy orange
+      600: '#ea580c',
+      700: '#c2410c',
+      800: '#9a3412',
+      900: '#7c2d12',
+      950: '#431407',
     },
     secondary: {
       50: '#f8fafc',
@@ -31,17 +31,17 @@ export const challengerTheme = {
       950: '#020617',
     },
     accent: {
-      50: '#f8fafc',
-      100: '#f1f5f9',
-      200: '#e2e8f0',
-      300: '#cbd5e1',
-      400: '#94a3b8',
-      500: '#64748b', // Neutral blue-gray for CTAs
-      600: '#475569',
-      700: '#334155',
-      800: '#1e293b',
-      900: '#0f172a',
-      950: '#020617',
+      50: '#fef2f2',
+      100: '#fee2e2',
+      200: '#fecaca',
+      300: '#fca5a5',
+      400: '#f87171',
+      500: '#ef4444', // High-energy red
+      600: '#dc2626',
+      700: '#b91c1c',
+      800: '#991b1b',
+      900: '#7f1d1d',
+      950: '#450a0a',
     },
     success: {
       50: '#ecfdf5',
@@ -49,7 +49,7 @@ export const challengerTheme = {
       200: '#a7f3d0',
       300: '#6ee7b7',
       400: '#34d399',
-      500: '#10b981', // Emerald green
+      500: '#10b981',
       600: '#059669',
       700: '#047857',
       800: '#065f46',
@@ -84,11 +84,28 @@ export const challengerTheme = {
     },
   },
 
-  // Typography
+  // Typography - Dual Font System
   typography: {
     fontFamily: {
+      // Body Font (Poppins) - Clean, readable, modern
       sans: [
-        'Inter Tight',
+        'var(--font-poppins)',
+        'Poppins',
+        'ui-sans-serif',
+        'system-ui',
+        '-apple-system',
+        'BlinkMacSystemFont',
+        'Segoe UI',
+        'Roboto',
+        'Helvetica Neue',
+        'Arial',
+        'Noto Sans',
+        'sans-serif',
+      ],
+      // Display Font (Orbitron) - Athletic, geometric, high-impact
+      display: [
+        'var(--font-orbitron)',
+        'Orbitron',
         'ui-sans-serif',
         'system-ui',
         '-apple-system',
@@ -199,6 +216,11 @@ export const challengerTheme = {
     '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
     inner: 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
     none: 'none',
+    challenger: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+    'challenger-lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+    'challenger-xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+    glow: '0 0 20px rgba(249, 115, 22, 0.3)',
+    'glow-red': '0 0 20px rgba(239, 68, 68, 0.3)',
   },
 
   // Transitions
@@ -217,13 +239,13 @@ export const challengerTheme = {
       base: 'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background',
       variants: {
         variant: {
-          default: 'bg-accent-400 text-white hover:bg-accent-500',
+          default: 'bg-primary-500 text-white hover:bg-primary-600 font-display font-bold',
           destructive: 'bg-error-500 text-white hover:bg-error-600',
           outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
           secondary:
             'bg-secondary-100 text-secondary-900 hover:bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-100 dark:hover:bg-secondary-700',
           ghost: 'hover:bg-accent hover:text-accent-foreground',
-          link: 'text-accent-400 underline-offset-4 hover:underline',
+          link: 'text-primary-500 underline-offset-4 hover:underline',
         },
         size: {
           default: 'h-10 px-4 py-2',
@@ -237,7 +259,7 @@ export const challengerTheme = {
       base: 'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
     },
     card: {
-      base: 'rounded-lg border bg-card text-card-foreground shadow-sm',
+      base: 'rounded-lg border bg-card text-card-foreground shadow-challenger',
     },
   },
 };
@@ -249,18 +271,14 @@ export const darkModeColors = {
     secondary: '#0f0f0f',
     tertiary: '#1a1a1a',
   },
-  foreground: {
+  text: {
     primary: '#ffffff',
-    secondary: '#a1a1aa',
-    tertiary: '#71717a',
+    secondary: '#e5e5e5',
+    tertiary: '#a3a3a3',
   },
   border: {
-    primary: '#27272a',
-    secondary: '#3f3f46',
-  },
-  ring: {
-    primary: '#27272a',
-    secondary: '#3f3f46',
+    primary: '#262626',
+    secondary: '#404040',
   },
 };
 
@@ -269,28 +287,30 @@ export const lightModeColors = {
   background: {
     primary: '#ffffff',
     secondary: '#fafafa',
-    tertiary: '#f4f4f5',
+    tertiary: '#f5f5f5',
   },
-  foreground: {
-    primary: '#09090b',
-    secondary: '#52525b',
-    tertiary: '#71717a',
+  text: {
+    primary: '#000000',
+    secondary: '#262626',
+    tertiary: '#525252',
   },
   border: {
-    primary: '#e4e4e7',
-    secondary: '#d4d4d8',
-  },
-  ring: {
-    primary: '#e4e4e7',
-    secondary: '#d4d4d8',
+    primary: '#e5e5e5',
+    secondary: '#d4d4d4',
   },
 };
 
-// Export theme utilities
+// Theme utility functions
 export const getThemeColors = (isDark: boolean) => ({
-  ...challengerTheme.colors,
   background: isDark ? darkModeColors.background : lightModeColors.background,
-  foreground: isDark ? darkModeColors.foreground : lightModeColors.foreground,
+  text: isDark ? darkModeColors.text : lightModeColors.text,
   border: isDark ? darkModeColors.border : lightModeColors.border,
-  ring: isDark ? darkModeColors.ring : lightModeColors.ring,
 });
+
+// Font utility functions
+export const getDisplayFont = () => 'font-display';
+export const getBodyFont = () => 'font-sans';
+
+// Gradient utilities
+export const getAthleticGradient = () => 'bg-gradient-athletic';
+export const getGlowEffect = () => 'shadow-glow animate-glow';

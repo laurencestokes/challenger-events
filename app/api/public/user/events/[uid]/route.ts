@@ -36,7 +36,8 @@ export async function GET(request: NextRequest, { params }: { params: { uid: str
             verified: score.verified,
             verifiedAt: score.verifiedAt,
             submittedAt: score.submittedAt,
-            reps: activity?.reps,
+            updatedAt: score.updatedAt, // Include update timestamp
+            reps: score.reps || activity?.reps, // Use score reps if available, otherwise activity reps
             workoutName: activity?.name,
             workoutDescription: activity?.description,
           };

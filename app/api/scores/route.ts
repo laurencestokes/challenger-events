@@ -141,19 +141,21 @@ export async function POST(request: NextRequest) {
     let score;
     if (existingScore) {
       // Update the existing score
-      await updateScore(existingScore.id, {
+      const updatedScore = await updateScore(existingScore.id, {
         rawValue: Number(rawValue),
         calculatedScore,
+        reps: reps, // Include reps in the update
         notes: notes || '',
         verified: true,
       });
-      score = {
+      score = updatedScore || {
         id: existingScore.id,
         userId: competitorId,
         eventId,
         activityId,
         rawValue: Number(rawValue),
         calculatedScore,
+        reps: reps, // Include reps in the response
         notes: notes || '',
         verified: true,
       };
@@ -165,6 +167,7 @@ export async function POST(request: NextRequest) {
         activityId,
         rawValue: Number(rawValue),
         calculatedScore,
+        reps: reps, // Include reps in the creation
         notes: notes || '',
         verified: true,
       });
@@ -189,7 +192,10 @@ export async function POST(request: NextRequest) {
       activityId: score.activityId,
       rawValue: score.rawValue,
       calculatedScore: score.calculatedScore,
+      reps: score.reps, // Include reps in the response
       notes: score.notes,
+      submittedAt: score.submittedAt, // Include submission timestamp
+      updatedAt: score.updatedAt, // Include update timestamp
     });
   } catch (error) {
     console.error('Error submitting score:', error);

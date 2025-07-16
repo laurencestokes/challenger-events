@@ -55,7 +55,7 @@ export const EVENT_TYPES: EventType[] = [
   {
     id: 'rowing_500m',
     name: '500m Row',
-    description: '500m rowing with scoring based on time, age, and sex (supports milliseconds)',
+    description: '500m rowing with scoring based on time, age, and sex',
     category: 'ENDURANCE',
     scoringSystemId: 'rowing_500m',
     inputType: 'TIME',
@@ -75,7 +75,7 @@ export const EVENT_TYPES: EventType[] = [
   {
     id: 'bike_500m',
     name: '500m Bike',
-    description: '500m bike with scoring based on time, age, and sex (supports milliseconds)',
+    description: '500m bike with scoring based on time, age, and sex',
     category: 'ENDURANCE',
     scoringSystemId: 'bike_500m',
     inputType: 'TIME',
@@ -85,7 +85,7 @@ export const EVENT_TYPES: EventType[] = [
   {
     id: 'ski_500m',
     name: '500m Ski',
-    description: '500m ski with scoring based on time, age, and sex (supports milliseconds)',
+    description: '500m ski with scoring based on time, age, and sex',
     category: 'ENDURANCE',
     scoringSystemId: 'ski_500m',
     inputType: 'TIME',

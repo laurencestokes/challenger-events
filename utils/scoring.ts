@@ -253,3 +253,30 @@ export function parseTimeWithMilliseconds(timeStr: string): number {
   // Handle seconds only (e.g., "86.3" -> 86.3 seconds)
   return Number(timeStr);
 }
+
+// Comprehensive beautification function for raw scores
+export function beautifyRawScore(rawValue: number, activityId: string, reps?: number): string {
+  // Handle weight-based activities (squat, bench, deadlift)
+  if (['squat', 'bench', 'deadlift'].includes(activityId)) {
+    // Always show weight × reps format for lifts, even if reps is 1
+    const repsToShow = reps || 1;
+    return `${rawValue}kg × ${repsToShow}`;
+  }
+
+  // Handle time-based activities (rowing_500m, bike_500m, ski_500m)
+  if (['rowing_500m', 'bike_500m', 'ski_500m'].includes(activityId)) {
+    return formatTimeWithMilliseconds(rawValue);
+  }
+
+  // Handle distance-based activities (rowing_4min)
+  if (activityId === 'rowing_4min') {
+    if (rawValue >= 1000) {
+      return `${(rawValue / 1000).toFixed(1)}km`;
+    } else {
+      return `${Math.round(rawValue)}m`;
+    }
+  }
+
+  // Fallback for unknown activities
+  return rawValue.toString();
+}

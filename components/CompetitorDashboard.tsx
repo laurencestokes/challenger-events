@@ -53,23 +53,23 @@ export default function CompetitorDashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <div className="card p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white font-sans">
               Competitor Dashboard
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600 dark:text-gray-400 font-sans">
               Welcome back, {user?.name || user?.email}
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 font-sans">
               You&apos;re participating in {events.length} event{events.length !== 1 ? 's' : ''}
             </p>
           </div>
           <div className="flex items-center space-x-4">
             <button
               onClick={handleSignOut}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-sans"
             >
               Sign Out
             </button>
@@ -79,13 +79,10 @@ export default function CompetitorDashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Link
-          href="/events/join"
-          className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 hover:shadow-lg transition-shadow"
-        >
+        <Link href="/events/join" className="card p-6 hover:shadow-challenger-lg transition-shadow">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary-500 rounded-md flex items-center justify-center shadow-challenger">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -102,21 +99,20 @@ export default function CompetitorDashboard() {
               </div>
             </div>
             <div className="ml-4">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Join Event</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white font-sans">
+                Join Event
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-sans">
                 Enter an event code to participate
               </p>
             </div>
           </div>
         </Link>
 
-        <Link
-          href="/profile"
-          className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 hover:shadow-lg transition-shadow"
-        >
+        <Link href="/profile" className="card p-6 hover:shadow-challenger-lg transition-shadow">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary-500 rounded-md flex items-center justify-center shadow-challenger">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -133,21 +129,20 @@ export default function CompetitorDashboard() {
               </div>
             </div>
             <div className="ml-4">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">My Profile</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white font-sans">
+                My Profile
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-sans">
                 View your performance history
               </p>
             </div>
           </div>
         </Link>
 
-        <Link
-          href="/teams"
-          className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 hover:shadow-lg transition-shadow"
-        >
+        <Link href="/teams" className="card p-6 hover:shadow-challenger-lg transition-shadow">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary-500 rounded-md flex items-center justify-center shadow-challenger">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -164,8 +159,10 @@ export default function CompetitorDashboard() {
               </div>
             </div>
             <div className="ml-4">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">My Teams</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white font-sans">
+                My Teams
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-sans">
                 Manage your teams and join new ones
               </p>
             </div>
@@ -174,28 +171,25 @@ export default function CompetitorDashboard() {
       </div>
 
       {/* Active Events */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div className="card">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">My Events</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white font-sans">My Events</h3>
         </div>
         <div className="p-6">
           {isLoading ? (
             <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
             </div>
           ) : error ? (
             <div className="text-center py-4">
-              <p className="text-red-600 dark:text-red-400">{error}</p>
+              <p className="text-accent-600 dark:text-accent-400 font-sans">{error}</p>
             </div>
           ) : events.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400">
+              <p className="text-gray-500 dark:text-gray-400 font-sans">
                 You haven&apos;t joined any events yet.
               </p>
-              <Link
-                href="/events/join"
-                className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
+              <Link href="/events/join" className="mt-2 btn-primary">
                 Join Your First Event
               </Link>
             </div>
@@ -207,18 +201,20 @@ export default function CompetitorDashboard() {
                   className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
                 >
                   <div>
-                    <h4 className="text-lg font-medium text-gray-900 dark:text-white">
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white font-sans">
                       {event.name}
                     </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Code: {event.code}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-sans">
+                      Code: {event.code}
+                    </p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      className={`px-2 py-1 text-xs font-medium rounded-full font-sans ${
                         event.status === 'ACTIVE'
                           ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                           : event.status === 'COMPLETED'
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                            ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200'
                             : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
                       }`}
                     >
@@ -227,13 +223,13 @@ export default function CompetitorDashboard() {
                     <div className="flex items-center space-x-2">
                       <Link
                         href={`/events/${event.id}`}
-                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                        className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300 font-sans"
                       >
                         View Details
                       </Link>
                       <Link
                         href={`/events/${event.id}/leaderboard`}
-                        className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                        className="text-accent-600 hover:text-accent-900 dark:text-accent-400 dark:hover:text-accent-300 font-sans"
                       >
                         Leaderboard
                       </Link>
@@ -247,15 +243,16 @@ export default function CompetitorDashboard() {
       </div>
 
       {/* Recent Performance */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div className="card">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Recent Performance</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white font-sans">
+            Recent Performance
+          </h3>
         </div>
         <div className="p-6">
           <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400">No recent activity to display.</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-              Join an event to start tracking your performance!
+            <p className="text-gray-500 dark:text-gray-400 font-sans">
+              Performance tracking coming soon...
             </p>
           </div>
         </div>

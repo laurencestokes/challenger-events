@@ -1,7 +1,21 @@
 import type { Metadata } from 'next';
 import { Providers } from '@/components/Providers';
+import { Inter, Orbitron } from 'next/font/google';
 
 import 'styles/globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const orbitron = Orbitron({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-orbitron',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Challenger Events - Real-time Fitness Competitions',
@@ -15,7 +29,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
-      <body className="bg-white dark:bg-black min-h-screen">
+      <body
+        className={`${inter.variable} ${orbitron.variable} bg-white dark:bg-gray-900 min-h-screen`}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>

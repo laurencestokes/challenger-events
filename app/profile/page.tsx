@@ -3,7 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../lib/api-client';
-import { convertFirestoreTimestamp, calculateAgeFromDateOfBirth } from '../../lib/utils';
+import {
+  convertFirestoreTimestamp,
+  calculateAgeFromDateOfBirth,
+  formatFullTimestamp,
+} from '../../lib/utils';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -15,6 +19,7 @@ import { EVENT_TYPES } from '@/constants/eventTypes';
 import type { Score, Team } from '@/lib/firestore';
 import AddScoreModal from '@/components/ui/AddScoreModal';
 import { QRCodeSVG } from 'qrcode.react';
+import { beautifyRawScore } from '@/utils/scoring';
 
 interface User {
   id: string;
@@ -75,24 +80,6 @@ const ProfileSchema = z.object({
 });
 
 type ProfileFormType = z.infer<typeof ProfileSchema>;
-
-// Helper to get display units for each test
-function getDisplayUnit(typeId: string) {
-  switch (typeId) {
-    case 'squat':
-    case 'bench':
-    case 'deadlift':
-      return 'kg';
-    case 'rowing_500m':
-    case 'bike_500m':
-    case 'ski_500m':
-      return 'seconds';
-    case 'rowing_4min':
-      return 'm';
-    default:
-      return '';
-  }
-}
 
 function getReps(score: unknown): number | undefined {
   if (
@@ -377,9 +364,13 @@ export default function Profile() {
                       {showVerified && (
                         <div className="text-xs text-gray-700 dark:text-gray-300 mb-1">
                           Raw:{' '}
-                          {getReps(showVerified) && getReps(showVerified)! > 1
-                            ? `${showVerified.rawValue}kg x ${getReps(showVerified)}`
-                            : `${showVerified.rawValue} ${getDisplayUnit(type.id)}`}
+                          {beautifyRawScore(showVerified.rawValue, type.id, getReps(showVerified))}
+                        </div>
+                      )}
+                      {showVerified && showVerified.submittedAt && (
+                        <div className="text-xs text-gray-400 mb-1">
+                          <span className="font-semibold">Submitted:</span>{' '}
+                          {formatFullTimestamp(showVerified.submittedAt)}
                         </div>
                       )}
                       {showVerified && showVerified.event && (
@@ -412,9 +403,17 @@ export default function Profile() {
                       {showUnverified && (
                         <div className="text-xs text-gray-700 dark:text-gray-300 mb-1">
                           Raw:{' '}
-                          {getReps(showUnverified) && getReps(showUnverified)! > 1
-                            ? `${showUnverified.rawValue}kg x ${getReps(showUnverified)}`
-                            : `${showUnverified.rawValue} ${getDisplayUnit(type.id)}`}
+                          {beautifyRawScore(
+                            showUnverified.rawValue,
+                            type.id,
+                            getReps(showUnverified),
+                          )}
+                        </div>
+                      )}
+                      {showUnverified && showUnverified.submittedAt && (
+                        <div className="text-xs text-gray-400 mb-1">
+                          <span className="font-semibold">Submitted:</span>{' '}
+                          {formatFullTimestamp(showUnverified.submittedAt)}
                         </div>
                       )}
                     </>
@@ -852,12 +851,14 @@ export default function Profile() {
   if (isLoading) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
           <Header />
-          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">Loading profile...</p>
+          <div className="flex-1">
+            <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+                <p className="mt-2 text-gray-600 dark:text-gray-400">Loading profile...</p>
+              </div>
             </div>
           </div>
           <Footer />
@@ -868,14 +869,16 @@ export default function Profile() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
         <Header />
-        <div className="max-w-3xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">My Profile</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-8">
-            Manage your profile information, scores, and teams
-          </p>
-          <Accordion sections={accordionSections} defaultOpenId="profile-info" />
+        <div className="flex-1">
+          <div className="max-w-3xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">My Profile</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
+              Manage your profile information, scores, and teams
+            </p>
+            <Accordion sections={accordionSections} defaultOpenId="profile-info" />
+          </div>
         </div>
         <Footer />
       </div>

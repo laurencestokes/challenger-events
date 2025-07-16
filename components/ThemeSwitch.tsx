@@ -18,7 +18,7 @@ const ThemeSwitch = () => {
   return (
     <button
       onClick={() => setTheme(theme === 'dark' || resolvedTheme === 'dark' ? 'light' : 'dark')}
-      className="p-2 text-gray-800 dark:text-gray-200 bg-transparent dark:bg-black"
+      className="p-2 text-gray-800 dark:text-gray-200 hover:text-primary-500 dark:hover:text-primary-400 bg-transparent rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
       aria-label="Toggle Dark Mode"
     >
       {theme === 'dark' || resolvedTheme === 'dark' ? (

@@ -42,10 +42,10 @@ export default function JoinEvent() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white font-sans">
               Join an Event
             </h2>
-            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400 font-sans">
               Enter the event code to participate
             </p>
           </div>
@@ -60,7 +60,7 @@ export default function JoinEvent() {
                 name="eventCode"
                 type="text"
                 required
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm text-center text-lg font-mono tracking-widest"
+                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm text-center text-lg font-mono tracking-widest transition-colors"
                 placeholder="ABC123"
                 value={eventCode}
                 onChange={(e) => setEventCode(e.target.value.toUpperCase())}
@@ -72,7 +72,7 @@ export default function JoinEvent() {
               <button
                 type="submit"
                 disabled={isLoading || !eventCode}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary w-full"
               >
                 {isLoading ? 'Joining...' : 'Join Event'}
               </button>
@@ -80,10 +80,10 @@ export default function JoinEvent() {
 
             {message && (
               <div
-                className={`text-sm text-center ${
+                className={`text-sm text-center font-sans ${
                   messageType === 'success'
                     ? 'text-green-600 dark:text-green-400'
-                    : 'text-red-600 dark:text-red-400'
+                    : 'text-accent-600 dark:text-accent-400'
                 }`}
               >
                 {message}
@@ -94,7 +94,7 @@ export default function JoinEvent() {
           <div className="text-center">
             <button
               onClick={() => router.push('/dashboard')}
-              className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              className="text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 font-sans"
             >
               ← Back to Dashboard
             </button>

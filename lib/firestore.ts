@@ -78,6 +78,7 @@ export interface Score {
   activityId: string;
   rawValue: number; // The raw input value (e.g., 180kg)
   calculatedScore: number; // The calculated score from the scoring system
+  reps?: number; // Number of reps performed (for strength exercises)
   notes?: string;
   verified: boolean; // New: whether the score is verified
   verifiedAt?: Date; // New: when the score was verified
@@ -332,7 +333,20 @@ export const createScore = async (scoreData: Omit<Score, 'id' | 'submittedAt' | 
     submittedAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
-  return { id: docRef.id, ...scoreData };
+
+  // Fetch the created document to get the actual timestamps
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    return { id: docSnap.id, ...docSnap.data() } as Score;
+  }
+
+  // Fallback if fetch fails
+  return {
+    id: docRef.id,
+    ...scoreData,
+    submittedAt: new Date(),
+    updatedAt: new Date(),
+  };
 };
 
 export const updateScore = async (scoreId: string, updates: Partial<Score>) => {
@@ -341,6 +355,14 @@ export const updateScore = async (scoreId: string, updates: Partial<Score>) => {
     ...updates,
     updatedAt: serverTimestamp(),
   });
+
+  // Fetch the updated document to get the actual timestamps
+  const docSnap = await getDoc(scoreRef);
+  if (docSnap.exists()) {
+    return { id: docSnap.id, ...docSnap.data() } as Score;
+  }
+
+  return null;
 };
 
 export const getScoresByEvent = async (eventId: string) => {

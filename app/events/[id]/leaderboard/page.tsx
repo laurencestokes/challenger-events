@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api-client';
-import { formatTimeWithMilliseconds } from '@/utils/scoring';
+import { beautifyRawScore } from '@/utils/scoring';
 import ScoreCalculator from '@/components/ScoreCalculator';
 import NotificationToast from '@/components/NotificationToast';
 import { useSSE } from '@/hooks/useSSE';
@@ -29,6 +29,7 @@ interface LeaderboardEntry {
     [activityId: string]: {
       score: number;
       rawValue: number;
+      reps?: number;
       rank: number;
       activityName: string;
     };
@@ -47,6 +48,7 @@ interface WorkoutLeaderboard {
     email: string;
     score: number;
     rawValue: number;
+    reps?: number;
     rank: number;
     teamId?: string;
     teamName?: string;
@@ -193,13 +195,8 @@ export default function EventLeaderboard() {
     return activity?.unit || '';
   };
 
-  const formatRawValue = (rawValue: number, unit: string) => {
-    // For time events with seconds unit, convert to mm:ss.ms format
-    if (unit === 'seconds' && rawValue > 0) {
-      return formatTimeWithMilliseconds(rawValue);
-    }
-    // For other units, use the standard format
-    return `${rawValue.toFixed(1)} ${unit}`;
+  const formatRawValue = (rawValue: number, activityId: string, reps?: number) => {
+    return beautifyRawScore(rawValue, activityId, reps);
   };
 
   const getRankIcon = (rank: number) => {
@@ -494,6 +491,7 @@ export default function EventLeaderboard() {
                                     {formatRawValue(
                                       entry.rawValue || 0,
                                       getActivityUnit(activeTab),
+                                      entry.reps,
                                     )}
                                   </div>
                                 </div>

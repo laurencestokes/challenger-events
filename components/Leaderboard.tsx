@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api-client';
-import { formatTimeWithMilliseconds } from '@/utils/scoring';
+import { beautifyRawScore } from '@/utils/scoring';
 
 interface LeaderboardEntry {
   userId: string;
@@ -13,6 +13,7 @@ interface LeaderboardEntry {
     [activityId: string]: {
       score: number;
       rawValue: number;
+      reps?: number;
       rank: number;
       activityName: string;
     };
@@ -31,6 +32,7 @@ interface WorkoutLeaderboard {
     email: string;
     score: number;
     rawValue: number;
+    reps?: number;
     rank: number;
     teamId?: string;
     teamName?: string;
@@ -84,31 +86,16 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overall' | string>('overall');
-  const [activities, setActivities] = useState<{ id: string; unit: string }[]>([]);
 
-  const getActivityUnit = (activityId: string) => {
-    const activity = activities.find((a) => a.id === activityId);
-    return activity?.unit || '';
-  };
-
-  const formatRawValue = (rawValue: number, unit: string) => {
-    // For time events with seconds unit, convert to mm:ss.ms format
-    if (unit === 'seconds' && rawValue > 0) {
-      return formatTimeWithMilliseconds(rawValue);
-    }
-    // For other units, use the standard format
-    return `${rawValue.toFixed(1)} ${unit}`;
+  const formatRawValue = (rawValue: number, activityId: string, reps?: number) => {
+    return beautifyRawScore(rawValue, activityId, reps);
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [leaderboardData, activitiesData] = await Promise.all([
-          api.get(`/api/events/${eventId}/leaderboard`),
-          api.get(`/api/events/${eventId}/activities`),
-        ]);
+        const leaderboardData = await api.get(`/api/events/${eventId}/leaderboard`);
         setLeaderboardData(leaderboardData);
-        setActivities(activitiesData);
       } catch (error: unknown) {
         console.error('Error fetching data:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
@@ -168,12 +155,12 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
     // Add team leaderboards if this is a team event
     ...(leaderboardData.isTeamEvent
       ? [
-          { id: 'team-overall', name: 'Team Overall' },
-          ...(leaderboardData.teamWorkoutLeaderboards || []).map((workout) => ({
-            id: `team-${workout.activityId}`,
-            name: `Team ${workout.activityName}`,
-          })),
-        ]
+        { id: 'team-overall', name: 'Team Overall' },
+        ...(leaderboardData.teamWorkoutLeaderboards || []).map((workout) => ({
+          id: `team-${workout.activityId}`,
+          name: `Team ${workout.activityName}`,
+        })),
+      ]
       : []),
   ];
 
@@ -248,9 +235,10 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                             <div className="text-xs text-gray-500 dark:text-gray-400">
                               {workoutScore.rawValue
                                 ? formatRawValue(
-                                    workoutScore.rawValue,
-                                    getActivityUnit(workout.activityId),
-                                  )
+                                  workoutScore.rawValue,
+                                  workout.activityId,
+                                  workoutScore.reps,
+                                )
                                 : ''}
                             </div>
                             <div className="text-xs text-gray-400 dark:text-gray-500">
@@ -333,7 +321,7 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           {entry.rawValue
-                            ? formatRawValue(entry.rawValue, getActivityUnit(workout.activityId))
+                            ? formatRawValue(entry.rawValue, workout.activityId, entry.reps)
                             : ''}
                         </div>
                       </div>
@@ -492,7 +480,7 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           {entry.rawValue
-                            ? formatRawValue(entry.rawValue, getActivityUnit(teamWorkoutId))
+                            ? formatRawValue(entry.rawValue, teamWorkoutId, entry.reps)
                             : ''}
                         </div>
                       </div>
@@ -520,11 +508,10 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === tab.id
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
+                }`}
             >
               {tab.name}
             </button>

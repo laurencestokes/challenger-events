@@ -17,6 +17,7 @@ export default function AddScoreModal({
 }: AddScoreModalProps) {
   const [activityId, setActivityId] = useState(initialActivityId || '');
   const [rawValue, setRawValue] = useState('');
+  const [reps, setReps] = useState('');
   const [notes, setNotes] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -25,6 +26,7 @@ export default function AddScoreModal({
   React.useEffect(() => {
     if (isOpen) {
       setActivityId(initialActivityId || '');
+      setReps('');
     }
   }, [isOpen, initialActivityId]);
 
@@ -42,13 +44,32 @@ export default function AddScoreModal({
         setIsLoading(false);
         return;
       }
+
+      // Validate reps if the activity supports them
+      if (selectedActivity?.supportsReps && reps) {
+        const repsNum = Number(reps);
+        if (
+          isNaN(repsNum) ||
+          repsNum < (selectedActivity.minReps || 1) ||
+          repsNum > (selectedActivity.maxReps || 10)
+        ) {
+          setError(
+            `Reps must be between ${selectedActivity.minReps || 1} and ${selectedActivity.maxReps || 10}`,
+          );
+          setIsLoading(false);
+          return;
+        }
+      }
+
       await api.post('/api/user/scores', {
         activityId,
         rawValue,
+        reps: selectedActivity?.supportsReps && reps ? Number(reps) : undefined,
         notes,
       });
       setActivityId('');
       setRawValue('');
+      setReps('');
       setNotes('');
       onScoreAdded();
       onClose();
@@ -117,6 +138,26 @@ export default function AddScoreModal({
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 required
               />
+            </div>
+          )}
+          {selectedActivity?.supportsReps && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Reps (optional)
+              </label>
+              <input
+                type="number"
+                min={selectedActivity.minReps || 1}
+                max={selectedActivity.maxReps || 10}
+                placeholder={`${selectedActivity.defaultReps || 1} (default)`}
+                value={reps}
+                onChange={(e) => setReps(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Leave empty for 1RM. Range: {selectedActivity.minReps || 1}-
+                {selectedActivity.maxReps || 10}
+              </p>
             </div>
           )}
           <div>

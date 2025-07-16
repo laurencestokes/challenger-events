@@ -22,17 +22,20 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const baseClasses =
-      'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background';
+      'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-white dark:ring-offset-black';
 
     const variantClasses = {
-      default: 'bg-primary-600 text-white hover:bg-primary-700 focus-visible:ring-primary-500',
-      destructive: 'bg-error-500 text-white hover:bg-error-600 focus-visible:ring-error-500',
+      default:
+        'bg-primary-500 text-white hover:bg-primary-600 focus-visible:ring-primary-500 font-display font-bold shadow-challenger hover:shadow-challenger-lg',
+      destructive:
+        'bg-accent-500 text-white hover:bg-accent-600 focus-visible:ring-accent-500 font-display font-bold shadow-glow-red',
       outline:
-        'border border-input bg-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-accent-400',
+        'border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:ring-primary-500 font-sans',
       secondary:
-        'bg-secondary-100 text-secondary-900 hover:bg-secondary-200 dark:bg-secondary-800 dark:text-secondary-100 dark:hover:bg-secondary-700 focus-visible:ring-secondary-500',
-      ghost: 'hover:bg-accent hover:text-accent-foreground focus-visible:ring-accent-400',
-      link: 'text-primary-600 underline-offset-4 hover:underline focus-visible:ring-primary-500',
+        'bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 focus-visible:ring-gray-500 font-sans',
+      ghost:
+        'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 focus-visible:ring-gray-500 font-sans',
+      link: 'text-primary-500 underline-offset-4 hover:underline focus-visible:ring-primary-500 font-sans',
     };
 
     const sizeClasses = {

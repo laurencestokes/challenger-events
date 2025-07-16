@@ -41,9 +41,11 @@ export async function GET(request: NextRequest) {
           return {
             ...score,
             testId,
-            reps: activity?.reps, // also attach reps if relevant
+            reps: score.reps || activity?.reps, // Use score reps if available, otherwise activity reps
             workoutName: activity?.name,
             workoutDescription: activity?.description,
+            submittedAt: score.submittedAt, // Include submission timestamp
+            updatedAt: score.updatedAt, // Include update timestamp
           };
         });
 

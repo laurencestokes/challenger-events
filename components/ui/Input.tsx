@@ -16,7 +16,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-sans"
           >
             {label}
           </label>
@@ -24,16 +24,18 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           id={inputId}
           className={cn(
-            'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-            error && 'border-error-500 focus-visible:ring-error-500',
+            'flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 ring-offset-white dark:ring-offset-black file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors',
+            error && 'border-accent-500 focus-visible:ring-accent-500',
             className,
           )}
           ref={ref}
           {...props}
         />
-        {error && <p className="mt-1 text-sm text-error-600 dark:text-error-400">{error}</p>}
+        {error && (
+          <p className="mt-1 text-sm text-accent-600 dark:text-accent-400 font-sans">{error}</p>
+        )}
         {helperText && !error && (
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{helperText}</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 font-sans">{helperText}</p>
         )}
       </div>
     );

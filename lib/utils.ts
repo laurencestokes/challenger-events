@@ -108,3 +108,84 @@ export function convertFirestoreTimestamp(timestamp: unknown): Date | null {
 
   return null;
 }
+
+// Firestore timestamp type
+interface FirestoreTimestamp {
+  type: 'firestore/timestamp/1.0';
+  seconds: number;
+  nanoseconds: number;
+}
+
+function convertFirestoreTimestampToDate(timestamp: FirestoreTimestamp): Date {
+  return new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+}
+
+export function formatTimestamp(timestamp: Date | string | number | FirestoreTimestamp): string {
+  let date: Date;
+
+  if (
+    typeof timestamp === 'object' &&
+    timestamp !== null &&
+    'type' in timestamp &&
+    timestamp.type === 'firestore/timestamp/1.0'
+  ) {
+    date = convertFirestoreTimestampToDate(timestamp as FirestoreTimestamp);
+  } else if (timestamp instanceof Date) {
+    date = timestamp;
+  } else if (typeof timestamp === 'string' || typeof timestamp === 'number') {
+    date = new Date(timestamp);
+  } else {
+    date = new Date();
+  }
+
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffInMinutes < 1) {
+    return 'Just now';
+  } else if (diffInMinutes < 60) {
+    return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
+  } else if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
+  } else if (diffInDays < 7) {
+    return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
+  } else {
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  }
+}
+
+export function formatFullTimestamp(
+  timestamp: Date | string | number | FirestoreTimestamp,
+): string {
+  let date: Date;
+
+  if (
+    typeof timestamp === 'object' &&
+    timestamp !== null &&
+    'type' in timestamp &&
+    timestamp.type === 'firestore/timestamp/1.0'
+  ) {
+    date = convertFirestoreTimestampToDate(timestamp as FirestoreTimestamp);
+  } else if (timestamp instanceof Date) {
+    date = timestamp;
+  } else if (typeof timestamp === 'string' || typeof timestamp === 'number') {
+    date = new Date(timestamp);
+  } else {
+    date = new Date();
+  }
+
+  return date.toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}

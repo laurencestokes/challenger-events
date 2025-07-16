@@ -19,6 +19,7 @@ interface LeaderboardEntry {
     [activityId: string]: {
       score: number;
       rawValue: number;
+      reps?: number;
       rank: number;
       activityName: string;
     };
@@ -37,6 +38,7 @@ interface WorkoutLeaderboard {
     email: string;
     score: number;
     rawValue: number;
+    reps?: number;
     rank: number;
     teamId?: string;
     teamName?: string;
@@ -51,6 +53,7 @@ interface TeamLeaderboardEntry {
     [activityId: string]: {
       score: number;
       rawValue: number;
+      reps?: number;
       rank: number;
       activityName: string;
     };
@@ -152,6 +155,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             email: participant?.email || 'unknown@example.com',
             score: score.calculatedScore || 0,
             rawValue: score.rawValue || 0,
+            reps: score.reps,
             rank: 0, // Will be calculated below
             teamId: participant?.teamId,
             teamName: participant?.teamName,
@@ -186,6 +190,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         [activityId: string]: {
           score: number;
           rawValue: number;
+          reps?: number;
           rank: number;
           activityName: string;
         };
@@ -204,6 +209,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           workoutScores[score.activityId] = {
             score: score.calculatedScore || 0,
             rawValue: score.rawValue || 0,
+            reps: score.reps,
             rank,
             activityName: activity.name,
           };
@@ -303,6 +309,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             teamOverallScore.workoutScores[activity.id] = {
               score: teamOverallScore.workoutScores[activity.id]?.score || 0,
               rawValue: teamOverallScore.workoutScores[activity.id]?.rawValue || 0,
+              reps: teamOverallScore.workoutScores[activity.id]?.reps,
               rank,
               activityName: activity.name,
             };

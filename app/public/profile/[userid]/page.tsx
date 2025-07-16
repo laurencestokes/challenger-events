@@ -2,6 +2,10 @@
 import { useEffect, useState } from 'react';
 import { EVENT_TYPES } from '@/constants/eventTypes';
 import type { Score } from '@/lib/firestore';
+import Link from 'next/link';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { beautifyRawScore } from '@/utils/scoring';
+import { formatFullTimestamp } from '@/lib/utils';
 
 interface User {
   id: string;
@@ -33,24 +37,6 @@ interface EventWithScores {
 interface PublicProfileData {
   user: User;
   scores: Score[];
-}
-
-// Helper to get display units for each test
-function getDisplayUnit(typeId: string) {
-  switch (typeId) {
-    case 'squat':
-    case 'bench':
-    case 'deadlift':
-      return 'kg';
-    case 'rowing_500m':
-    case 'bike_500m':
-    case 'ski_500m':
-      return 'seconds';
-    case 'rowing_4min':
-      return 'm';
-    default:
-      return '';
-  }
 }
 
 function getReps(score: unknown): number | undefined {
@@ -115,22 +101,43 @@ export default function PublicProfilePage({ params }: { params: { userid: string
   }, [params.userid]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-  if (notFound) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded shadow text-center">
-          <h1 className="text-2xl font-bold mb-2 text-red-600">Profile Not Found</h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            This public profile does not exist or is not available.
-          </p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner />
+          <p className="mt-4 text-gray-600 dark:text-gray-400 animate-pulse">Loading profile...</p>
         </div>
       </div>
     );
   }
+
+  if (notFound) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700">
+        <div className="max-w-4xl mx-auto py-12 px-4">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 text-center transform transition-all duration-300 hover:scale-105">
+            <div className="text-6xl mb-4">🏃‍♂️</div>
+            <h1 className="text-3xl font-bold mb-4 text-gray-800 dark:text-gray-200">
+              Profile Not Found
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300 text-lg">
+              This public profile does not exist or is not available.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!data || !eventScores) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner />
+          <p className="mt-4 text-gray-600 dark:text-gray-400 animate-pulse">Loading profile...</p>
+        </div>
+      </div>
+    );
   }
 
   const { user, scores } = data;
@@ -251,9 +258,12 @@ export default function PublicProfilePage({ params }: { params: { userid: string
       return (
         <div
           key={type.id}
-          className="border rounded p-4 bg-gray-50 dark:bg-gray-700 flex flex-col mb-2"
+          className="border border-gray-200 dark:border-gray-600 rounded-xl p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 flex flex-col mb-3 transform transition-all duration-300 hover:scale-105 hover:shadow-lg"
         >
-          <div className="font-semibold text-gray-900 dark:text-white">{type.name}</div>
+          <div className="font-semibold text-gray-900 dark:text-white flex items-center">
+            <span className="mr-2 text-xl">{EVENT_ICONS[type.id] || '🏅'}</span>
+            {type.name}
+          </div>
           <div className="text-xs text-gray-400 mb-1">No score yet</div>
         </div>
       );
@@ -261,35 +271,38 @@ export default function PublicProfilePage({ params }: { params: { userid: string
     return (
       <div
         key={type.id}
-        className="border rounded p-4 bg-gray-50 dark:bg-gray-700 flex flex-col mb-2"
+        className="border border-gray-200 dark:border-gray-600 rounded-xl p-4 bg-gradient-to-r from-white to-gray-50 dark:from-gray-700 dark:to-gray-800 flex flex-col mb-3 transform transition-all duration-300 hover:scale-105 hover:shadow-lg"
       >
-        <div className="font-semibold text-gray-900 dark:text-white mb-1">
-          <span className="mr-2 text-lg align-middle">{EVENT_ICONS[type.id] || '🏅'}</span>
+        <div className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
+          <span className="mr-2 text-xl">{EVENT_ICONS[type.id] || '🏅'}</span>
           {type.name}
         </div>
-        <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">{type.description}</div>
+        <div className="text-xs text-gray-500 dark:text-gray-400 mb-3">{type.description}</div>
         {/* Show verified score if exists */}
         {showVerified && (
-          <div className="flex items-center space-x-2 mb-1">
-            <span className="text-lg font-bold text-primary-600 dark:text-primary-400">
+          <div className="flex items-center space-x-2 mb-2">
+            <span className="text-xl font-bold text-primary-600 dark:text-primary-400">
               {showVerified.calculatedScore}
             </span>
             <span className="text-xs text-gray-500 dark:text-gray-400">Challenger Score</span>
-            <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+            <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 font-medium">
               Verified
             </span>
           </div>
         )}
         {showVerified && (
-          <div className="text-xs text-gray-700 dark:text-gray-300 mb-1">
-            Raw:{' '}
-            {getReps(showVerified) && getReps(showVerified)! > 1
-              ? `${showVerified.rawValue}kg x ${getReps(showVerified)}`
-              : `${showVerified.rawValue} ${getDisplayUnit(type.id)}`}
+          <div className="text-xs text-gray-700 dark:text-gray-300 mb-2">
+            Raw: {beautifyRawScore(showVerified.rawValue, type.id, getReps(showVerified))}
+          </div>
+        )}
+        {showVerified && showVerified.submittedAt && (
+          <div className="text-xs text-gray-400 mb-2">
+            <span className="font-semibold">Submitted:</span>{' '}
+            {formatFullTimestamp(showVerified.submittedAt)}
           </div>
         )}
         {showVerified && showVerified.event && (
-          <div className="text-xs text-gray-400">
+          <div className="text-xs text-gray-400 mb-2">
             <span className="font-semibold">Event:</span> {showVerified.event?.name || 'Event'}
             {hasWorkoutName(showVerified) ? (
               <>
@@ -302,22 +315,25 @@ export default function PublicProfilePage({ params }: { params: { userid: string
         )}
         {/* Show unverified score if exists and should be shown */}
         {showUnverified && (
-          <div className="flex items-center space-x-2 mb-1 mt-4">
-            <span className="text-lg font-bold text-primary-600 dark:text-primary-400">
+          <div className="flex items-center space-x-2 mb-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+            <span className="text-xl font-bold text-primary-600 dark:text-primary-400">
               {showUnverified.calculatedScore}
             </span>
             <span className="text-xs text-gray-500 dark:text-gray-400">Challenger Score</span>
-            <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+            <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 font-medium">
               Unverified
             </span>
           </div>
         )}
         {showUnverified && (
-          <div className="text-xs text-gray-700 dark:text-gray-300 mb-1">
-            Raw:{' '}
-            {getReps(showUnverified) && getReps(showUnverified)! > 1
-              ? `${showUnverified.rawValue}kg x ${getReps(showUnverified)}`
-              : `${showUnverified.rawValue} ${getDisplayUnit(type.id)}`}
+          <div className="text-xs text-gray-700 dark:text-gray-300 mb-2">
+            Raw: {beautifyRawScore(showUnverified.rawValue, type.id, getReps(showUnverified))}
+          </div>
+        )}
+        {showUnverified && showUnverified.submittedAt && (
+          <div className="text-xs text-gray-400 mb-2">
+            <span className="font-semibold">Submitted:</span>{' '}
+            {formatFullTimestamp(showUnverified.submittedAt)}
           </div>
         )}
       </div>
@@ -346,94 +362,147 @@ export default function PublicProfilePage({ params }: { params: { userid: string
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-8">
-        {/* Overall/Category Scores */}
-        <div className="mb-6 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-            {user.name}'s Public Profile
-          </h1>
-          <div className="flex flex-col items-center mb-4">
-            <div className="flex flex-col items-center mb-2">
-              <span className="text-2xl font-bold text-primary-700 dark:text-primary-300">
-                {overallTotal}
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Overall Score</span>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700">
+      <div className="max-w-7xl mx-auto py-8 px-4">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 p-8 md:p-12 overflow-hidden relative">
+          {/* Decorative background elements */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900 dark:to-primary-800 rounded-full opacity-20 transform translate-x-16 -translate-y-16"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-primary-200 to-primary-300 dark:from-primary-800 dark:to-primary-700 rounded-full opacity-20 transform -translate-x-12 translate-y-12"></div>
+
+          {/* Header Section */}
+          <div className="text-center mb-8 relative z-10">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full mb-4 shadow-lg">
+              <span className="text-3xl">🏃‍♂️</span>
             </div>
-            <div className="flex flex-col items-center mb-2">
-              <span className="text-2xl font-bold text-green-700 dark:text-green-300">
-                {overallVerifiedTotal}
-              </span>
-              <span className="text-xs text-green-700 dark:text-green-300">
-                Overall Score (Verified Only)
-              </span>
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent mb-2">
+              {user.name} - Public Challenger Profile
+            </h1>
+          </div>
+
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-2xl mx-auto">
+            <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-6 text-white text-center transform transition-all duration-300 hover:scale-105">
+              <div className="text-3xl font-bold mb-1">{overallTotal}</div>
+              <div className="text-sm opacity-90">Overall Score</div>
             </div>
-            <div className="flex flex-row justify-center items-center gap-8 mt-2">
-              <div className="flex flex-col items-center">
-                <span className="text-xl font-bold text-primary-700 dark:text-primary-300">
-                  {strengthTotal}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">Strength</span>
-                <span className="text-xs text-green-700 dark:text-green-300">
-                  {strengthVerifiedTotal} (Verified)
-                </span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-xl font-bold text-primary-700 dark:text-primary-300">
-                  {enduranceTotal}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">Endurance</span>
-                <span className="text-xs text-green-700 dark:text-green-300">
-                  {enduranceVerifiedTotal} (Verified)
-                </span>
-              </div>
+            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white text-center transform transition-all duration-300 hover:scale-105">
+              <div className="text-3xl font-bold mb-1">{overallVerifiedTotal}</div>
+              <div className="text-sm opacity-90">Verified Score</div>
             </div>
           </div>
-          {/* Only show stats if user has allowed them to be shared */}
-          <div className="flex flex-wrap justify-center gap-4 mt-2">
-            {user.publicProfileShowAge && (
-              <span className="text-gray-500 dark:text-gray-400">
-                Age:{' '}
-                {String(
-                  typeof user.dateOfBirth === 'string' || typeof user.dateOfBirth === 'object'
-                    ? calculateAge(user.dateOfBirth)
-                    : 'Not set',
+
+          {/* Category Breakdown */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-6 text-white">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold">Strength</h2>
+                <span className="text-3xl">💪</span>
+              </div>
+              <div className="text-4xl font-bold mb-2">{strengthTotal}</div>
+              <div className="text-sm opacity-90">{strengthVerifiedTotal} verified</div>
+            </div>
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold">Endurance</h2>
+                <span className="text-3xl">🏃‍♂️</span>
+              </div>
+              <div className="text-4xl font-bold mb-2">{enduranceTotal}</div>
+              <div className="text-sm opacity-90">{enduranceVerifiedTotal} verified</div>
+            </div>
+          </div>
+
+          {/* Personal Stats */}
+          {(user.publicProfileShowAge ||
+            user.publicProfileShowBodyweight ||
+            user.publicProfileShowSex) && (
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-2xl p-6 mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
+                Personal Stats
+              </h3>
+              <div className="flex flex-wrap justify-center gap-6">
+                {user.publicProfileShowAge && (
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                      {String(
+                        typeof user.dateOfBirth === 'string' || typeof user.dateOfBirth === 'object'
+                          ? calculateAge(user.dateOfBirth)
+                          : 'Not set',
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Age</div>
+                  </div>
                 )}
-              </span>
-            )}
-            {user.publicProfileShowBodyweight && (
-              <span className="text-gray-500 dark:text-gray-400">
-                Bodyweight:{' '}
-                {typeof user.bodyweight === 'number' ? `${user.bodyweight} kg` : 'Not set'}
-              </span>
-            )}
-            {user.publicProfileShowSex && (
-              <span className="text-gray-500 dark:text-gray-400">
-                Sex: {typeof user.sex === 'string' ? user.sex : 'Not set'}
-              </span>
-            )}
+                {user.publicProfileShowBodyweight && (
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                      {typeof user.bodyweight === 'number' ? `${user.bodyweight} kg` : 'Not set'}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Bodyweight</div>
+                  </div>
+                )}
+                {user.publicProfileShowSex && (
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                      {typeof user.sex === 'string' ? user.sex : 'Not set'}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Sex</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Detailed Scores */}
+          {allScores.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">📊</div>
+              <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                No scores yet
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                Start tracking your performance to see results here!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Strength Column */}
+              <div>
+                <h2 className="text-2xl font-bold text-primary-600 dark:text-primary-400 mb-6 flex items-center">
+                  <span className="mr-2 text-2xl">💪</span>
+                  Strength
+                </h2>
+                <div className="space-y-3">{strengthTypes.map(renderScoreCard)}</div>
+              </div>
+              {/* Endurance Column */}
+              <div>
+                <h2 className="text-2xl font-bold text-primary-600 dark:text-primary-400 mb-6 flex items-center">
+                  <span className="mr-2 text-2xl">🏃‍♂️</span>
+                  Endurance
+                </h2>
+                <div className="space-y-3">{enduranceTypes.map(renderScoreCard)}</div>
+              </div>
+            </div>
+          )}
+
+          {/* Call to Action */}
+          <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+            <div className="text-center">
+              <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-8 text-white">
+                <h3 className="text-2xl font-bold mb-2">Ready to challenge yourself?</h3>
+                <p className="text-primary-100 mb-6 text-lg">
+                  Join thousands of athletes tracking their performance
+                </p>
+                <Link
+                  href="/"
+                  className="inline-flex items-center px-8 py-4 bg-white text-primary-600 font-bold rounded-xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                >
+                  <span className="mr-2">🚀</span>
+                  Join Challenger
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
-        {allScores.length === 0 ? (
-          <div className="text-center text-gray-500 dark:text-gray-400">No scores yet.</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Strength Column */}
-            <div>
-              <h2 className="text-xl font-semibold text-primary-700 dark:text-primary-300 mb-3">
-                Strength
-              </h2>
-              <div className="space-y-2">{strengthTypes.map(renderScoreCard)}</div>
-            </div>
-            {/* Endurance Column */}
-            <div>
-              <h2 className="text-xl font-semibold text-primary-700 dark:text-primary-300 mb-3">
-                Endurance
-              </h2>
-              <div className="space-y-2">{enduranceTypes.map(renderScoreCard)}</div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

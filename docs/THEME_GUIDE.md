@@ -1,209 +1,273 @@
-# Challenger Co. Design System
+# Challenger Theme System Guide
 
-This document outlines the shared design system for Challenger Co. applications, ensuring consistency across all products.
+## Overview
 
-## Brand Colors
+The Challenger Events platform uses a high-energy orange and black theme system designed to convey strength, athleticism, and modern fitness culture. This guide explains how to properly implement the theme across all components.
 
-### Primary Colors
-- **Primary Gray**: `#737373` - Main brand color, used for text and backgrounds
-- **Primary Gray (Dark)**: `#262626` - Dark variant for emphasis
-- **Primary Gray (Light)**: `#a3a3a3` - Light variant for borders
+## Color System
 
-### Secondary Colors
-- **Secondary Gray**: `#64748b` - Used for secondary text and borders
-- **Secondary Gray (Dark)**: `#475569` - Darker variant for emphasis
-- **Secondary Gray (Light)**: `#94a3b8` - Lighter variant for backgrounds
+### Primary Colors (High-Energy Orange)
+- **Primary-500**: `#f97316` - Main brand color
+- **Primary-600**: `#ea580c` - Hover states
+- **Primary-700**: `#c2410c` - Active states
 
-### Accent Colors
-- **Accent Blue-Gray**: `#64748b` - Used for CTAs and important actions
-- **Accent Blue-Gray (Hover)**: `#475569` - Hover state for accent elements
+### Accent Colors (High-Energy Red)
+- **Accent-500**: `#ef4444` - Warnings, errors, high-impact
+- **Accent-600**: `#dc2626` - Hover states
 
-### Semantic Colors
-- **Success Green**: `#10b981` - Success states and positive feedback (emerald)
-- **Warning Orange**: `#f59e0b` - Warning states and caution messages
-- **Error Red**: `#ef4444` - Error states and destructive actions
+### Usage Guidelines
 
-## Typography
+#### Light Mode
+- Background: White (`bg-white`)
+- Text: Dark gray (`text-gray-900`)
+- Borders: Light gray (`border-gray-200`)
 
-### Font Family
-- **Primary**: Inter Tight - Clean, modern sans-serif
-- **Monospace**: JetBrains Mono - For code and technical content
+#### Dark Mode
+- Background: Black (`bg-black`)
+- Text: White (`text-white`)
+- Borders: Dark gray (`border-gray-700`)
 
-### Font Sizes
-- **xs**: 0.75rem (12px) - Small labels and captions
-- **sm**: 0.875rem (14px) - Body text and small content
-- **base**: 1rem (16px) - Default body text
-- **lg**: 1.125rem (18px) - Large body text
-- **xl**: 1.25rem (20px) - Subheadings
-- **2xl**: 1.5rem (24px) - Section headings
-- **3xl**: 1.875rem (30px) - Page headings
-- **4xl**: 2.25rem (36px) - Large page headings
-- **5xl**: 3rem (48px) - Hero headings
-- **6xl**: 3.75rem (60px) - Large hero headings
+## Font System
 
-### Font Weights
-- **normal**: 400 - Default text
-- **medium**: 500 - Emphasis
-- **semibold**: 600 - Strong emphasis
-- **bold**: 700 - Headings and strong emphasis
+### Display Font (Orbitron)
+- **Usage**: Headings, titles, brand elements, high-impact text
+- **Class**: `font-display`
+- **Characteristics**: Geometric, bold, futuristic, athletic
+- **Best for**: 
+  - Main headlines (h1, h2, h3)
+  - Brand name "CHALLENGER"
+  - Call-to-action buttons
+  - Section titles
+  - High-impact elements
 
-## Spacing
+### Body Font (Inter)
+- **Usage**: Body text, paragraphs, navigation, general content
+- **Class**: `font-sans` (default)
+- **Characteristics**: Clean, highly readable, modern, optimized for screens
+- **Best for**:
+  - Paragraph text
+  - Navigation menus
+  - Form inputs
+  - General content
+  - Links
 
-### Base Spacing Scale
-- **0**: 0px
-- **1**: 0.25rem (4px)
-- **2**: 0.5rem (8px)
-- **3**: 0.75rem (12px)
-- **4**: 1rem (16px)
-- **5**: 1.25rem (20px)
-- **6**: 1.5rem (24px)
-- **8**: 2rem (32px)
-- **10**: 2.5rem (40px)
-- **12**: 3rem (48px)
-- **16**: 4rem (64px)
-- **20**: 5rem (80px)
-- **24**: 6rem (96px)
+## Component Classes
 
-## Border Radius
+### Button Classes
+```css
+.btn-primary     /* Orange primary button with display font */
+.btn-secondary   /* Gray secondary button with sans font */
+.btn-accent      /* Red accent button with display font */
+```
 
-- **none**: 0px - No rounding
-- **sm**: 0.125rem (2px) - Subtle rounding
-- **DEFAULT**: 0.25rem (4px) - Default rounding
-- **md**: 0.375rem (6px) - Medium rounding
-- **lg**: 0.5rem (8px) - Large rounding
-- **xl**: 0.75rem (12px) - Extra large rounding
-- **2xl**: 1rem (16px) - Very large rounding
-- **full**: 9999px - Fully rounded (circles)
+### Card Classes
+```css
+.card            /* White/dark card with challenger shadow */
+```
+
+### Input Classes
+```css
+.input           /* Styled input with proper focus states */
+```
+
+### Link Classes
+```css
+.link-primary    /* Orange link with hover effects */
+```
+
+## Gradients
+
+### Athletic Gradient
+- **Class**: `bg-gradient-athletic`
+- **Colors**: Orange to red (`#f97316` to `#ef4444`)
+- **Usage**: Hero sections, high-impact elements, CTAs
+
+### Text Gradients
+- **Class**: `text-gradient-orange`
+- **Usage**: Brand text, high-impact headings
 
 ## Shadows
 
-- **sm**: Subtle shadow for cards and elevated elements
-- **DEFAULT**: Standard shadow for most components
-- **md**: Medium shadow for modals and overlays
-- **lg**: Large shadow for prominent elements
-- **xl**: Extra large shadow for hero sections
-- **2xl**: Maximum shadow for special effects
+### Challenger Shadows
+- **Class**: `shadow-challenger` - Standard depth
+- **Class**: `shadow-challenger-lg` - Larger depth
+- **Class**: `shadow-challenger-xl` - Maximum depth
 
-## Components
+### Glow Effects
+- **Class**: `shadow-glow` - Orange glow
+- **Class**: `shadow-glow-red` - Red glow
 
-### Button Variants
-- **default**: Primary brand red background
-- **destructive**: Error red background for dangerous actions
-- **outline**: Bordered button with transparent background
-- **secondary**: Gray background for secondary actions
-- **ghost**: Transparent background with hover effects
-- **link**: Text-only button that looks like a link
+## Animations
 
-### Button Sizes
-- **sm**: Small button (h-9, px-3)
-- **default**: Standard button (h-10, px-4 py-2)
-- **lg**: Large button (h-11, px-8)
-- **icon**: Square button for icons (h-10 w-10)
+### Glow Animation
+- **Class**: `animate-glow`
+- **Usage**: Hero titles, high-impact elements
 
-### Input States
-- **default**: Standard input styling
-- **error**: Red border and focus ring for validation errors
-- **disabled**: Reduced opacity and disabled cursor
+### Subtle Bounce
+- **Class**: `animate-bounce-subtle`
+- **Usage**: Interactive elements
 
-## Dark Mode
+## Best Practices
 
-### Background Colors
-- **Primary**: `#000000` - Main background
-- **Secondary**: `#0f0f0f` - Secondary background
-- **Tertiary**: `#1a1a1a` - Tertiary background
+### 1. Font Usage
+```jsx
+// ✅ Correct - Use display font for headings
+<h1 className="text-4xl font-black font-display">CHALLENGER</h1>
 
-### Text Colors
-- **Primary**: `#ffffff` - Main text
-- **Secondary**: `#a1a1aa` - Secondary text
-- **Tertiary**: `#71717a` - Tertiary text
+// ✅ Correct - Use sans font for body text
+<p className="text-base font-sans">Regular paragraph text.</p>
 
-### Border Colors
-- **Primary**: `#27272a` - Main borders
-- **Secondary**: `#3f3f46` - Secondary borders
-
-## Usage Guidelines
-
-### Color Usage
-1. **Primary Gray**: Use for main text, backgrounds, and structural elements
-2. **Secondary Gray**: Use for secondary text, borders, and backgrounds
-3. **Accent Blue-Gray**: Use for CTAs and important actions
-4. **Semantic Colors**: Use appropriately for their intended purpose
-
-### Typography Guidelines
-1. **Headings**: Use bold weights (600-700) for hierarchy
-2. **Body Text**: Use normal weight (400) for readability
-3. **Captions**: Use smaller sizes (xs-sm) for metadata
-4. **Code**: Use monospace font for technical content
-
-### Spacing Guidelines
-1. **Consistent Spacing**: Use the spacing scale consistently
-2. **Component Spacing**: Use 4, 6, or 8 for component padding
-3. **Section Spacing**: Use 12, 16, or 24 for section spacing
-4. **Page Spacing**: Use 20 or 24 for page-level spacing
-
-### Component Guidelines
-1. **Accessibility**: Ensure proper contrast ratios and focus states
-2. **Responsive**: Design components to work on all screen sizes
-3. **Consistent**: Use the same patterns across similar components
-4. **Progressive**: Enhance with JavaScript when available
-
-## Implementation
-
-### Tailwind Configuration
-The theme is implemented through Tailwind CSS configuration. Key files:
-- `tailwind.config.js` - Main configuration
-- `lib/theme.ts` - Theme utilities and constants
-- `components/ui/` - Reusable component library
-
-### CSS Variables
-For custom CSS, use the following variables:
-```css
-:root {
-  --primary-500: #737373;
-  --primary-600: #525252;
-  --secondary-500: #64748b;
-  --accent-500: #64748b;
-  --success-500: #10b981;
-  --warning-500: #f59e0b;
-  --error-500: #ef4444;
-}
+// ❌ Incorrect - Don't mix fonts in the same element
+<h1 className="font-display font-sans">Mixed fonts</h1>
 ```
 
-### Component Usage
-```tsx
-import { Button, Input, Card } from '@/components/ui';
+### 2. Color Usage
+```jsx
+// ✅ Correct - Use primary colors for main actions
+<button className="btn-primary">Primary Action</button>
 
-// Button with loading state
-<Button loading>Submit</Button>
+// ✅ Correct - Use accent colors for warnings/errors
+<div className="text-accent-500">Error message</div>
 
-// Input with error
-<Input label="Email" error="Invalid email address" />
+// ❌ Incorrect - Don't use old color names
+<button className="bg-blue-500">Old color</button>
+```
 
-// Card with header and content
-<Card>
-  <CardHeader>
-    <h2>Card Title</h2>
-  </CardHeader>
-  <CardContent>
-    <p>Card content goes here</p>
-  </CardContent>
-</Card>
+### 3. Dark Mode
+```jsx
+// ✅ Correct - Always include dark mode variants
+<div className="bg-white dark:bg-black text-gray-900 dark:text-white">
+  Content
+</div>
+
+// ✅ Correct - Use proper contrast ratios
+<p className="text-gray-600 dark:text-gray-400">Secondary text</p>
+```
+
+### 4. Component Structure
+```jsx
+// ✅ Correct - Use semantic HTML with proper classes
+<section className="bg-white dark:bg-black">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+    <h1 className="text-6xl font-black font-display text-gradient-orange">
+      CHALLENGER
+    </h1>
+    <p className="text-xl text-gray-600 dark:text-gray-400 font-sans">
+      Description text
+    </p>
+  </div>
+</section>
+```
+
+## Examples
+
+### Hero Section
+```jsx
+<section className="relative overflow-hidden">
+  <div className="absolute inset-0 bg-gradient-athletic opacity-10"></div>
+  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+    <div className="text-center">
+      <h1 className="text-6xl font-black font-display text-gradient-orange mb-6 animate-glow">
+        CHALLENGER
+      </h1>
+      <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 font-sans">
+        Your next fitness challenge awaits...
+      </p>
+      <button className="btn-primary text-lg px-8 py-4">
+        GET STARTED
+      </button>
+    </div>
+  </div>
+</section>
+```
+
+### Card Component
+```jsx
+<div className="card p-6">
+  <h3 className="text-xl font-bold font-display text-gray-900 dark:text-white mb-4">
+    CARD TITLE
+  </h3>
+  <p className="text-base text-gray-600 dark:text-gray-400 font-sans">
+    Card content with readable body text.
+  </p>
+  <div className="mt-4 flex gap-2">
+    <button className="btn-primary">Primary Action</button>
+    <button className="btn-secondary">Secondary Action</button>
+  </div>
+</div>
+```
+
+### Form Component
+```jsx
+<form className="space-y-4">
+  <div>
+    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-sans">
+      Email
+    </label>
+    <input
+      type="email"
+      className="input"
+      placeholder="Enter your email"
+    />
+  </div>
+  <button type="submit" className="btn-primary w-full">
+    Submit
+  </button>
+</form>
 ```
 
 ## Migration Guide
 
-When migrating from the old theme:
-1. Replace hardcoded colors with theme colors
-2. Update component variants to use new design system
-3. Ensure proper dark mode support
-4. Test accessibility and responsive behavior
-5. Update documentation and examples
+### From Old Theme
+1. Replace `bg-primary-600` with `bg-primary-500`
+2. Replace `text-primary-600` with `text-primary-500`
+3. Add `font-display` to headings
+4. Add `font-sans` to body text
+5. Replace old shadow classes with `shadow-challenger`
+6. Update error colors to use `accent-500` instead of `error-500`
 
-## Future Enhancements
+### Common Patterns
+```jsx
+// Old
+<div className="bg-gray-800 text-white shadow-sm">
+  <h2 className="text-2xl font-bold">Title</h2>
+  <p>Content</p>
+</div>
 
-Planned improvements to the design system:
-1. **Animation System**: Standardized animations and transitions
-2. **Icon System**: Consistent icon library and usage
-3. **Form Components**: Advanced form components with validation
-4. **Layout Components**: Grid and layout utilities
-5. **Data Visualization**: Charts and graphs styling 
+// New
+<div className="card p-6">
+  <h2 className="text-2xl font-bold font-display text-gray-900 dark:text-white">Title</h2>
+  <p className="font-sans text-gray-600 dark:text-gray-400">Content</p>
+</div>
+```
+
+## Accessibility
+
+### Color Contrast
+- Ensure all text meets WCAG AA contrast requirements
+- Use `text-gray-600 dark:text-gray-400` for secondary text
+- Use `text-gray-900 dark:text-white` for primary text
+
+### Focus States
+- All interactive elements have visible focus rings
+- Use `ring-primary-500` for focus states
+- Ensure focus indicators work in both light and dark modes
+
+### Typography
+- Use appropriate font sizes for readability
+- Maintain proper line heights
+- Use semantic HTML structure
+
+## Performance
+
+### Font Loading
+- Fonts are loaded with `display: swap`
+- CSS variables are used for font families
+- Fallback fonts are properly specified
+
+### Animations
+- Use `transform` and `opacity` for smooth animations
+- Avoid animating layout properties
+- Use `will-change` sparingly
+
+This theme system ensures consistency across the entire Challenger Events platform while maintaining the high-energy, athletic brand identity. 

@@ -334,7 +334,7 @@ export default function ManageUsers() {
               <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                    <div className="w-8 h-8 bg-primary-500 rounded-md flex items-center justify-center">
                       <svg
                         className="w-5 h-5 text-white"
                         fill="none"
@@ -364,7 +364,7 @@ export default function ManageUsers() {
               <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
+                    <div className="w-8 h-8 bg-primary-500 rounded-md flex items-center justify-center">
                       <svg
                         className="w-5 h-5 text-white"
                         fill="none"
@@ -394,7 +394,7 @@ export default function ManageUsers() {
               <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
+                    <div className="w-8 h-8 bg-primary-500 rounded-md flex items-center justify-center">
                       <svg
                         className="w-5 h-5 text-white"
                         fill="none"
@@ -424,7 +424,7 @@ export default function ManageUsers() {
               <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
+                    <div className="w-8 h-8 bg-primary-500 rounded-md flex items-center justify-center">
                       <svg
                         className="w-5 h-5 text-white"
                         fill="none"

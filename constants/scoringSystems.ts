@@ -63,7 +63,7 @@ export const SCORING_SYSTEMS: ScoringSystem[] = [
   {
     id: 'rowing_500m',
     name: '500m Row',
-    description: '500m rowing scoring based on time, age, and sex (supports milliseconds)',
+    description: '500m rowing scoring based on time, age, and sex',
     category: 'ENDURANCE',
     inputType: 'TIME',
     unit: 'seconds',
@@ -159,7 +159,7 @@ export const SCORING_SYSTEMS: ScoringSystem[] = [
   {
     id: 'bike_500m',
     name: '500m Bike',
-    description: '500m bike scoring based on time, age, and sex (supports milliseconds)',
+    description: '500m bike scoring based on time, age, and sex',
     category: 'ENDURANCE',
     inputType: 'TIME',
     unit: 'seconds',
@@ -171,7 +171,7 @@ export const SCORING_SYSTEMS: ScoringSystem[] = [
   {
     id: 'ski_500m',
     name: '500m Ski',
-    description: '500m ski scoring based on time, age, and sex (supports milliseconds)',
+    description: '500m ski scoring based on time, age, and sex',
     category: 'ENDURANCE',
     inputType: 'TIME',
     unit: 'seconds',
