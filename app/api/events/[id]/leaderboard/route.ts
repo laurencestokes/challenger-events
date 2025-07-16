@@ -68,6 +68,8 @@ interface TeamWorkoutLeaderboard {
     teamId: string;
     teamName: string;
     score: number;
+    rawValue: number;
+    reps?: number;
     rank: number;
   }[];
 }
@@ -248,6 +250,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             teamId: string;
             teamName: string;
             score: number;
+            rawValue: number;
+            reps?: number;
             rank: number;
           }[] = [];
 
@@ -262,10 +266,27 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             );
 
             if (teamScore) {
+              // Calculate average raw value and reps for team (for display purposes)
+              const memberScores = scores.filter(
+                (score) =>
+                  score.activityId === activity.id &&
+                  teamMembers.some((member) => member.userId === score.userId),
+              );
+              const averageRawValue =
+                memberScores.length > 0
+                  ? memberScores.reduce((sum, score) => sum + score.rawValue, 0) / memberScores.length
+                  : 0;
+              const averageReps =
+                memberScores.length > 0
+                  ? memberScores.reduce((sum, score) => sum + (score.reps || 1), 0) / memberScores.length
+                  : 1;
+
               teamScores.push({
                 teamId: team.id,
                 teamName: team.name,
                 score: teamScore.totalScore,
+                rawValue: averageRawValue,
+                reps: averageReps,
                 rank: 0, // Will be calculated below
               });
             }
