@@ -156,12 +156,12 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
     // Add team leaderboards if this is a team event
     ...(leaderboardData.isTeamEvent
       ? [
-        { id: 'team-overall', name: 'Team Overall' },
-        ...(leaderboardData.teamWorkoutLeaderboards || []).map((workout) => ({
-          id: `team-${workout.activityId}`,
-          name: `Team ${workout.activityName}`,
-        })),
-      ]
+          { id: 'team-overall', name: 'Team Overall' },
+          ...(leaderboardData.teamWorkoutLeaderboards || []).map((workout) => ({
+            id: `team-${workout.activityId}`,
+            name: `Team ${workout.activityName}`,
+          })),
+        ]
       : []),
   ];
 
@@ -236,10 +236,10 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                             <div className="text-xs text-gray-500 dark:text-gray-400">
                               {workoutScore.rawValue
                                 ? formatRawValue(
-                                  workoutScore.rawValue,
-                                  workout.activityId,
-                                  workoutScore.reps,
-                                )
+                                    workoutScore.rawValue,
+                                    workout.activityId,
+                                    workoutScore.reps,
+                                  )
                                 : ''}
                             </div>
                             <div className="text-xs text-gray-400 dark:text-gray-500">
@@ -509,10 +509,11 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === tab.id
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                }`}
+              }`}
             >
               {tab.name}
             </button>
