@@ -84,7 +84,13 @@ export const calculateTeamOverallScore = (
   scoringMethod: 'SUM' | 'AVERAGE' | 'BEST' = 'SUM',
 ): TeamOverallScore | null => {
   const workoutScores: {
-    [activityId: string]: { score: number; rawValue: number; reps?: number; rank: number; activityName: string };
+    [activityId: string]: {
+      score: number;
+      rawValue: number;
+      reps?: number;
+      rank: number;
+      activityName: string;
+    };
   } = {};
   let totalScore = 0;
 
