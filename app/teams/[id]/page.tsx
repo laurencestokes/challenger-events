@@ -31,7 +31,7 @@ interface Team {
 export default function TeamDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [team, setTeam] = useState<Team | null>(null);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,6 +40,13 @@ export default function TeamDetailPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [isInviting, setIsInviting] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{
+    type: 'remove' | 'promote';
+    memberId: string;
+    memberName: string;
+  } | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const fetchTeamDetails = useCallback(async () => {
     try {
@@ -89,6 +96,71 @@ export default function TeamDetailPage() {
     }
   };
 
+  const handleRemoveMember = async () => {
+    if (!confirmAction || confirmAction.type !== 'remove') return;
+
+    try {
+      setIsProcessing(true);
+      await api.delete(`/api/teams/${params.id}/members/${confirmAction.memberId}`);
+
+      setShowConfirmModal(false);
+      setConfirmAction(null);
+      fetchTeamDetails(); // Refresh the team data
+    } catch (error: unknown) {
+      console.error('Error removing member:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to remove member';
+      setError(errorMessage);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleLeaveTeam = async () => {
+    if (!user) return;
+
+    try {
+      setIsProcessing(true);
+      // Find the current user's member record
+      const currentMember = members.find((member) => member.userId === user.id);
+      if (!currentMember) {
+        setError('Could not find your membership record');
+        return;
+      }
+
+      await api.delete(`/api/teams/${params.id}/members/${currentMember.id}`);
+
+      // Redirect to teams page after leaving
+      router.push('/teams');
+    } catch (error: unknown) {
+      console.error('Error leaving team:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to leave team';
+      setError(errorMessage);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handlePromoteMember = async () => {
+    if (!confirmAction || confirmAction.type !== 'promote') return;
+
+    try {
+      setIsProcessing(true);
+      await api.patch(`/api/teams/${params.id}/members/${confirmAction.memberId}`, {
+        action: 'promote',
+      });
+
+      setShowConfirmModal(false);
+      setConfirmAction(null);
+      fetchTeamDetails(); // Refresh the team data
+    } catch (error: unknown) {
+      console.error('Error promoting member:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to promote member';
+      setError(errorMessage);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const formatDate = (date: Date | string | unknown) => {
     try {
       const dateObj = date instanceof Date ? date : new Date(date as string | number);
@@ -127,7 +199,25 @@ export default function TeamDetailPage() {
     }
   };
 
-  if (isLoading) {
+  // Check if current user is the captain
+  const currentUserMember =
+    user && !authLoading
+      ? members.find((member) => member.userId === user.id || member.user?.email === user.email)
+      : null;
+  const isCaptain = currentUserMember?.role === 'CAPTAIN';
+
+  // Debug logging for troubleshooting
+  if (user && !authLoading && members.length > 0) {
+    console.log('Current user:', { id: user.id, email: user.email });
+    console.log(
+      'Team members:',
+      members.map((m) => ({ userId: m.userId, email: m.user?.email, role: m.role })),
+    );
+    console.log('Current user member:', currentUserMember);
+    console.log('Is captain:', isCaptain);
+  }
+
+  if (isLoading || authLoading) {
     return (
       <ProtectedRoute>
         <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900 flex flex-col">
@@ -209,21 +299,45 @@ export default function TeamDetailPage() {
             <div className="px-4 py-6 sm:px-0">
               {/* Header */}
               <div className="mb-8">
-                <div className="flex items-center space-x-4 mb-4">
-                  <button
-                    onClick={() => router.push('/teams')}
-                    className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 19l-7-7 7-7"
-                      />
-                    </svg>
-                  </button>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{team.name}</h1>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={() => router.push('/teams')}
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 19l-7-7 7-7"
+                        />
+                      </svg>
+                    </button>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                      {team.name}
+                    </h1>
+                  </div>
+                  {user && members.some((member) => member.userId === user.id) && (
+                    <button
+                      onClick={() => {
+                        setConfirmAction({
+                          type: 'remove',
+                          memberId: '', // Will be set in handleLeaveTeam
+                          memberName: 'the team',
+                        });
+                        setShowConfirmModal(true);
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 border border-red-300 dark:border-red-600 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
+                    >
+                      Leave Team
+                    </button>
+                  )}
                 </div>
                 {team.description && (
                   <p className="text-gray-600 dark:text-gray-400 mb-4">{team.description}</p>
@@ -239,7 +353,7 @@ export default function TeamDetailPage() {
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                     Team Members ({members.length})
                   </h2>
-                  {user && members.some((member) => member.userId === user.id) && (
+                  {isCaptain && (
                     <button
                       onClick={() => setShowInviteModal(true)}
                       className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md"
@@ -283,6 +397,42 @@ export default function TeamDetailPage() {
                           </div>
                         </div>
                         <div className="flex items-center space-x-3">
+                          {/* Captain-only actions */}
+                          {isCaptain && member.userId !== user?.id && (
+                            <div className="flex items-center space-x-2">
+                              {member.role === 'MEMBER' && (
+                                <button
+                                  onClick={() => {
+                                    setConfirmAction({
+                                      type: 'promote',
+                                      memberId: member.id,
+                                      memberName:
+                                        member.user?.name || member.user?.email || 'Unknown User',
+                                    });
+                                    setShowConfirmModal(true);
+                                  }}
+                                  className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                                >
+                                  Promote to Captain
+                                </button>
+                              )}
+                              <button
+                                onClick={() => {
+                                  setConfirmAction({
+                                    type: 'remove',
+                                    memberId: member.id,
+                                    memberName:
+                                      member.user?.name || member.user?.email || 'Unknown User',
+                                  });
+                                  setShowConfirmModal(true);
+                                }}
+                                className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          )}
+
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(member.role)}`}
                           >
@@ -360,6 +510,67 @@ export default function TeamDetailPage() {
                           </button>
                         </div>
                       </form>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Confirmation Modal */}
+              {showConfirmModal && confirmAction && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                  <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+                    <div className="mt-3">
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                        {confirmAction.type === 'remove' && confirmAction.memberName === 'the team'
+                          ? 'Leave Team'
+                          : confirmAction.type === 'remove'
+                            ? 'Remove Member'
+                            : 'Promote to Captain'}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 mb-6">
+                        {confirmAction.type === 'remove' && confirmAction.memberName === 'the team'
+                          ? 'Are you sure you want to leave this team? This action cannot be undone.'
+                          : confirmAction.type === 'remove'
+                            ? `Are you sure you want to remove ${confirmAction.memberName} from the team? This action cannot be undone.`
+                            : `Are you sure you want to promote ${confirmAction.memberName} to captain? You will become a regular member.`}
+                      </p>
+                      <div className="flex justify-end space-x-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowConfirmModal(false);
+                            setConfirmAction(null);
+                          }}
+                          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={
+                            confirmAction.type === 'remove' &&
+                            confirmAction.memberName === 'the team'
+                              ? handleLeaveTeam
+                              : confirmAction.type === 'remove'
+                                ? handleRemoveMember
+                                : handlePromoteMember
+                          }
+                          disabled={isProcessing}
+                          className={`px-4 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed ${
+                            confirmAction.type === 'remove'
+                              ? 'bg-red-600 hover:bg-red-700'
+                              : 'bg-primary-600 hover:bg-primary-700'
+                          }`}
+                        >
+                          {isProcessing
+                            ? 'Processing...'
+                            : confirmAction.type === 'remove' &&
+                                confirmAction.memberName === 'the team'
+                              ? 'Leave Team'
+                              : confirmAction.type === 'remove'
+                                ? 'Remove'
+                                : 'Promote'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -268,9 +268,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             if (teamScore) {
               // Calculate average raw value and reps for team (for display purposes)
               const memberScores = scores.filter(
-                (score) =>
-                  score.activityId === activity.id &&
-                  teamMembers.some((member) => member.userId === score.userId),
+                (score) => score.activityId === activity.id && score.teamId === team.id, // Use stored teamId instead of checking current membership
               );
               const averageRawValue =
                 memberScores.length > 0

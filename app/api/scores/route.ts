@@ -10,6 +10,7 @@ import {
   getScoreByUserActivityAndEvent,
   checkCompetitionVerificationRequired,
   getCompetitionVerification,
+  getUserParticipation,
 } from '@/lib/firestore';
 
 export async function POST(request: NextRequest) {
@@ -138,6 +139,10 @@ export async function POST(request: NextRequest) {
     // Check if a score already exists for this user, activity, and event
     const existingScore = await getScoreByUserActivityAndEvent(competitorId, activityId, eventId);
 
+    // Get the user's current team participation for this event
+    const participation = await getUserParticipation(competitorId, eventId);
+    const teamId = participation?.teamId || null; // Convert undefined to null for Firestore
+
     let score;
     if (existingScore) {
       // Update the existing score
@@ -147,6 +152,7 @@ export async function POST(request: NextRequest) {
         reps: reps, // Include reps in the update
         notes: notes || '',
         verified: true,
+        teamId: teamId, // Preserve team association
       });
       score = updatedScore || {
         id: existingScore.id,
@@ -158,6 +164,7 @@ export async function POST(request: NextRequest) {
         reps: reps, // Include reps in the response
         notes: notes || '',
         verified: true,
+        teamId: teamId, // Preserve team association
       };
     } else {
       // Create a new score
@@ -170,6 +177,7 @@ export async function POST(request: NextRequest) {
         reps: reps, // Include reps in the creation
         notes: notes || '',
         verified: true,
+        teamId: teamId, // Store team association at time of submission
       });
     }
     // Trigger on-demand revalidation for the competitor's public profile page
@@ -194,6 +202,7 @@ export async function POST(request: NextRequest) {
       calculatedScore: score.calculatedScore,
       reps: score.reps, // Include reps in the response
       notes: score.notes,
+      teamId: score.teamId, // Include team ID in the response
       submittedAt: score.submittedAt, // Include submission timestamp
       updatedAt: score.updatedAt, // Include update timestamp
     });

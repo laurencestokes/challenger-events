@@ -83,6 +83,7 @@ export interface Score {
   verified: boolean; // New: whether the score is verified
   verifiedAt?: Date; // New: when the score was verified
   verifiedBy?: string; // New: who verified the score (admin id)
+  teamId?: string | null; // Team ID at the time of score submission (for team events)
   submittedAt: Date;
   updatedAt: Date;
 }

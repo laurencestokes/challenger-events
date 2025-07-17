@@ -37,11 +37,9 @@ export const calculateTeamScore = (
   activityId: string,
   scoringMethod: 'SUM' | 'AVERAGE' | 'BEST' = 'SUM',
 ): TeamScore | null => {
-  // Get scores for team members in this activity
+  // Get scores for team members in this activity using stored teamId
   const memberScores = scores.filter(
-    (score) =>
-      score.activityId === activityId &&
-      teamMembers.some((member) => member.userId === score.userId),
+    (score) => score.activityId === activityId && score.teamId === team.id, // Use stored teamId instead of checking current membership
   );
 
   if (memberScores.length === 0) return null;
@@ -100,9 +98,7 @@ export const calculateTeamOverallScore = (
     if (teamScore) {
       // Calculate average raw value and reps for team (for display purposes)
       const memberScores = scores.filter(
-        (score) =>
-          score.activityId === activity.id &&
-          teamMembers.some((member) => member.userId === score.userId),
+        (score) => score.activityId === activity.id && score.teamId === team.id, // Use stored teamId instead of checking current membership
       );
       const averageRawValue =
         memberScores.length > 0

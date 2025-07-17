@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getUserTeams } from '@/lib/firestore';
+import { getUserByUid, getUserTeams, getTeamMembers } from '@/lib/firestore';
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,7 +20,21 @@ export async function GET(request: NextRequest) {
     // Get teams that the user is a member of
     const userTeams = await getUserTeams(user.id);
 
-    return NextResponse.json({ teams: userTeams });
+    // Get user's role in each team
+    const teamsWithUserRole = await Promise.all(
+      userTeams.map(async (team) => {
+        const teamMembers = await getTeamMembers(team.id);
+        const userMember = teamMembers.find((member) => member.userId === user.id);
+
+        return {
+          ...team,
+          userRole: userMember ? userMember.role : null,
+          isMember: !!userMember,
+        };
+      }),
+    );
+
+    return NextResponse.json({ teams: teamsWithUserRole });
   } catch (error) {
     console.error('Error fetching user teams:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

@@ -101,6 +101,12 @@ export function createApiClient(authContext: {
         body: JSON.stringify(data),
       });
     },
+    patch: function (url: string, data: unknown) {
+      return this.request(url, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      });
+    },
     delete: function (url: string) {
       return this.request(url, {
         method: 'DELETE',
@@ -121,6 +127,11 @@ export const api = {
   put: (url: string, data: unknown) =>
     apiRequest(url, {
       method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  patch: (url: string, data: unknown) =>
+    apiRequest(url, {
+      method: 'PATCH',
       body: JSON.stringify(data),
     }),
   delete: (url: string) =>

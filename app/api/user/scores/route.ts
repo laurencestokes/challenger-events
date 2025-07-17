@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
       notes: notes || '',
       verified: false,
       eventId: null,
+      teamId: null, // Personal scores don't have a team
     });
     // Trigger on-demand revalidation for the user's public profile page
     try {

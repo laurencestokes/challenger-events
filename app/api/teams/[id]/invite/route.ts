@@ -30,13 +30,13 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'Team not found' }, { status: 404 });
     }
 
-    // Check if user is a member of the team
+    // Check if user is the captain of the team
     const teamMembers = await getTeamMembers(teamId);
     const userMember = teamMembers.find((member) => member.userId === user.id);
 
-    if (!userMember) {
+    if (!userMember || userMember.role !== 'CAPTAIN') {
       return NextResponse.json(
-        { error: 'You must be a member of the team to send invitations' },
+        { error: 'Only team captains can send invitations' },
         { status: 403 },
       );
     }
