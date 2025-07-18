@@ -226,9 +226,9 @@ export function formatTimeWithMilliseconds(seconds: number): string {
   const wholeSeconds = Math.floor(remainingSeconds);
 
   if (minutes > 0) {
-    return `${minutes}:${wholeSeconds.toString().padStart(2, '0')}.${milliseconds}`;
+    return `${minutes}:${wholeSeconds.toString().padStart(2, '0')}.${milliseconds} (mm:ss.ms)`;
   } else {
-    return `${wholeSeconds}.${milliseconds}`;
+    return `${wholeSeconds}.${milliseconds} (ss.ms)`;
   }
 }
 
@@ -263,18 +263,14 @@ export function beautifyRawScore(rawValue: number, activityId: string, reps?: nu
     return `${rawValue}kg × ${repsToShow}`;
   }
 
-  // Handle time-based activities (rowing_500m, bike_500m, ski_500m)
-  if (['rowing_500m', 'bike_500m', 'ski_500m'].includes(activityId)) {
+  // Handle time-based activities (rowing_500m, bike_4km, ski_500m)
+  if (['rowing_500m', 'bike_4km', 'ski_500m'].includes(activityId)) {
     return formatTimeWithMilliseconds(rawValue);
   }
 
   // Handle distance-based activities (rowing_4min)
   if (activityId === 'rowing_4min') {
-    if (rawValue >= 1000) {
-      return `${(rawValue / 1000).toFixed(1)}km`;
-    } else {
-      return `${Math.round(rawValue)}m`;
-    }
+    return `${Math.round(rawValue)}m`;
   }
 
   // Fallback for unknown activities
