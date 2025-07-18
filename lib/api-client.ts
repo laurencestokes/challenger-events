@@ -139,3 +139,6 @@ export const api = {
       method: 'DELETE',
     }),
 };
+
+// Convenience functions for common API calls
+export const getUserScores = () => api.get('/api/user/all-scores');

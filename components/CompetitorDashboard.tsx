@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { signOut } from '../lib/firebase-auth';
 import { api } from '../lib/api-client';
 import Link from 'next/link';
+import PerformanceGraph from './PerformanceGraph';
 
 interface Event {
   id: string;
@@ -16,28 +17,97 @@ interface Event {
   createdAt: unknown;
 }
 
+interface Score {
+  id: string;
+  activityId: string;
+  testId?: string; // Add testId field for event scores
+  rawValue: number;
+  calculatedScore: number;
+  reps?: number;
+  notes?: string;
+  verified: boolean;
+  submittedAt: unknown;
+  eventId?: string | null;
+  workoutName?: string;
+  event?: {
+    name: string;
+  };
+}
+
+interface EventWithScores {
+  id: string;
+  name: string;
+  code: string;
+  status: string;
+  joinedAt: unknown;
+  scores: Score[];
+}
+
 export default function CompetitorDashboard() {
   const { user } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
+  const [recentScores, setRecentScores] = useState<Score[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingScores, setIsLoadingScores] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchData = async () => {
       try {
+        // Fetch events
         const eventsData = await api.get('/api/events');
         setEvents(eventsData);
+
+        // Fetch recent scores
+        const [personalScores, eventScores] = await Promise.all([
+          api.get('/api/user/scores').catch(() => []),
+          api.get('/api/user/events').catch(() => []),
+        ]);
+
+        // Combine and process scores
+        const allScores: Score[] = [];
+
+        // Add personal scores
+        if (Array.isArray(personalScores)) {
+          allScores.push(...personalScores);
+        }
+
+        // Add event scores
+        if (Array.isArray(eventScores)) {
+          eventScores.forEach((event: EventWithScores) => {
+            if (event.scores) {
+              event.scores.forEach((score) => {
+                allScores.push({
+                  ...score,
+                  event: { name: event.name },
+                });
+              });
+            }
+          });
+        }
+
+        // Sort by submission date (most recent first) and take the last 50 for the graph
+        const sortedScores = allScores
+          .sort((a, b) => {
+            const dateA = new Date(a.submittedAt as string).getTime();
+            const dateB = new Date(b.submittedAt as string).getTime();
+            return dateB - dateA;
+          })
+          .slice(0, 50);
+
+        setRecentScores(sortedScores);
       } catch (error: unknown) {
-        console.error('Error fetching events:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch events';
+        console.error('Error fetching data:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
         setError(errorMessage);
       } finally {
         setIsLoading(false);
+        setIsLoadingScores(false);
       }
     };
 
     if (user) {
-      fetchEvents();
+      fetchData();
     }
   }, [user]);
 
@@ -170,6 +240,41 @@ export default function CompetitorDashboard() {
         </Link>
       </div>
 
+      {/* Recent Performance */}
+      <div className="card">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white font-sans">
+              Recent Performance
+            </h3>
+            <Link
+              href="/profile/scores"
+              className="text-sm text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300 font-sans"
+            >
+              View All Scores
+            </Link>
+          </div>
+        </div>
+        <div className="p-6">
+          {isLoadingScores ? (
+            <div className="text-center py-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
+            </div>
+          ) : recentScores.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 dark:text-gray-400 font-sans">
+                No recent scores yet. Start tracking your performance!
+              </p>
+              <Link href="/profile" className="mt-2 btn-primary">
+                Add Your First Score
+              </Link>
+            </div>
+          ) : (
+            <PerformanceGraph scores={recentScores} isLoading={isLoadingScores} />
+          )}
+        </div>
+      </div>
+
       {/* Active Events */}
       <div className="card">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -239,22 +344,6 @@ export default function CompetitorDashboard() {
               ))}
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Recent Performance */}
-      <div className="card">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white font-sans">
-            Recent Performance
-          </h3>
-        </div>
-        <div className="p-6">
-          <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400 font-sans">
-              Performance tracking coming soon...
-            </p>
-          </div>
         </div>
       </div>
     </div>

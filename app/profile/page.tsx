@@ -276,7 +276,13 @@ export default function Profile() {
       <div>
         {/* Public profile button */}
         {user && (
-          <div className="mb-4 flex justify-end">
+          <div className="mb-4 flex justify-between items-center">
+            <a
+              href="/profile/scores"
+              className="px-4 py-2 bg-accent-600 text-white rounded hover:bg-accent-700 transition-colors"
+            >
+              View All Scores
+            </a>
             <a
               href={`/public/profile/${user.uid}`}
               target="_blank"
