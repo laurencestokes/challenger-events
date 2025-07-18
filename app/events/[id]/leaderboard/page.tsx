@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api-client';
 import { beautifyRawScore } from '@/utils/scoring';
@@ -152,7 +152,7 @@ export default function EventLeaderboard() {
     }
   }, [lastEvent]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [leaderboardData, activitiesData] = await Promise.all([
         api.get(`/api/events/${eventId}/leaderboard`),
@@ -184,12 +184,11 @@ export default function EventLeaderboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [eventId]);
 
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eventId, user]);
+  }, [fetchData]);
 
   const formatRawValue = (
     rawValue: number,
@@ -217,7 +216,7 @@ export default function EventLeaderboard() {
   };
 
   // Get available tabs based on data and view mode
-  const getAvailableTabs = () => {
+  const getAvailableTabs = useCallback(() => {
     const tabs: Array<{ id: string; name: string; type: 'overall' | 'team-overall' | string }> = [];
 
     if (viewMode === 'individual') {
@@ -233,7 +232,7 @@ export default function EventLeaderboard() {
     }
 
     return tabs;
-  };
+  }, [leaderboardData?.workoutLeaderboards, viewMode]);
 
   // Reset active tab when view mode changes
   useEffect(() => {
@@ -353,6 +352,14 @@ export default function EventLeaderboard() {
           <p className="text-gray-600 dark:text-gray-400">
             Track your progress and calculate target scores
           </p>
+          <div className="mt-4">
+            <Link
+              href={`/public/leaderboard/${eventId}`}
+              className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              📊 View Public Leaderboard
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -458,9 +465,7 @@ export default function EventLeaderboard() {
                                   <div className="text-sm font-medium text-gray-900 dark:text-white">
                                     {entry.name}
                                   </div>
-                                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    {entry.email}
-                                  </div>
+
                                   {entry.teamId && entry.teamName && (
                                     <div className="text-xs text-gray-500 dark:text-gray-400">
                                       Team: {entry.teamName}

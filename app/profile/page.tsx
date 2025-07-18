@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../lib/api-client';
 import {
@@ -198,7 +198,7 @@ export default function Profile() {
   }, [profile, reset]);
 
   // Check profile name availability
-  const checkProfileNameAvailability = async (name: string) => {
+  const checkProfileNameAvailability = useCallback(async (name: string) => {
     if (!name.trim()) {
       setProfileNameAvailable(null);
       setProfileNameError('');
@@ -223,7 +223,7 @@ export default function Profile() {
     } finally {
       setIsCheckingProfileName(false);
     }
-  };
+  }, []);
 
   // Debounced profile name checking
   useEffect(() => {
@@ -234,7 +234,7 @@ export default function Profile() {
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [profileName]);
+  }, [profile?.profileName, checkProfileNameAvailability]);
 
   const onSubmit = async (data: ProfileFormType) => {
     setIsLoading(true);

@@ -8,7 +8,6 @@ import NotificationToast from '@/components/NotificationToast';
 import { useSSE } from '@/hooks/useSSE';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import Leaderboard from '@/components/Leaderboard';
 import TeamManagement from '@/components/TeamManagement';
 import TeamDebug from '@/components/TeamDebug';
 
@@ -293,6 +292,14 @@ export default function EventPage() {
                     <p className="text-gray-900 dark:text-white">{event.description}</p>
                   </div>
                 )}
+                <div className="mb-4">
+                  <Link
+                    href={`/events/${eventId}/leaderboard`}
+                    className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                  >
+                    📊 View Live Leaderboard
+                  </Link>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
@@ -324,9 +331,6 @@ export default function EventPage() {
                   </div>
                 </div>
               </div>
-
-              {/* Leaderboard */}
-              <Leaderboard eventId={eventId} />
 
               {/* Team Management - Only show for team events */}
               {event.isTeamEvent && (
@@ -381,6 +385,12 @@ export default function EventPage() {
                     className="block w-full text-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     View Event Brief
+                  </Link>
+                  <Link
+                    href={`/public/leaderboard/${eventId}`}
+                    className="block w-full text-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    View Public Leaderboard
                   </Link>
                   <button
                     onClick={() => navigator.clipboard.writeText(event.code)}
