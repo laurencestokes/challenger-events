@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api-client';
 import { SCORING_SYSTEMS } from '@/constants/scoringSystems';
+import { ChallengerData } from '@challengerco/challenger-data';
 
 interface Activity {
   id: string;
@@ -13,6 +14,9 @@ interface Activity {
   unit?: string;
   scoringSystemId?: string;
   reps?: number;
+  minReps?: number;
+  maxReps?: number;
+  defaultReps?: number;
 }
 
 interface CompetitionVerification {
@@ -39,6 +43,10 @@ interface CalculatorState {
     score: number | null;
     loading: boolean;
     error: string | null;
+    inverseMode?: boolean;
+    targetScore?: number;
+    requiredRawInput?: number | null;
+    actualScore?: number | null;
   };
 }
 
@@ -55,6 +63,8 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
 
   // Store timeout IDs for proper debouncing
   const timeoutRefs = useRef<{ [activityId: string]: NodeJS.Timeout | null }>({});
+
+  const challengerData = new ChallengerData();
 
   // Initialize calculator state for each activity
   useEffect(() => {
@@ -278,6 +288,202 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
     }
   };
 
+  const handleToggleMode = (activityId: string) => {
+    setCalculatorState((prev) => ({
+      ...prev,
+      [activityId]: {
+        ...prev[activityId],
+        inverseMode: !prev[activityId].inverseMode,
+        // Reset targetScore and requiredRawInput when toggling
+        targetScore: undefined,
+        requiredRawInput: null,
+        error: null,
+      },
+    }));
+  };
+
+  const handleTargetScoreChange = (activityId: string, newScore: number) => {
+    setCalculatorState((prev) => ({
+      ...prev,
+      [activityId]: {
+        ...prev[activityId],
+        targetScore: newScore,
+        loading: true,
+        error: null,
+      },
+    }));
+    calculateRequiredRawInput(activityId, newScore);
+  };
+
+  const calculateRequiredRawInput = async (activityId: string, targetScore: number) => {
+    const activity = activities.find((a) => a.id === activityId);
+    if (!activity?.scoringSystemId) return;
+    const scoringSystem = SCORING_SYSTEMS.find((sys) => sys.id === activity.scoringSystemId);
+    if (!scoringSystem) return;
+
+    setCalculatorState((prev) => ({
+      ...prev,
+      [activityId]: {
+        ...prev[activityId],
+        loading: true,
+        error: null,
+      },
+    }));
+
+    try {
+      // Prepare arguments
+      const sex = userProfile.sex === 'M' ? 'male' : 'female';
+      const age = (() => {
+        if (!userProfile.dateOfBirth) return 25; // Default age
+
+        let birthDate: Date;
+        // Handle Firestore timestamp format
+        if (
+          userProfile.dateOfBirth &&
+          typeof userProfile.dateOfBirth === 'object' &&
+          'toDate' in userProfile.dateOfBirth
+        ) {
+          birthDate = (userProfile.dateOfBirth as unknown as { toDate: () => Date }).toDate();
+        } else if (
+          userProfile.dateOfBirth &&
+          typeof userProfile.dateOfBirth === 'object' &&
+          'seconds' in userProfile.dateOfBirth
+        ) {
+          // Handle Firestore timestamp with seconds
+          birthDate = new Date((userProfile.dateOfBirth as { seconds: number }).seconds * 1000);
+        } else {
+          birthDate = new Date(userProfile.dateOfBirth as unknown as string);
+        }
+
+        if (isNaN(birthDate.getTime())) return 25; // Fallback if invalid date
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        return age;
+      })();
+      const bodyWeight = userProfile.bodyweight;
+      const reps = activity.reps ?? activity.defaultReps ?? 1;
+
+      let requiredRawInput: number | null = null;
+      let actualScore: number | null = null;
+
+      switch (scoringSystem.calculationFunction) {
+        case 'squatScore':
+          requiredRawInput = challengerData.getSquatWeightForScore(
+            targetScore,
+            sex,
+            age,
+            bodyWeight,
+            reps,
+          );
+          actualScore = challengerData.squatScore(
+            requiredRawInput,
+            sex,
+            age,
+            bodyWeight,
+            reps,
+          ).score;
+          break;
+        case 'benchScore':
+          requiredRawInput = challengerData.getBenchWeightForScore(
+            targetScore,
+            sex,
+            age,
+            bodyWeight,
+            reps,
+          );
+          actualScore = challengerData.benchScore(
+            requiredRawInput,
+            sex,
+            age,
+            bodyWeight,
+            reps,
+          ).score;
+          break;
+        case 'deadliftScore':
+          requiredRawInput = challengerData.getDeadliftWeightForScore(
+            targetScore,
+            sex,
+            age,
+            bodyWeight,
+            reps,
+          );
+          actualScore = challengerData.deadliftScore(
+            requiredRawInput,
+            sex,
+            age,
+            bodyWeight,
+            reps,
+          ).score;
+          break;
+        case 'rowingScore':
+        case 'rowingScoreSeconds':
+          requiredRawInput = challengerData.getRowing500mTimeForScore(
+            targetScore,
+            sex,
+            age,
+            bodyWeight,
+          );
+          actualScore = challengerData.rowing500mScore(
+            requiredRawInput,
+            sex,
+            age,
+            bodyWeight,
+          ).score;
+          break;
+        case 'rowing4minScore':
+          requiredRawInput = challengerData.getRowing4minDistanceForScore(
+            targetScore,
+            sex,
+            age,
+            bodyWeight,
+          );
+          actualScore = challengerData.rowing4minScore(
+            requiredRawInput,
+            sex,
+            age,
+            bodyWeight,
+          ).score;
+          break;
+        case 'bike4kmScore':
+          requiredRawInput = challengerData.getBike4kmTimeForScore(targetScore, sex, age);
+          actualScore = challengerData.bike4kmScore(requiredRawInput, sex, age).score;
+          break;
+        case 'ski500mScore':
+          requiredRawInput = challengerData.getSki500mTimeForScore(targetScore, sex, age);
+          actualScore = challengerData.ski500mScore(requiredRawInput, sex, age).score;
+          break;
+        default:
+          throw new Error(`Unsupported calculation function: ${scoringSystem.calculationFunction}`);
+      }
+
+      setCalculatorState((prev) => ({
+        ...prev,
+        [activityId]: {
+          ...prev[activityId],
+          requiredRawInput,
+          actualScore,
+          loading: false,
+          error: null,
+        },
+      }));
+    } catch {
+      setCalculatorState((prev) => ({
+        ...prev,
+        [activityId]: {
+          ...prev[activityId],
+          requiredRawInput: null,
+          actualScore: null,
+          loading: false,
+          error: 'Failed to calculate required input',
+        },
+      }));
+    }
+  };
+
   const getActivityUnit = (activityId: string) => {
     const activity = activities.find((a) => a.id === activityId);
 
@@ -358,10 +564,36 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
               <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
                 {activity.name}
               </h3>
-
+              {/* Toggle for inverse mode */}
+              <div className="mb-2 flex items-center gap-2">
+                <label className="text-xs text-gray-500 dark:text-gray-400">Mode:</label>
+                <button
+                  type="button"
+                  className={`px-2 py-1 rounded text-xs font-medium ${state.inverseMode ? 'bg-primary-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'}`}
+                  onClick={() => handleToggleMode(activity.id)}
+                >
+                  {state.inverseMode ? 'Score → Required Input' : 'Raw Input → Score'}
+                </button>
+              </div>
               {/* Input Section */}
               <div className="mb-3">
-                {isTimeInput ? (
+                {state.inverseMode ? (
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
+                      Target Score
+                    </label>
+                    <input
+                      type="number"
+                      value={state.targetScore !== undefined ? state.targetScore : ''}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? 0 : Number(e.target.value);
+                        handleTargetScoreChange(activity.id, val);
+                      }}
+                      placeholder="Enter target score"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                ) : isTimeInput ? (
                   <div>
                     <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
                       Time (mm:ss.ms)
@@ -390,30 +622,52 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
                     />
                   </div>
                 )}
-
-                {/* Slider */}
-                <div className="mt-2">
-                  <input
-                    type="range"
-                    min={min}
-                    max={max}
-                    value={state.value}
-                    onChange={(e) => handleValueChange(activity.id, Number(e.target.value))}
-                    className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    <span>{formatValue(min, unit)}</span>
-                    <span>{formatValue(max, unit)}</span>
+                {/* Slider (only in normal mode) */}
+                {!state.inverseMode && (
+                  <div className="mt-2">
+                    <input
+                      type="range"
+                      min={min}
+                      max={max}
+                      value={state.value}
+                      onChange={(e) => handleValueChange(activity.id, Number(e.target.value))}
+                      className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                    />
+                    <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <span>{formatValue(min, unit)}</span>
+                      <span>{formatValue(max, unit)}</span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
-
-              {/* Score Display */}
+              {/* Score/Required Input Display */}
               <div className="bg-gray-50 dark:bg-gray-700 rounded p-3">
                 {state.loading ? (
                   <div className="text-sm text-gray-500 dark:text-gray-400">Calculating...</div>
                 ) : state.error ? (
                   <div className="text-sm text-red-600 dark:text-red-400">{state.error}</div>
+                ) : state.inverseMode ? (
+                  state.requiredRawInput !== null && state.targetScore !== undefined ? (
+                    <div>
+                      <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Required: {formatValue(state.requiredRawInput ?? 0, unit)}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        Will yield score:{' '}
+                        {state.actualScore !== undefined && state.actualScore !== null
+                          ? state.actualScore.toFixed(1)
+                          : '-'}{' '}
+                        (target was {state.targetScore})
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        For target score: {state.targetScore}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      Enter a target score to calculate required input
+                    </div>
+                  )
                 ) : state.score !== null ? (
                   <div>
                     <div className="text-lg font-semibold text-gray-900 dark:text-white">

@@ -29,7 +29,7 @@
     }
   },
   "dependencies": {
-    "@challengerco/challenger-data": "^4.0.0",
+    "@challengerco/challenger-data": "^5.0.1",
     "@hookform/resolvers": "^3.3.4",
     "@tailwindcss/typography": "^0.5.16",
     "@types/d3": "^7.4.3",

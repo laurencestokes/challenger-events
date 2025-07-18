@@ -1,5 +1,5 @@
 import { getScoringSystemById } from '@/constants/scoringSystems';
-import { convertSex, epleyFormula, parseTimeWithMilliseconds } from '@/utils/scoring';
+import { convertSex, parseTimeWithMilliseconds } from '@/utils/scoring';
 import { ChallengerData } from '@challengerco/challenger-data';
 import { convertFirestoreTimestamp } from '@/lib/utils';
 
@@ -32,6 +32,7 @@ export async function calculateScore(
   bodyweight: number,
   dateOfBirth: any,
   sex: 'M' | 'F',
+  reps: number = 1,
 ) {
   const scoringSystem = getScoringSystemById(scoringSystemId);
   if (!scoringSystem) {
@@ -58,43 +59,15 @@ export async function calculateScore(
 
   switch (scoringSystem.calculationFunction) {
     case 'squatScore':
-      result = challengerData.squatScore(value, sexConverted, age, bodyweight);
+      result = challengerData.squatScore(value, sexConverted, age, bodyweight, reps);
       break;
     case 'benchScore':
-      result = challengerData.benchScore(value, sexConverted, age, bodyweight);
+      result = challengerData.benchScore(value, sexConverted, age, bodyweight, reps);
       break;
     case 'deadliftScore':
-      result = challengerData.deadliftScore(value, sexConverted, age, bodyweight);
-      break;
-    case 'squatScoreReps':
-      // Convert rep-based weight to 1RM using Epley formula
-      const oneRM = epleyFormula(value, 1); // Assuming 1 rep for now
-      result = challengerData.squatScore(oneRM, sexConverted, age, bodyweight);
-      break;
-    case 'benchScoreReps':
-      // Convert rep-based weight to 1RM using Epley formula
-      const benchOneRM = epleyFormula(value, 1); // Assuming 1 rep for now
-      result = challengerData.benchScore(benchOneRM, sexConverted, age, bodyweight);
-      break;
-    case 'deadliftScoreReps':
-      // Convert rep-based weight to 1RM using Epley formula
-      const dlOneRM = epleyFormula(value, 1); // Assuming 1 rep for now
-      result = challengerData.deadliftScore(dlOneRM, sexConverted, age, bodyweight);
-      break;
-    case 'squat':
-      // Handle rep-based squat scoring
-      result = challengerData.squatScore(value, sexConverted, age, bodyweight);
-      break;
-    case 'bench':
-      // Handle rep-based bench scoring
-      result = challengerData.benchScore(value, sexConverted, age, bodyweight);
-      break;
-    case 'deadlift':
-      // Handle rep-based deadlift scoring
-      result = challengerData.deadliftScore(value, sexConverted, age, bodyweight);
+      result = challengerData.deadliftScore(value, sexConverted, age, bodyweight, reps);
       break;
     case 'rowingScore':
-      // For 500m row, value is in seconds; for others, value may be mm:ss
       let rowingTimeInSeconds;
       if (typeof value === 'string') {
         rowingTimeInSeconds = timeToSeconds(value);
@@ -104,24 +77,20 @@ export async function calculateScore(
       result = challengerData.rowing500mScore(rowingTimeInSeconds, sexConverted, age, bodyweight);
       break;
     case 'rowingScoreSeconds':
-      // For 500m row, value is already in seconds - this is the time for 500m
       const rowingTimeSeconds = Number(value);
       result = challengerData.rowing500mScore(rowingTimeSeconds, sexConverted, age, bodyweight);
       break;
     case 'rowing4minScore':
-      // For 4-minute row, value is distance in meters
       const fourMinDistance = Number(value);
       result = challengerData.rowing4minScore(fourMinDistance, sexConverted, age, bodyweight);
       break;
-    case 'bike500mScore':
-      // For 500m bike, value is time in seconds
+    case 'bike4kmScore':
       const bikeTimeInSeconds = Number(value);
-      result = challengerData.bikeScore(bikeTimeInSeconds, sexConverted, age);
+      result = challengerData.bike4kmScore(bikeTimeInSeconds, sexConverted, age);
       break;
     case 'ski500mScore':
-      // For 500m ski, value is time in seconds
       const skiTimeInSeconds = Number(value);
-      result = challengerData.skiScore(skiTimeInSeconds, sexConverted, age);
+      result = challengerData.ski500mScore(skiTimeInSeconds, sexConverted, age);
       break;
     case 'customWeight':
       // Simple weight-based scoring (no age/sex adjustments)

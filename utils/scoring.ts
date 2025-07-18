@@ -14,12 +14,6 @@ export const paceToWatts = (pace: number): number => {
   }
 };
 
-// Epley formula to convert rep-based weight to estimated 1RM
-export const epleyFormula = (weight: number, reps: number): number => {
-  if (reps === 1) return weight;
-  return weight * (1 + reps / 30);
-};
-
 // Convert sex format from 'M'/'F' to 'male'/'female'
 export function convertSex(sex: 'M' | 'F'): 'male' | 'female' {
   return sex === 'M' ? 'male' : 'female';
@@ -200,7 +194,7 @@ export function calculateRowing4minScoreNew(
 
 export function calculateBikeScoreNew(timeInSeconds: number, sex: 'male' | 'female', age: number) {
   try {
-    return challengerData.bikeScore(timeInSeconds, sex, age);
+    return challengerData.bike4kmScore(timeInSeconds, sex, age);
   } catch (error) {
     console.error('Error in calculateBikeScoreNew:', error);
     // Return a fallback result
@@ -210,12 +204,18 @@ export function calculateBikeScoreNew(timeInSeconds: number, sex: 'male' | 'fema
 
 export function calculateSkiScoreNew(timeInSeconds: number, sex: 'male' | 'female', age: number) {
   try {
-    return challengerData.skiScore(timeInSeconds, sex, age);
+    return challengerData.ski500mScore(timeInSeconds, sex, age);
   } catch (error) {
     console.error('Error in calculateSkiScoreNew:', error);
     // Return a fallback result
     return { score: timeInSeconds, percentile: 50 };
   }
+}
+
+// Epley formula to convert rep-based weight to estimated 1RM
+export function epleyFormula(weight: number, reps: number): number {
+  if (reps === 1) return weight;
+  return weight * (1 + reps / 30);
 }
 
 // Utility function to format time with milliseconds

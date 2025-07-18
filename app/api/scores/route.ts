@@ -98,24 +98,15 @@ export async function POST(request: NextRequest) {
     const reps = activity.reps || 1;
     if (activity.scoringSystemId) {
       try {
-        // For rep-based strength exercises, calculate 1RM first
-        let valueForScoring = Number(rawValue);
-        if (reps > 1) {
-          // Import epleyFormula for the calculation
-          const { epleyFormula } = await import('@/utils/scoring');
-          valueForScoring = epleyFormula(Number(rawValue), reps);
-        }
-
+        const valueForScoring = Number(rawValue);
+        // No Epley logic, just pass reps
         // Get competition weight if available, otherwise use profile weight
         let bodyweightForScoring = competitor.bodyweight || 70;
         const competitionVerification = await getCompetitionVerification(competitorId, eventId);
         if (competitionVerification && competitionVerification.status === 'VERIFIED') {
           bodyweightForScoring = competitionVerification.bodyweight;
         }
-
-        // Use the shared score calculation function
         const { calculateScore } = await import('@/utils/scoreCalculation');
-
         try {
           const scoringResult = await calculateScore(
             activity.scoringSystemId,
@@ -123,16 +114,14 @@ export async function POST(request: NextRequest) {
             bodyweightForScoring,
             competitor.dateOfBirth,
             competitor.sex || 'M',
+            reps,
           );
-
           calculatedScore = scoringResult.score;
         } catch (error) {
           console.error('Scoring calculation error:', error);
-          // Continue with raw value if scoring calculation fails
         }
       } catch (error) {
         console.error('Error calculating score:', error);
-        // Continue with raw value if scoring calculation fails
       }
     }
 

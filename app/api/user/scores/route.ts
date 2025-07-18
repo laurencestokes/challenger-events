@@ -58,22 +58,19 @@ export async function POST(request: NextRequest) {
     const repsToUse = reps || activity.defaultReps || 1;
     if (activity.scoringSystemId) {
       try {
-        let valueForScoring = Number(rawValue);
-        if (repsToUse > 1) {
-          const { epleyFormula } = await import('@/utils/scoring');
-          valueForScoring = epleyFormula(Number(rawValue), repsToUse);
-        }
+        const valueForScoring = Number(rawValue);
+        // No Epley logic, just pass reps
         const scoringResult = await calculateScore(
           activity.scoringSystemId,
           valueForScoring,
           user.bodyweight ?? 70,
           user.dateOfBirth,
           user.sex || 'M',
+          repsToUse,
         );
         calculatedScore = scoringResult.score;
       } catch (err) {
         console.error('Error calculating score:', err);
-        // Fallback to raw value
       }
     }
     // Create a new personal score (eventId omitted)
