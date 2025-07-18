@@ -91,6 +91,7 @@ export const calculateTeamOverallScore = (
     };
   } = {};
   let totalScore = 0;
+  const teamScores: number[] = [];
 
   // Calculate scores for each workout
   for (const activity of activities) {
@@ -116,11 +117,27 @@ export const calculateTeamOverallScore = (
         rank: 0, // Will be calculated by caller
         activityName: activity.name,
       };
-      totalScore += teamScore.totalScore;
+      teamScores.push(teamScore.totalScore);
     }
   }
 
   if (Object.keys(workoutScores).length === 0) return null;
+
+  // Calculate overall team score based on the scoring method
+  switch (scoringMethod) {
+    case 'SUM':
+      // Sum of all team scores (current behavior - correct for SUM)
+      totalScore = teamScores.reduce((sum, score) => sum + score, 0);
+      break;
+    case 'AVERAGE':
+      // Average of team scores across activities (fix for AVERAGE)
+      totalScore = teamScores.reduce((sum, score) => sum + score, 0) / teamScores.length;
+      break;
+    case 'BEST':
+      // Best team score across activities (current behavior - correct for BEST)
+      totalScore = Math.max(...teamScores);
+      break;
+  }
 
   return {
     teamId: team.id,
