@@ -310,9 +310,11 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
         .attr('stroke', '#ffffff')
         .attr('stroke-width', 2)
         .style('cursor', 'pointer')
-        .on('mouseover', function(event, d) {
+        .on('mouseover', function (event, d) {
           d3.selectAll('.tooltip').remove();
-          const tooltip = d3.select('body').append('div')
+          const tooltip = d3
+            .select('body')
+            .append('div')
             .attr('class', 'tooltip')
             .style('position', 'absolute')
             .style('background', 'rgba(0, 0, 0, 0.9)')
