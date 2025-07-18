@@ -32,12 +32,12 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
           controller.enqueue(new TextEncoder().encode(initialMessage));
 
           // Add client to SSE manager
-          const clientId = addSSEClient(eventId, controller);
+          addSSEClient(eventId, controller);
 
           // Handle client disconnect
           request.signal.addEventListener('abort', () => {
             console.info('Public SSE: Client disconnected for event:', eventId);
-            removeSSEClient(eventId, clientId);
+            removeSSEClient(eventId, controller);
           });
         },
       }),
