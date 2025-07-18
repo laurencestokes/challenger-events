@@ -16,6 +16,7 @@ interface LeaderboardEntry {
       reps?: number;
       rank: number;
       activityName: string;
+      scoringSystemId?: string;
     };
   };
   rank: number;
@@ -36,6 +37,7 @@ interface WorkoutLeaderboard {
     rank: number;
     teamId?: string;
     teamName?: string;
+    scoringSystemId?: string;
   }[];
 }
 
@@ -88,8 +90,16 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overall' | string>('overall');
 
-  const formatRawValue = (rawValue: number, activityId: string, reps?: number) => {
-    return beautifyRawScore(rawValue, activityId, reps);
+  const formatRawValue = (
+    rawValue: number,
+    activityId: string,
+    reps?: number,
+    scoringSystemId?: string,
+  ) => {
+    // Use scoringSystemId if available, otherwise fall back to activityId
+    const canonicalActivityId = scoringSystemId || activityId;
+    const result = beautifyRawScore(rawValue, canonicalActivityId, reps);
+    return result;
   };
 
   useEffect(() => {
@@ -98,7 +108,6 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
         const leaderboardData = await api.get(`/api/events/${eventId}/leaderboard`);
         setLeaderboardData(leaderboardData);
       } catch (error: unknown) {
-        console.error('Error fetching data:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
         setError(errorMessage);
       } finally {
@@ -239,6 +248,7 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                                     workoutScore.rawValue,
                                     workout.activityId,
                                     workoutScore.reps,
+                                    workoutScore.scoringSystemId,
                                   )
                                 : ''}
                             </div>
@@ -322,7 +332,12 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           {entry.rawValue
-                            ? formatRawValue(entry.rawValue, workout.activityId, entry.reps)
+                            ? formatRawValue(
+                                entry.rawValue,
+                                workout.activityId,
+                                entry.reps,
+                                entry.scoringSystemId,
+                              )
                             : ''}
                         </div>
                       </div>
@@ -481,7 +496,7 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           {entry.rawValue
-                            ? formatRawValue(entry.rawValue, teamWorkoutId, entry.reps)
+                            ? formatRawValue(entry.rawValue, workout.activityId, entry.reps)
                             : ''}
                         </div>
                       </div>

@@ -22,6 +22,7 @@ interface LeaderboardEntry {
       reps?: number;
       rank: number;
       activityName: string;
+      scoringSystemId?: string;
     };
   };
   rank: number;
@@ -42,6 +43,7 @@ interface WorkoutLeaderboard {
     rank: number;
     teamId?: string;
     teamName?: string;
+    scoringSystemId?: string;
   }[];
 }
 
@@ -173,7 +175,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return {
         activityId: activity.id,
         activityName: activity.name,
-        entries,
+        entries: entries.map((entry) => ({
+          ...entry,
+          scoringSystemId: activity.scoringSystemId,
+        })),
       };
     });
 
@@ -195,6 +200,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           reps?: number;
           rank: number;
           activityName: string;
+          scoringSystemId?: string;
         };
       } = {};
 
@@ -214,6 +220,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             reps: score.reps,
             rank,
             activityName: activity.name,
+            scoringSystemId: activity.scoringSystemId,
           };
         }
       });
@@ -273,12 +280,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
               const averageRawValue =
                 memberScores.length > 0
                   ? memberScores.reduce((sum, score) => sum + score.rawValue, 0) /
-                    memberScores.length
+                  memberScores.length
                   : 0;
               const averageReps =
                 memberScores.length > 0
                   ? memberScores.reduce((sum, score) => sum + (score.reps || 1), 0) /
-                    memberScores.length
+                  memberScores.length
                   : 1;
 
               teamScores.push({

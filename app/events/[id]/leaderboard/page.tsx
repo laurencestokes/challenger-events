@@ -32,6 +32,7 @@ interface LeaderboardEntry {
       reps?: number;
       rank: number;
       activityName: string;
+      scoringSystemId?: string;
     };
   };
   rank: number;
@@ -190,12 +191,15 @@ export default function EventLeaderboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId, user]);
 
-  const getActivityUnit = (activityId: string) => {
-    const activity = activities.find((a) => a.id === activityId);
-    return activity?.unit || '';
-  };
-
-  const formatRawValue = (rawValue: number, activityId: string, reps?: number) => {
+  const formatRawValue = (
+    rawValue: number,
+    activityId: string,
+    reps?: number,
+    scoringSystemId?: string,
+  ) => {
+    if (scoringSystemId) {
+      return beautifyRawScore(rawValue, scoringSystemId, reps);
+    }
     return beautifyRawScore(rawValue, activityId, reps);
   };
 
@@ -412,33 +416,109 @@ export default function EventLeaderboard() {
               <div className="p-6">
                 {activeTab === 'overall' ? (
                   <div className="space-y-4">
-                    {leaderboardData.overallLeaderboard?.map((entry) => (
-                      <div
-                        key={entry.userId}
-                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div className="text-2xl">{getRankIcon(entry.rank)}</div>
-                          <div>
-                            <div className="font-medium text-gray-900 dark:text-white">
-                              {entry.name}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              Total Score: {entry.totalScore.toFixed(1)}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {entry.totalScore.toFixed(1)}
-                          </div>
-                        </div>
-                      </div>
-                    )) || (
-                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                        No overall scores available yet.
-                      </div>
-                    )}
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-700">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                              Rank
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                              Competitor
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                              Total Score
+                            </th>
+                            {activities.map((activity) => (
+                              <th
+                                key={activity.id}
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                              >
+                                {activity.name}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                          {leaderboardData.overallLeaderboard?.map((entry) => (
+                            <tr
+                              key={entry.userId}
+                              className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                            >
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <span className="text-lg mr-2">{getRankIcon(entry.rank)}</span>
+                                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                    {entry.rank}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                    {entry.name}
+                                  </div>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    {entry.email}
+                                  </div>
+                                  {entry.teamId && entry.teamName && (
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                      Team: {entry.teamName}
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-bold text-gray-900 dark:text-white">
+                                  {entry.totalScore ? entry.totalScore.toFixed(1) : '0.0'}
+                                </div>
+                              </td>
+                              {activities.map((activity) => {
+                                const workoutScore = entry.workoutScores[activity.id];
+                                return (
+                                  <td key={activity.id} className="px-6 py-4 whitespace-nowrap">
+                                    {workoutScore ? (
+                                      <div className="text-sm">
+                                        <div className="font-medium text-gray-900 dark:text-white">
+                                          {workoutScore.score
+                                            ? workoutScore.score.toFixed(1)
+                                            : '0.0'}
+                                        </div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                                          {workoutScore.rawValue
+                                            ? (workoutScore as { scoringSystemId?: string })
+                                                .scoringSystemId
+                                              ? formatRawValue(
+                                                  workoutScore.rawValue,
+                                                  activity.id,
+                                                  workoutScore.reps,
+                                                  (workoutScore as { scoringSystemId?: string })
+                                                    .scoringSystemId,
+                                                )
+                                              : formatRawValue(
+                                                  workoutScore.rawValue,
+                                                  activity.id,
+                                                  workoutScore.reps,
+                                                )
+                                            : ''}
+                                        </div>
+                                        <div className="text-xs text-gray-400 dark:text-gray-500">
+                                          Rank: {workoutScore.rank}
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="text-sm text-gray-400 dark:text-gray-500">
+                                        -
+                                      </div>
+                                    )}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 ) : activeTab === 'team-overall' ? (
                   <div className="space-y-4">
@@ -488,11 +568,16 @@ export default function EventLeaderboard() {
                                     {entry.name}
                                   </div>
                                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    {formatRawValue(
-                                      entry.rawValue || 0,
-                                      getActivityUnit(activeTab),
-                                      entry.reps,
-                                    )}
+                                    {entry.rawValue
+                                      ? (entry as { scoringSystemId?: string }).scoringSystemId
+                                        ? formatRawValue(
+                                            entry.rawValue,
+                                            activeTab,
+                                            entry.reps,
+                                            (entry as { scoringSystemId?: string }).scoringSystemId,
+                                          )
+                                        : formatRawValue(entry.rawValue, activeTab, entry.reps)
+                                      : ''}
                                   </div>
                                 </div>
                               </div>
