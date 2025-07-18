@@ -42,7 +42,7 @@ export default function TeamDetailPage() {
   const [inviteSuccess, setInviteSuccess] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{
-    type: 'remove' | 'promote';
+    type: 'remove' | 'promote' | 'delete';
     memberId: string;
     memberName: string;
   } | null>(null);
@@ -127,13 +127,37 @@ export default function TeamDetailPage() {
         return;
       }
 
-      await api.delete(`/api/teams/${params.id}/members/${currentMember.id}`);
+      const response = await api.delete(`/api/teams/${params.id}/members/${currentMember.id}`);
 
-      // Redirect to teams page after leaving
-      router.push('/teams');
+      // Check if team was deleted (last member left)
+      if (response.teamDeleted) {
+        // Redirect to teams page since team no longer exists
+        router.push('/teams');
+      } else {
+        // Redirect to teams page after leaving
+        router.push('/teams');
+      }
     } catch (error: unknown) {
       console.error('Error leaving team:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to leave team';
+      setError(errorMessage);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDeleteTeam = async () => {
+    if (!user) return;
+
+    try {
+      setIsProcessing(true);
+      await api.delete(`/api/teams/${params.id}`);
+
+      // Redirect to teams page after deleting
+      router.push('/teams');
+    } catch (error: unknown) {
+      console.error('Error deleting team:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete team';
       setError(errorMessage);
     } finally {
       setIsProcessing(false);
@@ -324,19 +348,36 @@ export default function TeamDetailPage() {
                     </h1>
                   </div>
                   {user && members.some((member) => member.userId === user.id) && (
-                    <button
-                      onClick={() => {
-                        setConfirmAction({
-                          type: 'remove',
-                          memberId: '', // Will be set in handleLeaveTeam
-                          memberName: 'the team',
-                        });
-                        setShowConfirmModal(true);
-                      }}
-                      className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 border border-red-300 dark:border-red-600 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
-                    >
-                      Leave Team
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      {isCaptain && (
+                        <button
+                          onClick={() => {
+                            setConfirmAction({
+                              type: 'delete',
+                              memberId: '',
+                              memberName: 'the team',
+                            });
+                            setShowConfirmModal(true);
+                          }}
+                          className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
+                        >
+                          Delete Team
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setConfirmAction({
+                            type: 'remove',
+                            memberId: '', // Will be set in handleLeaveTeam
+                            memberName: 'the team',
+                          });
+                          setShowConfirmModal(true);
+                        }}
+                        className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 border border-red-300 dark:border-red-600 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
+                      >
+                        Leave Team
+                      </button>
+                    </div>
                   )}
                 </div>
                 {team.description && (
@@ -521,18 +562,22 @@ export default function TeamDetailPage() {
                   <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
                     <div className="mt-3">
                       <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        {confirmAction.type === 'remove' && confirmAction.memberName === 'the team'
-                          ? 'Leave Team'
-                          : confirmAction.type === 'remove'
-                            ? 'Remove Member'
-                            : 'Promote to Captain'}
+                        {confirmAction.type === 'delete'
+                          ? 'Delete Team'
+                          : confirmAction.type === 'remove' && confirmAction.memberName === 'the team'
+                            ? 'Leave Team'
+                            : confirmAction.type === 'remove'
+                              ? 'Remove Member'
+                              : 'Promote to Captain'}
                       </h3>
                       <p className="text-gray-600 dark:text-gray-400 mb-6">
-                        {confirmAction.type === 'remove' && confirmAction.memberName === 'the team'
-                          ? 'Are you sure you want to leave this team? This action cannot be undone.'
-                          : confirmAction.type === 'remove'
-                            ? `Are you sure you want to remove ${confirmAction.memberName} from the team? This action cannot be undone.`
-                            : `Are you sure you want to promote ${confirmAction.memberName} to captain? You will become a regular member.`}
+                        {confirmAction.type === 'delete'
+                          ? 'Are you sure you want to delete this team? This will permanently delete the team and remove all members. This action cannot be undone.'
+                          : confirmAction.type === 'remove' && confirmAction.memberName === 'the team'
+                            ? 'Are you sure you want to leave this team? This action cannot be undone.'
+                            : confirmAction.type === 'remove'
+                              ? `Are you sure you want to remove ${confirmAction.memberName} from the team? This action cannot be undone.`
+                              : `Are you sure you want to promote ${confirmAction.memberName} to captain? You will become a regular member.`}
                       </p>
                       <div className="flex justify-end space-x-3">
                         <button
@@ -547,28 +592,31 @@ export default function TeamDetailPage() {
                         </button>
                         <button
                           onClick={
-                            confirmAction.type === 'remove' &&
-                            confirmAction.memberName === 'the team'
-                              ? handleLeaveTeam
-                              : confirmAction.type === 'remove'
-                                ? handleRemoveMember
-                                : handlePromoteMember
+                            confirmAction.type === 'delete'
+                              ? handleDeleteTeam
+                              : confirmAction.type === 'remove' &&
+                                confirmAction.memberName === 'the team'
+                                ? handleLeaveTeam
+                                : confirmAction.type === 'remove'
+                                  ? handleRemoveMember
+                                  : handlePromoteMember
                           }
                           disabled={isProcessing}
-                          className={`px-4 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed ${
-                            confirmAction.type === 'remove'
+                          className={`px-4 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed ${confirmAction.type === 'delete' || confirmAction.type === 'remove'
                               ? 'bg-red-600 hover:bg-red-700'
                               : 'bg-primary-600 hover:bg-primary-700'
-                          }`}
+                            }`}
                         >
                           {isProcessing
                             ? 'Processing...'
-                            : confirmAction.type === 'remove' &&
+                            : confirmAction.type === 'delete'
+                              ? 'Delete Team'
+                              : confirmAction.type === 'remove' &&
                                 confirmAction.memberName === 'the team'
-                              ? 'Leave Team'
-                              : confirmAction.type === 'remove'
-                                ? 'Remove'
-                                : 'Promote'}
+                                ? 'Leave Team'
+                                : confirmAction.type === 'remove'
+                                  ? 'Remove'
+                                  : 'Promote'}
                         </button>
                       </div>
                     </div>

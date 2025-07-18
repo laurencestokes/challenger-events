@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getTeam, getTeamMembers, getUser } from '@/lib/firestore';
+import { getUserByUid, getTeam, getTeamMembers, getUser, deleteTeam } from '@/lib/firestore';
 import { convertFirestoreTimestamp } from '@/lib/utils';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
@@ -38,11 +38,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           joinedAt: member.joinedAt,
           user: memberUser
             ? {
-                id: memberUser.id,
-                name: memberUser.name,
-                email: memberUser.email,
-                role: memberUser.role,
-              }
+              id: memberUser.id,
+              name: memberUser.name,
+              email: memberUser.email,
+              role: memberUser.role,
+            }
             : null,
         };
       }),
@@ -62,6 +62,50 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     });
   } catch (error) {
     console.error('Error fetching team details:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: `Internal server error: ${errorMessage}` }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = authHeader.split('Bearer ')[1];
+    const user = await getUserByUid(userId);
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const teamId = params.id;
+
+    // Get team details
+    const team = await getTeam(teamId);
+    if (!team) {
+      return NextResponse.json({ error: 'Team not found' }, { status: 404 });
+    }
+
+    // Get team members to check if user is captain
+    const teamMembers = await getTeamMembers(teamId);
+    const userMember = teamMembers.find((member) => member.userId === user.id);
+
+    if (!userMember || userMember.role !== 'CAPTAIN') {
+      return NextResponse.json(
+        { error: 'Only team captains can delete teams' },
+        { status: 403 },
+      );
+    }
+
+    // Delete the team and all associated data
+    await deleteTeam(teamId);
+
+    return NextResponse.json({ message: 'Team deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting team:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: `Internal server error: ${errorMessage}` }, { status: 500 });
   }

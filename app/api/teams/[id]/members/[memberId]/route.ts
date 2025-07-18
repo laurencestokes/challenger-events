@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getTeam, getTeamMembers } from '@/lib/firestore';
+import { getUserByUid, getTeam, getTeamMembers, deleteTeam } from '@/lib/firestore';
 import { db } from '@/lib/firestore';
 import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 
@@ -49,10 +49,12 @@ export async function DELETE(
       );
     }
 
-    // Prevent captain from removing themselves if they're the only captain
+    // Prevent captain from removing themselves if they're the only captain AND there are other members
     if (isRemovingSelf && userMember?.role === 'CAPTAIN') {
       const captains = teamMembers.filter((member) => member.role === 'CAPTAIN');
-      if (captains.length === 1) {
+      const nonCaptains = teamMembers.filter((member) => member.role !== 'CAPTAIN');
+
+      if (captains.length === 1 && nonCaptains.length > 0) {
         return NextResponse.json(
           {
             error:
@@ -66,6 +68,18 @@ export async function DELETE(
     // Remove the member from the team
     const memberRef = doc(db, 'teamMembers', memberId);
     await deleteDoc(memberRef);
+
+    // Check if this was the last member leaving the team
+    const remainingMembers = teamMembers.filter((member) => member.id !== memberId);
+
+    if (remainingMembers.length === 0) {
+      // Delete the team since it has no members left
+      await deleteTeam(teamId);
+      return NextResponse.json({
+        message: 'Member removed successfully. Team deleted as it had no remaining members.',
+        teamDeleted: true
+      });
+    }
 
     return NextResponse.json({ message: 'Member removed successfully' });
   } catch (error) {

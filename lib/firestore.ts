@@ -660,6 +660,28 @@ export const getUserTeams = async (userId: string) => {
   return teams;
 };
 
+export const deleteTeam = async (teamId: string) => {
+  // Delete all team members
+  const teamMembersRef = collection(db, 'teamMembers');
+  const membersQuery = query(teamMembersRef, where('teamId', '==', teamId));
+  const membersSnapshot = await getDocs(membersQuery);
+
+  const memberDeletions = membersSnapshot.docs.map((doc) => deleteDoc(doc.ref));
+  await Promise.all(memberDeletions);
+
+  // Delete all team invitations
+  const invitationsRef = collection(db, 'teamInvitations');
+  const invitationsQuery = query(invitationsRef, where('teamId', '==', teamId));
+  const invitationsSnapshot = await getDocs(invitationsQuery);
+
+  const invitationDeletions = invitationsSnapshot.docs.map((doc) => deleteDoc(doc.ref));
+  await Promise.all(invitationDeletions);
+
+  // Delete the team itself
+  const teamRef = doc(db, 'teams', teamId);
+  await deleteDoc(teamRef);
+};
+
 export const checkIfNeedsReverification = async (
   userId: string,
   newBodyweight: number,
