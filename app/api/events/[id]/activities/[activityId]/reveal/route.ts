@@ -28,10 +28,6 @@ export async function POST(
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    if (!event.adminIds.includes(user.id)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     // Get the activity details before revealing
     const activity = await getActivity(params.activityId);
     if (!activity) {
@@ -60,7 +56,6 @@ export async function POST(
     });
   } catch (error) {
     console.error('Error revealing workout:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ error: `Internal server error: ${errorMessage}` }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   createEvent,
-  getEventsByAdmin,
+  getAllEventsForAdmin,
   getEventsByParticipant,
   getUserByUid,
   generateEventCode,
@@ -84,8 +84,8 @@ export async function GET(request: NextRequest) {
 
     let events;
     if (isAdmin(user.role)) {
-      // Admins see all events they have access to
-      events = await getEventsByAdmin(user.id);
+      // Admins see all events in the system
+      events = await getAllEventsForAdmin();
     } else {
       // Competitors see events they're participating in
       events = await getEventsByParticipant(user.id);

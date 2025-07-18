@@ -30,10 +30,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    if (!event.adminIds.includes(user.id)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const body = await request.json();
 
     const { name, description, type, scoringSystemId, unit, reps, order, isHidden } = body;
@@ -93,9 +89,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    // Check if user is admin for this event to determine if they should see hidden workouts
-    const isEventAdmin = event.adminIds.includes(user.id);
-    const includeHidden = isEventAdmin;
+    // Check if user is admin to determine if they should see hidden workouts
+    const isAdminUser = isAdmin(user.role);
+    const includeHidden = isAdminUser;
 
     // Get activities for the event
     const activities = await getActivitiesByEvent(params.id, {

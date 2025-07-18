@@ -93,11 +93,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    // Check if user is an admin of this event
-    if (!event.adminIds.includes(user.id)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const body = await request.json();
     const {
       name,
@@ -150,11 +145,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-    }
-
-    // Check if user is an admin of this event
-    if (!event.adminIds.includes(user.id)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     await deleteEvent(params.id);

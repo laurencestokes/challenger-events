@@ -25,10 +25,6 @@ export async function PUT(
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    if (!event.adminIds.includes(user.id)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const body = await request.json();
     const { name, description, type, scoringSystemId, unit, order, isHidden } = body;
 
@@ -75,10 +71,6 @@ export async function DELETE(
     const event = await getEvent(params.id);
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-    }
-
-    if (!event.adminIds.includes(user.id)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     await deleteActivity(params.activityId);

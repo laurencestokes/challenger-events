@@ -229,6 +229,19 @@ export const getEventsByAdmin = async (adminId: string) => {
   });
 };
 
+export const getAllEventsForAdmin = async () => {
+  const eventsRef = collection(db, 'events');
+  const querySnapshot = await getDocs(eventsRef);
+  const events = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Event[];
+
+  // Sort by createdAt on the client side to avoid index requirement
+  return events.sort((a, b) => {
+    const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
+    const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
+    return dateB.getTime() - dateA.getTime(); // Most recent first
+  });
+};
+
 export const getEventsByParticipant = async (userId: string) => {
   const participationsRef = collection(db, 'participations');
   const q = query(participationsRef, where('userId', '==', userId));
