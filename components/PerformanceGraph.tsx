@@ -9,7 +9,7 @@ import LoadingSpinner from './LoadingSpinner';
 interface Score {
   id: string;
   activityId: string;
-  testId?: string; // Add testId field for event scores
+  testId?: string;
   rawValue: number;
   calculatedScore: number;
   reps?: number;
@@ -278,9 +278,8 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
         .attr('stroke', '#F97316') // Tailwind orange-500 (main theme orange)
         .attr('stroke-width', 3)
         .attr('d', line);
-      // Set axis titles to white in dark mode
-      g.selectAll('text.axis-title').style('fill', axisTitleColor);
-      // Or, if not using a class, set fill directly when appending
+      // Always append axis titles with correct color
+      g.selectAll('text.axis-title').remove();
       g.append('text')
         .attr('transform', `translate(${width / 2}, ${height + margin.bottom - 10})`)
         .style('text-anchor', 'middle')
@@ -291,7 +290,7 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
       g.append('text')
         .attr('transform', 'rotate(-90)')
         .attr('y', 0 - margin.left)
-        .attr('x', 0 - height / 2)
+        .attr('x', 0 - (height / 2))
         .attr('dy', '1em')
         .style('text-anchor', 'middle')
         .attr('class', 'axis-title')
@@ -473,16 +472,24 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
         d3.selectAll('.tooltip').remove();
         d3.select(this).attr('r', 5);
       });
+    // Always append axis titles with correct color
+    g.selectAll('text.axis-title').remove();
     g.append('text')
       .attr('transform', `translate(${width / 2}, ${height + margin.bottom - 10})`)
       .style('text-anchor', 'middle')
+      .attr('class', 'axis-title')
+      .attr('fill', axisTitleColor)
+      .style('fill', axisTitleColor)
       .text('Date');
     g.append('text')
       .attr('transform', 'rotate(-90)')
       .attr('y', 0 - margin.left)
-      .attr('x', 0 - height / 2)
+      .attr('x', 0 - (height / 2))
       .attr('dy', '1em')
       .style('text-anchor', 'middle')
+      .attr('class', 'axis-title')
+      .attr('fill', axisTitleColor)
+      .style('fill', axisTitleColor)
       .text('Challenger Score');
 
     console.log('Chart rendering complete');
