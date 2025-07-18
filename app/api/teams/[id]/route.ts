@@ -38,11 +38,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           joinedAt: member.joinedAt,
           user: memberUser
             ? {
-              id: memberUser.id,
-              name: memberUser.name,
-              email: memberUser.email,
-              role: memberUser.role,
-            }
+                id: memberUser.id,
+                name: memberUser.name,
+                email: memberUser.email,
+                role: memberUser.role,
+              }
             : null,
         };
       }),
@@ -94,10 +94,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const userMember = teamMembers.find((member) => member.userId === user.id);
 
     if (!userMember || userMember.role !== 'CAPTAIN') {
-      return NextResponse.json(
-        { error: 'Only team captains can delete teams' },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: 'Only team captains can delete teams' }, { status: 403 });
     }
 
     // Delete the team and all associated data

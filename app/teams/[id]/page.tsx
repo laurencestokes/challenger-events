@@ -564,7 +564,8 @@ export default function TeamDetailPage() {
                       <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                         {confirmAction.type === 'delete'
                           ? 'Delete Team'
-                          : confirmAction.type === 'remove' && confirmAction.memberName === 'the team'
+                          : confirmAction.type === 'remove' &&
+                              confirmAction.memberName === 'the team'
                             ? 'Leave Team'
                             : confirmAction.type === 'remove'
                               ? 'Remove Member'
@@ -573,7 +574,8 @@ export default function TeamDetailPage() {
                       <p className="text-gray-600 dark:text-gray-400 mb-6">
                         {confirmAction.type === 'delete'
                           ? 'Are you sure you want to delete this team? This will permanently delete the team and remove all members. This action cannot be undone.'
-                          : confirmAction.type === 'remove' && confirmAction.memberName === 'the team'
+                          : confirmAction.type === 'remove' &&
+                              confirmAction.memberName === 'the team'
                             ? 'Are you sure you want to leave this team? This action cannot be undone.'
                             : confirmAction.type === 'remove'
                               ? `Are you sure you want to remove ${confirmAction.memberName} from the team? This action cannot be undone.`
@@ -595,24 +597,25 @@ export default function TeamDetailPage() {
                             confirmAction.type === 'delete'
                               ? handleDeleteTeam
                               : confirmAction.type === 'remove' &&
-                                confirmAction.memberName === 'the team'
+                                  confirmAction.memberName === 'the team'
                                 ? handleLeaveTeam
                                 : confirmAction.type === 'remove'
                                   ? handleRemoveMember
                                   : handlePromoteMember
                           }
                           disabled={isProcessing}
-                          className={`px-4 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed ${confirmAction.type === 'delete' || confirmAction.type === 'remove'
+                          className={`px-4 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed ${
+                            confirmAction.type === 'delete' || confirmAction.type === 'remove'
                               ? 'bg-red-600 hover:bg-red-700'
                               : 'bg-primary-600 hover:bg-primary-700'
-                            }`}
+                          }`}
                         >
                           {isProcessing
                             ? 'Processing...'
                             : confirmAction.type === 'delete'
                               ? 'Delete Team'
                               : confirmAction.type === 'remove' &&
-                                confirmAction.memberName === 'the team'
+                                  confirmAction.memberName === 'the team'
                                 ? 'Leave Team'
                                 : confirmAction.type === 'remove'
                                   ? 'Remove'

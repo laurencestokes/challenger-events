@@ -77,7 +77,7 @@ export async function DELETE(
       await deleteTeam(teamId);
       return NextResponse.json({
         message: 'Member removed successfully. Team deleted as it had no remaining members.',
-        teamDeleted: true
+        teamDeleted: true,
       });
     }
 
