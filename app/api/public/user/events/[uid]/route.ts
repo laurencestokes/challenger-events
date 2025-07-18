@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getUserByUid,
+  getUserByProfileName,
   getEventsByParticipant,
   getScoresByUserAndEvent,
   getActivitiesByEvent,
@@ -9,10 +10,17 @@ import {
 export async function GET(request: NextRequest, { params }: { params: { uid: string } }) {
   try {
     const { uid } = params;
-    const user = await getUserByUid(uid);
+
+    // Try to fetch user by profile name first, then by UID
+    let user = await getUserByProfileName(uid);
+    if (!user) {
+      user = await getUserByUid(uid);
+    }
+
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
+
     // Get events the user has participated in
     const userEvents = await getEventsByParticipant(user.id);
     // For each event, get the user's scores and participation details

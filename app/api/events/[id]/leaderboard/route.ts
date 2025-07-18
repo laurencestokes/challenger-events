@@ -280,12 +280,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
               const averageRawValue =
                 memberScores.length > 0
                   ? memberScores.reduce((sum, score) => sum + score.rawValue, 0) /
-                  memberScores.length
+                    memberScores.length
                   : 0;
               const averageReps =
                 memberScores.length > 0
                   ? memberScores.reduce((sum, score) => sum + (score.reps || 1), 0) /
-                  memberScores.length
+                    memberScores.length
                   : 1;
 
               teamScores.push({

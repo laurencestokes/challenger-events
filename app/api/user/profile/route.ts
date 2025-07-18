@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, updateUserWithReverificationCheck } from '@/lib/firestore';
+import {
+  getUserByUid,
+  updateUserWithReverificationCheck,
+  isProfileNameAvailable,
+} from '@/lib/firestore';
 
 export async function GET(request: NextRequest) {
   try {
@@ -48,7 +52,41 @@ export async function PUT(request: NextRequest) {
       publicProfileShowAge,
       publicProfileShowBodyweight,
       publicProfileShowSex,
+      profileName,
     } = body;
+
+    // Validate profile name if provided
+    if (profileName !== undefined) {
+      // Profile name validation rules
+      if (profileName && profileName.trim().length < 3) {
+        return NextResponse.json(
+          { error: 'Profile name must be at least 3 characters long' },
+          { status: 400 },
+        );
+      }
+
+      if (profileName && profileName.trim().length > 30) {
+        return NextResponse.json(
+          { error: 'Profile name must be 30 characters or less' },
+          { status: 400 },
+        );
+      }
+
+      if (profileName && !/^[a-zA-Z0-9_-]+$/.test(profileName.trim())) {
+        return NextResponse.json(
+          { error: 'Profile name can only contain letters, numbers, hyphens, and underscores' },
+          { status: 400 },
+        );
+      }
+
+      // Check if profile name is available (if not empty)
+      if (profileName && profileName.trim()) {
+        const isAvailable = await isProfileNameAvailable(profileName.trim(), user.id);
+        if (!isAvailable) {
+          return NextResponse.json({ error: 'Profile name is already taken' }, { status: 400 });
+        }
+      }
+    }
 
     // Convert dateOfBirth string to Date object if provided
     let processedDateOfBirth: Date | undefined;
@@ -73,6 +111,7 @@ export async function PUT(request: NextRequest) {
       publicProfileShowAge,
       publicProfileShowBodyweight,
       publicProfileShowSex,
+      profileName: profileName !== undefined ? profileName.trim() || null : user.profileName,
       updatedAt: new Date(),
     };
 
@@ -82,21 +121,6 @@ export async function PUT(request: NextRequest) {
 
     // Get the updated user data
     const updatedUser = await getUserByUid(userId);
-    // Trigger on-demand revalidation for the user's public profile page
-    if (updatedUser) {
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-        await fetch(`${baseUrl}/api/revalidate/profile/${updatedUser.uid}`, {
-          method: 'POST',
-          headers: {
-            'x-revalidate-secret': process.env.REVALIDATE_SECRET || '',
-          },
-        });
-      } catch (err) {
-        console.error('Failed to revalidate public profile page:', err);
-      }
-    }
-
     return NextResponse.json(updatedUser);
   } catch (error) {
     console.error('Error updating user profile:', error);

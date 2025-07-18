@@ -35,6 +35,7 @@ export interface User {
   publicProfileShowBodyweight?: boolean;
   publicProfileShowSex?: boolean;
   publicProfileEnabled?: boolean;
+  profileName?: string; // Custom profile name for URLs
 }
 
 export interface Event {
@@ -174,6 +175,32 @@ export const getUserByUid = async (uid: string) => {
     return { id: doc.id, ...doc.data() } as User;
   }
   return null;
+};
+
+export const getUserByProfileName = async (profileName: string) => {
+  const usersRef = collection(db, 'users');
+  const q = query(usersRef, where('profileName', '==', profileName), limit(1));
+  const querySnapshot = await getDocs(q);
+  if (!querySnapshot.empty) {
+    const doc = querySnapshot.docs[0];
+    return { id: doc.id, ...doc.data() } as User;
+  }
+  return null;
+};
+
+export const isProfileNameAvailable = async (profileName: string, excludeUserId?: string) => {
+  const usersRef = collection(db, 'users');
+  const q = query(usersRef, where('profileName', '==', profileName), limit(1));
+  const querySnapshot = await getDocs(q);
+  if (querySnapshot.empty) {
+    return true;
+  }
+  // If we're updating a user, exclude their own profile name
+  if (excludeUserId) {
+    const doc = querySnapshot.docs[0];
+    return doc.id === excludeUserId;
+  }
+  return false;
 };
 
 export const updateUser = async (userId: string, updates: Partial<User>) => {

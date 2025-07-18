@@ -37,6 +37,7 @@ interface User {
   publicProfileShowAge?: boolean;
   publicProfileShowBodyweight?: boolean;
   publicProfileShowSex?: boolean;
+  profileName?: string;
 }
 
 interface EventWithScores {
@@ -136,6 +137,12 @@ export default function Profile() {
   const [showSex, setShowSex] = useState<boolean>(false);
   const [publicProfileEnabled, setPublicProfileEnabled] = useState<boolean>(false);
 
+  // Profile name management
+  const [profileName, setProfileName] = useState<string>('');
+  const [isCheckingProfileName, setIsCheckingProfileName] = useState<boolean>(false);
+  const [profileNameAvailable, setProfileNameAvailable] = useState<boolean | null>(null);
+  const [profileNameError, setProfileNameError] = useState<string>('');
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -186,8 +193,48 @@ export default function Profile() {
       setShowBodyweight(!!profile.publicProfileShowBodyweight);
       setShowSex(!!profile.publicProfileShowSex);
       setPublicProfileEnabled(!!profile.publicProfileEnabled);
+      setProfileName(profile.profileName || '');
     }
   }, [profile, reset]);
+
+  // Check profile name availability
+  const checkProfileNameAvailability = async (name: string) => {
+    if (!name.trim()) {
+      setProfileNameAvailable(null);
+      setProfileNameError('');
+      return;
+    }
+
+    setIsCheckingProfileName(true);
+    setProfileNameError('');
+
+    try {
+      const response = await api.post('/api/user/profile/check-username', {
+        profileName: name.trim(),
+      });
+
+      setProfileNameAvailable(response.available);
+      if (!response.available) {
+        setProfileNameError(response.error || 'Profile name is not available');
+      }
+    } catch (error: unknown) {
+      setProfileNameAvailable(false);
+      setProfileNameError(error instanceof Error ? error.message : 'Error checking availability');
+    } finally {
+      setIsCheckingProfileName(false);
+    }
+  };
+
+  // Debounced profile name checking
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (profileName !== (profile?.profileName || '')) {
+        checkProfileNameAvailability(profileName);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [profileName]);
 
   const onSubmit = async (data: ProfileFormType) => {
     setIsLoading(true);
@@ -739,6 +786,40 @@ export default function Profile() {
           {publicProfileEnabled && (
             <>
               <div className="mb-4">
+                <h4 className="text-md font-semibold mb-2">Profile Name</h4>
+                <div className="mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Custom Profile Name
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={profileName}
+                      onChange={(e) => setProfileName(e.target.value)}
+                      placeholder="Enter a custom profile name"
+                      className="flex-1 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                    {isCheckingProfileName && (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
+                    )}
+                  </div>
+                  {profileName && (
+                    <div className="mt-1 text-sm">
+                      {profileNameAvailable === true && (
+                        <span className="text-green-600 dark:text-green-400">✓ Available</span>
+                      )}
+                      {profileNameAvailable === false && (
+                        <span className="text-red-600 dark:text-red-400">✗ {profileNameError}</span>
+                      )}
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    This will be used in your public profile URL. Only letters, numbers, hyphens,
+                    and underscores allowed.
+                  </p>
+                </div>
+              </div>
+              <div className="mb-4">
                 <h4 className="text-md font-semibold mb-2">Show on Public Profile</h4>
                 <div className="flex flex-col gap-2">
                   <label className="flex items-center gap-2">
@@ -771,7 +852,7 @@ export default function Profile() {
                 <h4 className="text-md font-semibold mb-2">Share your public profile</h4>
                 <div className="flex flex-col items-center gap-2">
                   <a
-                    href={`/public/profile/${user?.uid}`}
+                    href={`/public/profile/${profileName || user?.uid}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
@@ -779,27 +860,79 @@ export default function Profile() {
                     View Public Profile
                   </a>
                   <QRCodeSVG
-                    value={`${window.location.origin}/public/profile/${user?.uid}`}
+                    value={`${window.location.origin}/public/profile/${profileName || user?.uid}`}
                     size={120}
                   />
-                  <div className="mt-2 flex items-center gap-2">
-                    <input
-                      type="text"
-                      readOnly
-                      value={`${window.location.origin}/public/profile/${user?.uid}`}
-                      className="border rounded px-2 py-1 text-sm w-64 bg-gray-100 dark:bg-gray-800"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText(
-                          `${window.location.origin}/public/profile/${user?.uid}`,
-                        );
-                      }}
-                      className="px-2 py-1 text-sm bg-primary-500 text-white rounded hover:bg-primary-600"
-                    >
-                      Copy
-                    </button>
+                  <div className="mt-2 flex flex-col gap-2 w-full">
+                    {profileName ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Profile URL:
+                        </span>
+                        <input
+                          type="text"
+                          readOnly
+                          value={`${window.location.origin}/public/profile/${profileName}`}
+                          className="flex-1 border rounded px-2 py-1 text-sm bg-gray-100 dark:bg-gray-800"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              `${window.location.origin}/public/profile/${profileName}`,
+                            );
+                          }}
+                          className="px-2 py-1 text-sm bg-primary-500 text-white rounded hover:bg-primary-600"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">UID URL:</span>
+                        <input
+                          type="text"
+                          readOnly
+                          value={`${window.location.origin}/public/profile/${user?.uid}`}
+                          className="flex-1 border rounded px-2 py-1 text-sm bg-gray-100 dark:bg-gray-800"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              `${window.location.origin}/public/profile/${user?.uid}`,
+                            );
+                          }}
+                          className="px-2 py-1 text-sm bg-primary-500 text-white rounded hover:bg-primary-600"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    )}
+                    {profileName && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-500 dark:text-gray-500">
+                          Fallback UID URL:
+                        </span>
+                        <input
+                          type="text"
+                          readOnly
+                          value={`${window.location.origin}/public/profile/${user?.uid}`}
+                          className="flex-1 border rounded px-2 py-1 text-sm bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              `${window.location.origin}/public/profile/${user?.uid}`,
+                            );
+                          }}
+                          className="px-2 py-1 text-sm bg-gray-500 text-white rounded hover:bg-gray-600"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -826,6 +959,7 @@ export default function Profile() {
                     publicProfileShowAge: !!showAge,
                     publicProfileShowBodyweight: !!showBodyweight,
                     publicProfileShowSex: !!showSex,
+                    profileName: profileName.trim() || null,
                   });
                   setProfile(updatedProfile);
                 } catch {
