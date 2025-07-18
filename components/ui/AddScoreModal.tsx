@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { EVENT_TYPES } from '@/constants/eventTypes';
 import { api } from '@/lib/api-client';
+import { parseTimeWithMilliseconds } from '@/utils/scoring';
 
 interface AddScoreModalProps {
   isOpen: boolean;
@@ -34,6 +35,24 @@ export default function AddScoreModal({
 
   const selectedActivity = EVENT_TYPES.find((a) => a.id === activityId);
 
+  const isTimeInput = () => {
+    return selectedActivity?.inputType === 'TIME';
+  };
+
+  const handleScoreChange = (value: string) => {
+    if (isTimeInput()) {
+      // For time input, allow mm:ss.ms format (e.g., "1:26.3") or ss.ms format (e.g., "86.3")
+      // Allow digits, colons, and one decimal point
+      const timeRegex = /^[0-9]*:?[0-9]*\.?[0-9]*$/;
+      if (timeRegex.test(value) || value === '') {
+        setRawValue(value);
+      }
+    } else {
+      // For other inputs, only allow numbers
+      setRawValue(value.replace(/[^0-9.]/g, ''));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -61,9 +80,17 @@ export default function AddScoreModal({
         }
       }
 
+      // Parse the score value based on input type
+      let parsedRawValue: number;
+      if (isTimeInput()) {
+        parsedRawValue = parseTimeWithMilliseconds(rawValue);
+      } else {
+        parsedRawValue = Number(rawValue);
+      }
+
       await api.post('/api/user/scores', {
         activityId,
-        rawValue,
+        rawValue: parsedRawValue,
         reps: selectedActivity?.supportsReps && reps ? Number(reps) : undefined,
         notes,
       });
@@ -127,14 +154,15 @@ export default function AddScoreModal({
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {selectedActivity.inputType === 'WEIGHT' && 'Weight (kg)'}
-                {selectedActivity.inputType === 'TIME' && 'Time (seconds)'}
+                {selectedActivity.inputType === 'TIME' && 'Time (mm:ss.ms or ss.ms)'}
                 {selectedActivity.inputType === 'DISTANCE' && 'Distance (m)'}
               </label>
               <input
-                type="number"
+                type={isTimeInput() ? 'text' : 'number'}
                 step="any"
                 value={rawValue}
-                onChange={(e) => setRawValue(e.target.value)}
+                onChange={(e) => handleScoreChange(e.target.value)}
+                placeholder={isTimeInput() ? 'e.g., 1:26.3 or 86.3' : undefined}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 required
               />
