@@ -310,11 +310,9 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
         .attr('stroke', '#ffffff')
         .attr('stroke-width', 2)
         .style('cursor', 'pointer')
-        .on('mouseover', function (event, d) {
+        .on('mouseover', function(event, d) {
           d3.selectAll('.tooltip').remove();
-          const tooltip = d3
-            .select('body')
-            .append('div')
+          const tooltip = d3.select('body').append('div')
             .attr('class', 'tooltip')
             .style('position', 'absolute')
             .style('background', 'rgba(0, 0, 0, 0.9)')
@@ -333,22 +331,19 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
             <div style="margin-bottom: 2px;"><span style="color: #9ca3af;">Score:</span> <span style="font-weight: 600; color: #10b981;">${d.calculatedScore}</span></div>
             <div style="margin-bottom: 2px;"><span style="color: #9ca3af;">Raw:</span> ${formatRawValue(d.rawValue, d.testId || d.activityId, d.reps)}</div>
             <div style="margin-bottom: 2px;"><span style="color: #9ca3af;">Date:</span> <span style="color: #F97316; font-weight: 600;">${parseDate(d.submittedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span></div>
-            ${d.event ? `<div style="margin-bottom: 2px;"><span style="color: #9ca3af;">Event:</span> ${d.event.name}</div>` : ''}
+            ${d.event ? `<div style=\"margin-bottom: 2px;\"><span style=\"color: #9ca3af;\">Event:</span> ${d.event.name}</div>` : ''}
             ${d.verified ? '<div style="color: #10b981; font-weight: 600;">✅ Verified</div>' : '<div style="color: #f59e0b;">⚠️ Unverified</div>'}
           `);
+          // Position tooltip just above the data point, centered
+          if (!svgRef.current) return;
+          const svgRect = svgRef.current.getBoundingClientRect();
+          const cx = xScale(parseDate(d.submittedAt)) + margin.left;
+          const cy = yScale(d.calculatedScore) + margin.top;
           const tooltipNode = tooltip.node();
           if (tooltipNode) {
             const tooltipRect = tooltipNode.getBoundingClientRect();
-            const mouseX = event.clientX;
-            const mouseY = event.clientY;
-            let left = mouseX + 10;
-            let top = mouseY - tooltipRect.height - 10;
-            if (left + tooltipRect.width > window.innerWidth) {
-              left = mouseX - tooltipRect.width - 10;
-            }
-            if (top < 0) {
-              top = mouseY + 10;
-            }
+            const left = svgRect.left + cx - tooltipRect.width / 2;
+            const top = svgRect.top + cy - tooltipRect.height - 12; // 12px above the point
             tooltip.style('left', `${left}px`).style('top', `${top}px`);
           }
           d3.select(this).attr('r', 8);
