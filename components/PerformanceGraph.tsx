@@ -35,9 +35,23 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
   const [grouping, setGrouping] = useState<'all' | 'strength' | 'endurance' | 'activity'>('all');
   const { theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [chartKey, setChartKey] = useState(0); // Force re-render on resize
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Add resize listener for responsive chart
+  useEffect(() => {
+    const handleResize = () => {
+      if (svgRef.current && !isLoading && scores.length > 0) {
+        // Force re-render by updating chart key
+        setChartKey((prev) => prev + 1);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isLoading, scores.length]);
 
   // Helper function to parse dates properly
   const parseDate = (dateValue: unknown): Date => {
@@ -201,12 +215,16 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
       });
     }
 
-    // Chart dimensions
+    // Get container width for responsive chart
+    const container = svgRef.current.parentElement;
+    const containerWidth = container ? container.clientWidth : 800;
+
+    // Chart dimensions - responsive to container width
     const margin = { top: 20, right: 30, bottom: 60, left: 60 };
-    const width = 800 - margin.left - margin.right;
+    const width = Math.max(containerWidth - margin.left - margin.right, 350); // Minimum width of 350px for mobile
     const height = 400 - margin.top - margin.bottom;
 
-    console.log('Chart dimensions:', { width, height });
+    console.log('Chart dimensions:', { width, height, containerWidth });
 
     const svg = d3
       .select(svgRef.current)
@@ -493,7 +511,17 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
       .text('Challenger Score');
 
     console.log('Chart rendering complete');
-  }, [scores, selectedActivity, timeRange, isLoading, grouping, theme, resolvedTheme, mounted]);
+  }, [
+    scores,
+    selectedActivity,
+    timeRange,
+    isLoading,
+    grouping,
+    theme,
+    resolvedTheme,
+    mounted,
+    chartKey,
+  ]);
 
   function formatRawValue(rawValue: number, activityId: string, reps?: number): string {
     // Import the beautifyRawScore function logic here
@@ -605,8 +633,10 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
       </div>
 
       {/* Chart */}
-      <div className="overflow-x-auto border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-        <svg ref={svgRef} className="w-full max-w-full min-h-[400px]"></svg>
+      <div className="w-full overflow-x-auto border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+        <div className="min-w-[450px] w-full">
+          <svg ref={svgRef} className="w-full h-[400px]"></svg>
+        </div>
       </div>
     </div>
   );
