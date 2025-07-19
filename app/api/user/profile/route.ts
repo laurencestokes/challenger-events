@@ -118,8 +118,8 @@ export async function PUT(request: NextRequest) {
     // Remove all undefined fields from updates
     Object.keys(updates).forEach(
       (key) =>
-        (updates as Record<string, any>)[key] === undefined &&
-        delete (updates as Record<string, any>)[key],
+        (updates as Record<string, unknown>)[key] === undefined &&
+        delete (updates as Record<string, unknown>)[key],
     );
 
     // Update user profile with re-verification check
