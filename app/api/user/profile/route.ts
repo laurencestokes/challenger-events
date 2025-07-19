@@ -115,6 +115,13 @@ export async function PUT(request: NextRequest) {
       updatedAt: new Date(),
     };
 
+    // Remove all undefined fields from updates
+    Object.keys(updates).forEach(
+      (key) =>
+        (updates as Record<string, any>)[key] === undefined &&
+        delete (updates as Record<string, any>)[key],
+    );
+
     // Update user profile with re-verification check
     // Use the document ID (user.id) instead of the uid (userId)
     await updateUserWithReverificationCheck(user.id, updates);
