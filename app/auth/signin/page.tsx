@@ -3,15 +3,22 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
-import { signInWithEmail, signUpWithEmail, isEmailVerified } from '../../../lib/firebase-auth';
+import {
+  signInWithEmail,
+  signUpWithEmail,
+  isEmailVerified,
+  resetPassword,
+} from '../../../lib/firebase-auth';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const router = useRouter();
   const { user } = useAuth();
 
@@ -41,9 +48,14 @@ export default function SignInPage() {
     e.stopPropagation();
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      if (isSignUp) {
+      if (isForgotPassword) {
+        await resetPassword(email);
+        setSuccess('Password reset email sent! Check your inbox for instructions.');
+        setIsForgotPassword(false);
+      } else if (isSignUp) {
         await signUpWithEmail(email, password, name);
         // Redirect to verification page after sign up
         router.push('/auth/verify-email');
@@ -68,17 +80,39 @@ export default function SignInPage() {
     }
   };
 
+  const handleForgotPassword = () => {
+    setIsForgotPassword(true);
+    setIsSignUp(false);
+    setError('');
+    setSuccess('');
+  };
+
+  const handleBackToSignIn = () => {
+    setIsForgotPassword(false);
+    setError('');
+    setSuccess('');
+  };
+
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 mx-auto">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            {isSignUp ? 'Create your account' : 'Sign in to your account'}
+            {isForgotPassword
+              ? 'Reset your password'
+              : isSignUp
+                ? 'Create your account'
+                : 'Sign in to your account'}
           </h2>
+          {isForgotPassword && (
+            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+              Enter your email address and we'll send you a link to reset your password.
+            </p>
+          )}
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
-            {isSignUp && (
+            {!isForgotPassword && isSignUp && (
               <div>
                 <label
                   htmlFor="name"
@@ -115,29 +149,37 @@ export default function SignInPage() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-800"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+            {!isForgotPassword && (
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required={!isForgotPassword}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-800"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+            )}
           </div>
 
           {error && (
             <div className="text-error-600 dark:text-error-400 text-sm text-center bg-error-50 dark:bg-error-900/20 p-3 rounded-md">
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="text-green-600 dark:text-green-400 text-sm text-center bg-green-50 dark:bg-green-900/20 p-3 rounded-md">
+              {success}
             </div>
           )}
 
@@ -147,18 +189,45 @@ export default function SignInPage() {
               disabled={loading}
               className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 transition-colors"
             >
-              {loading ? 'Loading...' : isSignUp ? 'Sign up' : 'Sign in'}
+              {loading
+                ? 'Loading...'
+                : isForgotPassword
+                  ? 'Send reset email'
+                  : isSignUp
+                    ? 'Sign up'
+                    : 'Sign in'}
             </button>
           </div>
 
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors"
-            >
-              {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-            </button>
+          <div className="text-center space-y-2">
+            {isForgotPassword ? (
+              <button
+                type="button"
+                onClick={handleBackToSignIn}
+                className="text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors"
+              >
+                Back to sign in
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors"
+                >
+                  {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+                </button>
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                  >
+                    Forgot your password?
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </form>
       </div>
