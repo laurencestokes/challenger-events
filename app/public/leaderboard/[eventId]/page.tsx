@@ -6,6 +6,7 @@ import { beautifyRawScore } from '@/utils/scoring';
 import NotificationToast from '@/components/NotificationToast';
 import { useSSEUnauth } from '@/hooks/useSSEUnauth';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface Activity {
   id: string;
@@ -334,6 +335,22 @@ export default function PublicEventLeaderboard() {
             {leaderboardData.eventName}
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400 mb-4">Live Leaderboard</p>
+
+          {/* QR Code for easy sharing */}
+          <div className="flex justify-center mb-6">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+              <div className="text-center mb-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Scan to view this leaderboard</p>
+              </div>
+              <QRCodeSVG
+                value={typeof window !== 'undefined' ? window.location.href : ''}
+                size={120}
+                level="M"
+                includeMargin={true}
+                className="mx-auto"
+              />
+            </div>
+          </div>
 
           {/* Event Details Accordion */}
           {eventDetails && (
