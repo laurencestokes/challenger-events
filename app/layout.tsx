@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     siteName: 'Challenger Events',
     images: [
       {
-        url: '/sign-in-background.png',
+        url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/sign-in-background.png`,
         width: 1920,
         height: 1080,
         alt: 'Challenger Events - Fitness Competition Platform',
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     title: 'Challenger Events - Real-time Fitness Competitions',
     description:
       'Create and manage fitness events with real-time leaderboards. Track competitor scores and build profiles over time.',
-    images: ['/sign-in-background.png'],
+    images: [`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/sign-in-background.png`],
     creator: '@challengerco',
   },
   robots: {
