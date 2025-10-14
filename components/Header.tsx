@@ -4,8 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import ThemeSwitch from './ThemeSwitch';
-import { FiMenu, FiX, FiGrid, FiCalendar, FiUsers } from 'react-icons/fi';
+import { FiMenu, FiX, FiGrid, FiCalendar, FiUsers, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
+import { signOut } from '../lib/firebase-auth';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -13,8 +14,17 @@ export default function Header() {
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      window.location.href = '/auth/signin';
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
-    <header className="bg-white dark:bg-black shadow-challenger sticky top-0 z-50 border-b-2 border-primary-500">
+    <header className="shadow-challenger sticky top-0 z-50" style={{ backgroundColor: '#0F0F0F' }}>
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/" className="flex items-center space-x-3">
@@ -100,6 +110,15 @@ export default function Header() {
                   >
                     Profile
                   </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={handleSignOut}
+                    className="text-sm text-gray-800 dark:text-white px-4 py-2 rounded-md hover:text-primary-500 dark:hover:text-primary-400 transition-colors font-sans flex items-center space-x-1"
+                  >
+                    <FiLogOut size={16} />
+                    <span>Sign Out</span>
+                  </button>
                 </li>
               </>
             ) : (
@@ -204,6 +223,18 @@ export default function Header() {
                   >
                     Profile
                   </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      handleSignOut();
+                    }}
+                    className="text-lg text-gray-800 dark:text-white hover:text-primary-500 dark:hover:text-primary-400 font-sans flex items-center space-x-2"
+                  >
+                    <FiLogOut size={18} />
+                    <span>Sign Out</span>
+                  </button>
                 </li>
               </>
             ) : (

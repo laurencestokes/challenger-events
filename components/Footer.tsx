@@ -30,7 +30,7 @@ const Footer = () => {
   const commitHash = getCommitHash();
 
   return (
-    <footer className="bg-white dark:bg-black border-t-2 border-primary-500 shadow-challenger text-gray-400 py-6">
+    <footer className="shadow-challenger text-gray-400 py-6" style={{ backgroundColor: '#0F0F0F' }}>
       <div className="container mx-auto px-4 flex flex-wrap justify-center sm:justify-between items-center text-sm">
         <div className="flex items-center">
           <p className="ml-4 font-sans text-gray-900 dark:text-white">

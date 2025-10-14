@@ -87,7 +87,7 @@ interface LeaderboardData {
   teamWorkoutLeaderboards?: TeamWorkoutLeaderboard[];
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const eventId = params.id;
 

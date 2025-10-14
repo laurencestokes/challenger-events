@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { EVENT_TYPES } from '@/constants/eventTypes';
 import { useTheme } from 'next-themes';
-import LoadingSpinner from './LoadingSpinner';
 
 interface Score {
   id: string;
@@ -186,7 +185,7 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
 
     // Detect dark mode using next-themes
     const isDark = theme === 'dark' || resolvedTheme === 'dark';
-    const axisLabelColor = isDark ? '#F97316' : '#334155'; // orange-500 or slate-700
+    const axisLabelColor = isDark ? '#E84C04' : '#334155'; // primary-500 or slate-700
     const axisTitleColor = isDark ? '#fff' : '#334155'; // white in dark mode, slate-700 in light
     const gridLineColor = isDark ? '#fff' : '#e5e7eb'; // white or gray-200
     console.log('PerformanceGraph dark mode detected:', isDark);
@@ -296,7 +295,7 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
       g.append('path')
         .datum(filtered)
         .attr('fill', 'none')
-        .attr('stroke', '#F97316') // Tailwind orange-500 (main theme orange)
+        .attr('stroke', '#E84C04') // Tailwind primary-500 (main theme orange)
         .attr('stroke-width', 3)
         .attr('d', line);
       // Always append axis titles with correct color
@@ -330,7 +329,7 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
         .attr('stroke', '#ffffff')
         .attr('stroke-width', 2)
         .style('cursor', 'pointer')
-        .on('mouseover', function (event, d) {
+        .on('mouseover', function (_event, d) {
           d3.selectAll('.tooltip').remove();
           const tooltip = d3
             .select('body')
@@ -434,7 +433,7 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
     g.append('path')
       .datum(series)
       .attr('fill', 'none')
-      .attr('stroke', '#F97316') // Tailwind orange-500 (main theme orange)
+      .attr('stroke', '#E84C04') // Tailwind primary-500 (main theme orange)
       .attr('stroke-width', 3)
       .attr('d', line);
     g.selectAll('.dot')
@@ -550,18 +549,14 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
     return rawValue.toString();
   }
 
-  if (!mounted || isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <LoadingSpinner />
-      </div>
-    );
+  if (!mounted) {
+    return null;
   }
 
   if (scores.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-gray-500 dark:text-gray-400">
+      <div className="text-center py-12">
+        <p className="text-gray-400 text-lg">
           No performance data available yet. Start adding scores to see your progress!
         </p>
       </div>
@@ -578,7 +573,7 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
             onChange={(e) =>
               setGrouping(e.target.value as 'all' | 'strength' | 'endurance' | 'activity')
             }
-            className="px-3 py-1 border border-primary-500 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-semibold"
+            className="px-3 py-2 border border-primary-500/50 rounded-lg bg-gray-800 text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="all">All (Total Score)</option>
             <option value="strength">Strength Only</option>
@@ -589,7 +584,7 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
             <select
               value={selectedActivity}
               onChange={(e) => setSelectedActivity(e.target.value)}
-              className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+              className="px-3 py-2 border border-gray-600 rounded-lg bg-gray-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="all">All Activities</option>
               {activityNames.map((activity) => (
@@ -606,10 +601,10 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
             <button
               key={range}
               onClick={() => setTimeRange(range)}
-              className={`px-3 py-1 text-sm rounded transition-colors ${
+              className={`px-4 py-2 text-sm rounded-lg transition-colors font-medium ${
                 timeRange === range
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  ? 'bg-primary-500 text-white shadow-lg'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
               {range === '7d'
@@ -625,7 +620,7 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-6 text-sm">
+      <div className="flex items-center justify-center gap-6 text-sm text-gray-300">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 bg-green-500 rounded-full"></div>
           <span>Verified Scores</span>
@@ -637,7 +632,7 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
       </div>
 
       {/* Chart */}
-      <div className="w-full overflow-x-auto border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+      <div className="w-full overflow-x-auto border border-gray-700/50 rounded-xl p-4 bg-black/30">
         <div className="min-w-[450px] w-full">
           <svg ref={svgRef} className="w-full h-[400px]"></svg>
         </div>

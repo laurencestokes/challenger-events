@@ -12,7 +12,7 @@ import {
 } from '@/lib/firestore';
 import { convertFirestoreTimestamp } from '@/lib/utils';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const event = await getEvent(params.id);
 

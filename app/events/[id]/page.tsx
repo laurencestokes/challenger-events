@@ -128,6 +128,8 @@ export default function EventPage() {
   const formatDate = (dateString: unknown) => {
     if (!dateString) return 'Not set';
 
+    let date: Date;
+
     // Handle Firestore Timestamp objects
     if (typeof dateString === 'object' && dateString !== null) {
       // Check if it's a Firestore Timestamp with seconds and nanoseconds
@@ -135,39 +137,51 @@ export default function EventPage() {
         'seconds' in dateString &&
         typeof (dateString as { seconds: number }).seconds === 'number'
       ) {
-        const date = new Date((dateString as { seconds: number }).seconds * 1000);
-        return date.toLocaleDateString();
-      }
-
-      // Check if it has toDate method (Firestore SDK Timestamp)
-      if (
+        date = new Date((dateString as { seconds: number }).seconds * 1000);
+      } else if (
         'toDate' in dateString &&
         typeof (dateString as { toDate: () => Date }).toDate === 'function'
       ) {
-        return (dateString as { toDate: () => Date }).toDate().toLocaleDateString();
+        date = (dateString as { toDate: () => Date }).toDate();
+      } else {
+        return 'Not set';
       }
-    }
-
-    // Handle string dates
-    if (typeof dateString === 'string') {
-      const date = new Date(dateString);
+    } else if (typeof dateString === 'string') {
+      date = new Date(dateString);
       if (isNaN(date.getTime())) {
-        return 'Invalid date';
+        return 'Not set';
       }
-      return date.toLocaleDateString();
+    } else if (dateString instanceof Date) {
+      date = dateString;
+    } else if (typeof dateString === 'number') {
+      date = new Date(dateString);
+    } else {
+      return 'Not set';
     }
 
-    // Handle Date objects
-    if (dateString instanceof Date) {
-      return dateString.toLocaleDateString();
-    }
+    // Format as "17th Jan 2025"
+    const day = date.getDate();
+    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    const year = date.getFullYear();
 
-    // Handle numbers (timestamps)
-    if (typeof dateString === 'number') {
-      return new Date(dateString).toLocaleDateString();
-    }
+    // Add ordinal suffix to day
+    const getOrdinalSuffix = (day: number) => {
+      if (day >= 11 && day <= 13) {
+        return 'th';
+      }
+      switch (day % 10) {
+        case 1:
+          return 'st';
+        case 2:
+          return 'nd';
+        case 3:
+          return 'rd';
+        default:
+          return 'th';
+      }
+    };
 
-    return 'Invalid date';
+    return `${day}${getOrdinalSuffix(day)} ${month} ${year}`;
   };
 
   if (isLoading) {

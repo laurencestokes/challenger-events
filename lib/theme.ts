@@ -10,8 +10,8 @@ export const challengerTheme = {
       200: '#fed7aa',
       300: '#fdba74',
       400: '#fb923c',
-      500: '#f97316', // High-energy orange
-      600: '#ea580c',
+      500: '#E84C04', // High-energy orange
+      600: '#E84C04',
       700: '#c2410c',
       800: '#9a3412',
       900: '#7c2d12',

@@ -7,7 +7,7 @@ import {
   getActivitiesByEvent,
 } from '@/lib/firestore';
 
-export async function GET(request: NextRequest, { params }: { params: { uid: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: { uid: string } }) {
   try {
     const { uid } = params;
 

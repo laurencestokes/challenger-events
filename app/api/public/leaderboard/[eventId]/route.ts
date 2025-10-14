@@ -76,7 +76,7 @@ interface TeamWorkoutLeaderboard {
   }[];
 }
 
-export async function GET(request: NextRequest, { params }: { params: { eventId: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: { eventId: string } }) {
   try {
     const eventId = params.eventId;
 

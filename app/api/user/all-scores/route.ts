@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
           reps: score.reps || null,
           timestamp: score.submittedAt || score.updatedAt || null,
           testId: score.testId,
+          verified: score.verified || false, // Include verified field
         };
 
         // If it's an event score, fetch event details

@@ -101,7 +101,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${montserrat.variable} ${orbitron.variable} bg-white dark:bg-gray-900 min-h-screen`}
+        className={`${montserrat.variable} ${orbitron.variable} bg-white`}
+        style={{ backgroundColor: '#0F0F0F' }}
       >
         <Providers>{children}</Providers>
       </body>
