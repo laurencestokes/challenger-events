@@ -120,9 +120,9 @@ export default function SignInPage() {
             <Image
               src="/challengerco-logo-text-only.png"
               alt="The Challenger Co."
-              width={200}
-              height={96}
-              className="h-24 mx-auto"
+              width={400}
+              height={192}
+              className="mx-auto w-64 sm:w-64 md:w-80 lg:w-80 xl:w-96 h-auto"
               priority
             />
           </div>
