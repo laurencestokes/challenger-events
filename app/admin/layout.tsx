@@ -38,34 +38,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             {/* Admin Navigation */}
             <div className="mb-8">
-              <nav className="flex space-x-8">
+              <nav className="flex space-x-8 overflow-x-auto">
                 <Link
                   href="/admin"
-                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 text-sm font-medium"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 text-sm font-medium whitespace-nowrap"
                 >
                   Dashboard
                 </Link>
                 <Link
                   href="/admin/events"
-                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 text-sm font-medium"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 text-sm font-medium whitespace-nowrap"
                 >
                   Events
                 </Link>
                 <Link
                   href="/admin/users"
-                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 text-sm font-medium"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 text-sm font-medium whitespace-nowrap"
                 >
                   Users
                 </Link>
                 <Link
                   href="/admin/verification"
-                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 text-sm font-medium"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 text-sm font-medium whitespace-nowrap"
                 >
                   Verification
                 </Link>
                 <Link
+                  href="/admin/erg/head-to-head"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 text-sm font-medium whitespace-nowrap"
+                >
+                  🚣 Erg Live
+                </Link>
+                <Link
                   href="/admin/events"
-                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 text-sm font-medium"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-2 text-sm font-medium whitespace-nowrap"
                 >
                   Competition Weigh-In
                 </Link>

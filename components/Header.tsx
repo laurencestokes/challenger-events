@@ -69,6 +69,15 @@ export default function Header() {
                     </li>
                     <li>
                       <Link
+                        href="/admin/erg/head-to-head"
+                        className="text-sm text-gray-800 dark:text-white px-4 py-2 rounded-md hover:text-primary-500 dark:hover:text-primary-400 transition-colors flex items-center space-x-1 font-sans"
+                      >
+                        <span>🚣</span>
+                        <span>Erg Live</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
                         href="/admin/events/create"
                         className="text-sm text-primary-500 dark:text-primary-400 px-4 py-2 rounded-md hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors font-sans"
                       >
@@ -157,6 +166,16 @@ export default function Header() {
                       >
                         <FiUsers size={18} />
                         <span>Manage Users</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/admin/erg/head-to-head"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="text-lg text-gray-800 dark:text-white hover:text-primary-500 dark:hover:text-primary-400 flex items-center space-x-2 font-sans"
+                      >
+                        <span>🚣</span>
+                        <span>Erg Live</span>
                       </Link>
                     </li>
                     <li>

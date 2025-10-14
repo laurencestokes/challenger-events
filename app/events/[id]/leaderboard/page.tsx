@@ -138,20 +138,6 @@ export default function EventLeaderboard() {
     type: 'success',
   });
 
-  // Handle SSE events
-  useEffect(() => {
-    if (lastEvent?.type === 'workout_revealed' && lastEvent.workoutName) {
-      setNotification({
-        show: true,
-        message: `🎉 New workout revealed: ${lastEvent.workoutName}!`,
-        type: 'success',
-      });
-
-      // Refresh activities to show the newly revealed workout
-      fetchData();
-    }
-  }, [lastEvent]);
-
   const fetchData = useCallback(async () => {
     try {
       const [leaderboardData, activitiesData] = await Promise.all([
@@ -184,7 +170,21 @@ export default function EventLeaderboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [eventId]);
+  }, [eventId, user]);
+
+  // Handle SSE events
+  useEffect(() => {
+    if (lastEvent?.type === 'workout_revealed' && lastEvent.workoutName) {
+      setNotification({
+        show: true,
+        message: `🎉 New workout revealed: ${lastEvent.workoutName}!`,
+        type: 'success',
+      });
+
+      // Refresh activities to show the newly revealed workout
+      fetchData();
+    }
+  }, [lastEvent, fetchData]);
 
   useEffect(() => {
     fetchData();
@@ -232,7 +232,7 @@ export default function EventLeaderboard() {
     }
 
     return tabs;
-  }, [leaderboardData?.workoutLeaderboards, viewMode]);
+  }, [viewMode, activities, leaderboardData?.isTeamEvent]);
 
   // Reset active tab when view mode changes
   useEffect(() => {
@@ -309,9 +309,8 @@ export default function EventLeaderboard() {
       {process.env.NODE_ENV === 'development' && (
         <div className="fixed bottom-4 left-4 z-40">
           <div
-            className={`px-3 py-1 rounded-full text-xs ${
-              isConnected ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-            }`}
+            className={`px-3 py-1 rounded-full text-xs ${isConnected ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+              }`}
           >
             SSE: {isConnected ? 'Connected' : 'Disconnected'}
           </div>
@@ -377,21 +376,19 @@ export default function EventLeaderboard() {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => setViewMode('individual')}
-                        className={`px-3 py-1 text-sm font-medium rounded-md ${
-                          viewMode === 'individual'
-                            ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                        }`}
+                        className={`px-3 py-1 text-sm font-medium rounded-md ${viewMode === 'individual'
+                          ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300'
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                          }`}
                       >
                         Individual
                       </button>
                       <button
                         onClick={() => setViewMode('team')}
-                        className={`px-3 py-1 text-sm font-medium rounded-md ${
-                          viewMode === 'team'
-                            ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                        }`}
+                        className={`px-3 py-1 text-sm font-medium rounded-md ${viewMode === 'team'
+                          ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300'
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                          }`}
                       >
                         Team
                       </button>
@@ -407,11 +404,10 @@ export default function EventLeaderboard() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                        activeTab === tab.id
-                          ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                          : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                      }`}
+                      className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === tab.id
+                        ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                        }`}
                     >
                       {tab.name}
                     </button>
@@ -492,19 +488,19 @@ export default function EventLeaderboard() {
                                         <div className="text-xs text-gray-500 dark:text-gray-400">
                                           {workoutScore.rawValue
                                             ? (workoutScore as { scoringSystemId?: string })
-                                                .scoringSystemId
+                                              .scoringSystemId
                                               ? formatRawValue(
-                                                  workoutScore.rawValue,
-                                                  activity.id,
-                                                  workoutScore.reps,
-                                                  (workoutScore as { scoringSystemId?: string })
-                                                    .scoringSystemId,
-                                                )
+                                                workoutScore.rawValue,
+                                                activity.id,
+                                                workoutScore.reps,
+                                                (workoutScore as { scoringSystemId?: string })
+                                                  .scoringSystemId,
+                                              )
                                               : formatRawValue(
-                                                  workoutScore.rawValue,
-                                                  activity.id,
-                                                  workoutScore.reps,
-                                                )
+                                                workoutScore.rawValue,
+                                                activity.id,
+                                                workoutScore.reps,
+                                              )
                                             : ''}
                                         </div>
                                         <div className="text-xs text-gray-400 dark:text-gray-500">
@@ -550,79 +546,79 @@ export default function EventLeaderboard() {
                         </div>
                       </div>
                     )) || (
-                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                        No team overall scores available yet.
-                      </div>
-                    )}
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                          No team overall scores available yet.
+                        </div>
+                      )}
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {viewMode === 'individual'
                       ? // Individual activity leaderboard
-                        leaderboardData.workoutLeaderboards
-                          ?.find((workout) => workout.activityId === activeTab)
-                          ?.entries?.map((entry) => (
-                            <div
-                              key={entry.userId}
-                              className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                            >
-                              <div className="flex items-center space-x-4">
-                                <div className="text-2xl">{getRankIcon(entry.rank)}</div>
-                                <div>
-                                  <div className="font-medium text-gray-900 dark:text-white">
-                                    {entry.name}
-                                  </div>
-                                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    {entry.rawValue
-                                      ? (entry as { scoringSystemId?: string }).scoringSystemId
-                                        ? formatRawValue(
-                                            entry.rawValue,
-                                            activeTab,
-                                            entry.reps,
-                                            (entry as { scoringSystemId?: string }).scoringSystemId,
-                                          )
-                                        : formatRawValue(entry.rawValue, activeTab, entry.reps)
-                                      : ''}
-                                  </div>
+                      leaderboardData.workoutLeaderboards
+                        ?.find((workout) => workout.activityId === activeTab)
+                        ?.entries?.map((entry) => (
+                          <div
+                            key={entry.userId}
+                            className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                          >
+                            <div className="flex items-center space-x-4">
+                              <div className="text-2xl">{getRankIcon(entry.rank)}</div>
+                              <div>
+                                <div className="font-medium text-gray-900 dark:text-white">
+                                  {entry.name}
                                 </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                                  {entry.score.toFixed(1) || '0.0'}
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                  {entry.rawValue
+                                    ? (entry as { scoringSystemId?: string }).scoringSystemId
+                                      ? formatRawValue(
+                                        entry.rawValue,
+                                        activeTab,
+                                        entry.reps,
+                                        (entry as { scoringSystemId?: string }).scoringSystemId,
+                                      )
+                                      : formatRawValue(entry.rawValue, activeTab, entry.reps)
+                                    : ''}
                                 </div>
                               </div>
                             </div>
-                          ))
-                      : // Team activity leaderboard
-                        leaderboardData.teamWorkoutLeaderboards
-                          ?.find((workout) => workout.activityId === activeTab)
-                          ?.entries?.map((entry) => (
-                            <div
-                              key={entry.teamId}
-                              className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                            >
-                              <div className="flex items-center space-x-4">
-                                <div className="text-2xl">{getRankIcon(entry.rank)}</div>
-                                <div>
-                                  <div className="font-medium text-gray-900 dark:text-white">
-                                    {entry.teamName}
-                                  </div>
-                                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    Team Score
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                                  {entry.score.toFixed(1) || '0.0'}
-                                </div>
+                            <div className="text-right">
+                              <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                                {entry.score.toFixed(1) || '0.0'}
                               </div>
                             </div>
-                          )) || (
-                          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                            No scores available for this activity yet.
                           </div>
-                        )}
+                        ))
+                      : // Team activity leaderboard
+                      leaderboardData.teamWorkoutLeaderboards
+                        ?.find((workout) => workout.activityId === activeTab)
+                        ?.entries?.map((entry) => (
+                          <div
+                            key={entry.teamId}
+                            className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                          >
+                            <div className="flex items-center space-x-4">
+                              <div className="text-2xl">{getRankIcon(entry.rank)}</div>
+                              <div>
+                                <div className="font-medium text-gray-900 dark:text-white">
+                                  {entry.teamName}
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                  Team Score
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                                {entry.score.toFixed(1) || '0.0'}
+                              </div>
+                            </div>
+                          </div>
+                        )) || (
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                          No scores available for this activity yet.
+                        </div>
+                      )}
                   </div>
                 )}
               </div>

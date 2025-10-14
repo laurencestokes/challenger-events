@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api-client';
 import { SCORING_SYSTEMS } from '@/constants/scoringSystems';
@@ -66,6 +66,26 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
 
   const challengerData = new ChallengerData();
 
+  const getActivityUnit = useCallback(
+    (activityId: string) => {
+      const activity = activities.find((a) => a.id === activityId);
+
+      // If activity has a unit, use it
+      if (activity?.unit) {
+        return activity.unit;
+      }
+
+      // Fallback: get unit from scoring system
+      if (activity?.scoringSystemId) {
+        const scoringSystem = SCORING_SYSTEMS.find((sys) => sys.id === activity.scoringSystemId);
+        return scoringSystem?.unit || '';
+      }
+
+      return '';
+    },
+    [activities],
+  );
+
   // Initialize calculator state for each activity
   useEffect(() => {
     const initialState: CalculatorState = {};
@@ -81,7 +101,7 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
       };
     });
     setCalculatorState(initialState);
-  }, [activities]);
+  }, [activities, getActivityUnit]);
 
   // Set user profile from auth context or override
   useEffect(() => {
@@ -109,8 +129,9 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
 
   // Cleanup timeouts on unmount
   useEffect(() => {
+    const timeoutRefCopy = timeoutRefs.current;
     return () => {
-      const timeouts = Object.values(timeoutRefs.current);
+      const timeouts = Object.values(timeoutRefCopy);
       timeouts.forEach((timeout) => {
         if (timeout) clearTimeout(timeout);
       });
@@ -482,23 +503,6 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
         },
       }));
     }
-  };
-
-  const getActivityUnit = (activityId: string) => {
-    const activity = activities.find((a) => a.id === activityId);
-
-    // If activity has a unit, use it
-    if (activity?.unit) {
-      return activity.unit;
-    }
-
-    // Fallback: get unit from scoring system
-    if (activity?.scoringSystemId) {
-      const scoringSystem = SCORING_SYSTEMS.find((sys) => sys.id === activity.scoringSystemId);
-      return scoringSystem?.unit || '';
-    }
-
-    return '';
   };
 
   return (

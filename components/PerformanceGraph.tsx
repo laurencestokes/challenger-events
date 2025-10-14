@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { EVENT_TYPES } from '@/constants/eventTypes';
 import { useTheme } from 'next-themes';
@@ -119,61 +119,64 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
   }
 
   // For All/Strength/Endurance: build a time series of total score over time
-  function buildTotalScoreSeries(
-    scores: Score[],
-    category: 'all' | 'strength' | 'endurance',
-    timeRange: '7d' | '30d' | '90d' | 'all',
-  ) {
-    // 1. Sort all scores by date ascending
-    const sorted = [...scores].sort(
-      (a, b) => parseDate(a.submittedAt).getTime() - parseDate(b.submittedAt).getTime(),
-    );
-    // 2. For each date, keep a running best for each event type
-    const bestByType: Record<string, number> = {};
-    const points: { date: Date; total: number }[] = [];
-    const now = new Date();
-    const categoryIds =
-      category === 'all'
-        ? EVENT_TYPES.map((e) => e.id)
-        : getEventTypeIdsForCategory(category === 'strength' ? 'STRENGTH' : 'ENDURANCE');
-    for (const score of sorted) {
-      const activityId = score.testId || score.activityId;
-      if (!categoryIds.includes(activityId)) continue;
-      const date = parseDate(score.submittedAt);
-      // Time range filter
-      switch (timeRange) {
-        case '7d':
-          if (date < new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)) continue;
-          break;
-        case '30d':
-          if (date < new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)) continue;
-          break;
-        case '90d':
-          if (date < new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)) continue;
-          break;
+  const buildTotalScoreSeries = useCallback(
+    (
+      scores: Score[],
+      category: 'all' | 'strength' | 'endurance',
+      timeRange: '7d' | '30d' | '90d' | 'all',
+    ) => {
+      // 1. Sort all scores by date ascending
+      const sorted = [...scores].sort(
+        (a, b) => parseDate(a.submittedAt).getTime() - parseDate(b.submittedAt).getTime(),
+      );
+      // 2. For each date, keep a running best for each event type
+      const bestByType: Record<string, number> = {};
+      const points: { date: Date; total: number }[] = [];
+      const now = new Date();
+      const categoryIds =
+        category === 'all'
+          ? EVENT_TYPES.map((e) => e.id)
+          : getEventTypeIdsForCategory(category === 'strength' ? 'STRENGTH' : 'ENDURANCE');
+      for (const score of sorted) {
+        const activityId = score.testId || score.activityId;
+        if (!categoryIds.includes(activityId)) continue;
+        const date = parseDate(score.submittedAt);
+        // Time range filter
+        switch (timeRange) {
+          case '7d':
+            if (date < new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)) continue;
+            break;
+          case '30d':
+            if (date < new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)) continue;
+            break;
+          case '90d':
+            if (date < new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)) continue;
+            break;
+        }
+        // Update best for this event type
+        if (!bestByType[activityId] || score.calculatedScore > bestByType[activityId]) {
+          bestByType[activityId] = score.calculatedScore;
+        }
+        // Calculate total
+        const total = categoryIds.reduce((sum, id) => sum + (bestByType[id] || 0), 0);
+        points.push({ date, total });
       }
-      // Update best for this event type
-      if (!bestByType[activityId] || score.calculatedScore > bestByType[activityId]) {
-        bestByType[activityId] = score.calculatedScore;
+      // Remove duplicate dates (keep last point for each date)
+      const uniquePoints: { date: Date; total: number }[] = [];
+      let lastDate = '';
+      for (const p of points) {
+        const d = p.date.toISOString().split('T')[0];
+        if (d !== lastDate) {
+          uniquePoints.push(p);
+          lastDate = d;
+        } else {
+          uniquePoints[uniquePoints.length - 1] = p;
+        }
       }
-      // Calculate total
-      const total = categoryIds.reduce((sum, id) => sum + (bestByType[id] || 0), 0);
-      points.push({ date, total });
-    }
-    // Remove duplicate dates (keep last point for each date)
-    const uniquePoints: { date: Date; total: number }[] = [];
-    let lastDate = '';
-    for (const p of points) {
-      const d = p.date.toISOString().split('T')[0];
-      if (d !== lastDate) {
-        uniquePoints.push(p);
-        lastDate = d;
-      } else {
-        uniquePoints[uniquePoints.length - 1] = p;
-      }
-    }
-    return uniquePoints;
-  }
+      return uniquePoints;
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!mounted || !svgRef.current || isLoading || scores.length === 0) return;
@@ -521,6 +524,7 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
     resolvedTheme,
     mounted,
     chartKey,
+    buildTotalScoreSeries,
   ]);
 
   function formatRawValue(rawValue: number, activityId: string, reps?: number): string {
@@ -602,11 +606,10 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
             <button
               key={range}
               onClick={() => setTimeRange(range)}
-              className={`px-3 py-1 text-sm rounded transition-colors ${
-                timeRange === range
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-              }`}
+              className={`px-3 py-1 text-sm rounded transition-colors ${timeRange === range
+                ? 'bg-primary-600 text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                }`}
             >
               {range === '7d'
                 ? '7 Days'

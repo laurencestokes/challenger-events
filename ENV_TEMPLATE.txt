@@ -17,6 +17,11 @@ FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFA
 # Socket.io (for real-time features)
 SOCKET_SECRET="your-socket-secret"
 
+# Erg Live Data API Security
+# Generate a strong random secret (minimum 32 characters)
+# Example: openssl rand -hex 32
+ERG_API_SECRET="your-very-long-random-secret-key-here-min-32-chars"
+
 # Email Configuration (Resend)
 RESEND_API_KEY="re_1234567890abcdef"
 FROM_EMAIL="noreply@yourdomain.com"

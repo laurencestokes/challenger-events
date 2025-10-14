@@ -163,17 +163,17 @@ export default function Profile() {
       api
         .get('/api/user/events')
         .then(setEventScores)
-        .catch(() => {});
+        .catch(() => { });
       // Fetch personal scores
       api
         .get('/api/user/scores')
         .then(setPersonalScores)
-        .catch(() => {});
+        .catch(() => { });
       // Fetch teams
       api
         .get('/api/teams/user')
         .then((res) => setTeams(res.teams || []))
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [user]);
 
@@ -234,7 +234,7 @@ export default function Profile() {
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [profile?.profileName, checkProfileNameAvailability]);
+  }, [profile?.profileName, checkProfileNameAvailability, profileName]);
 
   const onSubmit = async (data: ProfileFormType) => {
     setIsLoading(true);
@@ -498,7 +498,7 @@ export default function Profile() {
             api
               .get('/api/user/scores')
               .then(setPersonalScores)
-              .catch(() => {});
+              .catch(() => { });
           }}
         />
       </div>
