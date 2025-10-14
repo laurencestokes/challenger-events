@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import ThemeSwitch from './ThemeSwitch';
 import { FiMenu, FiX, FiGrid, FiCalendar, FiUsers } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,10 +17,15 @@ export default function Header() {
     <header className="bg-white dark:bg-black shadow-challenger sticky top-0 z-50 border-b-2 border-primary-500">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-xl font-black font-display text-gray-900 dark:text-white">
-              CHALLENGER
-            </span>
+          <Link href="/" className="flex items-center space-x-3">
+            <Image
+              src="/challengerco-logo-text-only.png"
+              alt="The Challenger Co."
+              width={120}
+              height={48}
+              className="h-8 w-auto"
+              priority
+            />
             <span className="px-3 py-1 text-xs font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
               BETA
             </span>
