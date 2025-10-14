@@ -60,7 +60,7 @@ export default function Home() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gray-900">
+    <div className="relative min-h-screen bg-gray-900">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
@@ -77,34 +77,36 @@ export default function Home() {
       {/* Dark Overlay */}
       <div className="absolute inset-0 bg-black/60" />
 
-      {/* Content */}
-      <div className="relative z-10 text-center px-6">
-        {/* Logo */}
-        <div className="mb-12">
-          <Image
-            src="/challengerco-logo-text-only.png"
-            alt="The Challenger Co."
-            width={400}
-            height={192}
-            className="mx-auto w-64 sm:w-72 md:w-80 lg:w-96 xl:w-[28rem] h-auto"
-            priority
-          />
-          <div className="flex justify-center mt-4">
-            <span className="px-3 py-1 text-xs font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
-              BETA
-            </span>
+      {/* Content - Logo Centered */}
+      <div className="relative z-10 min-h-screen flex items-center justify-center">
+        <div className="text-center px-6">
+          {/* Logo */}
+          <div>
+            <Image
+              src="/challengerco-logo-text-only.png"
+              alt="The Challenger Co."
+              width={400}
+              height={192}
+              className="mx-auto w-64 sm:w-72 md:w-80 lg:w-96 xl:w-[28rem] h-auto"
+              priority
+            />
+            <div className="flex justify-center mt-4">
+              <span className="px-3 py-1 text-xs font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
+                BETA
+              </span>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Call to Action */}
-        <div className="space-y-4">
-          <Link
-            href="/auth/signin"
-            className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-sans font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-challenger text-lg"
-          >
-            Sign In / Sign Up
-          </Link>
-        </div>
+      {/* Call to Action - Fixed at Bottom */}
+      <div className="absolute bottom-12 sm:bottom-16 md:bottom-20 left-0 right-0 z-20 text-center px-6">
+        <Link
+          href="/auth/signin"
+          className="inline-flex items-center px-6 py-3 sm:px-7 sm:py-3.5 md:px-8 md:py-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-sans font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-challenger text-base sm:text-lg"
+        >
+          Sign In / Sign Up
+        </Link>
       </div>
     </div>
   );
