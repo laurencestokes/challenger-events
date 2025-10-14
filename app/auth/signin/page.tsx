@@ -125,6 +125,11 @@ export default function SignInPage() {
               className="mx-auto w-64 sm:w-64 md:w-80 lg:w-80 xl:w-96 h-auto"
               priority
             />
+            <div className="flex justify-center mt-4">
+              <span className="px-3 py-1 text-xs font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
+                BETA
+              </span>
+            </div>
           </div>
 
           {/* Form Container */}

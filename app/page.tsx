@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Link from 'next/link';
@@ -59,14 +60,36 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center">
-      <div className="text-center">
-        {/* Brand */}
-        <div className="mb-8">
-          <h1 className="text-6xl font-black font-display text-gray-900 dark:text-white mb-4">
-            CHALLENGER
-          </h1>
-          <div className="flex justify-center">
+    <div className="relative min-h-screen flex items-center justify-center bg-gray-900">
+      {/* Background Image */}
+      <div className="absolute inset-0">
+        <Image
+          src="/sign-in-background.png"
+          alt="Background"
+          fill
+          className="object-cover"
+          priority
+          quality={75}
+          sizes="100vw"
+        />
+      </div>
+
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-black/60" />
+
+      {/* Content */}
+      <div className="relative z-10 text-center px-6">
+        {/* Logo */}
+        <div className="mb-12">
+          <Image
+            src="/challengerco-logo-text-only.png"
+            alt="The Challenger Co."
+            width={400}
+            height={192}
+            className="mx-auto w-64 sm:w-72 md:w-80 lg:w-96 xl:w-[28rem] h-auto"
+            priority
+          />
+          <div className="flex justify-center mt-4">
             <span className="px-3 py-1 text-xs font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
               BETA
             </span>
@@ -77,7 +100,7 @@ export default function Home() {
         <div className="space-y-4">
           <Link
             href="/auth/signin"
-            className="inline-flex items-center px-8 py-3 bg-primary-500 hover:bg-primary-600 text-white font-sans font-bold rounded-md transition-colors shadow-challenger hover:shadow-challenger-lg"
+            className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-sans font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-challenger text-lg"
           >
             Sign In / Sign Up
           </Link>

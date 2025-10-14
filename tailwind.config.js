@@ -169,9 +169,9 @@ module.exports = {
           'Segoe UI Symbol',
           'Noto Color Emoji',
         ],
-        // Option 1: Inter (clean, modern) - NOW ACTIVE
+        // Montserrat (modern, geometric, athletic) - NOW ACTIVE
         sans: [
-          'Inter',
+          'Montserrat',
           'ui-sans-serif',
           'system-ui',
           '-apple-system',

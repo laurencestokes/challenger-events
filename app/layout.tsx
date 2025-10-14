@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import { Providers } from '@/components/Providers';
-import { Inter, Orbitron } from 'next/font/google';
+import Providers from '@/components/Providers';
+import { Montserrat, Orbitron } from 'next/font/google';
 
 import 'styles/globals.css';
 
-const inter = Inter({
+const montserrat = Montserrat({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-montserrat',
   display: 'swap',
 });
 
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body
-        className={`${inter.variable} ${orbitron.variable} bg-white dark:bg-gray-900 min-h-screen`}
+        className={`${montserrat.variable} ${orbitron.variable} bg-white dark:bg-gray-900 min-h-screen`}
       >
         <Providers>{children}</Providers>
       </body>
