@@ -95,14 +95,19 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center">
+    <div className="relative min-h-screen flex items-center justify-center bg-gray-900">
       {/* Background Image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: 'url(/sign-in-background.png)',
-        }}
-      />
+      <div className="absolute inset-0">
+        <Image
+          src="/sign-in-background.png"
+          alt="Background"
+          fill
+          className="object-cover"
+          priority
+          quality={75}
+          sizes="100vw"
+        />
+      </div>
 
       {/* Dark Overlay */}
       <div className="absolute inset-0 bg-black/60" />

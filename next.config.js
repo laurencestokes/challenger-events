@@ -2,7 +2,14 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  images: {
+    domains: [],
+    unoptimized: false,
+  },
+  // Ensure static files are served correctly
+  trailingSlash: false,
+  // Enable static optimization
+  output: 'standalone',
 };
 
 module.exports = nextConfig;
