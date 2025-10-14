@@ -60,7 +60,9 @@ export const metadata: Metadata = {
     title: 'Challenger Events - Real-time Fitness Competitions',
     description:
       'Create and manage fitness events with real-time leaderboards. Track competitor scores and build profiles over time.',
-    images: [`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/sign-in-background.png`],
+    images: [
+      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/sign-in-background.png`,
+    ],
     creator: '@challengerco',
   },
   robots: {
