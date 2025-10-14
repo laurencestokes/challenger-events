@@ -163,17 +163,17 @@ export default function Profile() {
       api
         .get('/api/user/events')
         .then(setEventScores)
-        .catch(() => { });
+        .catch(() => {});
       // Fetch personal scores
       api
         .get('/api/user/scores')
         .then(setPersonalScores)
-        .catch(() => { });
+        .catch(() => {});
       // Fetch teams
       api
         .get('/api/teams/user')
         .then((res) => setTeams(res.teams || []))
-        .catch(() => { });
+        .catch(() => {});
     }
   }, [user]);
 
@@ -498,7 +498,7 @@ export default function Profile() {
             api
               .get('/api/user/scores')
               .then(setPersonalScores)
-              .catch(() => { });
+              .catch(() => {});
           }}
         />
       </div>

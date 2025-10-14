@@ -100,12 +100,13 @@ export default function LiveErgDisplayPage() {
         <h1 className="text-6xl font-bold text-center mb-4 tracking-wider">HEAD TO HEAD</h1>
         <div className="flex items-center justify-center gap-4 text-sm">
           <span
-            className={`px-4 py-2 rounded-full font-semibold ${isConnected
-              ? 'bg-green-500/20 text-green-400'
-              : isReconnecting
-                ? 'bg-yellow-500/20 text-yellow-400 animate-pulse'
-                : 'bg-red-500/20 text-red-400'
-              }`}
+            className={`px-4 py-2 rounded-full font-semibold ${
+              isConnected
+                ? 'bg-green-500/20 text-green-400'
+                : isReconnecting
+                  ? 'bg-yellow-500/20 text-yellow-400 animate-pulse'
+                  : 'bg-red-500/20 text-red-400'
+            }`}
           >
             {isConnected
               ? '🟢 LIVE'
