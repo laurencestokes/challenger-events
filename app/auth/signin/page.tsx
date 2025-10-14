@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '../../../contexts/AuthContext';
 import {
   signInWithEmail,
@@ -94,142 +95,180 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 mx-auto">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            {isForgotPassword
-              ? 'Reset your password'
-              : isSignUp
-                ? 'Create your account'
-                : 'Sign in to your account'}
-          </h2>
-          {isForgotPassword && (
-            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-              Enter your email address and we'll send you a link to reset your password.
-            </p>
-          )}
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            {!isForgotPassword && isSignUp && (
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Full Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  required={isSignUp}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-800"
-                  placeholder="Enter your full name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-            )}
-            <div>
-              <label
-                htmlFor="email-address"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Email Address
-              </label>
-              <input
-                id="email-address"
-                type="email"
-                autoComplete="email"
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-800"
-                placeholder="Enter your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            {!isForgotPassword && (
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required={!isForgotPassword}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-800"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            )}
+    <div className="relative min-h-screen flex items-center justify-center">
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(/sign-in-background.png)',
+        }}
+      />
+
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-black/60" />
+
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-6 flex justify-end">
+        <div className="w-full max-w-md">
+          {/* Logo - Above Form */}
+          <div className="text-center mb-12">
+            <Image
+              src="/challengerco-logo-text-only.png"
+              alt="The Challenger Co."
+              width={200}
+              height={96}
+              className="h-24 mx-auto"
+              priority
+            />
           </div>
 
-          {error && (
-            <div className="text-error-600 dark:text-error-400 text-sm text-center bg-error-50 dark:bg-error-900/20 p-3 rounded-md">
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="text-green-600 dark:text-green-400 text-sm text-center bg-green-50 dark:bg-green-900/20 p-3 rounded-md">
-              {success}
-            </div>
-          )}
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 transition-colors"
-            >
-              {loading
-                ? 'Loading...'
-                : isForgotPassword
-                  ? 'Send reset email'
+          {/* Form Container */}
+          <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-white mb-2">
+                {isForgotPassword
+                  ? 'Reset your password'
                   : isSignUp
-                    ? 'Sign up'
-                    : 'Sign in'}
-            </button>
-          </div>
+                    ? 'Create your account'
+                    : 'Sign in to your account'}
+              </h2>
+              {isForgotPassword && (
+                <p className="text-sm text-gray-300">
+                  Enter your email address and we'll send you a link to reset your password.
+                </p>
+              )}
+            </div>
 
-          <div className="text-center space-y-2">
-            {isForgotPassword ? (
-              <button
-                type="button"
-                onClick={handleBackToSignIn}
-                className="text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors"
-              >
-                Back to sign in
-              </button>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setIsSignUp(!isSignUp)}
-                  className="text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors"
-                >
-                  {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-                </button>
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div className="space-y-4">
+                {!isForgotPassword && isSignUp && (
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
+                      Full Name
+                    </label>
+                    <input
+                      id="name"
+                      type="text"
+                      required={isSignUp}
+                      className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                      placeholder="Enter your full name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
+                )}
+
                 <div>
+                  <label
+                    htmlFor="email-address"
+                    className="block text-sm font-medium text-gray-300 mb-2"
+                  >
+                    Email Address
+                  </label>
+                  <input
+                    id="email-address"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                    placeholder="Enter your email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+
+                {!isForgotPassword && (
+                  <div>
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium text-gray-300 mb-2"
+                    >
+                      Password
+                    </label>
+                    <input
+                      id="password"
+                      type="password"
+                      autoComplete="current-password"
+                      required={!isForgotPassword}
+                      className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {error && (
+                <div className="text-red-400 text-sm text-center bg-red-900/20 p-3 rounded-lg border border-red-500/30">
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div className="text-green-400 text-sm text-center bg-green-900/20 p-3 rounded-lg border border-green-500/30">
+                  {success}
+                </div>
+              )}
+
+              {/* Primary Action Button */}
+              <div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full flex justify-center items-center py-3 px-6 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02]"
+                >
+                  {loading ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Loading...
+                    </div>
+                  ) : isForgotPassword ? (
+                    'Send reset email'
+                  ) : isSignUp ? (
+                    'Sign up'
+                  ) : (
+                    'Sign in'
+                  )}
+                </button>
+              </div>
+
+              {/* Secondary Actions */}
+              <div className="text-center space-y-3">
+                {isForgotPassword ? (
                   <button
                     type="button"
-                    onClick={handleForgotPassword}
-                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                    onClick={handleBackToSignIn}
+                    className="text-orange-400 hover:text-orange-300 transition-colors font-medium"
                   >
-                    Forgot your password?
+                    Back to sign in
                   </button>
-                </div>
-              </>
-            )}
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setIsSignUp(!isSignUp)}
+                      className="text-orange-400 hover:text-orange-300 transition-colors font-medium"
+                    >
+                      {isSignUp
+                        ? 'Already have an account? Sign in'
+                        : "Don't have an account? Sign up"}
+                    </button>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        className="text-sm text-gray-400 hover:text-gray-300 transition-colors"
+                      >
+                        Forgot your password?
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
