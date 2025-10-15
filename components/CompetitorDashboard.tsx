@@ -49,9 +49,7 @@ interface Score {
   verified?: boolean; // Whether the score is verified
   notes?: string;
   workoutName?: string;
-  event?: {
-    name: string;
-  };
+  event?: EventWithScores; // Event context for verification
 }
 
 interface EventWithScores {
@@ -123,7 +121,25 @@ export default function CompetitorDashboard() {
         const allScoresResponse = await api
           .get('/api/user/all-scores')
           .catch(() => ({ success: false, data: [] }));
-        const allScores: Score[] = allScoresResponse.success ? allScoresResponse.data : [];
+        const personalScores: Score[] = allScoresResponse.success ? allScoresResponse.data : [];
+
+        // Fetch user's events with scores (like public profile does)
+        const userEventsResponse = await api
+          .get('/api/user/events')
+          .catch(() => []);
+        const userEvents: EventWithScores[] = userEventsResponse || [];
+
+        // Flatten event scores into activity scores, attaching event info (like public profile)
+        type ScoreWithEvent = Score & { event?: EventWithScores; testId?: string };
+        const eventActivityScores: ScoreWithEvent[] = [];
+        userEvents.forEach((event: EventWithScores) => {
+          (event.scores || []).forEach((score: ScoreWithEvent) => {
+            eventActivityScores.push({ ...score, event });
+          });
+        });
+
+        // Combine with personal scores
+        const allScores: ScoreWithEvent[] = [...eventActivityScores, ...personalScores];
 
         // Sort by submission date (most recent first) and take the last 50 for the graph
         const sortedScores = allScores
@@ -177,18 +193,57 @@ export default function CompetitorDashboard() {
 
         setRecentScores(sortedScores);
 
-        // Calculate verified score (sum of verified scores only)
-        // A score is considered verified if it's from an event OR has verified flag set to true
-        const verifiedScores = allScores.filter((score) => score.eventId || score.verified);
-        const verified = verifiedScores.reduce(
-          (sum, score) => sum + (score.calculatedScore || 0),
-          0,
-        );
-        setVerifiedScore(verified);
+        // Calculate verified and total scores using the same logic as public profile
+        // Only include canonical event types (all EVENT_TYPES) for overall scoring
+        const canonicalEventIds = EVENT_TYPES.map(type => type.id);
+        const canonicalScores = allScores.filter(score => {
+          const eventId = score.testId ?? score.activityId;
+          return canonicalEventIds.includes(eventId);
+        });
 
-        // Calculate total score (sum of all calculated scores - both verified and unverified)
-        const total = allScores.reduce((sum, score) => sum + (score.calculatedScore || 0), 0);
+        // Calculate best scores for each canonical event type
+        const bestScoresByType: Record<string, number> = {};
+        const bestVerifiedScoresByType: Record<string, number> = {};
+
+        EVENT_TYPES.forEach((type) => {
+          const scoresForType = canonicalScores.filter((s) => (s.testId ?? s.activityId) === type.id);
+
+          // All scores: best of verified or unverified
+          // A score is verified if it's from an event (has event property) OR has verified flag set to true
+          const verifiedScores = scoresForType.filter((s) => s.event || s.verified);
+          const unverifiedScores = scoresForType.filter((s) => !s.event && !s.verified);
+
+          let bestVerified = verifiedScores[0];
+          if (verifiedScores.length > 0) {
+            bestVerified = verifiedScores.reduce((prev, curr) =>
+              curr.calculatedScore > prev.calculatedScore ? curr : prev,
+            );
+          }
+
+          let bestUnverified = unverifiedScores[0];
+          if (unverifiedScores.length > 0) {
+            bestUnverified = unverifiedScores.reduce((prev, curr) =>
+              curr.calculatedScore > prev.calculatedScore ? curr : prev,
+            );
+          }
+
+          const best = bestVerified || bestUnverified;
+          if (best) {
+            bestScoresByType[type.id] = best.calculatedScore;
+          }
+
+          // Only verified scores
+          if (bestVerified) {
+            bestVerifiedScoresByType[type.id] = bestVerified.calculatedScore;
+          }
+        });
+
+        // Calculate totals
+        const total = Object.values(bestScoresByType).reduce((sum, score) => sum + score, 0);
+        const verified = Object.values(bestVerifiedScoresByType).reduce((sum, score) => sum + score, 0);
+
         setTotalScore(total);
+        setVerifiedScore(verified);
       } catch (error: unknown) {
         console.error('Error fetching data:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
@@ -340,25 +395,25 @@ export default function CompetitorDashboard() {
             </div>
           </div>
           <div className="text-right space-y-3">
-            <div>
+            <div className="flex flex-col items-end">
               <p className="text-white font-medium text-base mb-1">Verified Score</p>
               {isLoadingScores ? (
-                <div className="bg-green-900/30 border border-green-700/50 px-4 py-2 rounded-lg">
+                <div className="bg-green-900/30 border border-green-700/50 px-3 py-2 rounded-lg w-20">
                   <div className="h-6 bg-gray-700 rounded animate-pulse"></div>
                 </div>
               ) : (
-                <div className="bg-green-900/30 border border-green-700/50 px-4 py-2 rounded-lg">
+                <div className="bg-green-900/30 border border-green-700/50 px-3 py-2 rounded-lg w-20">
                   <span className="text-green-400 font-bold">
-                    {verifiedScore.toLocaleString()} Pts
+                    {verifiedScore.toLocaleString()}
                   </span>
                 </div>
               )}
             </div>
-            <div>
+            <div className="flex flex-col items-end">
               <p className="text-white font-medium text-base mb-1">Total Score</p>
               {isLoadingScores ? (
                 <div
-                  className="px-4 py-2 rounded-lg"
+                  className="px-3 py-2 rounded-lg w-20"
                   style={{
                     background:
                       'linear-gradient(90deg, #E5965E 0%, #F26004 35.58%, #C10901 67.79%, #240100 100%)',
@@ -368,13 +423,13 @@ export default function CompetitorDashboard() {
                 </div>
               ) : (
                 <div
-                  className="px-4 py-2 rounded-lg"
+                  className="px-3 py-2 rounded-lg w-20"
                   style={{
                     background:
                       'linear-gradient(90deg, #E5965E 0%, #F26004 35.58%, #C10901 67.79%, #240100 100%)',
                   }}
                 >
-                  <span className="text-white font-bold">{totalScore.toLocaleString()} Pts</span>
+                  <span className="text-white font-bold">{totalScore.toLocaleString()}</span>
                 </div>
               )}
             </div>
@@ -721,9 +776,8 @@ export default function CompetitorDashboard() {
             >
               <h2 className="text-white text-2xl font-bold">Performance Over Time</h2>
               <FiChevronDown
-                className={`w-6 h-6 text-white transition-transform duration-200 ${
-                  isPerformanceGraphExpanded ? 'rotate-180' : ''
-                }`}
+                className={`w-6 h-6 text-white transition-transform duration-200 ${isPerformanceGraphExpanded ? 'rotate-180' : ''
+                  }`}
               />
             </button>
             {isPerformanceGraphExpanded && (
@@ -752,9 +806,8 @@ export default function CompetitorDashboard() {
             >
               <h2 className="text-white text-2xl font-bold">Score History</h2>
               <FiChevronDown
-                className={`w-6 h-6 text-white transition-transform duration-200 ${
-                  isScoreHistoryExpanded ? 'rotate-180' : ''
-                }`}
+                className={`w-6 h-6 text-white transition-transform duration-200 ${isScoreHistoryExpanded ? 'rotate-180' : ''
+                  }`}
               />
             </button>
             {isScoreHistoryExpanded && (
@@ -795,11 +848,10 @@ export default function CompetitorDashboard() {
                                   )}
                                   {/* Verification Status Badge */}
                                   <span
-                                    className={`px-2 py-1 text-xs rounded font-medium flex items-center space-x-1 ${
-                                      isVerified
-                                        ? 'bg-green-500/20 text-green-400'
-                                        : 'bg-gray-500/20 text-gray-400'
-                                    }`}
+                                    className={`px-2 py-1 text-xs rounded font-medium flex items-center space-x-1 ${isVerified
+                                      ? 'bg-green-500/20 text-green-400'
+                                      : 'bg-gray-500/20 text-gray-400'
+                                      }`}
                                   >
                                     {isVerified ? (
                                       <>
