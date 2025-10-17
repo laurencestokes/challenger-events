@@ -7,6 +7,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/contexts/AuthContext';
+import { TeamHeaderSkeleton, TeamMembersListSkeleton } from '@/components/SkeletonLoaders';
+import { TeamInvitation } from '@/lib/firestore';
 
 interface TeamMember {
   id: string;
@@ -40,6 +42,7 @@ export default function TeamDetailPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [isInviting, setIsInviting] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState('');
+  const [inviteError, setInviteError] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{
     type: 'remove' | 'promote' | 'delete';
@@ -47,6 +50,12 @@ export default function TeamDetailPage() {
     memberName: string;
   } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [pendingInvitations, setPendingInvitations] = useState<TeamInvitation[]>([]);
+  const [isLoadingInvitations, setIsLoadingInvitations] = useState(false);
 
   const fetchTeamDetails = useCallback(async () => {
     try {
@@ -63,11 +72,45 @@ export default function TeamDetailPage() {
     }
   }, [params.id]);
 
+  const fetchPendingInvitations = useCallback(async () => {
+    // Check if current user is captain
+    const currentUserMember =
+      user && !authLoading
+        ? members.find((member) => member.userId === user.id || member.user?.email === user.email)
+        : null;
+    const userIsCaptain = currentUserMember?.role === 'CAPTAIN';
+
+    if (!userIsCaptain) return; // Only captains can see pending invitations
+
+    try {
+      setIsLoadingInvitations(true);
+      const response = await api.get(`/api/teams/${params.id}/invitations/pending`);
+      setPendingInvitations(response.invitations || []);
+    } catch (error: unknown) {
+      console.error('Error fetching pending invitations:', error);
+    } finally {
+      setIsLoadingInvitations(false);
+    }
+  }, [params.id, user, authLoading, members]);
+
   useEffect(() => {
     if (params.id) {
       fetchTeamDetails();
     }
   }, [params.id, fetchTeamDetails]);
+
+  useEffect(() => {
+    if (params.id && user && !authLoading && members.length > 0) {
+      const currentUserMember = members.find(
+        (member) => member.userId === user.id || member.user?.email === user.email,
+      );
+      const userIsCaptain = currentUserMember?.role === 'CAPTAIN';
+
+      if (userIsCaptain) {
+        fetchPendingInvitations();
+      }
+    }
+  }, [params.id, user, authLoading, members, fetchPendingInvitations]);
 
   const handleInviteUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +118,7 @@ export default function TeamDetailPage() {
 
     try {
       setIsInviting(true);
+      setInviteError(''); // Clear any previous errors
       const response = await api.post(`/api/teams/${params.id}/invite`, {
         email: inviteEmail.trim(),
       });
@@ -83,14 +127,46 @@ export default function TeamDetailPage() {
         `Invitation email sent to ${inviteEmail}! The recipient can also use code: ${response.invitation.code}`,
       );
       setInviteEmail('');
-      setShowInviteModal(false);
 
-      // Clear success message after 5 seconds
-      setTimeout(() => setInviteSuccess(''), 5000);
+      // Refresh pending invitations
+      fetchPendingInvitations();
+
+      // Clear success message and close modal after 3 seconds
+      setTimeout(() => {
+        setInviteSuccess('');
+        setShowInviteModal(false);
+      }, 3000);
     } catch (error: unknown) {
       console.error('Error sending invitation:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to send invitation';
-      setError(errorMessage);
+
+      // Handle API error responses
+      if (error && typeof error === 'object' && 'response' in error) {
+        const apiError = error as {
+          response: { data: { error: string; existingInvitation?: { code: string; expiresInDays: number } } };
+        };
+        const errorData = apiError.response.data;
+
+        if (errorData.error === 'A pending invitation already exists for this email address') {
+          // Show specific message for duplicate invitations
+          const existingCode = errorData.existingInvitation?.code;
+          const expiresInDays = errorData.existingInvitation?.expiresInDays;
+
+          let message = `A pending invitation already exists for ${inviteEmail}.`;
+          if (existingCode) {
+            message += ` Use code: ${existingCode}`;
+          }
+          if (expiresInDays !== null && (expiresInDays as number) > 0) {
+            message += ` (Expires in ${expiresInDays} day${expiresInDays === 1 ? '' : 's'})`;
+          }
+
+          setInviteError(message);
+        } else {
+          setInviteError(errorData.error || 'Failed to send invitation');
+        }
+      } else {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to send invitation';
+        setInviteError(errorMessage);
+      }
     } finally {
       setIsInviting(false);
     }
@@ -185,12 +261,68 @@ export default function TeamDetailPage() {
     }
   };
 
+  const handleEditTeam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editName.trim()) return;
+
+    try {
+      setIsEditing(true);
+      await api.patch(`/api/teams/${params.id}`, {
+        name: editName.trim(),
+        description: editDescription.trim() || null,
+      });
+
+      setShowEditModal(false);
+      setEditName('');
+      setEditDescription('');
+      fetchTeamDetails(); // Refresh the team data
+    } catch (error: unknown) {
+      console.error('Error updating team:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update team';
+      setError(errorMessage);
+    } finally {
+      setIsEditing(false);
+    }
+  };
+
+  const openEditModal = () => {
+    if (team) {
+      setEditName(team.name);
+      setEditDescription(team.description || '');
+      setShowEditModal(true);
+    }
+  };
+
+  const openInviteModal = () => {
+    setInviteError(''); // Clear any previous errors
+    setShowInviteModal(true);
+  };
+
+  const closeInviteModal = () => {
+    setInviteError(''); // Clear any errors when closing
+    setInviteSuccess(''); // Clear any success messages when closing
+    setShowInviteModal(false);
+  };
+
   const formatDate = (date: Date | string | unknown) => {
     try {
-      const dateObj = date instanceof Date ? date : new Date(date as string | number);
+      let dateObj: Date;
+
+      // Handle Firebase timestamps
+      if (date && typeof date === 'object' && 'toDate' in date) {
+        dateObj = (date as { toDate: () => Date }).toDate();
+      } else if (date && typeof date === 'object' && 'seconds' in date) {
+        dateObj = new Date((date as { seconds: number }).seconds * 1000);
+      } else if (date instanceof Date) {
+        dateObj = date;
+      } else {
+        dateObj = new Date(date as string | number);
+      }
+
       if (isNaN(dateObj.getTime())) {
         return 'Invalid date';
       }
+
       return dateObj.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
@@ -212,15 +344,8 @@ export default function TeamDetailPage() {
     }
   };
 
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case 'CAPTAIN':
-        return 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200';
-      case 'MEMBER':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
-    }
+  const formatMemberCount = (count: number) => {
+    return count === 1 ? '1 member' : `${count} members`;
   };
 
   // Check if current user is the captain
@@ -230,30 +355,18 @@ export default function TeamDetailPage() {
       : null;
   const isCaptain = currentUserMember?.role === 'CAPTAIN';
 
-  // Debug logging for troubleshooting
-  if (user && !authLoading && members.length > 0) {
-    console.log('Current user:', { id: user.id, email: user.email });
-    console.log(
-      'Team members:',
-      members.map((m) => ({ userId: m.userId, email: m.user?.email, role: m.role })),
-    );
-    console.log('Current user member:', currentUserMember);
-    console.log('Is captain:', isCaptain);
-  }
-
   if (isLoading || authLoading) {
     return (
       <ProtectedRoute>
-        <div className="bg-secondary-50 dark:bg-secondary-900 flex flex-col">
+        <div
+          className="bg-gray-50 dark:bg-gray-900 flex flex-col min-h-screen"
+          style={{ backgroundColor: '#0F0F0F' }}
+        >
           <Header />
-          <div className="flex-1">
-            <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-              <div className="px-4 py-6 sm:px-0">
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600 dark:text-gray-400">Loading team details...</p>
-                </div>
-              </div>
+          <div className="flex-1 flex flex-col">
+            <div className="container mx-auto px-4 py-8 flex-1">
+              <TeamHeaderSkeleton />
+              <TeamMembersListSkeleton />
             </div>
           </div>
           <Footer />
@@ -265,17 +378,45 @@ export default function TeamDetailPage() {
   if (error) {
     return (
       <ProtectedRoute>
-        <div className="bg-secondary-50 dark:bg-secondary-900 flex flex-col">
+        <div
+          className="bg-gray-50 dark:bg-gray-900 flex flex-col"
+          style={{ backgroundColor: '#0F0F0F' }}
+        >
           <Header />
           <div className="flex-1">
-            <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-              <div className="px-4 py-6 sm:px-0">
-                <div className="bg-error-100 border border-error-400 text-error-700 px-4 py-3 rounded">
-                  {error}
-                </div>
+            <div className="container mx-auto px-4 py-8">
+              <div className="bg-red-900/20 border border-red-700/50 text-red-400 px-4 py-3 rounded-lg">
+                {error}
+              </div>
+              <button
+                onClick={() => router.push('/teams')}
+                className="mt-4 px-4 py-2 text-sm font-medium text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-600"
+              >
+                Back to Teams
+              </button>
+            </div>
+          </div>
+          <Footer />
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  if (!team) {
+    return (
+      <ProtectedRoute>
+        <div
+          className="bg-gray-50 dark:bg-gray-900 flex flex-col"
+          style={{ backgroundColor: '#0F0F0F' }}
+        >
+          <Header />
+          <div className="flex-1">
+            <div className="container mx-auto px-4 py-8">
+              <div className="text-center py-8">
+                <p className="text-gray-400">Team not found</p>
                 <button
                   onClick={() => router.push('/teams')}
-                  className="mt-4 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                  className="mt-4 px-4 py-2 text-sm font-medium text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-600"
                 >
                   Back to Teams
                 </button>
@@ -288,68 +429,55 @@ export default function TeamDetailPage() {
     );
   }
 
-  if (!team) {
-    return (
-      <ProtectedRoute>
-        <div className="bg-secondary-50 dark:bg-secondary-900 flex flex-col">
-          <Header />
-          <div className="flex-1">
-            <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-              <div className="px-4 py-6 sm:px-0">
-                <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400">Team not found</p>
-                  <button
-                    onClick={() => router.push('/teams')}
-                    className="mt-4 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
-                  >
-                    Back to Teams
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <Footer />
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
   return (
     <ProtectedRoute>
-      <div className="bg-secondary-50 dark:bg-secondary-900 flex flex-col">
+      <div
+        className="bg-gray-50 dark:bg-gray-900 flex flex-col min-h-screen"
+        style={{ backgroundColor: '#0F0F0F' }}
+      >
         <Header />
-        <div className="flex-1">
-          <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <div className="px-4 py-6 sm:px-0">
-              {/* Header */}
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-4">
-                    <button
-                      onClick={() => router.push('/teams')}
-                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                    >
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 19l-7-7 7-7"
-                        />
-                      </svg>
-                    </button>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                      {team.name}
-                    </h1>
-                  </div>
-                  {user && members.some((member) => member.userId === user.id) && (
-                    <div className="flex items-center space-x-2">
-                      {isCaptain && (
+        <div className="flex-1 flex flex-col">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1">
+            {/* Breadcrumbs */}
+            <nav
+              className="mb-6 text-sm text-gray-400 flex items-center space-x-2 overflow-hidden"
+              aria-label="Breadcrumb"
+            >
+              <button
+                onClick={() => router.push('/teams')}
+                className="hover:text-white transition-colors whitespace-nowrap"
+              >
+                Team Management
+              </button>
+              <span className="flex-shrink-0">/</span>
+              <span className="text-white font-semibold truncate">{team.name}</span>
+            </nav>
+
+            {/* Header */}
+            <div className="mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
+                <div className="flex items-center space-x-4">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white break-words">
+                    {team.name}
+                  </h1>
+                </div>
+                {user && members.some((member) => member.userId === user.id) && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {isCaptain && (
+                      <>
+                        <button
+                          onClick={openEditModal}
+                          className="px-3 sm:px-4 py-2 text-sm font-medium text-white rounded-md whitespace-nowrap"
+                          style={{ backgroundColor: '#4682b4' }}
+                          onMouseEnter={(e) =>
+                            ((e.target as unknown as HTMLElement).style.backgroundColor = '#5a8bc4')
+                          }
+                          onMouseLeave={(e) =>
+                            ((e.target as unknown as HTMLElement).style.backgroundColor = '#4682b4')
+                          }
+                        >
+                          Edit Team
+                        </button>
                         <button
                           onClick={() => {
                             setConfirmAction({
@@ -359,274 +487,417 @@ export default function TeamDetailPage() {
                             });
                             setShowConfirmModal(true);
                           }}
-                          className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
+                          className="px-3 sm:px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md whitespace-nowrap"
                         >
                           Delete Team
                         </button>
-                      )}
-                      <button
-                        onClick={() => {
-                          setConfirmAction({
-                            type: 'remove',
-                            memberId: '', // Will be set in handleLeaveTeam
-                            memberName: 'the team',
-                          });
-                          setShowConfirmModal(true);
-                        }}
-                        className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 border border-red-300 dark:border-red-600 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
-                      >
-                        Leave Team
-                      </button>
-                    </div>
-                  )}
-                </div>
-                {team.description && (
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">{team.description}</p>
+                      </>
+                    )}
+                    <button
+                      onClick={() => {
+                        setConfirmAction({
+                          type: 'remove',
+                          memberId: '', // Will be set in handleLeaveTeam
+                          memberName: 'the team',
+                        });
+                        setShowConfirmModal(true);
+                      }}
+                      className="px-3 sm:px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-600 rounded-md hover:bg-red-900/20 whitespace-nowrap"
+                    >
+                      Leave Team
+                    </button>
+                  </div>
                 )}
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Created on {formatDate(team.createdAt)}
-                </p>
+              </div>
+              {team.description && <p className="text-gray-400 mb-4">{team.description}</p>}
+              <p className="text-sm text-gray-500">Created on {formatDate(team.createdAt)}</p>
+            </div>
+
+            {/* Team Members */}
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-gray-700/50">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+                <h2 className="text-lg sm:text-xl font-semibold text-white">
+                  Team Members ({formatMemberCount(members.length)})
+                </h2>
+                {isCaptain && (
+                  <button
+                    onClick={openInviteModal}
+                    className="px-3 sm:px-4 py-2 text-sm font-medium text-white rounded-md whitespace-nowrap self-start sm:self-auto"
+                    style={{ backgroundColor: '#4682b4' }}
+                    onMouseEnter={(e) =>
+                      ((e.target as unknown as HTMLElement).style.backgroundColor = '#5a8bc4')
+                    }
+                    onMouseLeave={(e) =>
+                      ((e.target as unknown as HTMLElement).style.backgroundColor = '#4682b4')
+                    }
+                  >
+                    Invite User
+                  </button>
+                )}
               </div>
 
-              {/* Team Members */}
-              <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Team Members ({members.length})
-                  </h2>
-                  {isCaptain && (
-                    <button
-                      onClick={() => setShowInviteModal(true)}
-                      className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md"
+              {members.length === 0 ? (
+                <p className="text-gray-400 text-center py-8">No members found</p>
+              ) : (
+                <div className="space-y-4">
+                  {members.map((member) => (
+                    <div
+                      key={member.id}
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-gray-700/50 rounded-lg bg-gray-900/50 gap-4"
                     >
-                      Invite User
-                    </button>
-                  )}
-                </div>
-
-                {members.length === 0 ? (
-                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-                    No members found
-                  </p>
-                ) : (
-                  <div className="space-y-4">
-                    {members.map((member) => (
-                      <div
-                        key={member.id}
-                        className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div className="flex-shrink-0">
-                            <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
-                              <span className="text-primary-600 dark:text-primary-400 font-medium">
-                                {member.user?.name?.charAt(0) ||
-                                  member.user?.email?.charAt(0) ||
-                                  '?'}
-                              </span>
-                            </div>
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-gray-900 dark:text-white">
-                              {member.user?.name || 'Unknown User'}
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              {member.user?.email}
-                            </p>
-                            <p className="text-xs text-gray-400 dark:text-gray-500">
-                              Joined {formatDate(member.joinedAt)}
-                            </p>
+                      <div className="flex items-center space-x-4 min-w-0 flex-1">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
+                            <span className="text-white font-medium">
+                              {member.user?.name?.charAt(0) || member.user?.email?.charAt(0) || '?'}
+                            </span>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-3">
-                          {/* Captain-only actions */}
-                          {isCaptain && member.userId !== user?.id && (
-                            <div className="flex items-center space-x-2">
-                              {member.role === 'MEMBER' && (
-                                <button
-                                  onClick={() => {
-                                    setConfirmAction({
-                                      type: 'promote',
-                                      memberId: member.id,
-                                      memberName:
-                                        member.user?.name || member.user?.email || 'Unknown User',
-                                    });
-                                    setShowConfirmModal(true);
-                                  }}
-                                  className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
-                                >
-                                  Promote to Captain
-                                </button>
-                              )}
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-medium text-white truncate">
+                            {member.user?.name || 'Unknown User'}
+                          </h3>
+                          <p className="text-sm text-gray-400 truncate">{member.user?.email}</p>
+                          <p className="text-xs text-gray-500">
+                            Joined {formatDate(member.joinedAt)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                        {/* Captain-only actions */}
+                        {isCaptain && member.userId !== user?.id && (
+                          <div className="flex flex-wrap items-center gap-2">
+                            {member.role === 'MEMBER' && (
                               <button
                                 onClick={() => {
                                   setConfirmAction({
-                                    type: 'remove',
+                                    type: 'promote',
                                     memberId: member.id,
                                     memberName:
                                       member.user?.name || member.user?.email || 'Unknown User',
                                   });
                                   setShowConfirmModal(true);
                                 }}
-                                className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                className="text-sm text-primary-400 hover:text-primary-300 whitespace-nowrap"
                               >
-                                Remove
+                                Promote to Captain
                               </button>
-                            </div>
-                          )}
+                            )}
+                            <button
+                              onClick={() => {
+                                setConfirmAction({
+                                  type: 'remove',
+                                  memberId: member.id,
+                                  memberName:
+                                    member.user?.name || member.user?.email || 'Unknown User',
+                                });
+                                setShowConfirmModal(true);
+                              }}
+                              className="text-sm text-red-400 hover:text-red-300 whitespace-nowrap"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        )}
 
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(member.role)}`}
-                          >
-                            {getRoleDisplayName(member.role)}
-                          </span>
-                        </div>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap self-start sm:self-auto ${member.role === 'CAPTAIN'
+                            ? 'bg-primary-500/20 text-primary-400'
+                            : 'bg-gray-500/20 text-gray-400'
+                            }`}
+                        >
+                          {getRoleDisplayName(member.role)}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Success Message */}
-              {inviteSuccess && (
-                <div className="mt-4 p-4 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <svg
-                      className="w-5 h-5 text-success-600 dark:text-success-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span className="text-sm font-medium text-success-800 dark:text-success-200">
-                      {inviteSuccess}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Invite User Modal */}
-              {showInviteModal && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-                  <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
-                    <div className="mt-3">
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        Invite User to Team
-                      </h3>
-                      <form onSubmit={handleInviteUser} className="space-y-4">
-                        <div>
-                          <label
-                            htmlFor="inviteEmail"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                          >
-                            Email Address *
-                          </label>
-                          <input
-                            type="email"
-                            id="inviteEmail"
-                            value={inviteEmail}
-                            onChange={(e) => setInviteEmail(e.target.value)}
-                            required
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
-                            placeholder="Enter email address"
-                          />
-                        </div>
-                        <div className="flex justify-end space-x-3">
-                          <button
-                            type="button"
-                            onClick={() => setShowInviteModal(false)}
-                            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="submit"
-                            disabled={isInviting}
-                            className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
-                          >
-                            {isInviting ? 'Sending...' : 'Send Invitation'}
-                          </button>
-                        </div>
-                      </form>
                     </div>
-                  </div>
+                  ))}
                 </div>
               )}
+            </div>
 
-              {/* Confirmation Modal */}
-              {showConfirmModal && confirmAction && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-                  <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
-                    <div className="mt-3">
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        {confirmAction.type === 'delete'
-                          ? 'Delete Team'
-                          : confirmAction.type === 'remove' &&
-                              confirmAction.memberName === 'the team'
-                            ? 'Leave Team'
-                            : confirmAction.type === 'remove'
-                              ? 'Remove Member'
-                              : 'Promote to Captain'}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400 mb-6">
-                        {confirmAction.type === 'delete'
-                          ? 'Are you sure you want to delete this team? This will permanently delete the team and remove all members. This action cannot be undone.'
-                          : confirmAction.type === 'remove' &&
-                              confirmAction.memberName === 'the team'
-                            ? 'Are you sure you want to leave this team? This action cannot be undone.'
-                            : confirmAction.type === 'remove'
-                              ? `Are you sure you want to remove ${confirmAction.memberName} from the team? This action cannot be undone.`
-                              : `Are you sure you want to promote ${confirmAction.memberName} to captain? You will become a regular member.`}
+            {/* Pending Invitations Section - Only for Captains */}
+            {isCaptain && (
+              <div className="mt-8">
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-gray-700/50">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-lg sm:text-xl font-semibold text-white">
+                      Pending Invitations
+                      {pendingInvitations.length > 0 && (
+                        <span className="text-sm text-gray-400 ml-2">
+                          ({pendingInvitations.length})
+                        </span>
+                      )}
+                    </h2>
+                  </div>
+
+                  {isLoadingInvitations ? (
+                    <div className="space-y-4">
+                      {[...Array(2)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between p-4 border border-gray-700/50 rounded-lg bg-gray-900/50 animate-pulse"
+                        >
+                          <div className="flex items-center space-x-4">
+                            <div className="w-10 h-10 bg-gray-700 rounded-full"></div>
+                            <div>
+                              <div className="h-4 bg-gray-700 rounded w-32 mb-2"></div>
+                              <div className="h-3 bg-gray-700 rounded w-48"></div>
+                            </div>
+                          </div>
+                          <div className="h-6 bg-gray-700 rounded w-16"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : pendingInvitations.length > 0 ? (
+                    <div className="space-y-4">
+                      {pendingInvitations.map((invitation) => (
+                        <div
+                          key={invitation.id}
+                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-gray-700/50 rounded-lg bg-gray-900/50 gap-4"
+                        >
+                          <div className="flex items-center space-x-4 min-w-0 flex-1">
+                            <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-white font-medium">
+                                {invitation.email?.charAt(0)?.toUpperCase() || '?'}
+                              </span>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-medium text-white truncate">
+                                {invitation.email}
+                              </h3>
+                              <p className="text-sm text-gray-400">
+                                Invited {formatDate(invitation.createdAt)}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 self-start sm:self-auto">
+                            <span className="px-2 py-1 text-xs bg-yellow-500/20 text-yellow-400 rounded-full whitespace-nowrap">
+                              Pending
+                            </span>
+                            <span className="text-xs text-gray-500 whitespace-nowrap">
+                              Code: {invitation.code}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400 mb-2">No pending invitations</p>
+                      <p className="text-gray-500 text-sm">
+                        Invite users to join your team using the "Invite User" button above
                       </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Invite User Modal */}
+            {showInviteModal && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+                <div className="relative top-20 mx-auto p-5 border border-gray-700/50 w-96 shadow-lg rounded-2xl bg-gray-800">
+                  <div className="mt-3">
+                    <h3 className="text-lg font-medium text-white mb-4">Invite User to Team</h3>
+                    <form onSubmit={handleInviteUser} className="space-y-4">
+                      <div>
+                        <label
+                          htmlFor="inviteEmail"
+                          className="block text-sm font-medium text-gray-300"
+                        >
+                          Email Address *
+                        </label>
+                        <input
+                          type="email"
+                          id="inviteEmail"
+                          value={inviteEmail}
+                          onChange={(e) => setInviteEmail(e.target.value)}
+                          required
+                          className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-700"
+                          placeholder="Enter email address"
+                        />
+                      </div>
+
+                      {/* Success Message */}
+                      {inviteSuccess && (
+                        <div className="p-3 bg-green-900/50 border border-green-700 rounded-md">
+                          <div className="flex items-center space-x-2">
+                            <svg
+                              className="w-4 h-4 text-green-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                            <p className="text-sm text-green-200">{inviteSuccess}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Error Message */}
+                      {inviteError && (
+                        <div className="p-3 bg-red-900/50 border border-red-700 rounded-md">
+                          <p className="text-sm text-red-200">{inviteError}</p>
+                        </div>
+                      )}
+
                       <div className="flex justify-end space-x-3">
                         <button
                           type="button"
-                          onClick={() => {
-                            setShowConfirmModal(false);
-                            setConfirmAction(null);
-                          }}
-                          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                          onClick={closeInviteModal}
+                          className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-600"
                         >
                           Cancel
                         </button>
                         <button
-                          onClick={
-                            confirmAction.type === 'delete'
-                              ? handleDeleteTeam
-                              : confirmAction.type === 'remove' &&
-                                  confirmAction.memberName === 'the team'
-                                ? handleLeaveTeam
-                                : confirmAction.type === 'remove'
-                                  ? handleRemoveMember
-                                  : handlePromoteMember
-                          }
-                          disabled={isProcessing}
-                          className={`px-4 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed ${
-                            confirmAction.type === 'delete' || confirmAction.type === 'remove'
-                              ? 'bg-red-600 hover:bg-red-700'
-                              : 'bg-primary-600 hover:bg-primary-700'
-                          }`}
+                          type="submit"
+                          disabled={isInviting}
+                          className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
                         >
-                          {isProcessing
-                            ? 'Processing...'
-                            : confirmAction.type === 'delete'
-                              ? 'Delete Team'
-                              : confirmAction.type === 'remove' &&
-                                  confirmAction.memberName === 'the team'
-                                ? 'Leave Team'
-                                : confirmAction.type === 'remove'
-                                  ? 'Remove'
-                                  : 'Promote'}
+                          {isInviting ? 'Sending...' : 'Send Invitation'}
                         </button>
                       </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Confirmation Modal */}
+            {showConfirmModal && confirmAction && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+                <div className="relative top-20 mx-auto p-5 border border-gray-700/50 w-96 shadow-lg rounded-2xl bg-gray-800">
+                  <div className="mt-3">
+                    <h3 className="text-lg font-medium text-white mb-4">
+                      {confirmAction.type === 'delete'
+                        ? 'Delete Team'
+                        : confirmAction.type === 'remove' && confirmAction.memberName === 'the team'
+                          ? 'Leave Team'
+                          : confirmAction.type === 'remove'
+                            ? 'Remove Member'
+                            : 'Promote to Captain'}
+                    </h3>
+                    <p className="text-gray-400 mb-6">
+                      {confirmAction.type === 'delete'
+                        ? 'Are you sure you want to delete this team? This will permanently delete the team and remove all members. This action cannot be undone.'
+                        : confirmAction.type === 'remove' && confirmAction.memberName === 'the team'
+                          ? 'Are you sure you want to leave this team? This action cannot be undone.'
+                          : confirmAction.type === 'remove'
+                            ? `Are you sure you want to remove ${confirmAction.memberName} from the team? This action cannot be undone.`
+                            : `Are you sure you want to promote ${confirmAction.memberName} to captain? You will become a regular member.`}
+                    </p>
+                    <div className="flex justify-end space-x-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowConfirmModal(false);
+                          setConfirmAction(null);
+                        }}
+                        className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-600"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={
+                          confirmAction.type === 'delete'
+                            ? handleDeleteTeam
+                            : confirmAction.type === 'remove' &&
+                              confirmAction.memberName === 'the team'
+                              ? handleLeaveTeam
+                              : confirmAction.type === 'remove'
+                                ? handleRemoveMember
+                                : handlePromoteMember
+                        }
+                        disabled={isProcessing}
+                        className={`px-4 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed ${confirmAction.type === 'delete' || confirmAction.type === 'remove'
+                          ? 'bg-red-600 hover:bg-red-700'
+                          : 'bg-primary-600 hover:bg-primary-700'
+                          }`}
+                      >
+                        {isProcessing
+                          ? 'Processing...'
+                          : confirmAction.type === 'delete'
+                            ? 'Delete Team'
+                            : confirmAction.type === 'remove' &&
+                              confirmAction.memberName === 'the team'
+                              ? 'Leave Team'
+                              : confirmAction.type === 'remove'
+                                ? 'Remove'
+                                : 'Promote'}
+                      </button>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* Edit Team Modal */}
+            {showEditModal && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+                <div className="relative top-20 mx-auto p-5 border border-gray-700/50 w-96 shadow-lg rounded-2xl bg-gray-800">
+                  <div className="mt-3">
+                    <h3 className="text-lg font-medium text-white mb-4">Edit Team</h3>
+                    <form onSubmit={handleEditTeam} className="space-y-4">
+                      <div>
+                        <label
+                          htmlFor="editName"
+                          className="block text-sm font-medium text-gray-300"
+                        >
+                          Team Name *
+                        </label>
+                        <input
+                          type="text"
+                          id="editName"
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          required
+                          className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-700"
+                          placeholder="Enter team name"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="editDescription"
+                          className="block text-sm font-medium text-gray-300"
+                        >
+                          Description
+                        </label>
+                        <textarea
+                          id="editDescription"
+                          value={editDescription}
+                          onChange={(e) => setEditDescription(e.target.value)}
+                          rows={3}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-700"
+                          placeholder="Enter team description (optional)"
+                        />
+                      </div>
+                      <div className="flex justify-end space-x-3">
+                        <button
+                          type="button"
+                          onClick={() => setShowEditModal(false)}
+                          className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-600"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isEditing}
+                          className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
+                        >
+                          {isEditing ? 'Saving...' : 'Save Changes'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <Footer />

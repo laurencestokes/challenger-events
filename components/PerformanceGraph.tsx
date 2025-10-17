@@ -181,14 +181,11 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
     if (!mounted || !svgRef.current || isLoading || scores.length === 0) return;
     if (!theme && !resolvedTheme) return;
 
-    console.log('Rendering chart with scores:', scores.length);
-
     // Detect dark mode using next-themes
     const isDark = theme === 'dark' || resolvedTheme === 'dark';
     const axisLabelColor = isDark ? '#E84C04' : '#334155'; // primary-500 or slate-700
     const axisTitleColor = isDark ? '#fff' : '#334155'; // white in dark mode, slate-700 in light
     const gridLineColor = isDark ? '#fff' : '#e5e7eb'; // white or gray-200
-    console.log('PerformanceGraph dark mode detected:', isDark);
 
     // Clear previous chart
     d3.select(svgRef.current).selectAll('*').remove();
@@ -225,8 +222,6 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
     const margin = { top: 20, right: 30, bottom: 60, left: 60 };
     const width = Math.max(containerWidth - margin.left - margin.right, 350); // Minimum width of 350px for mobile
     const height = 400 - margin.top - margin.bottom;
-
-    console.log('Chart dimensions:', { width, height, containerWidth });
 
     const svg = d3
       .select(svgRef.current)
@@ -511,8 +506,6 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
       .attr('fill', axisTitleColor)
       .style('fill', axisTitleColor)
       .text('Challenger Score');
-
-    console.log('Chart rendering complete');
   }, [
     scores,
     selectedActivity,

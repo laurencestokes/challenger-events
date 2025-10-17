@@ -53,20 +53,7 @@ export async function GET(request: NextRequest) {
       validInvitations.map(async (invitation) => {
         const team = await getTeam(invitation.teamId);
         const teamMembers = team ? await getTeamMembers(team.id) : [];
-        console.log('Team:', team?.name, 'Member count:', teamMembers.length);
-        console.log('Looking up inviter with ID:', invitation.invitedBy);
         const inviter = await getUserById(invitation.invitedBy);
-        console.log('Found inviter:', inviter);
-
-        console.log(
-          'Invitation:',
-          invitation.id,
-          'InvitedBy:',
-          invitation.invitedBy,
-          'Inviter:',
-          inviter,
-        );
-
         return {
           ...invitation,
           team: team
@@ -74,7 +61,9 @@ export async function GET(request: NextRequest) {
               id: team.id,
               name: team.name,
               description: team.description,
-              logoUrl: team.logoUrl,
+              logoUrl:
+                (team as unknown as { logoUrl: string }).logoUrl ??
+                '',
               memberCount: teamMembers.length,
             }
             : null,

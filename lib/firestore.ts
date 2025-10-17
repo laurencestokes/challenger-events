@@ -652,6 +652,13 @@ export const getTeamInvitationsByEmail = async (email: string) => {
   return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as TeamInvitation[];
 };
 
+export const getTeamInvitationsByTeamId = async (teamId: string) => {
+  const invitationsRef = collection(db, 'teamInvitations');
+  const q = query(invitationsRef, where('teamId', '==', teamId));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as TeamInvitation[];
+};
+
 export const updateTeamInvitation = async (
   invitationId: string,
   updates: Partial<TeamInvitation>,

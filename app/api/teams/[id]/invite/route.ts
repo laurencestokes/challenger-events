@@ -5,8 +5,10 @@ import {
   getTeamMembers,
   createTeamInvitation,
   generateInvitationCode,
+  getTeamInvitationsByTeamId,
 } from '@/lib/firestore';
 import { sendTeamInvitation } from '@/lib/email';
+import { convertFirestoreTimestamp } from '@/lib/utils';
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -57,6 +59,39 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     if (existingMember) {
       return NextResponse.json({ error: 'User is already a member of this team' }, { status: 400 });
+    }
+
+    // Check for existing pending invitations for this email and team
+    const existingInvitations = await getTeamInvitationsByTeamId(teamId);
+    const pendingInvitation = existingInvitations.find((invitation) => {
+      const now = new Date();
+      const expiresAt = convertFirestoreTimestamp(invitation.expiresAt);
+
+      if (!expiresAt) {
+        return false;
+      }
+
+      return invitation.email === email && invitation.status === 'PENDING' && expiresAt > now;
+    });
+
+    if (pendingInvitation) {
+      const expiresAt = convertFirestoreTimestamp(pendingInvitation.expiresAt);
+      const expiresIn = expiresAt
+        ? Math.ceil((expiresAt.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+        : null;
+
+      return NextResponse.json(
+        {
+          error: 'A pending invitation already exists for this email address',
+          existingInvitation: {
+            id: pendingInvitation.id,
+            code: pendingInvitation.code,
+            expiresAt: expiresAt?.toISOString(), // Convert to ISO string
+            expiresInDays: expiresIn,
+          },
+        },
+        { status: 400 },
+      );
     }
 
     // Generate invitation code

@@ -220,14 +220,6 @@ export default function TeamsPage() {
   const fetchPendingInvitations = async () => {
     try {
       const response = await api.get('/api/teams/invitations/pending');
-      console.log('Pending invitations response:', response);
-      console.log(
-        'Team member counts:',
-        response.invitations?.map((inv) => ({
-          teamName: inv.team?.name,
-          memberCount: inv.team?.memberCount,
-        })),
-      );
       setPendingInvitations(response.invitations || []);
     } catch (error) {
       console.error('Error fetching pending invitations:', error);
@@ -238,14 +230,13 @@ export default function TeamsPage() {
 
   const respondToInvitation = async (invitationId: string, action: 'accept' | 'decline') => {
     try {
-      const response = await api.post(`/api/teams/invitations/${invitationId}/respond`, { action });
-      console.log(`${action} response:`, response);
+      const _response = await api.post(`/api/teams/invitations/${invitationId}/respond`, { action });
       // Refresh both teams and invitations
       fetchTeams();
       fetchPendingInvitations();
     } catch (error) {
       console.error(`Error ${action}ing invitation:`, error);
-      // You could add a toast notification here to show the error to the user
+      // TODO: Add a toast notification here to show the error to the user
     }
   };
 
