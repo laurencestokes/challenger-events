@@ -532,15 +532,30 @@ export default function TeamsPage() {
                       </div>
                     </div>
                   ))}
+
+                  {/* Join Team by Code Box */}
+                  <button
+                    onClick={() => setIsJoinModalOpen(true)}
+                    className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 flex flex-col items-center justify-center border-2 border-dashed border-gray-600 hover:border-gray-500 transition-colors"
+                  >
+                    <FiUsers className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-gray-400 text-sm">Join Team by Code</span>
+                  </button>
                 </div>
               ) : (
                 <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
                   <div className="text-center py-8">
                     <FiUsers className="w-12 h-12 mx-auto mb-4 text-gray-400 opacity-50" />
                     <p className="text-gray-400 mb-4">No pending team invitations</p>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-gray-500 text-sm mb-6">
                       Team captains can invite you by email or you can join with a team code
                     </p>
+                    <button
+                      onClick={() => setIsJoinModalOpen(true)}
+                      className="inline-block px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
+                    >
+                      Join Team by Code
+                    </button>
                   </div>
                 </div>
               )}
