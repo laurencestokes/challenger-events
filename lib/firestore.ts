@@ -729,7 +729,7 @@ export const getUserTeams = async (userId: string) => {
   const querySnapshot = await getDocs(q);
 
   // Deduplicate team IDs to prevent duplicate teams in the list
-  const teamIds = [...new Set(querySnapshot.docs.map((doc) => doc.data().teamId))];
+  const teamIds = Array.from(new Set(querySnapshot.docs.map((doc) => doc.data().teamId)));
   const teams: Team[] = [];
 
   for (const teamId of teamIds) {
