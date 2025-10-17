@@ -255,10 +255,11 @@ export default function UserScoresPage() {
                             </span>
                             {/* Verification Status Badge */}
                             <span
-                              className={`px-2 py-1 text-xs rounded font-medium ${isVerified
+                              className={`px-2 py-1 text-xs rounded font-medium ${
+                                isVerified
                                   ? 'bg-green-500/20 text-green-400'
                                   : 'bg-gray-500/20 text-gray-400'
-                                }`}
+                              }`}
                             >
                               {isVerified ? 'Verified' : 'Unverified'}
                             </span>

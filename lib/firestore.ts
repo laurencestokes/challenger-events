@@ -177,6 +177,15 @@ export const getUserByUid = async (uid: string) => {
   return null;
 };
 
+export const getUserById = async (userId: string) => {
+  const userRef = doc(db, 'users', userId);
+  const userDoc = await getDoc(userRef);
+  if (userDoc.exists()) {
+    return { id: userDoc.id, ...userDoc.data() } as User;
+  }
+  return null;
+};
+
 export const getUserByProfileName = async (profileName: string) => {
   const usersRef = collection(db, 'users');
   const q = query(usersRef, where('profileName', '==', profileName), limit(1));
@@ -620,9 +629,25 @@ export const getTeamInvitationByCode = async (code: string) => {
   return null;
 };
 
+export const getTeamInvitation = async (invitationId: string) => {
+  const invitationRef = doc(db, 'teamInvitations', invitationId);
+  const invitationDoc = await getDoc(invitationRef);
+  if (invitationDoc.exists()) {
+    return { id: invitationDoc.id, ...invitationDoc.data() } as TeamInvitation;
+  }
+  return null;
+};
+
 export const getTeamInvitationsByTeam = async (teamId: string) => {
   const invitationsRef = collection(db, 'teamInvitations');
   const q = query(invitationsRef, where('teamId', '==', teamId));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as TeamInvitation[];
+};
+
+export const getTeamInvitationsByEmail = async (email: string) => {
+  const invitationsRef = collection(db, 'teamInvitations');
+  const q = query(invitationsRef, where('email', '==', email));
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as TeamInvitation[];
 };

@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     // Get teams that the user is a member of
     const userTeams = await getUserTeams(user.id);
 
-    // Get user's role in each team
+    // Get user's role in each team and member count
     const teamsWithUserRole = await Promise.all(
       userTeams.map(async (team) => {
         const teamMembers = await getTeamMembers(team.id);
@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
           ...team,
           userRole: userMember ? userMember.role : null,
           isMember: !!userMember,
+          memberCount: teamMembers.length,
         };
       }),
     );
