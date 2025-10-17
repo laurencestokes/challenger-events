@@ -4,13 +4,12 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserScores } from '@/lib/api-client';
 import { beautifyRawScore } from '@/utils/scoring';
-import { Card } from '@/components/ui/Card';
-import Input from '@/components/ui/Input';
-import LoadingSpinner from '@/components/LoadingSpinner';
 import { EVENT_TYPES } from '@/constants/eventTypes';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
+import { FiClock } from 'react-icons/fi';
+import { ScoresListSkeleton } from '@/components/SkeletonLoaders';
 
 interface Score {
   id: string;
@@ -150,161 +149,150 @@ export default function UserScoresPage() {
       return dateB - dateA;
     });
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-center items-center h-64">
-            <LoadingSpinner />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+    <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
       <Header />
-      <div className="flex-1">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-6xl mx-auto">
-            {/* Breadcrumbs */}
-            <nav
-              className="mb-6 text-sm text-gray-500 dark:text-gray-400 flex items-center space-x-2"
-              aria-label="Breadcrumb"
-            >
-              <Link href="/" className="hover:underline">
-                Home
-              </Link>
-              <span>/</span>
-              <Link href="/profile" className="hover:underline">
-                Profile
-              </Link>
-              <span>/</span>
-              <span className="text-gray-700 dark:text-gray-200 font-semibold">All Scores</span>
-            </nav>
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                All My Scores
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                View and search through all your submitted scores
-              </p>
-            </div>
+      <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          {/* Breadcrumbs */}
+          <nav
+            className="mb-6 text-sm text-gray-400 flex items-center space-x-2"
+            aria-label="Breadcrumb"
+          >
+            <Link href="/profile" className="hover:text-white transition-colors">
+              Profile
+            </Link>
+            <span>/</span>
+            <span className="text-white font-semibold">All Scores</span>
+          </nav>
 
-            {/* Filters */}
-            <div className="mb-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-4">
-              <div className="flex-1">
-                <Input
-                  type="text"
-                  placeholder="Search events, activities, or test IDs..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
-                />
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">All My Scores</h1>
+            <p className="text-gray-400">View and search through all your submitted scores</p>
+          </div>
+
+          {/* Filters */}
+          <div className="mb-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Search events, activities, or test IDs..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+            <div className="sm:w-48">
+              <select
+                value={activityFilter}
+                onChange={(e) => setActivityFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="">All Activities</option>
+                {presentEventTypes.map((et) => (
+                  <option key={et.id} value={et.id}>
+                    {et.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary-400">{scores.length}</div>
+                <div className="text-sm text-gray-400">Total Scores</div>
               </div>
-              <div className="sm:w-48">
-                <select
-                  value={activityFilter}
-                  onChange={(e) => setActivityFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">All Activities</option>
-                  {presentEventTypes.map((et) => (
-                    <option key={et.id} value={et.id}>
-                      {et.name}
-                    </option>
-                  ))}
-                </select>
+            </div>
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary-400">
+                  {canonicalActivities.length}
+                </div>
+                <div className="text-sm text-gray-400">Activities</div>
               </div>
             </div>
-
-            {/* Stats */}
-            <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Card className="p-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    {scores.length}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Scores</div>
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary-400">
+                  {Array.from(new Set(scores.map((score) => score.eventId))).length}
                 </div>
-              </Card>
-              <Card className="p-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                    {canonicalActivities.length}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Activities</div>
-                </div>
-              </Card>
-              <Card className="p-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                    {Array.from(new Set(scores.map((score) => score.eventId))).length}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Events</div>
-                </div>
-              </Card>
+                <div className="text-sm text-gray-400">Events</div>
+              </div>
             </div>
+          </div>
 
-            {/* Scores List */}
-            {filteredScores.length === 0 ? (
-              <Card className="p-8 text-center">
-                <div className="text-gray-500 dark:text-gray-400">
-                  {scores.length === 0 ? (
-                    <p>No scores found. Start participating in events to see your scores here!</p>
-                  ) : (
-                    <p>No scores match your current filters.</p>
-                  )}
-                </div>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {filteredScores.map((score) => (
-                  <Card key={score.id} className="p-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded font-semibold">
-                            {getCanonicalEventName(score)}
-                          </span>
-                          {score.eventName && (
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                              {score.eventName}
-                            </h3>
-                          )}
-                          {score.testId && (
-                            <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
-                              {score.testId}
+          {/* Scores List */}
+          {loading ? (
+            <ScoresListSkeleton />
+          ) : filteredScores.length === 0 ? (
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 text-center">
+              <div className="text-gray-400">
+                {scores.length === 0 ? (
+                  <p>No scores found. Start participating in events to see your scores here!</p>
+                ) : (
+                  <p>No scores match your current filters.</p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+              <div className="space-y-3">
+                {filteredScores.map((score) => {
+                  const isVerified = score.eventId; // Event scores are considered verified
+                  return (
+                    <div
+                      key={score.id}
+                      className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/30"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className="px-2 py-1 text-xs bg-primary-500/20 text-primary-400 rounded font-semibold">
+                              {getCanonicalEventName(score)}
                             </span>
-                          )}
-                        </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          {formatDate(score.timestamp)}
-                        </div>
-                      </div>
-                      <div className="mt-4 sm:mt-0 sm:ml-6 text-right">
-                        <div className="flex flex-col items-end">
-                          <div className="text-2xl font-bold text-primary-500 dark:text-primary-400 flex items-baseline">
-                            {score.calculatedScore.toFixed(1)}
-                            <span className="ml-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-                              Challenger Score
+                            {/* Verification Status Badge */}
+                            <span
+                              className={`px-2 py-1 text-xs rounded font-medium ${
+                                isVerified
+                                  ? 'bg-green-500/20 text-green-400'
+                                  : 'bg-gray-500/20 text-gray-400'
+                              }`}
+                            >
+                              {isVerified ? 'Verified' : 'Unverified'}
                             </span>
+                            {score.eventName && (
+                              <span className="px-2 py-1 text-xs bg-gray-500/20 text-gray-400 rounded">
+                                {score.eventName}
+                              </span>
+                            )}
                           </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex items-center space-x-1 text-xs text-gray-400">
+                            <FiClock className="w-3 h-3" />
+                            <span>{formatDate(score.timestamp)}</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-primary-400">
+                            {score.calculatedScore.toFixed(1)}
+                          </div>
+                          <div className="text-xs text-gray-400">Challenger Score</div>
+                          <div className="text-xs text-gray-500 mt-1">
                             {formatRawScoreWithReps(score)}
                           </div>
                         </div>
                       </div>
                     </div>
-                  </Card>
-                ))}
+                  );
+                })}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-        <Footer />
       </div>
+      <Footer />
     </div>
   );
 }
