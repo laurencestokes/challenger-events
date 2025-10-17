@@ -58,21 +58,19 @@ export async function GET(request: NextRequest) {
           ...invitation,
           team: team
             ? {
-              id: team.id,
-              name: team.name,
-              description: team.description,
-              logoUrl:
-                (team as unknown as { logoUrl: string }).logoUrl ??
-                '',
-              memberCount: teamMembers.length,
-            }
+                id: team.id,
+                name: team.name,
+                description: team.description,
+                logoUrl: (team as unknown as { logoUrl: string }).logoUrl ?? '',
+                memberCount: teamMembers.length,
+              }
             : null,
           inviter: inviter
             ? {
-              id: inviter.id,
-              name: inviter.name,
-              email: inviter.email,
-            }
+                id: inviter.id,
+                name: inviter.name,
+                email: inviter.email,
+              }
             : null,
         };
       }),

@@ -230,7 +230,9 @@ export default function TeamsPage() {
 
   const respondToInvitation = async (invitationId: string, action: 'accept' | 'decline') => {
     try {
-      const _response = await api.post(`/api/teams/invitations/${invitationId}/respond`, { action });
+      const _response = await api.post(`/api/teams/invitations/${invitationId}/respond`, {
+        action,
+      });
       // Refresh both teams and invitations
       fetchTeams();
       fetchPendingInvitations();

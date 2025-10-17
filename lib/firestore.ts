@@ -684,8 +684,22 @@ export const addTeamMember = async (
   userId: string,
   role: 'CAPTAIN' | 'MEMBER' = 'MEMBER',
 ) => {
-  const teamMemberRef = collection(db, 'teamMembers');
-  const docRef = await addDoc(teamMemberRef, {
+  // Check if user is already a member of this team
+  const teamMembersRef = collection(db, 'teamMembers');
+  const existingQuery = query(
+    teamMembersRef,
+    where('teamId', '==', teamId),
+    where('userId', '==', userId),
+  );
+  const existingSnapshot = await getDocs(existingQuery);
+
+  if (!existingSnapshot.empty) {
+    // User is already a member, return the existing membership
+    const existingDoc = existingSnapshot.docs[0];
+    return { id: existingDoc.id, teamId, userId, role: existingDoc.data().role };
+  }
+  // User is not a member, add them
+  const docRef = await addDoc(teamMembersRef, {
     teamId,
     userId,
     role,
@@ -698,7 +712,15 @@ export const getTeamMembers = async (teamId: string) => {
   const teamMembersRef = collection(db, 'teamMembers');
   const q = query(teamMembersRef, where('teamId', '==', teamId));
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as TeamMember[];
+
+  const members = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as TeamMember[];
+
+  // Deduplicate members by userId (keep the first occurrence)
+  const uniqueMembers = members.filter(
+    (member, index, self) => index === self.findIndex((m) => m.userId === member.userId),
+  );
+
+  return uniqueMembers;
 };
 
 export const getUserTeams = async (userId: string) => {
@@ -706,7 +728,8 @@ export const getUserTeams = async (userId: string) => {
   const q = query(teamMembersRef, where('userId', '==', userId));
   const querySnapshot = await getDocs(q);
 
-  const teamIds = querySnapshot.docs.map((doc) => doc.data().teamId);
+  // Deduplicate team IDs to prevent duplicate teams in the list
+  const teamIds = [...new Set(querySnapshot.docs.map((doc) => doc.data().teamId))];
   const teams: Team[] = [];
 
   for (const teamId of teamIds) {
@@ -717,6 +740,27 @@ export const getUserTeams = async (userId: string) => {
   }
 
   return teams;
+};
+
+// Helper function to clean up duplicate team memberships
+export const cleanupDuplicateTeamMemberships = async (userId: string, teamId: string) => {
+  const teamMembersRef = collection(db, 'teamMembers');
+  const q = query(teamMembersRef, where('userId', '==', userId), where('teamId', '==', teamId));
+  const querySnapshot = await getDocs(q);
+
+  if (querySnapshot.docs.length > 1) {
+    console.log(
+      `Found ${querySnapshot.docs.length} duplicate memberships for user ${userId} in team ${teamId}`,
+    );
+
+    // Keep the first one (oldest) and delete the rest
+    const docsToDelete = querySnapshot.docs.slice(1);
+
+    for (const doc of docsToDelete) {
+      await deleteDoc(doc.ref);
+      console.log(`Deleted duplicate membership: ${doc.id}`);
+    }
+  }
 };
 
 export const deleteTeam = async (teamId: string) => {

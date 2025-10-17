@@ -142,7 +142,9 @@ export default function TeamDetailPage() {
       // Handle API error responses
       if (error && typeof error === 'object' && 'response' in error) {
         const apiError = error as {
-          response: { data: { error: string; existingInvitation?: { code: string; expiresInDays: number } } };
+          response: {
+            data: { error: string; existingInvitation?: { code: string; expiresInDays: number } };
+          };
         };
         const errorData = apiError.response.data;
 
@@ -601,10 +603,11 @@ export default function TeamDetailPage() {
                         )}
 
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap self-start sm:self-auto ${member.role === 'CAPTAIN'
-                            ? 'bg-primary-500/20 text-primary-400'
-                            : 'bg-gray-500/20 text-gray-400'
-                            }`}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap self-start sm:self-auto ${
+                            member.role === 'CAPTAIN'
+                              ? 'bg-primary-500/20 text-primary-400'
+                              : 'bg-gray-500/20 text-gray-400'
+                          }`}
                         >
                           {getRoleDisplayName(member.role)}
                         </span>
@@ -808,24 +811,25 @@ export default function TeamDetailPage() {
                           confirmAction.type === 'delete'
                             ? handleDeleteTeam
                             : confirmAction.type === 'remove' &&
-                              confirmAction.memberName === 'the team'
+                                confirmAction.memberName === 'the team'
                               ? handleLeaveTeam
                               : confirmAction.type === 'remove'
                                 ? handleRemoveMember
                                 : handlePromoteMember
                         }
                         disabled={isProcessing}
-                        className={`px-4 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed ${confirmAction.type === 'delete' || confirmAction.type === 'remove'
-                          ? 'bg-red-600 hover:bg-red-700'
-                          : 'bg-primary-600 hover:bg-primary-700'
-                          }`}
+                        className={`px-4 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed ${
+                          confirmAction.type === 'delete' || confirmAction.type === 'remove'
+                            ? 'bg-red-600 hover:bg-red-700'
+                            : 'bg-primary-600 hover:bg-primary-700'
+                        }`}
                       >
                         {isProcessing
                           ? 'Processing...'
                           : confirmAction.type === 'delete'
                             ? 'Delete Team'
                             : confirmAction.type === 'remove' &&
-                              confirmAction.memberName === 'the team'
+                                confirmAction.memberName === 'the team'
                               ? 'Leave Team'
                               : confirmAction.type === 'remove'
                                 ? 'Remove'
