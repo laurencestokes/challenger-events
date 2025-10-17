@@ -163,6 +163,7 @@ export function formatTimestamp(timestamp: Date | string | number | FirestoreTim
 
 export function formatFullTimestamp(
   timestamp: Date | string | number | FirestoreTimestamp,
+  options: { dateOnly?: boolean } = {},
 ): string {
   let date: Date;
 
@@ -181,11 +182,19 @@ export function formatFullTimestamp(
     date = new Date();
   }
 
-  return date.toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  if (options.dateOnly) {
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  } else {
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
 }

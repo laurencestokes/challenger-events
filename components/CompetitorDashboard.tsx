@@ -124,9 +124,7 @@ export default function CompetitorDashboard() {
         const personalScores: Score[] = allScoresResponse.success ? allScoresResponse.data : [];
 
         // Fetch user's events with scores (like public profile does)
-        const userEventsResponse = await api
-          .get('/api/user/events')
-          .catch(() => []);
+        const userEventsResponse = await api.get('/api/user/events').catch(() => []);
         const userEvents: EventWithScores[] = userEventsResponse || [];
 
         // Flatten event scores into activity scores, attaching event info (like public profile)
@@ -195,8 +193,8 @@ export default function CompetitorDashboard() {
 
         // Calculate verified and total scores using the same logic as public profile
         // Only include canonical event types (all EVENT_TYPES) for overall scoring
-        const canonicalEventIds = EVENT_TYPES.map(type => type.id);
-        const canonicalScores = allScores.filter(score => {
+        const canonicalEventIds = EVENT_TYPES.map((type) => type.id);
+        const canonicalScores = allScores.filter((score) => {
           const eventId = score.testId ?? score.activityId;
           return canonicalEventIds.includes(eventId);
         });
@@ -206,7 +204,9 @@ export default function CompetitorDashboard() {
         const bestVerifiedScoresByType: Record<string, number> = {};
 
         EVENT_TYPES.forEach((type) => {
-          const scoresForType = canonicalScores.filter((s) => (s.testId ?? s.activityId) === type.id);
+          const scoresForType = canonicalScores.filter(
+            (s) => (s.testId ?? s.activityId) === type.id,
+          );
 
           // All scores: best of verified or unverified
           // A score is verified if it's from an event (has event property) OR has verified flag set to true
@@ -240,7 +240,10 @@ export default function CompetitorDashboard() {
 
         // Calculate totals
         const total = Object.values(bestScoresByType).reduce((sum, score) => sum + score, 0);
-        const verified = Object.values(bestVerifiedScoresByType).reduce((sum, score) => sum + score, 0);
+        const verified = Object.values(bestVerifiedScoresByType).reduce(
+          (sum, score) => sum + score,
+          0,
+        );
 
         setTotalScore(total);
         setVerifiedScore(verified);
@@ -403,9 +406,7 @@ export default function CompetitorDashboard() {
                 </div>
               ) : (
                 <div className="bg-green-900/30 border border-green-700/50 px-3 py-2 rounded-lg w-20">
-                  <span className="text-green-400 font-bold">
-                    {verifiedScore.toLocaleString()}
-                  </span>
+                  <span className="text-green-400 font-bold">{verifiedScore.toLocaleString()}</span>
                 </div>
               )}
             </div>
@@ -776,8 +777,9 @@ export default function CompetitorDashboard() {
             >
               <h2 className="text-white text-2xl font-bold">Performance Over Time</h2>
               <FiChevronDown
-                className={`w-6 h-6 text-white transition-transform duration-200 ${isPerformanceGraphExpanded ? 'rotate-180' : ''
-                  }`}
+                className={`w-6 h-6 text-white transition-transform duration-200 ${
+                  isPerformanceGraphExpanded ? 'rotate-180' : ''
+                }`}
               />
             </button>
             {isPerformanceGraphExpanded && (
@@ -806,8 +808,9 @@ export default function CompetitorDashboard() {
             >
               <h2 className="text-white text-2xl font-bold">Score History</h2>
               <FiChevronDown
-                className={`w-6 h-6 text-white transition-transform duration-200 ${isScoreHistoryExpanded ? 'rotate-180' : ''
-                  }`}
+                className={`w-6 h-6 text-white transition-transform duration-200 ${
+                  isScoreHistoryExpanded ? 'rotate-180' : ''
+                }`}
               />
             </button>
             {isScoreHistoryExpanded && (
@@ -848,10 +851,11 @@ export default function CompetitorDashboard() {
                                   )}
                                   {/* Verification Status Badge */}
                                   <span
-                                    className={`px-2 py-1 text-xs rounded font-medium flex items-center space-x-1 ${isVerified
-                                      ? 'bg-green-500/20 text-green-400'
-                                      : 'bg-gray-500/20 text-gray-400'
-                                      }`}
+                                    className={`px-2 py-1 text-xs rounded font-medium flex items-center space-x-1 ${
+                                      isVerified
+                                        ? 'bg-green-500/20 text-green-400'
+                                        : 'bg-gray-500/20 text-gray-400'
+                                    }`}
                                   >
                                     {isVerified ? (
                                       <>
