@@ -153,7 +153,7 @@ export default function UserScoresPage() {
     <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
       <Header />
       <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto px-4 py-8">
           {/* Breadcrumbs */}
           <nav
             className="mb-6 text-sm text-gray-400 flex items-center space-x-2"
@@ -255,11 +255,10 @@ export default function UserScoresPage() {
                             </span>
                             {/* Verification Status Badge */}
                             <span
-                              className={`px-2 py-1 text-xs rounded font-medium ${
-                                isVerified
+                              className={`px-2 py-1 text-xs rounded font-medium ${isVerified
                                   ? 'bg-green-500/20 text-green-400'
                                   : 'bg-gray-500/20 text-gray-400'
-                              }`}
+                                }`}
                             >
                               {isVerified ? 'Verified' : 'Unverified'}
                             </span>
