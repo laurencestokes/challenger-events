@@ -601,8 +601,9 @@ export default function EventPage() {
       {process.env.NODE_ENV === 'development' && (
         <div className="fixed bottom-4 left-4 z-40">
           <div
-            className={`px-3 py-1 rounded-full text-xs ${isConnected ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-              }`}
+            className={`px-3 py-1 rounded-full text-xs ${
+              isConnected ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`}
           >
             SSE: {isConnected ? 'Connected' : 'Disconnected'}
           </div>

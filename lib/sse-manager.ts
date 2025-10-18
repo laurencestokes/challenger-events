@@ -24,18 +24,27 @@ export function broadcastToEvent(eventId: string, message: string) {
   const clients = connectedClients.get(eventId);
   console.info('SSE Manager: Number of connected clients:', clients?.length || 0);
 
-  if (clients) {
+  if (clients && clients.length > 0) {
     const messageStr = `data: ${message}\n\n`;
     console.info('SSE Manager: Sending message to clients:', messageStr);
 
-    clients.forEach((controller) => {
+    // Filter out dead connections
+    const activeClients = clients.filter((controller) => {
       try {
         controller.enqueue(new TextEncoder().encode(messageStr));
         console.info('SSE Manager: Message sent to client successfully');
+        return true;
       } catch (error) {
-        console.error('SSE Manager: Error broadcasting to client:', error);
+        console.error('SSE Manager: Error broadcasting to client, removing:', error);
+        return false;
       }
     });
+
+    // Update the clients list to remove dead connections
+    if (activeClients.length !== clients.length) {
+      connectedClients.set(eventId, activeClients);
+      console.info('SSE Manager: Removed dead connections, active clients:', activeClients.length);
+    }
   } else {
     console.info('SSE Manager: No connected clients for event:', eventId);
   }

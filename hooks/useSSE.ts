@@ -22,6 +22,7 @@ export function useSSE(eventId: string): UseSSEReturn {
   const [lastEvent, setLastEvent] = useState<SSEEvent | null>(null);
   const [error, setError] = useState<string | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!user || !eventId) {
@@ -38,90 +39,49 @@ export function useSSE(eventId: string): UseSSEReturn {
 
     const connectSSE = () => {
       try {
-        const url = `/api/events/${eventId}/workout-reveals`;
+        // Close existing connection
+        if (eventSourceRef.current) {
+          eventSourceRef.current.close();
+        }
+
+        // Clear any existing reconnect timeout
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+        }
+
+        const url = `/api/events/${eventId}/workout-reveals?token=${user.id}`;
         console.info('SSE: Connecting to URL:', url);
 
-        // Use fetch with proper authentication
-        fetch(url, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${user.id}`,
-            Accept: 'text/event-stream',
-            'Cache-Control': 'no-cache',
-          },
-        })
-          .then(async (response) => {
-            console.info('SSE: Fetch response status:', response.status);
-            console.log('SSE: Response headers:', Object.fromEntries(response.headers.entries()));
+        const eventSource = new EventSource(url);
+        eventSourceRef.current = eventSource;
 
-            if (!response.ok) {
-              // Try to read the error response
-              const errorText = await response.text();
-              console.log('SSE: Error response body:', errorText);
-              throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
-            }
+        eventSource.onopen = () => {
+          console.info('SSE: Connection opened');
+          setIsConnected(true);
+          setError(null);
+        };
 
-            const reader = response.body?.getReader();
-            if (!reader) {
-              throw new Error('No response body');
-            }
+        eventSource.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            console.info('SSE: Received data:', data);
+            setLastEvent(data);
+          } catch (e) {
+            console.error('Error parsing SSE data:', e);
+          }
+        };
 
-            const decoder = new TextDecoder();
-            let buffer = '';
+        eventSource.onerror = (error) => {
+          console.error('SSE connection error:', error);
+          setIsConnected(false);
+          setError('Connection lost');
 
-            const readStream = () => {
-              reader
-                .read()
-                .then(({ done, value }) => {
-                  if (done) {
-                    console.log('SSE: Stream ended');
-                    setIsConnected(false);
-                    return;
-                  }
-
-                  buffer += decoder.decode(value, { stream: true });
-                  const lines = buffer.split('\n');
-                  buffer = lines.pop() || '';
-
-                  for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                      try {
-                        const data = JSON.parse(line.slice(6));
-                        console.info('SSE: Received data:', data);
-                        setLastEvent(data);
-
-                        if (data.type === 'connected') {
-                          console.info('SSE: Connected successfully');
-                          setIsConnected(true);
-                          setError(null);
-                        }
-                      } catch (e) {
-                        console.error('Error parsing SSE data:', e);
-                      }
-                    }
-                  }
-
-                  readStream();
-                })
-                .catch((err) => {
-                  console.error('SSE read error:', err);
-                  setIsConnected(false);
-                  setError(err.message);
-                });
-            };
-
-            readStream();
-
-            // Store controller for cleanup
-            eventSourceRef.current = {
-              close: () => reader.cancel(),
-            } as any;
-          })
-          .catch((err) => {
-            console.error('SSE connection error:', err);
-            setIsConnected(false);
-            setError(err.message);
-          });
+          // Attempt to reconnect after 5 seconds
+          reconnectTimeoutRef.current = setTimeout(() => {
+            console.info('SSE: Attempting to reconnect...');
+            connectSSE();
+          }, 5000);
+        };
       } catch (err) {
         console.error('SSE setup error:', err);
         setIsConnected(false);
@@ -136,6 +96,9 @@ export function useSSE(eventId: string): UseSSEReturn {
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
         eventSourceRef.current = null;
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
       }
       setIsConnected(false);
     };

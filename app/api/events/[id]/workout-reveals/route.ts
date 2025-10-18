@@ -6,15 +6,17 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   try {
     console.info('SSE: Received request for event:', params.id);
 
-    const authHeader = request.headers.get('authorization');
-    console.log('SSE: Auth header present:', !!authHeader);
+    // Get token from query parameter (EventSource doesn't support custom headers)
+    const url = new URL(request.url);
+    const token = url.searchParams.get('token');
+    console.log('SSE: Token present:', !!token);
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('SSE: Missing or invalid auth header');
+    if (!token) {
+      console.log('SSE: Missing token parameter');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = authHeader.split('Bearer ')[1];
+    const userId = token;
     console.log('SSE: User ID from token:', userId);
 
     const user = await getUser(userId);
@@ -54,19 +56,46 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
           // Keep connection alive with periodic heartbeats
           const heartbeat = setInterval(() => {
-            controller.enqueue(
-              `data: ${JSON.stringify({
-                type: 'heartbeat',
-                timestamp: new Date().toISOString(),
-              })}\n\n`,
-            );
+            try {
+              controller.enqueue(
+                `data: ${JSON.stringify({
+                  type: 'heartbeat',
+                  timestamp: new Date().toISOString(),
+                })}\n\n`,
+              );
+            } catch (error) {
+              console.error('SSE: Error sending heartbeat:', error);
+              clearInterval(heartbeat);
+              removeSSEClient(params.id, controller);
+            }
           }, 30000); // Every 30 seconds
+
+          // Set a maximum connection time (5 minutes)
+          const connectionTimeout = setTimeout(
+            () => {
+              console.info('SSE: Connection timeout reached, closing connection');
+              clearInterval(heartbeat);
+              removeSSEClient(params.id, controller);
+              try {
+                controller.close();
+              } catch (error) {
+                console.error('SSE: Error closing controller:', error);
+              }
+            },
+            5 * 60 * 1000,
+          ); // 5 minutes
 
           // Clean up on close
           request.signal.addEventListener('abort', () => {
+            console.info('SSE: Client disconnected');
             clearInterval(heartbeat);
+            clearTimeout(connectionTimeout);
             removeSSEClient(params.id, controller);
-            controller.close();
+            try {
+              controller.close();
+            } catch (error) {
+              console.error('SSE: Error closing controller on abort:', error);
+            }
           });
         },
       }),

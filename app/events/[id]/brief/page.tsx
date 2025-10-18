@@ -12,9 +12,7 @@ import Footer from '@/components/Footer';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import {
-  LargeEventCardSkeleton,
-} from '@/components/SkeletonLoaders';
+import { LargeEventCardSkeleton } from '@/components/SkeletonLoaders';
 
 interface Event {
   id: string;

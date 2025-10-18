@@ -131,18 +131,14 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
       {/* Team Selection for Event */}
       {eventId && (
         <>
-          <h3 className="text-lg font-semibold text-white mb-4">
-            Select Your Team for This Event
-          </h3>
+          <h3 className="text-lg font-semibold text-white mb-4">Select Your Team for This Event</h3>
           <p className="text-sm text-gray-400 mb-4">
             Choose a team to compete with in this event. You can only be on one team per event.
           </p>
 
           {teams.length === 0 ? (
             <div className="text-center py-4">
-              <p className="text-gray-400 mb-4">
-                No teams available for this event.
-              </p>
+              <p className="text-gray-400 mb-4">No teams available for this event.</p>
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md"
@@ -157,10 +153,11 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
                 return (
                   <div
                     key={team.id}
-                    className={`relative flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${isSelected
+                    className={`relative flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                      isSelected
                         ? 'border-primary-500 bg-primary-900/20 shadow-md'
                         : 'border-gray-600 hover:border-primary-400 hover:shadow-sm'
-                      }`}
+                    }`}
                     onClick={() => handleSelectTeam(team.id)}
                   >
                     {/* Selection indicator */}
@@ -178,23 +175,20 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
 
                     <div className="flex items-center space-x-4">
                       <div
-                        className={`flex items-center justify-center w-5 h-5 rounded-full border-2 ${isSelected
+                        className={`flex items-center justify-center w-5 h-5 rounded-full border-2 ${
+                          isSelected
                             ? 'border-primary-500 bg-primary-500'
                             : 'border-gray-300 dark:border-gray-600'
-                          }`}
+                        }`}
                       >
                         {isSelected && <div className="w-2 h-2 bg-white rounded-full"></div>}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
-                          <h4 className="font-semibold text-white">
-                            {team.name}
-                          </h4>
+                          <h4 className="font-semibold text-white">{team.name}</h4>
                         </div>
                         {team.description && (
-                          <p className="text-sm text-gray-400 mt-1">
-                            {team.description}
-                          </p>
+                          <p className="text-sm text-gray-400 mt-1">{team.description}</p>
                         )}
                       </div>
                     </div>
@@ -227,11 +221,7 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
           {selectedTeamId && (
             <div className="mt-4 p-3 bg-green-900/20 border border-green-700/50 rounded-lg">
               <div className="flex items-center space-x-2">
-                <svg
-                  className="w-5 h-5 text-green-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
+                <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
