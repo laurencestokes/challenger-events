@@ -619,125 +619,420 @@ export default function EventLeaderboard() {
               {/* Leaderboard Content */}
               <div>
                 {activeTab === 'overall' ? (
-                  <div className="space-y-4">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-600">
-                        <thead className="bg-gray-700">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                              Rank
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                              Competitor
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                              Total Score
-                            </th>
-                            {activities.map((activity) => (
-                              <th
-                                key={activity.id}
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                              >
-                                {activity.name}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody className="bg-gray-800 divide-y divide-gray-600">
-                          {leaderboardData.overallLeaderboard?.map((entry) => (
-                            <tr key={entry.userId} className="hover:bg-gray-700">
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center">
-                                  <span className="text-lg mr-2">{getRankIcon(entry.rank)}</span>
-                                  <span className="text-sm font-medium text-white">
-                                    {entry.rank}
-                                  </span>
+                  <div className="space-y-6">
+                    {/* Top 3 Podium Cards */}
+                    {leaderboardData.overallLeaderboard &&
+                      leaderboardData.overallLeaderboard.length > 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                          {/* 2nd Place (Silver) */}
+                          {leaderboardData.overallLeaderboard[1] && (
+                            <div className="order-2 md:order-1 relative z-10">
+                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
+                                {/* Rank Badge */}
+                                <div className="absolute -top-3 -left-3 w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center">
+                                  <span className="text-white font-bold text-lg">#2</span>
                                 </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div>
-                                  <div className="text-sm font-medium text-white">{entry.name}</div>
 
-                                  {entry.teamId && entry.teamName && (
-                                    <div className="text-xs text-gray-400">
-                                      Team: {entry.teamName}
-                                    </div>
+                                {/* Avatar */}
+                                <div className="flex justify-center mb-4">
+                                  <div className="w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center border-2 border-gray-400">
+                                    <span className="text-white text-2xl font-bold">
+                                      {leaderboardData.overallLeaderboard[1].name
+                                        .charAt(0)
+                                        .toUpperCase()}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Name and Team */}
+                                <div className="text-center mb-4">
+                                  <h3 className="text-white font-semibold text-lg">
+                                    {leaderboardData.overallLeaderboard[1].name}
+                                  </h3>
+                                  {leaderboardData.overallLeaderboard[1].teamName && (
+                                    <p className="text-gray-400 text-sm">
+                                      {leaderboardData.overallLeaderboard[1].teamName}
+                                    </p>
                                   )}
                                 </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-bold text-white">
-                                  {entry.totalScore ? entry.totalScore.toFixed(1) : '0.0'}
+
+                                {/* Score */}
+                                <div className="text-center">
+                                  <div className="text-white font-bold text-2xl">
+                                    {leaderboardData.overallLeaderboard[1].totalScore?.toFixed(1) ||
+                                      '0.0'}
+                                  </div>
                                 </div>
-                              </td>
-                              {activities.map((activity) => {
-                                const workoutScore = entry.workoutScores[activity.id];
-                                return (
-                                  <td key={activity.id} className="px-6 py-4 whitespace-nowrap">
-                                    {workoutScore ? (
-                                      <div className="text-sm">
-                                        <div className="font-medium text-white">
-                                          {workoutScore.score
-                                            ? workoutScore.score.toFixed(1)
-                                            : '0.0'}
-                                        </div>
-                                        <div className="text-xs text-gray-400">
-                                          {workoutScore.rawValue
-                                            ? (workoutScore as { scoringSystemId?: string })
-                                                .scoringSystemId
-                                              ? formatRawValue(
-                                                  workoutScore.rawValue,
-                                                  activity.id,
-                                                  workoutScore.reps,
-                                                  (workoutScore as { scoringSystemId?: string })
-                                                    .scoringSystemId,
-                                                )
-                                              : formatRawValue(
-                                                  workoutScore.rawValue,
-                                                  activity.id,
-                                                  workoutScore.reps,
-                                                )
-                                            : ''}
-                                        </div>
-                                        <div className="text-xs text-gray-500">
-                                          Rank: {workoutScore.rank}
-                                        </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 1st Place (Gold) */}
+                          {leaderboardData.overallLeaderboard[0] && (
+                            <div className="order-1 md:order-2 relative z-30">
+                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
+                                {/* Rank Badge */}
+                                <div className="absolute -top-3 -left-3 w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
+                                  <span className="text-gray-900 font-bold text-lg">#1</span>
+                                </div>
+
+                                {/* Avatar */}
+                                <div className="flex justify-center mb-4">
+                                  <div className="w-24 h-24 bg-gray-600 rounded-full flex items-center justify-center border-2 border-yellow-400">
+                                    <span className="text-white text-3xl font-bold">
+                                      {leaderboardData.overallLeaderboard[0].name
+                                        .charAt(0)
+                                        .toUpperCase()}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Name and Team */}
+                                <div className="text-center mb-4">
+                                  <h3 className="text-white font-semibold text-xl">
+                                    {leaderboardData.overallLeaderboard[0].name}
+                                  </h3>
+                                  {leaderboardData.overallLeaderboard[0].teamName && (
+                                    <p className="text-gray-400 text-sm">
+                                      {leaderboardData.overallLeaderboard[0].teamName}
+                                    </p>
+                                  )}
+                                </div>
+
+                                {/* Score */}
+                                <div className="text-center">
+                                  <div className="text-white font-bold text-3xl">
+                                    {leaderboardData.overallLeaderboard[0].totalScore?.toFixed(1) ||
+                                      '0.0'}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 3rd Place (Bronze) */}
+                          {leaderboardData.overallLeaderboard[2] && (
+                            <div className="order-3 relative z-20">
+                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
+                                {/* Rank Badge */}
+                                <div className="absolute -top-3 -left-3 w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center">
+                                  <span className="text-white font-bold text-lg">#3</span>
+                                </div>
+
+                                {/* Avatar */}
+                                <div className="flex justify-center mb-4">
+                                  <div className="w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center border-2 border-amber-600">
+                                    <span className="text-white text-2xl font-bold">
+                                      {leaderboardData.overallLeaderboard[2].name
+                                        .charAt(0)
+                                        .toUpperCase()}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Name and Team */}
+                                <div className="text-center mb-4">
+                                  <h3 className="text-white font-semibold text-lg">
+                                    {leaderboardData.overallLeaderboard[2].name}
+                                  </h3>
+                                  {leaderboardData.overallLeaderboard[2].teamName && (
+                                    <p className="text-gray-400 text-sm">
+                                      {leaderboardData.overallLeaderboard[2].teamName}
+                                    </p>
+                                  )}
+                                </div>
+
+                                {/* Score */}
+                                <div className="text-center">
+                                  <div className="text-white font-bold text-2xl">
+                                    {leaderboardData.overallLeaderboard[2].totalScore?.toFixed(1) ||
+                                      '0.0'}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                    {/* Full Leaderboard Table */}
+                    {leaderboardData.overallLeaderboard &&
+                      leaderboardData.overallLeaderboard.length > 0 && (
+                        <div>
+                          <h3 className="text-white text-lg font-semibold mb-4">
+                            Full Leaderboard
+                          </h3>
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-600">
+                              <thead className="bg-gray-700">
+                                <tr>
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Rank
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Competitor
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Total Score
+                                  </th>
+                                  {activities.map((activity) => (
+                                    <th
+                                      key={activity.id}
+                                      className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+                                    >
+                                      {activity.name}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody className="bg-gray-800 divide-y divide-gray-600">
+                                {leaderboardData.overallLeaderboard.map((entry) => (
+                                  <tr key={entry.userId} className="hover:bg-gray-700">
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                      <div className="flex items-center">
+                                        <span className="text-lg mr-2">
+                                          {getRankIcon(entry.rank)}
+                                        </span>
+                                        <span className="text-sm font-medium text-white">
+                                          {entry.rank}
+                                        </span>
                                       </div>
-                                    ) : (
-                                      <div className="text-sm text-gray-500">-</div>
-                                    )}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                      <div>
+                                        <div className="text-sm font-medium text-white">
+                                          {entry.name}
+                                        </div>
+
+                                        {entry.teamId && entry.teamName && (
+                                          <div className="text-xs text-gray-400">
+                                            Team: {entry.teamName}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                      <div className="text-sm font-bold text-white">
+                                        {entry.totalScore ? entry.totalScore.toFixed(1) : '0.0'}
+                                      </div>
+                                    </td>
+                                    {activities.map((activity) => {
+                                      const workoutScore = entry.workoutScores[activity.id];
+                                      return (
+                                        <td
+                                          key={activity.id}
+                                          className="px-6 py-4 whitespace-nowrap"
+                                        >
+                                          {workoutScore ? (
+                                            <div className="text-sm">
+                                              <div className="font-medium text-white">
+                                                {workoutScore.score
+                                                  ? workoutScore.score.toFixed(1)
+                                                  : '0.0'}
+                                              </div>
+                                              <div className="text-xs text-gray-400">
+                                                {workoutScore.rawValue
+                                                  ? (workoutScore as { scoringSystemId?: string })
+                                                      .scoringSystemId
+                                                    ? formatRawValue(
+                                                        workoutScore.rawValue,
+                                                        activity.id,
+                                                        workoutScore.reps,
+                                                        (
+                                                          workoutScore as {
+                                                            scoringSystemId?: string;
+                                                          }
+                                                        ).scoringSystemId,
+                                                      )
+                                                    : formatRawValue(
+                                                        workoutScore.rawValue,
+                                                        activity.id,
+                                                        workoutScore.reps,
+                                                      )
+                                                  : ''}
+                                              </div>
+                                              <div className="text-xs text-gray-500">
+                                                Rank: {workoutScore.rank}
+                                              </div>
+                                            </div>
+                                          ) : (
+                                            <div className="text-sm text-gray-500">-</div>
+                                          )}
+                                        </td>
+                                      );
+                                    })}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
                   </div>
                 ) : activeTab === 'team-overall' ? (
-                  <div className="space-y-4">
-                    {leaderboardData.teamOverallLeaderboard?.map((entry) => (
-                      <div
-                        key={entry.teamId}
-                        className="flex items-center justify-between p-4 bg-gray-700 rounded-lg"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div className="text-2xl">{getRankIcon(entry.rank)}</div>
-                          <div>
-                            <div className="font-medium text-white">{entry.teamName}</div>
-                            <div className="text-sm text-gray-400">
-                              Team Total Score: {entry.totalScore.toFixed(1)}
+                  <div className="space-y-6">
+                    {/* Top 3 Team Podium Cards */}
+                    {leaderboardData.teamOverallLeaderboard &&
+                      leaderboardData.teamOverallLeaderboard.length > 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                          {/* 2nd Place Team (Silver) */}
+                          {leaderboardData.teamOverallLeaderboard[1] && (
+                            <div className="order-2 md:order-1 relative z-10">
+                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
+                                {/* Rank Badge */}
+                                <div className="absolute -top-3 -left-3 w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center">
+                                  <span className="text-white font-bold text-lg">#2</span>
+                                </div>
+
+                                {/* Team Avatar */}
+                                <div className="flex justify-center mb-4">
+                                  <div className="w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center border-2 border-gray-400">
+                                    <span className="text-white text-2xl font-bold">
+                                      {leaderboardData.teamOverallLeaderboard[1].teamName
+                                        .charAt(0)
+                                        .toUpperCase()}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Team Name */}
+                                <div className="text-center mb-4">
+                                  <h3 className="text-white font-semibold text-lg">
+                                    {leaderboardData.teamOverallLeaderboard[1].teamName}
+                                  </h3>
+                                  <p className="text-gray-400 text-sm">Team</p>
+                                </div>
+
+                                {/* Score */}
+                                <div className="text-center">
+                                  <div className="text-white font-bold text-2xl">
+                                    {leaderboardData.teamOverallLeaderboard[1].totalScore?.toFixed(
+                                      1,
+                                    ) || '0.0'}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
+                          )}
+
+                          {/* 1st Place Team (Gold) */}
+                          {leaderboardData.teamOverallLeaderboard[0] && (
+                            <div className="order-1 md:order-2 relative z-30">
+                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
+                                {/* Rank Badge */}
+                                <div className="absolute -top-3 -left-3 w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
+                                  <span className="text-gray-900 font-bold text-lg">#1</span>
+                                </div>
+
+                                {/* Team Avatar */}
+                                <div className="flex justify-center mb-4">
+                                  <div className="w-24 h-24 bg-gray-600 rounded-full flex items-center justify-center border-2 border-yellow-400">
+                                    <span className="text-white text-3xl font-bold">
+                                      {leaderboardData.teamOverallLeaderboard[0].teamName
+                                        .charAt(0)
+                                        .toUpperCase()}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Team Name */}
+                                <div className="text-center mb-4">
+                                  <h3 className="text-white font-semibold text-xl">
+                                    {leaderboardData.teamOverallLeaderboard[0].teamName}
+                                  </h3>
+                                  <p className="text-gray-400 text-sm">Team</p>
+                                </div>
+
+                                {/* Score */}
+                                <div className="text-center">
+                                  <div className="text-white font-bold text-3xl">
+                                    {leaderboardData.teamOverallLeaderboard[0].totalScore?.toFixed(
+                                      1,
+                                    ) || '0.0'}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 3rd Place Team (Bronze) */}
+                          {leaderboardData.teamOverallLeaderboard[2] && (
+                            <div className="order-3 relative z-20">
+                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
+                                {/* Rank Badge */}
+                                <div className="absolute -top-3 -left-3 w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center">
+                                  <span className="text-white font-bold text-lg">#3</span>
+                                </div>
+
+                                {/* Team Avatar */}
+                                <div className="flex justify-center mb-4">
+                                  <div className="w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center border-2 border-amber-600">
+                                    <span className="text-white text-2xl font-bold">
+                                      {leaderboardData.teamOverallLeaderboard[2].teamName
+                                        .charAt(0)
+                                        .toUpperCase()}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Team Name */}
+                                <div className="text-center mb-4">
+                                  <h3 className="text-white font-semibold text-lg">
+                                    {leaderboardData.teamOverallLeaderboard[2].teamName}
+                                  </h3>
+                                  <p className="text-gray-400 text-sm">Team</p>
+                                </div>
+
+                                {/* Score */}
+                                <div className="text-center">
+                                  <div className="text-white font-bold text-2xl">
+                                    {leaderboardData.teamOverallLeaderboard[2].totalScore?.toFixed(
+                                      1,
+                                    ) || '0.0'}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                    {/* Full Team Leaderboard */}
+                    {leaderboardData.teamOverallLeaderboard &&
+                      leaderboardData.teamOverallLeaderboard.length > 0 && (
+                        <div>
+                          <h3 className="text-white text-lg font-semibold mb-4">
+                            Full Team Leaderboard
+                          </h3>
+                          <div className="space-y-4">
+                            {leaderboardData.teamOverallLeaderboard.map((entry) => (
+                              <div
+                                key={entry.teamId}
+                                className="flex items-center justify-between p-4 bg-gray-700 rounded-lg"
+                              >
+                                <div className="flex items-center space-x-4">
+                                  <div className="text-2xl">{getRankIcon(entry.rank)}</div>
+                                  <div>
+                                    <div className="font-medium text-white">{entry.teamName}</div>
+                                    <div className="text-sm text-gray-400">
+                                      Team Total Score: {entry.totalScore.toFixed(1)}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-lg font-semibold text-white">
+                                    {entry.totalScore.toFixed(1)}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-lg font-semibold text-white">
-                            {entry.totalScore.toFixed(1)}
-                          </div>
-                        </div>
-                      </div>
-                    )) || (
+                      )}
+
+                    {/* No teams message */}
+                    {(!leaderboardData.teamOverallLeaderboard ||
+                      leaderboardData.teamOverallLeaderboard.length === 0) && (
                       <div className="text-center py-8 text-gray-400">
                         No team overall scores available yet.
                       </div>
