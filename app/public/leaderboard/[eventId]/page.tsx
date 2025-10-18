@@ -8,6 +8,7 @@ import { useSSEUnauth } from '@/hooks/useSSEUnauth';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { QRCodeSVG } from 'qrcode.react';
 import Image from 'next/image';
+import Footer from '@/components/Footer';
 
 interface Activity {
   id: string;
@@ -335,28 +336,6 @@ export default function PublicEventLeaderboard() {
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="text-center mb-8">
-            {/* Challenger Branding */}
-            <div className="flex items-center justify-center space-x-3 mb-8">
-              <a
-                href="/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
-              >
-                <Image
-                  src="/challengerco-logo-text-only.png"
-                  alt="The Challenger Co."
-                  width={120}
-                  height={48}
-                  className="h-8 w-auto"
-                  priority
-                />
-                <span className="px-3 py-1 text-xs font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
-                  BETA
-                </span>
-              </a>
-            </div>
-
             {/* Event Information Card */}
             {eventDetails && (
               <div className="mt-6">
@@ -375,10 +354,37 @@ export default function PublicEventLeaderboard() {
 
                   {/* Event Title and Description Overlay */}
                   <div className="absolute top-6 left-6 right-6 z-10">
-                    <h1 className="text-white font-bold text-3xl mb-2 font-display text-left">
-                      {leaderboardData.eventName}
-                    </h1>
-                    {eventInfo && <p className="text-white/90 text-xl text-left">{eventInfo}</p>}
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h1 className="text-white font-bold text-3xl mb-2 font-display text-left">
+                          {leaderboardData.eventName}
+                        </h1>
+                        {eventInfo && (
+                          <p className="text-white/90 text-xl text-left">{eventInfo}</p>
+                        )}
+                      </div>
+                      {/* Challenger Branding */}
+                      <div className="flex flex-col items-center space-y-2 ml-6">
+                        <a
+                          href="/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:opacity-80 transition-opacity"
+                        >
+                          <Image
+                            src="/challengerco-logo-text-only.png"
+                            alt="The Challenger Co."
+                            width={120}
+                            height={48}
+                            className="h-8 w-auto"
+                            priority
+                          />
+                        </a>
+                        <span className="px-3 py-1 text-xs font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
+                          BETA
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Event Details Footer */}
@@ -461,9 +467,12 @@ export default function PublicEventLeaderboard() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                       activeTab === tab.id
-                        ? 'border-orange-500 text-orange-400'
+                        ? ''
                         : 'border-transparent text-gray-400 hover:text-white'
                     }`}
+                    style={
+                      activeTab === tab.id ? { borderBottomColor: '#4682b4', color: '#4682b4' } : {}
+                    }
                   >
                     {tab.name}
                   </button>
@@ -1238,6 +1247,8 @@ export default function PublicEventLeaderboard() {
         type={notification.type}
         onClose={() => setNotification({ ...notification, show: false })}
       />
+
+      <Footer />
     </div>
   );
 }
