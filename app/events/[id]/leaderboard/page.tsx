@@ -4,11 +4,39 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api-client';
 import { beautifyRawScore } from '@/utils/scoring';
-import ScoreCalculator from '@/components/ScoreCalculator';
 import NotificationToast from '@/components/NotificationToast';
 import { useSSE } from '@/hooks/useSSE';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { LargeEventCardSkeleton } from '@/components/SkeletonLoaders';
+
+interface Event {
+  id: string;
+  name: string;
+  code: string;
+  status: string;
+  startDate: unknown | null;
+  endDate: unknown | null;
+  createdAt: unknown;
+  description?: string;
+  imageUrl?: string;
+  participants?: Participant[];
+  isTeamEvent?: boolean;
+  teamScoringMethod?: 'SUM' | 'AVERAGE' | 'BEST';
+  maxTeamSize?: number;
+}
+
+interface Participant {
+  id: string;
+  name: string;
+  email: string;
+  score?: number;
+  joinedAt: unknown;
+}
 
 interface Activity {
   id: string;
@@ -93,38 +121,18 @@ interface TeamWorkoutLeaderboard {
   }[];
 }
 
-interface CompetitionVerification {
-  userId: string;
-  eventId: string;
-  bodyweight: number;
-  status: string;
-  verifiedAt?: string | Date;
-  verificationNotes?: string;
-}
-
-interface UserProfile {
-  id: string;
-  name: string;
-  email: string;
-  bodyweight?: number;
-  dateOfBirth?: unknown;
-  sex?: 'M' | 'F';
-}
-
 export default function EventLeaderboard() {
   const params = useParams();
   const eventId = params.id as string;
   const { user } = useAuth();
 
+  const [event, setEvent] = useState<Event | null>(null);
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overall' | 'team-overall' | string>('overall');
   const [viewMode, setViewMode] = useState<'individual' | 'team'>('individual');
-  const [competitionVerification, setCompetitionVerification] =
-    useState<CompetitionVerification | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   // SSE and notification state
   const { isConnected, lastEvent } = useSSE(eventId);
@@ -140,29 +148,14 @@ export default function EventLeaderboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [leaderboardData, activitiesData] = await Promise.all([
+      const [eventData, leaderboardData, activitiesData] = await Promise.all([
+        api.get(`/api/events/${eventId}`),
         api.get(`/api/events/${eventId}/leaderboard`),
         api.get(`/api/events/${eventId}/activities`),
       ]);
+      setEvent(eventData);
       setLeaderboardData(leaderboardData);
       setActivities(activitiesData);
-      // Fetch user profile and competition verification if user is logged in
-      if (user) {
-        const [profile, verification] = await Promise.all([
-          api.get('/api/user/profile'),
-          api.get(`/api/events/${eventId}/competition-verification`),
-        ]);
-        setUserProfile(profile);
-        // Find this user's verification
-        if (verification && Array.isArray(verification.verifications)) {
-          const myVerification = verification.verifications.find(
-            (v: CompetitionVerification) => v.userId === user.id && v.status === 'VERIFIED',
-          );
-          setCompetitionVerification(myVerification || null);
-        } else {
-          setCompetitionVerification(null);
-        }
-      }
     } catch (error: unknown) {
       console.error('Error fetching data:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
@@ -170,7 +163,7 @@ export default function EventLeaderboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [eventId, user]);
+  }, [eventId]);
 
   // Handle SSE events
   useEffect(() => {
@@ -215,6 +208,80 @@ export default function EventLeaderboard() {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'ACTIVE':
+        return 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200';
+      case 'COMPLETED':
+        return 'bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200';
+      case 'CANCELLED':
+        return 'bg-error-100 text-error-800 dark:bg-error-900 dark:text-error-200';
+      case 'DRAFT':
+        return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200';
+      default:
+        return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200';
+    }
+  };
+
+  const formatDate = (dateString: unknown) => {
+    if (!dateString) return 'Not set';
+
+    let date: Date;
+
+    // Handle Firestore Timestamp objects
+    if (typeof dateString === 'object' && dateString !== null) {
+      // Check if it's a Firestore Timestamp with seconds and nanoseconds
+      if (
+        'seconds' in dateString &&
+        typeof (dateString as { seconds: number }).seconds === 'number'
+      ) {
+        date = new Date((dateString as { seconds: number }).seconds * 1000);
+      } else if (
+        'toDate' in dateString &&
+        typeof (dateString as { toDate: () => Date }).toDate === 'function'
+      ) {
+        date = (dateString as { toDate: () => Date }).toDate();
+      } else {
+        return 'Not set';
+      }
+    } else if (typeof dateString === 'string') {
+      date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Not set';
+      }
+    } else if (dateString instanceof Date) {
+      date = dateString;
+    } else if (typeof dateString === 'number') {
+      date = new Date(dateString);
+    } else {
+      return 'Not set';
+    }
+
+    // Format as "17th Jan 2025"
+    const day = date.getDate();
+    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    const year = date.getFullYear();
+
+    // Add ordinal suffix to day
+    const getOrdinalSuffix = (day: number) => {
+      if (day >= 11 && day <= 13) {
+        return 'th';
+      }
+      switch (day % 10) {
+        case 1:
+          return 'st';
+        case 2:
+          return 'nd';
+        case 3:
+          return 'rd';
+        default:
+          return 'th';
+      }
+    };
+
+    return `${day}${getOrdinalSuffix(day)} ${month} ${year}`;
+  };
+
   // Get available tabs based on data and view mode
   const getAvailableTabs = useCallback(() => {
     const tabs: Array<{ id: string; name: string; type: 'overall' | 'team-overall' | string }> = [];
@@ -242,69 +309,511 @@ export default function EventLeaderboard() {
     }
   }, [viewMode, leaderboardData, activeTab, getAvailableTabs]);
 
-  // Determine which bodyweight to use for calculations
-  const bodyweightForScoring = competitionVerification?.bodyweight || userProfile?.bodyweight || 70;
-  const sexForScoring = userProfile?.sex || 'M';
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
-              ))}
+      <ProtectedRoute>
+        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+          <Header />
+          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+            <div className="container mx-auto px-4 py-8">
+              {/* Welcome Section Skeleton */}
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center">
+                  <div className="w-16 h-16 bg-gray-700 rounded-full animate-pulse mr-4"></div>
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-700 rounded w-24 mb-2 animate-pulse"></div>
+                    <div className="h-6 bg-gray-700 rounded w-32 animate-pulse"></div>
+                  </div>
+                </div>
+                <div className="text-right space-y-3">
+                  <div className="flex flex-col items-end">
+                    <div className="h-4 bg-gray-700 rounded w-20 mb-1 animate-pulse"></div>
+                    <div className="bg-gray-700 rounded-lg w-20 h-10 animate-pulse"></div>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <div className="h-4 bg-gray-700 rounded w-16 mb-1 animate-pulse"></div>
+                    <div className="bg-gray-700 rounded-lg w-20 h-10 animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Breadcrumbs Skeleton */}
+              <div className="mb-6">
+                <div className="h-4 bg-gray-700 rounded w-48 animate-pulse"></div>
+              </div>
+
+              {/* Event Header Skeleton */}
+              <div className="mb-8">
+                <div className="h-8 bg-gray-700 rounded w-80 mb-2 animate-pulse"></div>
+                <div className="h-4 bg-gray-700 rounded w-64 animate-pulse"></div>
+              </div>
+
+              {/* Event Card Skeleton */}
+              <div className="mb-8">
+                <LargeEventCardSkeleton />
+              </div>
+
+              {/* Leaderboard Skeleton */}
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 animate-pulse">
+                <div className="h-6 bg-gray-700 rounded w-40 mb-4"></div>
+                <div className="space-y-4">
+                  <div className="h-4 bg-gray-700 rounded w-full"></div>
+                  <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-700 rounded w-5/6"></div>
+                </div>
+              </div>
             </div>
           </div>
+          <Footer />
         </div>
-      </div>
+      </ProtectedRoute>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
-                <div className="mt-2 text-sm text-red-700 dark:text-red-300">{error}</div>
+      <ProtectedRoute>
+        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+          <Header />
+          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+            <div className="container mx-auto px-4 py-8">
+              <div className="text-center py-8">
+                <p className="text-red-400">{error}</p>
+                <Link
+                  href="/dashboard"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                >
+                  Back to Dashboard
+                </Link>
               </div>
             </div>
           </div>
+          <Footer />
         </div>
-      </div>
+      </ProtectedRoute>
     );
   }
 
-  if (!leaderboardData) {
+  if (!leaderboardData || !event) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-gray-500 dark:text-gray-400">
-            No leaderboard data available
+      <ProtectedRoute>
+        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+          <Header />
+          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+            <div className="container mx-auto px-4 py-8">
+              <div className="text-center py-8">
+                <p className="text-gray-400">Event or leaderboard data not found.</p>
+                <Link
+                  href="/dashboard"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                >
+                  Back to Dashboard
+                </Link>
+              </div>
+            </div>
           </div>
+          <Footer />
         </div>
-      </div>
+      </ProtectedRoute>
     );
   }
 
   const availableTabs = getAvailableTabs();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <ProtectedRoute>
+      <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <Header />
+        <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+          <div className="container mx-auto px-4 py-8">
+            {/* Welcome Section */}
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center">
+                <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-white text-xl font-bold">
+                    {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-gray-400 text-sm">Welcome Back</p>
+                  <h1 className="text-white text-2xl font-bold">{user?.name || user?.email}</h1>
+                </div>
+              </div>
+              <div className="text-right space-y-3">
+                <div className="flex flex-col items-end">
+                  <p className="text-white font-medium text-base mb-1">Verified Score</p>
+                  <div className="bg-green-900/30 border border-green-700/50 px-3 py-2 rounded-lg w-20">
+                    <span className="text-green-400 font-bold">773</span>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end">
+                  <p className="text-white font-medium text-base mb-1">Total Score</p>
+                  <div
+                    className="px-3 py-2 rounded-lg w-20"
+                    style={{
+                      background:
+                        'linear-gradient(90deg, #E5965E 0%, #F26004 35.58%, #C10901 67.79%, #240100 100%)',
+                    }}
+                  >
+                    <span className="text-white font-bold">1,981</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Breadcrumbs */}
+            <nav
+              className="mb-6 text-sm text-gray-400 flex items-center space-x-2"
+              aria-label="Breadcrumb"
+            >
+              <Link href="/dashboard" className="hover:text-white transition-colors">
+                Dashboard
+              </Link>
+              <span>/</span>
+              <Link href={`/events/${eventId}`} className="hover:text-white transition-colors">
+                {event.name}
+              </Link>
+              <span>/</span>
+              <span className="text-white font-semibold">Leaderboard</span>
+            </nav>
+
+            {/* Event Header */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-white mb-2">Leaderboard</h1>
+              <p className="text-gray-400">
+                Track your progress and see how you rank against other competitors
+              </p>
+              <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                <Link
+                  href={`/events/${eventId}/calculator`}
+                  className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                >
+                  🧮 Score Calculator
+                </Link>
+                <Link
+                  href={`/public/leaderboard/${eventId}`}
+                  className="inline-flex items-center px-4 py-2 border border-gray-600 text-gray-300 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  📊 View Public Leaderboard
+                </Link>
+              </div>
+            </div>
+
+            {/* Event Card */}
+            <div className="mb-8">
+              <div className="w-full h-80 bg-gray-800 rounded-2xl relative overflow-hidden">
+                {/* Event Background Image */}
+                <div className="absolute inset-0">
+                  {event.imageUrl ? (
+                    <Image src={event.imageUrl} alt={event.name} fill className="object-cover" />
+                  ) : (
+                    <Image
+                      src="/event_placeholder.png"
+                      alt={event.name}
+                      fill
+                      className="object-cover"
+                    />
+                  )}
+                  {/* Dark overlay for text readability */}
+                  <div className="absolute inset-0 bg-black/40" />
+                </div>
+
+                {/* Event Title Overlay */}
+                <div className="absolute top-6 left-6 right-6 z-10">
+                  <h2 className="text-white font-bold text-3xl leading-tight mb-2">{event.name}</h2>
+                  {event.description && (
+                    <p className="text-white/90 text-lg leading-relaxed max-w-2xl">
+                      {event.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Event Details Footer */}
+                <div className="absolute bottom-0 left-0 right-0 bg-red-500 p-6">
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center space-x-3 text-white">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-lg font-medium">{formatDate(event.startDate)}</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-white">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-lg font-medium">Location TBD</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-white mt-3">
+                      <span
+                        className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(event.status)}`}
+                      >
+                        {event.status}
+                      </span>
+                      <span className="text-sm text-white/80">
+                        Code: <span className="font-mono font-medium">{event.code}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Leaderboard Section */}
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold text-white">Leaderboard</h2>
+
+                {/* View Mode Toggle */}
+                {leaderboardData.isTeamEvent && (
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setViewMode('individual')}
+                      className={`px-3 py-1 text-sm font-medium rounded-md ${
+                        viewMode === 'individual'
+                          ? 'bg-primary-600 text-white'
+                          : 'text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600'
+                      }`}
+                    >
+                      Individual
+                    </button>
+                    <button
+                      onClick={() => setViewMode('team')}
+                      className={`px-3 py-1 text-sm font-medium rounded-md ${
+                        viewMode === 'team'
+                          ? 'bg-primary-600 text-white'
+                          : 'text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600'
+                      }`}
+                    >
+                      Team
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Tab Navigation */}
+              <div className="border-b border-gray-600 mb-6">
+                <nav className="flex space-x-8 overflow-x-auto">
+                  {availableTabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                        activeTab === tab.id
+                          ? 'border-primary-500 text-primary-400'
+                          : 'border-transparent text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {tab.name}
+                    </button>
+                  ))}
+                </nav>
+              </div>
+
+              {/* Leaderboard Content */}
+              <div>
+                {activeTab === 'overall' ? (
+                  <div className="space-y-4">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-600">
+                        <thead className="bg-gray-700">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                              Rank
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                              Competitor
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                              Total Score
+                            </th>
+                            {activities.map((activity) => (
+                              <th
+                                key={activity.id}
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+                              >
+                                {activity.name}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="bg-gray-800 divide-y divide-gray-600">
+                          {leaderboardData.overallLeaderboard?.map((entry) => (
+                            <tr key={entry.userId} className="hover:bg-gray-700">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <span className="text-lg mr-2">{getRankIcon(entry.rank)}</span>
+                                  <span className="text-sm font-medium text-white">
+                                    {entry.rank}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                  <div className="text-sm font-medium text-white">{entry.name}</div>
+
+                                  {entry.teamId && entry.teamName && (
+                                    <div className="text-xs text-gray-400">
+                                      Team: {entry.teamName}
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-bold text-white">
+                                  {entry.totalScore ? entry.totalScore.toFixed(1) : '0.0'}
+                                </div>
+                              </td>
+                              {activities.map((activity) => {
+                                const workoutScore = entry.workoutScores[activity.id];
+                                return (
+                                  <td key={activity.id} className="px-6 py-4 whitespace-nowrap">
+                                    {workoutScore ? (
+                                      <div className="text-sm">
+                                        <div className="font-medium text-white">
+                                          {workoutScore.score
+                                            ? workoutScore.score.toFixed(1)
+                                            : '0.0'}
+                                        </div>
+                                        <div className="text-xs text-gray-400">
+                                          {workoutScore.rawValue
+                                            ? (workoutScore as { scoringSystemId?: string })
+                                                .scoringSystemId
+                                              ? formatRawValue(
+                                                  workoutScore.rawValue,
+                                                  activity.id,
+                                                  workoutScore.reps,
+                                                  (workoutScore as { scoringSystemId?: string })
+                                                    .scoringSystemId,
+                                                )
+                                              : formatRawValue(
+                                                  workoutScore.rawValue,
+                                                  activity.id,
+                                                  workoutScore.reps,
+                                                )
+                                            : ''}
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                          Rank: {workoutScore.rank}
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="text-sm text-gray-500">-</div>
+                                    )}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : activeTab === 'team-overall' ? (
+                  <div className="space-y-4">
+                    {leaderboardData.teamOverallLeaderboard?.map((entry) => (
+                      <div
+                        key={entry.teamId}
+                        className="flex items-center justify-between p-4 bg-gray-700 rounded-lg"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="text-2xl">{getRankIcon(entry.rank)}</div>
+                          <div>
+                            <div className="font-medium text-white">{entry.teamName}</div>
+                            <div className="text-sm text-gray-400">
+                              Team Total Score: {entry.totalScore.toFixed(1)}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-semibold text-white">
+                            {entry.totalScore.toFixed(1)}
+                          </div>
+                        </div>
+                      </div>
+                    )) || (
+                      <div className="text-center py-8 text-gray-400">
+                        No team overall scores available yet.
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {viewMode === 'individual'
+                      ? // Individual activity leaderboard
+                        leaderboardData.workoutLeaderboards
+                          ?.find((workout) => workout.activityId === activeTab)
+                          ?.entries?.map((entry) => (
+                            <div
+                              key={entry.userId}
+                              className="flex items-center justify-between p-4 bg-gray-700 rounded-lg"
+                            >
+                              <div className="flex items-center space-x-4">
+                                <div className="text-2xl">{getRankIcon(entry.rank)}</div>
+                                <div>
+                                  <div className="font-medium text-white">{entry.name}</div>
+                                  <div className="text-sm text-gray-400">
+                                    {entry.rawValue
+                                      ? (entry as { scoringSystemId?: string }).scoringSystemId
+                                        ? formatRawValue(
+                                            entry.rawValue,
+                                            activeTab,
+                                            entry.reps,
+                                            (entry as { scoringSystemId?: string }).scoringSystemId,
+                                          )
+                                        : formatRawValue(entry.rawValue, activeTab, entry.reps)
+                                      : ''}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-lg font-semibold text-white">
+                                  {entry.score.toFixed(1) || '0.0'}
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                      : // Team activity leaderboard
+                        leaderboardData.teamWorkoutLeaderboards
+                          ?.find((workout) => workout.activityId === activeTab)
+                          ?.entries?.map((entry) => (
+                            <div
+                              key={entry.teamId}
+                              className="flex items-center justify-between p-4 bg-gray-700 rounded-lg"
+                            >
+                              <div className="flex items-center space-x-4">
+                                <div className="text-2xl">{getRankIcon(entry.rank)}</div>
+                                <div>
+                                  <div className="font-medium text-white">{entry.teamName}</div>
+                                  <div className="text-sm text-gray-400">Team Score</div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-lg font-semibold text-white">
+                                  {entry.score.toFixed(1) || '0.0'}
+                                </div>
+                              </div>
+                            </div>
+                          )) || (
+                          <div className="text-center py-8 text-gray-400">
+                            No scores available for this activity yet.
+                          </div>
+                        )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+
       {/* SSE Connection Status (for debugging) */}
       {process.env.NODE_ENV === 'development' && (
         <div className="fixed bottom-4 left-4 z-40">
@@ -325,337 +834,6 @@ export default function EventLeaderboard() {
         type={notification.type}
         onClose={() => setNotification((prev) => ({ ...prev, show: false }))}
       />
-
-      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-2">
-            <Link
-              href="/dashboard"
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
-            >
-              Dashboard
-            </Link>
-            <span className="text-gray-400 dark:text-gray-500">/</span>
-            <Link
-              href={`/events/${eventId}`}
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
-            >
-              {leaderboardData?.eventName || 'Event'}
-            </Link>
-            <span className="text-gray-400 dark:text-gray-500">/</span>
-            <span className="text-gray-900 dark:text-white text-sm font-medium">Leaderboard</span>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {leaderboardData?.eventName || 'Event'} Leaderboard
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Track your progress and calculate target scores
-          </p>
-          <div className="mt-4">
-            <Link
-              href={`/public/leaderboard/${eventId}`}
-              className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-            >
-              📊 View Public Leaderboard
-            </Link>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Leaderboard Section */}
-          <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Leaderboard
-                  </h2>
-
-                  {/* View Mode Toggle */}
-                  {leaderboardData.isTeamEvent && (
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => setViewMode('individual')}
-                        className={`px-3 py-1 text-sm font-medium rounded-md ${
-                          viewMode === 'individual'
-                            ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                        }`}
-                      >
-                        Individual
-                      </button>
-                      <button
-                        onClick={() => setViewMode('team')}
-                        className={`px-3 py-1 text-sm font-medium rounded-md ${
-                          viewMode === 'team'
-                            ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                        }`}
-                      >
-                        Team
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Tab Navigation */}
-              <div className="border-b border-gray-200 dark:border-gray-700">
-                <nav className="flex space-x-8 px-6 overflow-x-auto">
-                  {availableTabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                        activeTab === tab.id
-                          ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                          : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                      }`}
-                    >
-                      {tab.name}
-                    </button>
-                  ))}
-                </nav>
-              </div>
-
-              {/* Leaderboard Content */}
-              <div className="p-6">
-                {activeTab === 'overall' ? (
-                  <div className="space-y-4">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-gray-50 dark:bg-gray-700">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                              Rank
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                              Competitor
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                              Total Score
-                            </th>
-                            {activities.map((activity) => (
-                              <th
-                                key={activity.id}
-                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-                              >
-                                {activity.name}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                          {leaderboardData.overallLeaderboard?.map((entry) => (
-                            <tr
-                              key={entry.userId}
-                              className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                            >
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center">
-                                  <span className="text-lg mr-2">{getRankIcon(entry.rank)}</span>
-                                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                    {entry.rank}
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div>
-                                  <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                    {entry.name}
-                                  </div>
-
-                                  {entry.teamId && entry.teamName && (
-                                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                                      Team: {entry.teamName}
-                                    </div>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-bold text-gray-900 dark:text-white">
-                                  {entry.totalScore ? entry.totalScore.toFixed(1) : '0.0'}
-                                </div>
-                              </td>
-                              {activities.map((activity) => {
-                                const workoutScore = entry.workoutScores[activity.id];
-                                return (
-                                  <td key={activity.id} className="px-6 py-4 whitespace-nowrap">
-                                    {workoutScore ? (
-                                      <div className="text-sm">
-                                        <div className="font-medium text-gray-900 dark:text-white">
-                                          {workoutScore.score
-                                            ? workoutScore.score.toFixed(1)
-                                            : '0.0'}
-                                        </div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                                          {workoutScore.rawValue
-                                            ? (workoutScore as { scoringSystemId?: string })
-                                                .scoringSystemId
-                                              ? formatRawValue(
-                                                  workoutScore.rawValue,
-                                                  activity.id,
-                                                  workoutScore.reps,
-                                                  (workoutScore as { scoringSystemId?: string })
-                                                    .scoringSystemId,
-                                                )
-                                              : formatRawValue(
-                                                  workoutScore.rawValue,
-                                                  activity.id,
-                                                  workoutScore.reps,
-                                                )
-                                            : ''}
-                                        </div>
-                                        <div className="text-xs text-gray-400 dark:text-gray-500">
-                                          Rank: {workoutScore.rank}
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      <div className="text-sm text-gray-400 dark:text-gray-500">
-                                        -
-                                      </div>
-                                    )}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                ) : activeTab === 'team-overall' ? (
-                  <div className="space-y-4">
-                    {leaderboardData.teamOverallLeaderboard?.map((entry) => (
-                      <div
-                        key={entry.teamId}
-                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div className="text-2xl">{getRankIcon(entry.rank)}</div>
-                          <div>
-                            <div className="font-medium text-gray-900 dark:text-white">
-                              {entry.teamName}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              Team Total Score: {entry.totalScore.toFixed(1)}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {entry.totalScore.toFixed(1)}
-                          </div>
-                        </div>
-                      </div>
-                    )) || (
-                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                        No team overall scores available yet.
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {viewMode === 'individual'
-                      ? // Individual activity leaderboard
-                        leaderboardData.workoutLeaderboards
-                          ?.find((workout) => workout.activityId === activeTab)
-                          ?.entries?.map((entry) => (
-                            <div
-                              key={entry.userId}
-                              className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                            >
-                              <div className="flex items-center space-x-4">
-                                <div className="text-2xl">{getRankIcon(entry.rank)}</div>
-                                <div>
-                                  <div className="font-medium text-gray-900 dark:text-white">
-                                    {entry.name}
-                                  </div>
-                                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    {entry.rawValue
-                                      ? (entry as { scoringSystemId?: string }).scoringSystemId
-                                        ? formatRawValue(
-                                            entry.rawValue,
-                                            activeTab,
-                                            entry.reps,
-                                            (entry as { scoringSystemId?: string }).scoringSystemId,
-                                          )
-                                        : formatRawValue(entry.rawValue, activeTab, entry.reps)
-                                      : ''}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                                  {entry.score.toFixed(1) || '0.0'}
-                                </div>
-                              </div>
-                            </div>
-                          ))
-                      : // Team activity leaderboard
-                        leaderboardData.teamWorkoutLeaderboards
-                          ?.find((workout) => workout.activityId === activeTab)
-                          ?.entries?.map((entry) => (
-                            <div
-                              key={entry.teamId}
-                              className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                            >
-                              <div className="flex items-center space-x-4">
-                                <div className="text-2xl">{getRankIcon(entry.rank)}</div>
-                                <div>
-                                  <div className="font-medium text-gray-900 dark:text-white">
-                                    {entry.teamName}
-                                  </div>
-                                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    Team Score
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                                  {entry.score.toFixed(1) || '0.0'}
-                                </div>
-                              </div>
-                            </div>
-                          )) || (
-                          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                            No scores available for this activity yet.
-                          </div>
-                        )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Score Calculator Section */}
-          <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Score Calculator
-                </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Calculate your target scores for each event
-                </p>
-              </div>
-              <div className="p-6">
-                <ScoreCalculator
-                  activities={activities}
-                  userProfileOverride={{
-                    bodyweight: bodyweightForScoring,
-                    dateOfBirth: userProfile?.dateOfBirth,
-                    sex: sexForScoring,
-                    competitionVerification,
-                    profileBodyweight: userProfile?.bodyweight,
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </ProtectedRoute>
   );
 }

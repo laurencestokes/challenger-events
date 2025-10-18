@@ -541,6 +541,12 @@ export default function EventPage() {
                         📊 View Live Leaderboard
                       </Link>
                       <Link
+                        href={`/events/${eventId}/calculator`}
+                        className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                      >
+                        🧮 Score Calculator
+                      </Link>
+                      <Link
                         href={`/events/${eventId}/brief`}
                         className="block w-full text-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600 transition-colors"
                       >
