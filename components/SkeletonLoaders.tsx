@@ -31,6 +31,119 @@ export function TeamCardSkeleton() {
   );
 }
 
+// Large Event Card Skeleton
+export function LargeEventCardSkeleton() {
+  return (
+    <div className="w-full h-80 bg-gray-800 rounded-2xl relative overflow-hidden animate-pulse">
+      {/* Background skeleton */}
+      <div className="absolute inset-0 bg-gray-700"></div>
+
+      {/* Title overlay skeleton */}
+      <div className="absolute top-6 left-6 right-6 z-10">
+        <div className="h-8 bg-gray-600 rounded mb-2 w-2/3"></div>
+        <div className="h-4 bg-gray-600 rounded mb-1 w-full"></div>
+        <div className="h-4 bg-gray-600 rounded w-3/4"></div>
+      </div>
+
+      {/* Footer skeleton */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gray-600 p-6">
+        <div className="flex flex-col space-y-2">
+          <div className="flex items-center space-x-3">
+            <div className="w-5 h-5 bg-gray-500 rounded"></div>
+            <div className="h-4 bg-gray-500 rounded w-32"></div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <div className="w-5 h-5 bg-gray-500 rounded"></div>
+            <div className="h-4 bg-gray-500 rounded w-24"></div>
+          </div>
+          <div className="flex items-center space-x-3 mt-3">
+            <div className="h-6 bg-gray-500 rounded w-16"></div>
+            <div className="h-4 bg-gray-500 rounded w-20"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Team Management Skeleton
+export function TeamManagementSkeleton() {
+  return (
+    <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 animate-pulse">
+      <div className="space-y-6">
+        {/* Description skeleton */}
+        <div className="h-4 bg-gray-700 rounded w-full"></div>
+        <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+
+        {/* Team selection skeleton */}
+        <div>
+          <div className="h-6 bg-gray-700 rounded mb-4 w-1/2"></div>
+          <div className="h-4 bg-gray-700 rounded mb-4 w-3/4"></div>
+
+          {/* Team cards skeleton */}
+          <div className="space-y-3">
+            <div className="p-4 border-2 border-gray-600 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-700 rounded mb-2 w-1/3"></div>
+                  <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+                </div>
+                <div className="h-8 bg-gray-700 rounded w-16"></div>
+              </div>
+            </div>
+            <div className="p-4 border-2 border-gray-600 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-700 rounded mb-2 w-1/3"></div>
+                  <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+                </div>
+                <div className="h-8 bg-gray-700 rounded w-16"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Quick Actions Skeleton
+export function QuickActionsSkeleton() {
+  return (
+    <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 animate-pulse">
+      <div className="space-y-3">
+        <div className="h-8 bg-gray-700 rounded w-full"></div>
+        <div className="h-8 bg-gray-700 rounded w-full"></div>
+        <div className="h-8 bg-gray-700 rounded w-full"></div>
+        <div className="h-8 bg-gray-700 rounded w-full"></div>
+        <div className="h-8 bg-gray-700 rounded w-full"></div>
+      </div>
+    </div>
+  );
+}
+
+// Event Stats Skeleton
+export function EventStatsSkeleton() {
+  return (
+    <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 animate-pulse">
+      <div className="space-y-3">
+        <div className="flex justify-between">
+          <div className="h-4 bg-gray-700 rounded w-20"></div>
+          <div className="h-4 bg-gray-700 rounded w-8"></div>
+        </div>
+        <div className="flex justify-between">
+          <div className="h-4 bg-gray-700 rounded w-16"></div>
+          <div className="h-6 bg-gray-700 rounded w-16"></div>
+        </div>
+        <div className="flex justify-between">
+          <div className="h-4 bg-gray-700 rounded w-20"></div>
+          <div className="h-4 bg-gray-700 rounded w-24"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Performance Graph Skeleton
 export function PerformanceGraphSkeleton() {
   return (

@@ -130,17 +130,17 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
 
       {/* Team Selection for Event */}
       {eventId && (
-        <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <>
+          <h3 className="text-lg font-semibold text-white mb-4">
             Select Your Team for This Event
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-sm text-gray-400 mb-4">
             Choose a team to compete with in this event. You can only be on one team per event.
           </p>
 
           {teams.length === 0 ? (
             <div className="text-center py-4">
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
+              <p className="text-gray-400 mb-4">
                 No teams available for this event.
               </p>
               <button
@@ -157,11 +157,10 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
                 return (
                   <div
                     key={team.id}
-                    className={`relative flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                      isSelected
-                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-md'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-sm'
-                    }`}
+                    className={`relative flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${isSelected
+                        ? 'border-primary-500 bg-primary-900/20 shadow-md'
+                        : 'border-gray-600 hover:border-primary-400 hover:shadow-sm'
+                      }`}
                     onClick={() => handleSelectTeam(team.id)}
                   >
                     {/* Selection indicator */}
@@ -179,22 +178,21 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
 
                     <div className="flex items-center space-x-4">
                       <div
-                        className={`flex items-center justify-center w-5 h-5 rounded-full border-2 ${
-                          isSelected
+                        className={`flex items-center justify-center w-5 h-5 rounded-full border-2 ${isSelected
                             ? 'border-primary-500 bg-primary-500'
                             : 'border-gray-300 dark:border-gray-600'
-                        }`}
+                          }`}
                       >
                         {isSelected && <div className="w-2 h-2 bg-white rounded-full"></div>}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
-                          <h4 className="font-semibold text-gray-900 dark:text-white">
+                          <h4 className="font-semibold text-white">
                             {team.name}
                           </h4>
                         </div>
                         {team.description && (
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          <p className="text-sm text-gray-400 mt-1">
                             {team.description}
                           </p>
                         )}
@@ -227,10 +225,10 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
 
           {/* Selection summary */}
           {selectedTeamId && (
-            <div className="mt-4 p-3 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg">
+            <div className="mt-4 p-3 bg-green-900/20 border border-green-700/50 rounded-lg">
               <div className="flex items-center space-x-2">
                 <svg
-                  className="w-5 h-5 text-success-600 dark:text-success-400"
+                  className="w-5 h-5 text-green-400"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -240,7 +238,7 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className="text-sm font-medium text-success-800 dark:text-success-200">
+                <span className="text-sm font-medium text-green-200">
                   You're competing with:{' '}
                   <span className="font-semibold">
                     {teams.find((t) => t.id === selectedTeamId)?.name}
@@ -249,7 +247,7 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
               </div>
             </div>
           )}
-        </div>
+        </>
       )}
 
       {/* Create Team Modal */}

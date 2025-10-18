@@ -7,9 +7,17 @@ import { api } from '../../../lib/api-client';
 import NotificationToast from '@/components/NotificationToast';
 import { useSSE } from '@/hooks/useSSE';
 import Link from 'next/link';
+import Image from 'next/image';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import TeamManagement from '@/components/TeamManagement';
-import TeamDebug from '@/components/TeamDebug';
+import {
+  LargeEventCardSkeleton,
+  TeamManagementSkeleton,
+  QuickActionsSkeleton,
+  EventStatsSkeleton,
+} from '@/components/SkeletonLoaders';
 
 interface Event {
   id: string;
@@ -20,6 +28,7 @@ interface Event {
   endDate: unknown | null;
   createdAt: unknown;
   description?: string;
+  imageUrl?: string;
   participants?: Participant[];
   isTeamEvent?: boolean;
   teamScoringMethod?: 'SUM' | 'AVERAGE' | 'BEST';
@@ -110,6 +119,26 @@ export default function EventPage() {
     }
   };
 
+  const handleCopyEventCode = async () => {
+    if (!event) return;
+
+    try {
+      await navigator.clipboard.writeText(event.code);
+      setNotification({
+        show: true,
+        message: `Event code "${event.code}" copied to clipboard!`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Failed to copy event code:', error);
+      setNotification({
+        show: true,
+        message: 'Failed to copy event code',
+        type: 'error',
+      });
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -187,13 +216,75 @@ export default function EventPage() {
   if (isLoading) {
     return (
       <ProtectedRoute>
-        <div className="px-4 sm:px-6 lg:px-8 py-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">Loading event details...</p>
+        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+          <Header />
+          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+            <div className="container mx-auto px-4 py-8">
+              {/* Welcome Section Skeleton */}
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center">
+                  <div className="w-16 h-16 bg-gray-700 rounded-full animate-pulse mr-4"></div>
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-700 rounded w-24 mb-2 animate-pulse"></div>
+                    <div className="h-6 bg-gray-700 rounded w-32 animate-pulse"></div>
+                  </div>
+                </div>
+                <div className="text-right space-y-3">
+                  <div className="flex flex-col items-end">
+                    <div className="h-4 bg-gray-700 rounded w-20 mb-1 animate-pulse"></div>
+                    <div className="bg-gray-700 rounded-lg w-20 h-10 animate-pulse"></div>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <div className="h-4 bg-gray-700 rounded w-16 mb-1 animate-pulse"></div>
+                    <div className="bg-gray-700 rounded-lg w-20 h-10 animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Breadcrumbs Skeleton */}
+              <div className="mb-6">
+                <div className="h-4 bg-gray-700 rounded w-32 animate-pulse"></div>
+              </div>
+
+              {/* Event Header Skeleton */}
+              <div className="mb-8">
+                <div className="h-8 bg-gray-700 rounded w-64 mb-2 animate-pulse"></div>
+                <div className="flex items-center space-x-3">
+                  <div className="h-6 bg-gray-700 rounded w-16 animate-pulse"></div>
+                  <div className="h-4 bg-gray-700 rounded w-24 animate-pulse"></div>
+                </div>
+              </div>
+
+              {/* Event Card Skeleton */}
+              <div className="mb-8">
+                <LargeEventCardSkeleton />
+              </div>
+
+              {/* Main Content Grid Skeleton */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Column */}
+                <div className="space-y-8">
+                  <div>
+                    <div className="h-6 bg-gray-700 rounded w-32 mb-4 animate-pulse"></div>
+                    <TeamManagementSkeleton />
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-8">
+                  <div>
+                    <div className="h-6 bg-gray-700 rounded w-24 mb-4 animate-pulse"></div>
+                    <QuickActionsSkeleton />
+                  </div>
+                  <div>
+                    <div className="h-6 bg-gray-700 rounded w-20 mb-4 animate-pulse"></div>
+                    <EventStatsSkeleton />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+          <Footer />
         </div>
       </ProtectedRoute>
     );
@@ -202,18 +293,22 @@ export default function EventPage() {
   if (error) {
     return (
       <ProtectedRoute>
-        <div className="px-4 sm:px-6 lg:px-8 py-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center py-8">
-              <p className="text-error-600 dark:text-error-400">{error}</p>
-              <Link
-                href="/dashboard"
-                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
-              >
-                Back to Dashboard
-              </Link>
+        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+          <Header />
+          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+            <div className="container mx-auto px-4 py-8">
+              <div className="text-center py-8">
+                <p className="text-red-400">{error}</p>
+                <Link
+                  href="/dashboard"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                >
+                  Back to Dashboard
+                </Link>
+              </div>
             </div>
           </div>
+          <Footer />
         </div>
       </ProtectedRoute>
     );
@@ -222,18 +317,22 @@ export default function EventPage() {
   if (!event) {
     return (
       <ProtectedRoute>
-        <div className="px-4 sm:px-6 lg:px-8 py-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400">Event not found.</p>
-              <Link
-                href="/dashboard"
-                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
-              >
-                Back to Dashboard
-              </Link>
+        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+          <Header />
+          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+            <div className="container mx-auto px-4 py-8">
+              <div className="text-center py-8">
+                <p className="text-gray-400">Event not found.</p>
+                <Link
+                  href="/dashboard"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                >
+                  Back to Dashboard
+                </Link>
+              </div>
             </div>
           </div>
+          <Footer />
         </div>
       </ProtectedRoute>
     );
@@ -241,37 +340,69 @@ export default function EventPage() {
 
   return (
     <ProtectedRoute>
-      <div className="px-4 sm:px-6 lg:px-8 py-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center space-x-3 mb-2">
-                  <Link
-                    href="/dashboard"
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
-                  >
-                    Dashboard
-                  </Link>
-                  <span className="text-gray-400 dark:text-gray-500">/</span>
-                  <span className="text-gray-900 dark:text-white text-sm font-medium">
-                    {event.name}
+      <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <Header />
+        <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+          <div className="container mx-auto px-4 py-8">
+            {/* Welcome Section */}
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center">
+                <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-white text-xl font-bold">
+                    {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
                   </span>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{event.name}</h1>
-                <div className="flex items-center space-x-3 mt-2">
-                  <span
-                    className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(event.status)}`}
-                  >
-                    {event.status}
-                  </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Code: <span className="font-mono font-medium">{event.code}</span>
-                  </span>
+                <div className="flex-1">
+                  <p className="text-gray-400 text-sm">Welcome Back</p>
+                  <h1 className="text-white text-2xl font-bold">{user?.name || user?.email}</h1>
                 </div>
               </div>
+              <div className="text-right space-y-3">
+                <div className="flex flex-col items-end">
+                  <p className="text-white font-medium text-base mb-1">Verified Score</p>
+                  <div className="bg-green-900/30 border border-green-700/50 px-3 py-2 rounded-lg w-20">
+                    <span className="text-green-400 font-bold">773</span>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end">
+                  <p className="text-white font-medium text-base mb-1">Total Score</p>
+                  <div
+                    className="px-3 py-2 rounded-lg w-20"
+                    style={{
+                      background:
+                        'linear-gradient(90deg, #E5965E 0%, #F26004 35.58%, #C10901 67.79%, #240100 100%)',
+                    }}
+                  >
+                    <span className="text-white font-bold">1,981</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Breadcrumbs */}
+            <nav
+              className="mb-6 text-sm text-gray-400 flex items-center space-x-2"
+              aria-label="Breadcrumb"
+            >
+              <Link href="/dashboard" className="hover:text-white transition-colors">
+                Dashboard
+              </Link>
+              <span>/</span>
+              <span className="text-white font-semibold">{event.name}</span>
+            </nav>
+
+            {/* Event Header */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-white mb-2">{event.name}</h1>
               <div className="flex items-center space-x-3">
+                <span
+                  className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(event.status)}`}
+                >
+                  {event.status}
+                </span>
+                <span className="text-sm text-gray-400">
+                  Code: <span className="font-mono font-medium text-white">{event.code}</span>
+                </span>
                 {!isJoined && event.status === 'ACTIVE' && (
                   <button
                     onClick={handleJoinEvent}
@@ -281,180 +412,197 @@ export default function EventPage() {
                   </button>
                 )}
                 {isJoined && (
-                  <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200">
+                  <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-green-900/30 text-green-400 border border-green-700/50">
                     ✓ Joined
                   </span>
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Event Details */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Event Info */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Event Information */}
-              <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  Event Information
-                </h2>
-                {event.description && (
-                  <div className="mb-4">
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      Description
-                    </h3>
-                    <p className="text-gray-900 dark:text-white">{event.description}</p>
-                  </div>
-                )}
-                <div className="mb-4">
-                  <Link
-                    href={`/events/${eventId}/leaderboard`}
-                    className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-                  >
-                    📊 View Live Leaderboard
-                  </Link>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      Start Date
-                    </h3>
-                    <p className="text-gray-900 dark:text-white">{formatDate(event.startDate)}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      End Date
-                    </h3>
-                    <p className="text-gray-900 dark:text-white">{formatDate(event.endDate)}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      Created
-                    </h3>
-                    <p className="text-gray-900 dark:text-white">{formatDate(event.createdAt)}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      Status
-                    </h3>
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(event.status)}`}
-                    >
-                      {event.status}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Team Management - Only show for team events */}
-              {event.isTeamEvent && (
-                <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                    Team Management
-                  </h2>
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      This is a team event.{' '}
-                      {event.teamScoringMethod === 'SUM'
-                        ? 'Team scores are calculated by summing all member scores.'
-                        : event.teamScoringMethod === 'AVERAGE'
-                          ? 'Team scores are calculated by averaging member scores.'
-                          : 'Team scores are calculated by taking the best individual score.'}
-                      {event.maxTeamSize && ` Maximum team size: ${event.maxTeamSize} members.`}
-                    </p>
-                  </div>
-                  <TeamManagement eventId={eventId} />
-                </div>
-              )}
-
-              {/* Team Debug - Temporary for fixing team participation */}
-              <TeamDebug eventId={eventId} />
-            </div>
-
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Quick Actions */}
-              <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Quick Actions
-                </h2>
-                <div className="space-y-3">
-                  {!isJoined && event.status === 'ACTIVE' && (
-                    <button
-                      onClick={handleJoinEvent}
-                      className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
-                    >
-                      Join Event
-                    </button>
+            {/* Event Card */}
+            <div className="mb-8">
+              <div className="w-full h-80 bg-gray-800 rounded-2xl relative overflow-hidden">
+                {/* Event Background Image */}
+                <div className="absolute inset-0">
+                  {event.imageUrl ? (
+                    <Image src={event.imageUrl} alt={event.name} fill className="object-cover" />
+                  ) : (
+                    <Image
+                      src="/event_placeholder.png"
+                      alt={event.name}
+                      fill
+                      className="object-cover"
+                    />
                   )}
-                  {isJoined && (
-                    <div className="text-center py-2">
-                      <span className="text-sm text-success-600 dark:text-success-400">
-                        ✓ You&apos;re participating in this event
+                  {/* Dark overlay for text readability */}
+                  <div className="absolute inset-0 bg-black/40" />
+                </div>
+
+                {/* Event Title Overlay */}
+                <div className="absolute top-6 left-6 right-6 z-10">
+                  <h2 className="text-white font-bold text-3xl leading-tight mb-2">{event.name}</h2>
+                  {event.description && (
+                    <p className="text-white/90 text-lg leading-relaxed max-w-2xl">
+                      {event.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Event Details Footer */}
+                <div className="absolute bottom-0 left-0 right-0 bg-red-500 p-6">
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center space-x-3 text-white">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-lg font-medium">{formatDate(event.startDate)}</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-white">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-lg font-medium">Location TBD</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-white mt-3">
+                      <span
+                        className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(event.status)}`}
+                      >
+                        {event.status}
+                      </span>
+                      <span className="text-sm text-white/80">
+                        Code: <span className="font-mono font-medium">{event.code}</span>
                       </span>
                     </div>
-                  )}
-                  <Link
-                    href={`/events/${eventId}/brief`}
-                    className="block w-full text-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    View Event Brief
-                  </Link>
-                  <Link
-                    href={`/public/leaderboard/${eventId}`}
-                    className="block w-full text-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    View Public Leaderboard
-                  </Link>
-                  <button
-                    onClick={() => navigator.clipboard.writeText(event.code)}
-                    className="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    Copy Event Code
-                  </button>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              {/* Event Stats */}
-              <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Event Stats
-                </h2>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Participants</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {event.participants?.length || 0}
-                    </span>
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Left Column */}
+              <div className="space-y-8">
+                {/* Team Management - Only show for team events */}
+                {event.isTeamEvent && (
+                  <div>
+                    <h2 className="text-white text-2xl font-bold mb-4">Team Management</h2>
+                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                      <div className="mb-6">
+                        <p className="text-sm text-gray-400">
+                          This is a team event.{' '}
+                          {event.teamScoringMethod === 'SUM'
+                            ? 'Team scores are calculated by summing all member scores.'
+                            : event.teamScoringMethod === 'AVERAGE'
+                              ? 'Team scores are calculated by averaging member scores.'
+                              : 'Team scores are calculated by taking the best individual score.'}
+                          {event.maxTeamSize && ` Maximum team size: ${event.maxTeamSize} members.`}
+                        </p>
+                      </div>
+                      <TeamManagement eventId={eventId} />
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Status</span>
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(event.status)}`}
-                    >
-                      {event.status}
-                    </span>
+                )}
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-8">
+                {/* Quick Actions */}
+                <div>
+                  <h2 className="text-white text-2xl font-bold mb-4">Quick Actions</h2>
+                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                    <div className="space-y-3">
+                      {!isJoined && event.status === 'ACTIVE' && (
+                        <button
+                          onClick={handleJoinEvent}
+                          className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                        >
+                          Join Event
+                        </button>
+                      )}
+                      {isJoined && (
+                        <div className="text-center py-2">
+                          <span className="text-sm text-green-400">
+                            ✓ You&apos;re participating in this event
+                          </span>
+                        </div>
+                      )}
+                      <Link
+                        href={`/events/${eventId}/leaderboard`}
+                        className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                      >
+                        📊 View Live Leaderboard
+                      </Link>
+                      <Link
+                        href={`/events/${eventId}/brief`}
+                        className="block w-full text-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600 transition-colors"
+                      >
+                        View Event Brief
+                      </Link>
+                      <Link
+                        href={`/public/leaderboard/${eventId}`}
+                        className="block w-full text-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600 transition-colors"
+                      >
+                        View Public Leaderboard
+                      </Link>
+                      <button
+                        onClick={handleCopyEventCode}
+                        className="block w-full px-4 py-2 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600 transition-colors"
+                      >
+                        Copy Event Code
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Created</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {formatDate(event.createdAt)}
-                    </span>
+                </div>
+
+                {/* Event Stats */}
+                <div>
+                  <h2 className="text-white text-2xl font-bold mb-4">Event Stats</h2>
+                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-400">Participants</span>
+                        <span className="text-sm font-medium text-white">
+                          {event.participants?.length || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-400">Status</span>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(event.status)}`}
+                        >
+                          {event.status}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-400">Created</span>
+                        <span className="text-sm font-medium text-white">
+                          {formatDate(event.createdAt)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        <Footer />
       </div>
 
       {/* SSE Connection Status (for debugging) */}
       {process.env.NODE_ENV === 'development' && (
         <div className="fixed bottom-4 left-4 z-40">
           <div
-            className={`px-3 py-1 rounded-full text-xs ${
-              isConnected ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-            }`}
+            className={`px-3 py-1 rounded-full text-xs ${isConnected ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+              }`}
           >
             SSE: {isConnected ? 'Connected' : 'Disconnected'}
           </div>
