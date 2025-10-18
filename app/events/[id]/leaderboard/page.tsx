@@ -635,12 +635,14 @@ export default function EventLeaderboard() {
 
                                 {/* Avatar */}
                                 <div className="flex justify-center mb-4">
-                                  <div className="w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center border-2 border-gray-400">
-                                    <span className="text-white text-2xl font-bold">
-                                      {leaderboardData.overallLeaderboard[1].name
-                                        .charAt(0)
-                                        .toUpperCase()}
-                                    </span>
+                                  <div className="w-20 h-20 bg-gray-400 rounded-full flex items-center justify-center border-2 border-gray-400 overflow-hidden">
+                                    <Image
+                                      src="/challenger-logo-no-text.png"
+                                      alt={leaderboardData.overallLeaderboard[1].name}
+                                      width={80}
+                                      height={80}
+                                      className="w-full h-full object-cover"
+                                    />
                                   </div>
                                 </div>
 
@@ -678,12 +680,14 @@ export default function EventLeaderboard() {
 
                                 {/* Avatar */}
                                 <div className="flex justify-center mb-4">
-                                  <div className="w-24 h-24 bg-gray-600 rounded-full flex items-center justify-center border-2 border-yellow-400">
-                                    <span className="text-white text-3xl font-bold">
-                                      {leaderboardData.overallLeaderboard[0].name
-                                        .charAt(0)
-                                        .toUpperCase()}
-                                    </span>
+                                  <div className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-yellow-400 overflow-hidden">
+                                    <Image
+                                      src="/challenger-logo-no-text.png"
+                                      alt={leaderboardData.overallLeaderboard[0].name}
+                                      width={96}
+                                      height={96}
+                                      className="w-full h-full object-cover"
+                                    />
                                   </div>
                                 </div>
 
@@ -721,12 +725,14 @@ export default function EventLeaderboard() {
 
                                 {/* Avatar */}
                                 <div className="flex justify-center mb-4">
-                                  <div className="w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center border-2 border-amber-600">
-                                    <span className="text-white text-2xl font-bold">
-                                      {leaderboardData.overallLeaderboard[2].name
-                                        .charAt(0)
-                                        .toUpperCase()}
-                                    </span>
+                                  <div className="w-20 h-20 bg-amber-600 rounded-full flex items-center justify-center border-2 border-amber-600 overflow-hidden">
+                                    <Image
+                                      src="/challenger-logo-no-text.png"
+                                      alt={leaderboardData.overallLeaderboard[2].name}
+                                      width={80}
+                                      height={80}
+                                      className="w-full h-full object-cover"
+                                    />
                                   </div>
                                 </div>
 
@@ -886,12 +892,14 @@ export default function EventLeaderboard() {
 
                                 {/* Team Avatar */}
                                 <div className="flex justify-center mb-4">
-                                  <div className="w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center border-2 border-gray-400">
-                                    <span className="text-white text-2xl font-bold">
-                                      {leaderboardData.teamOverallLeaderboard[1].teamName
-                                        .charAt(0)
-                                        .toUpperCase()}
-                                    </span>
+                                  <div className="w-20 h-20 bg-gray-400 rounded-full flex items-center justify-center border-2 border-gray-400 overflow-hidden">
+                                    <Image
+                                      src="/challenger-logo-no-text.png"
+                                      alt={leaderboardData.teamOverallLeaderboard[1].teamName}
+                                      width={80}
+                                      height={80}
+                                      className="w-full h-full object-cover"
+                                    />
                                   </div>
                                 </div>
 
@@ -926,12 +934,14 @@ export default function EventLeaderboard() {
 
                                 {/* Team Avatar */}
                                 <div className="flex justify-center mb-4">
-                                  <div className="w-24 h-24 bg-gray-600 rounded-full flex items-center justify-center border-2 border-yellow-400">
-                                    <span className="text-white text-3xl font-bold">
-                                      {leaderboardData.teamOverallLeaderboard[0].teamName
-                                        .charAt(0)
-                                        .toUpperCase()}
-                                    </span>
+                                  <div className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-yellow-400 overflow-hidden">
+                                    <Image
+                                      src="/challenger-logo-no-text.png"
+                                      alt={leaderboardData.teamOverallLeaderboard[0].teamName}
+                                      width={96}
+                                      height={96}
+                                      className="w-full h-full object-cover"
+                                    />
                                   </div>
                                 </div>
 
@@ -966,12 +976,14 @@ export default function EventLeaderboard() {
 
                                 {/* Team Avatar */}
                                 <div className="flex justify-center mb-4">
-                                  <div className="w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center border-2 border-amber-600">
-                                    <span className="text-white text-2xl font-bold">
-                                      {leaderboardData.teamOverallLeaderboard[2].teamName
-                                        .charAt(0)
-                                        .toUpperCase()}
-                                    </span>
+                                  <div className="w-20 h-20 bg-amber-600 rounded-full flex items-center justify-center border-2 border-amber-600 overflow-hidden">
+                                    <Image
+                                      src="/challenger-logo-no-text.png"
+                                      alt={leaderboardData.teamOverallLeaderboard[2].teamName}
+                                      width={80}
+                                      height={80}
+                                      className="w-full h-full object-cover"
+                                    />
                                   </div>
                                 </div>
 
