@@ -660,6 +660,13 @@ export default function EventDetails() {
                     📊 View Live Leaderboard
                   </Link>
                   <Link
+                    href={`/admin/events/${eventId}/competition-verification`}
+                    className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white transition-colors hover:opacity-90"
+                    style={{ backgroundColor: '#4682B4' }}
+                  >
+                    ⚖️ Competition Weigh In
+                  </Link>
+                  <Link
                     href={`/events/${eventId}/brief`}
                     className="block w-full text-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >

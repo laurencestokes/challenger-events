@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { api } from '@/lib/api-client';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import WelcomeSection from '@/components/WelcomeSection';
 
 interface Event {
   id: string;
@@ -98,13 +99,14 @@ export default function EditEventBrief() {
   if (isLoading) {
     return (
       <ProtectedRoute requireAdmin>
-        <div className="px-4 sm:px-6 lg:px-8 py-6 bg-white dark:bg-gray-900">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
-              <p className="mt-2 text-gray-600 dark:text-gray-400 font-sans">
-                Loading event details...
-              </p>
+        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+          <div className="container mx-auto px-4 py-8">
+            <div className="text-center py-12">
+              <div
+                className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4"
+                style={{ borderColor: '#4682B4' }}
+              ></div>
+              <p className="text-white text-lg">Loading event details...</p>
             </div>
           </div>
         </div>
@@ -115,13 +117,30 @@ export default function EditEventBrief() {
   if (error && !event) {
     return (
       <ProtectedRoute requireAdmin>
-        <div className="px-4 sm:px-6 lg:px-8 py-6 bg-white dark:bg-gray-900">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center py-8">
-              <p className="text-accent-600 dark:text-accent-400 font-sans">{error}</p>
+        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+          <div className="container mx-auto px-4 py-8">
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg
+                  className="w-8 h-8 text-red-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01mande-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                  />
+                </svg>
+              </div>
+              <h1 className="text-3xl font-bold text-white mb-4">Error Loading Event</h1>
+              <p className="text-gray-400 text-lg mb-6 max-w-md mx-auto">{error}</p>
               <Link
                 href="/admin/events"
-                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-500 hover:bg-primary-600 transition-colors font-display font-bold"
+                className="px-6 py-3 text-white font-semibold rounded-lg transition-colors hover:opacity-90"
+                style={{ backgroundColor: '#4682B4' }}
               >
                 Back to Events
               </Link>
@@ -135,13 +154,32 @@ export default function EditEventBrief() {
   if (!event) {
     return (
       <ProtectedRoute requireAdmin>
-        <div className="px-4 sm:px-6 lg:px-8 py-6 bg-white dark:bg-black">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400 font-sans">Event not found.</p>
+        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+          <div className="container mx-auto px-4 py-8">
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg
+                  className="w-8 h-8 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <h1 className="text-3xl font-bold text-white mb-4">Event Not Found</h1>
+              <p className="text-gray-400 text-lg mb-6 max-w-md mx-auto">
+                The event you're looking for doesn't exist or has been removed.
+              </p>
               <Link
                 href="/admin/events"
-                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-500 hover:bg-primary-600 transition-colors font-display font-bold"
+                className="px-6 py-3 text-white font-semibold rounded-lg transition-colors hover:opacity-90"
+                style={{ backgroundColor: '#4682B4' }}
               >
                 Back to Events
               </Link>
@@ -154,81 +192,68 @@ export default function EditEventBrief() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div className="px-4 sm:px-6 lg:px-8 py-6 bg-white dark:bg-black">
-        <div className="max-w-4xl mx-auto">
+      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="container mx-auto px-4 py-8">
+          {/* Welcome Section */}
+          <WelcomeSection />
+
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center space-x-3 mb-2">
               <Link
                 href="/admin/events"
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm font-sans"
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
               >
                 Events
               </Link>
               <span className="text-gray-400 dark:text-gray-500">/</span>
               <Link
                 href={`/admin/events/${eventId}`}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm font-sans"
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
               >
                 {event.name}
               </Link>
               <span className="text-gray-400 dark:text-gray-500">/</span>
-              <span className="text-gray-900 dark:text-white text-sm font-medium font-sans">
-                Edit Brief
-              </span>
+              <span className="text-gray-900 dark:text-white text-sm font-medium">Edit Brief</span>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 font-sans">
-              Edit Event Brief
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 font-sans">
-              Customize the brief content that competitors will see
-            </p>
+            <h1 className="text-3xl font-bold text-white mb-2">Edit Event Brief</h1>
+            <p className="text-gray-400">Customize the brief content that competitors will see</p>
           </div>
 
           {/* Success/Error Messages */}
           {success && (
-            <div className="mb-6 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-md p-4">
-              <p className="text-green-800 dark:text-green-200 font-sans">{success}</p>
+            <div className="mb-6 bg-green-900/30 border border-green-700/50 rounded-lg p-4">
+              <p className="text-green-400">{success}</p>
             </div>
           )}
 
           {error && (
-            <div className="mb-6 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-md p-4">
-              <p className="text-orange-800 dark:text-orange-200 font-sans">{error}</p>
+            <div className="mb-6 bg-red-900/30 border border-red-700/50 rounded-lg p-4">
+              <p className="text-red-400">{error}</p>
             </div>
           )}
 
           {/* Event Info */}
-          <div className="card p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 font-sans">
-              Event Information
-            </h2>
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-white mb-4">Event Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 font-sans">
-                  Event Name
-                </h3>
-                <p className="text-gray-900 dark:text-white font-medium font-sans">{event.name}</p>
+                <h3 className="text-sm font-medium text-gray-400 mb-1">Event Name</h3>
+                <p className="text-white font-medium">{event.name}</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 font-sans">
-                  Event Code
-                </h3>
-                <p className="text-gray-900 dark:text-white font-mono">{event.code}</p>
+                <h3 className="text-sm font-medium text-gray-400 mb-1">Event Code</h3>
+                <p className="text-white font-mono">{event.code}</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 font-sans">
-                  Status
-                </h3>
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 font-sans">
+                <h3 className="text-sm font-medium text-gray-400 mb-1">Status</h3>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
                   {event.status}
                 </span>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 font-sans">
-                  Type
-                </h3>
-                <p className="text-gray-900 dark:text-white font-sans">
+                <h3 className="text-sm font-medium text-gray-400 mb-1">Type</h3>
+                <p className="text-white">
                   {event.isTeamEvent ? 'Team Event' : 'Individual Event'}
                 </p>
               </div>
@@ -236,21 +261,19 @@ export default function EditEventBrief() {
           </div>
 
           {/* Brief Editor */}
-          <div className="card p-6 mb-8">
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white font-sans">
-                Brief Content
-              </h2>
-              <button onClick={handlePreview} className="btn-secondary">
+              <h2 className="text-xl font-semibold text-white">Brief Content</h2>
+              <button
+                onClick={handlePreview}
+                className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
+              >
                 Preview Brief
               </button>
             </div>
 
             <div className="mb-4">
-              <label
-                htmlFor="brief"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-sans"
-              >
+              <label htmlFor="brief" className="block text-sm font-medium text-gray-300 mb-2">
                 Brief Content (Markdown supported)
               </label>
               <textarea
@@ -258,7 +281,7 @@ export default function EditEventBrief() {
                 value={brief}
                 onChange={(e) => setBrief(e.target.value)}
                 rows={20}
-                className="block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-primary-500 focus:border-primary-500 font-mono text-sm transition-colors"
+                className="block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono text-sm"
                 placeholder={`# ${event.name} - Event Brief
 
 ## Event Overview
@@ -342,13 +365,25 @@ Contact the event organizers if you have any questions about the event format, r
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <button onClick={handleSave} disabled={isSaving} className="btn-primary">
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-6 py-3 bg-orange-500 text-white rounded-lg font-medium disabled:opacity-50 hover:bg-orange-600 transition-colors"
+            >
               {isSaving ? 'Saving...' : 'Save Brief'}
             </button>
-            <Link href={`/admin/events/${eventId}`} className="btn-secondary">
+            <Link
+              href={`/admin/events/${eventId}`}
+              className="px-6 py-3 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors text-center"
+            >
               Cancel
             </Link>
-            <Link href={`/events/${eventId}/brief`} target="_blank" className="btn-secondary">
+            <Link
+              href={`/events/${eventId}/brief`}
+              target="_blank"
+              className="px-6 py-3 text-white rounded-lg transition-colors hover:opacity-90 text-center"
+              style={{ backgroundColor: '#4682B4' }}
+            >
               View Public Brief
             </Link>
           </div>

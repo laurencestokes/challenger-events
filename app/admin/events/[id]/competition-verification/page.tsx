@@ -5,6 +5,8 @@ import { useAuth } from '../../../../../contexts/AuthContext';
 import { api } from '../../../../../lib/api-client';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import WelcomeSection from '@/components/WelcomeSection';
+import { EventListSkeleton } from '@/components/SkeletonLoaders';
 
 interface User {
   id: string;
@@ -131,13 +133,14 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
   if (isLoading) {
     return (
       <ProtectedRoute>
-        <div className="px-4 sm:px-6 lg:px-8 py-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                Loading competition verification...
-              </p>
+        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+          <div className="container mx-auto px-4 py-8">
+            <div className="text-center py-12">
+              <div
+                className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4"
+                style={{ borderColor: '#4682B4' }}
+              ></div>
+              <p className="text-white text-lg">Loading competition verification...</p>
             </div>
           </div>
         </div>
@@ -147,11 +150,14 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
 
   return (
     <ProtectedRoute>
-      <div className="px-4 sm:px-6 lg:px-8 py-6">
-        <div className="max-w-7xl mx-auto">
+      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="container mx-auto px-4 py-8">
+          {/* Welcome Section */}
+          <WelcomeSection />
+
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
               <div>
                 <div className="flex items-center space-x-3 mb-2">
                   <Link
@@ -215,7 +221,9 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
               <h2 className="text-lg font-medium text-gray-900 dark:text-white">Competitors</h2>
             </div>
             <div className="p-6">
-              {participants.length === 0 ? (
+              {isLoading ? (
+                <EventListSkeleton />
+              ) : participants.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500 dark:text-gray-400">No competitors found.</p>
                 </div>

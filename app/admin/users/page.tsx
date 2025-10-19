@@ -5,6 +5,8 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../lib/api-client';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import WelcomeSection from '@/components/WelcomeSection';
+import { EventListSkeleton } from '@/components/SkeletonLoaders';
 
 interface User {
   id: string;
@@ -296,11 +298,19 @@ export default function ManageUsers() {
 
   return (
     <ProtectedRoute>
-      <div className="px-4 sm:px-6 lg:px-8 py-6">
-        <div className="max-w-7xl mx-auto">
+      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="container mx-auto px-4 py-8">
+          {/* Welcome Section */}
+          <WelcomeSection
+            showMetrics={true}
+            totalUsers={stats?.totalUsers || 0}
+            activeUsers={stats?.activeUsers || 0}
+            isLoading={isLoading}
+          />
+
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
               <div>
                 <div className="flex items-center space-x-3 mb-2">
                   <Link
@@ -314,10 +324,8 @@ export default function ManageUsers() {
                     Manage Users
                   </span>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Users</h1>
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
-                  Invite, manage, and monitor user accounts
-                </p>
+                <h1 className="text-3xl font-bold text-white">Manage Users</h1>
+                <p className="mt-2 text-gray-400">Invite, manage, and monitor user accounts</p>
               </div>
               <button
                 onClick={() => setShowInviteModal(true)}
@@ -539,10 +547,7 @@ export default function ManageUsers() {
             </div>
             <div className="p-6">
               {isLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600 dark:text-gray-400">Loading users...</p>
-                </div>
+                <EventListSkeleton />
               ) : error ? (
                 <div className="text-center py-8">
                   <p className="text-error-600 dark:text-error-400">{error}</p>
