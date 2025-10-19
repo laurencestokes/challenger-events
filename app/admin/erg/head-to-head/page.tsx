@@ -3,8 +3,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import WelcomeSection from '@/components/WelcomeSection';
 import Button from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { HeadToHeadSession } from '@/hooks/useErgSocket';
 
 interface User {
@@ -161,95 +163,144 @@ export default function HeadToHeadSetupPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
-      </div>
+      <ProtectedRoute>
+        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+          <div className="container mx-auto px-4 py-8">
+            <div className="text-center py-12">
+              <div
+                className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4"
+                style={{ borderColor: '#4682B4' }}
+              ></div>
+              <p className="text-white text-lg">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-8">Create Head-to-Head Erg Competition</h1>
+    <ProtectedRoute>
+      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="container mx-auto px-4 py-8">
+          {/* Welcome Section */}
+          <WelcomeSection />
 
-      <Card>
-        <div className="p-6 space-y-6">
-          <div>
-            <label className="block text-sm font-medium mb-2">Competitor 1</label>
-            <select
-              value={competitor1Id}
-              onChange={(e) => setCompetitor1Id(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Select Competitor 1</option>
-              {users.map((user) => {
-                const age = user.dateOfBirth ? calculateAge(user.dateOfBirth) : null;
-                const hasCompleteData = user.bodyweight && user.dateOfBirth && user.sex;
-
-                return (
-                  <option key={user.id} value={user.id}>
-                    {user.name} ({user.email})
-                    {hasCompleteData
-                      ? ` - ${age}y, ${user.sex}, ${user.bodyweight}kg`
-                      : ' - Missing profile data'}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Competitor 2</label>
-            <select
-              value={competitor2Id}
-              onChange={(e) => setCompetitor2Id(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Select Competitor 2</option>
-              {users.map((user) => {
-                const age = user.dateOfBirth ? calculateAge(user.dateOfBirth) : null;
-                const hasCompleteData = user.bodyweight && user.dateOfBirth && user.sex;
-
-                return (
-                  <option key={user.id} value={user.id}>
-                    {user.name} ({user.email})
-                    {hasCompleteData
-                      ? ` - ${age}y, ${user.sex}, ${user.bodyweight}kg`
-                      : ' - Missing profile data'}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-
-          {error && (
-            <div className="p-4 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg">
-              {error}
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+              <div>
+                <div className="flex items-center space-x-3 mb-2">
+                  <Link
+                    href="/dashboard"
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
+                  >
+                    Dashboard
+                  </Link>
+                  <span className="text-gray-400 dark:text-gray-500">/</span>
+                  <span className="text-gray-900 dark:text-white text-sm font-medium">
+                    Erg Live
+                  </span>
+                </div>
+                <h1 className="text-3xl font-bold text-white">
+                  Create Head-to-Head Erg Competition
+                </h1>
+                <p className="mt-2 text-gray-400">
+                  Set up live erg competitions between competitors
+                </p>
+              </div>
             </div>
-          )}
-
-          <div className="flex gap-4">
-            <Button onClick={createSession} disabled={creating || !competitor1Id || !competitor2Id}>
-              {creating ? 'Creating Session...' : 'Create Session & Start'}
-            </Button>
-            <Button variant="secondary" onClick={() => router.push('/admin')}>
-              Cancel
-            </Button>
           </div>
 
-          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <h3 className="font-semibold mb-2">How it works:</h3>
-            <ol className="list-decimal list-inside space-y-1 text-sm">
-              <li>Select two competitors from the dropdown above</li>
-              <li>Click "Create Session & Start" to generate a unique session</li>
-              <li>You'll be taken to the control page where you can start the competition</li>
-              <li>A public display URL will be generated for spectators to view</li>
-              <li>
-                The Python script will receive competitor data and start streaming erg metrics
-              </li>
-            </ol>
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8">
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Competitor 1</label>
+                <select
+                  value={competitor1Id}
+                  onChange={(e) => setCompetitor1Id(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                >
+                  <option value="">Select Competitor 1</option>
+                  {users.map((user) => {
+                    const age = user.dateOfBirth ? calculateAge(user.dateOfBirth) : null;
+                    const hasCompleteData = user.bodyweight && user.dateOfBirth && user.sex;
+
+                    return (
+                      <option key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                        {hasCompleteData
+                          ? ` - ${age}y, ${user.sex}, ${user.bodyweight}kg`
+                          : ' - Missing profile data'}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Competitor 2</label>
+                <select
+                  value={competitor2Id}
+                  onChange={(e) => setCompetitor2Id(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                >
+                  <option value="">Select Competitor 2</option>
+                  {users.map((user) => {
+                    const age = user.dateOfBirth ? calculateAge(user.dateOfBirth) : null;
+                    const hasCompleteData = user.bodyweight && user.dateOfBirth && user.sex;
+
+                    return (
+                      <option key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                        {hasCompleteData
+                          ? ` - ${age}y, ${user.sex}, ${user.bodyweight}kg`
+                          : ' - Missing profile data'}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {error && (
+                <div className="bg-red-900/30 border border-red-700/50 rounded-lg p-3">
+                  <p className="text-red-400">{error}</p>
+                </div>
+              )}
+
+              <div className="flex gap-4">
+                <Button
+                  onClick={createSession}
+                  disabled={creating || !competitor1Id || !competitor2Id}
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                >
+                  {creating ? 'Creating Session...' : 'Create Session & Start'}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => router.push('/admin')}
+                  className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-6 py-3 rounded-lg font-medium transition-colors"
+                >
+                  Cancel
+                </Button>
+              </div>
+
+              <div className="mt-6 p-6 bg-gray-700/50 rounded-lg border border-gray-600/50">
+                <h3 className="font-semibold text-white mb-3">How it works:</h3>
+                <ol className="list-decimal list-inside space-y-2 text-sm text-gray-300">
+                  <li>Select two competitors from the dropdown above</li>
+                  <li>Click "Create Session & Start" to generate a unique session</li>
+                  <li>You'll be taken to the control page where you can start the competition</li>
+                  <li>A public display URL will be generated for spectators to view</li>
+                  <li>
+                    The Python script will receive competitor data and start streaming erg metrics
+                  </li>
+                </ol>
+              </div>
+            </div>
           </div>
         </div>
-      </Card>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

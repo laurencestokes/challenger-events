@@ -26,9 +26,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantClasses = {
       default:
-        'bg-primary-500 text-white hover:bg-primary-600 focus-visible:ring-primary-500 font-display font-bold shadow-challenger hover:shadow-challenger-lg',
+        'bg-primary-500 text-white hover:bg-primary-600 focus-visible:ring-primary-500 font-sans font-bold shadow-challenger hover:shadow-challenger-lg',
       destructive:
-        'bg-accent-500 text-white hover:bg-accent-600 focus-visible:ring-accent-500 font-display font-bold shadow-glow-red',
+        'bg-accent-500 text-white hover:bg-accent-600 focus-visible:ring-accent-500 font-sans font-bold shadow-glow-red',
       outline:
         'border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:ring-primary-500 font-sans',
       secondary:
