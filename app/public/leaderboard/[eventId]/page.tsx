@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation';
 import { beautifyRawScore } from '@/utils/scoring';
 import NotificationToast from '@/components/NotificationToast';
 import { useSSEUnauth } from '@/hooks/useSSEUnauth';
-import LoadingSpinner from '@/components/LoadingSpinner';
 import { QRCodeSVG } from 'qrcode.react';
 import Image from 'next/image';
 import Footer from '@/components/Footer';
@@ -245,13 +244,14 @@ export default function PublicEventLeaderboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700">
-        <div className="max-w-7xl mx-auto py-12 px-4">
-          <div className="text-center">
-            <LoadingSpinner />
-            <p className="mt-4 text-gray-600 dark:text-gray-400 animate-pulse">
-              Loading leaderboard...
-            </p>
+      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <div
+              className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4"
+              style={{ borderColor: '#4682B4' }}
+            ></div>
+            <p className="text-white text-lg">Loading leaderboard...</p>
           </div>
         </div>
       </div>
@@ -260,17 +260,30 @@ export default function PublicEventLeaderboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700">
-        <div className="max-w-7xl mx-auto py-12 px-4">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 text-center">
-            <div className="text-6xl mb-4">⚠️</div>
-            <h1 className="text-3xl font-bold mb-4 text-gray-800 dark:text-gray-200">
-              Error Loading Leaderboard
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300 text-lg">{error}</p>
+      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg
+                className="w-8 h-8 text-red-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01mande-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+            </div>
+            <h1 className="text-3xl font-bold text-white mb-4">Error Loading Leaderboard</h1>
+            <p className="text-gray-400 text-lg mb-6 max-w-md mx-auto">{error}</p>
             <button
               onClick={fetchData}
-              className="mt-4 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              className="px-6 py-3 text-white font-semibold rounded-lg transition-colors hover:opacity-90"
+              style={{ backgroundColor: '#4682B4' }}
             >
               Try Again
             </button>
@@ -282,14 +295,26 @@ export default function PublicEventLeaderboard() {
 
   if (!leaderboardData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700">
-        <div className="max-w-7xl mx-auto py-12 px-4">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 text-center">
-            <div className="text-6xl mb-4">📊</div>
-            <h1 className="text-3xl font-bold mb-4 text-gray-800 dark:text-gray-200">
-              No Leaderboard Data
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300 text-lg">
+      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg
+                className="w-8 h-8 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+            </div>
+            <h1 className="text-3xl font-bold text-white mb-4">No Leaderboard Data</h1>
+            <p className="text-gray-400 text-lg max-w-md mx-auto">
               No leaderboard data is available for this event.
             </p>
           </div>
