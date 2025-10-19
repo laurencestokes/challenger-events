@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { api } from '../lib/api-client';
 import Link from 'next/link';
 import WelcomeSection from './WelcomeSection';
+import { EventListSkeleton } from './SkeletonLoaders';
 
 interface Event {
   id: string;
@@ -198,15 +199,7 @@ export default function AdminDashboard() {
           </div>
           <div className="p-6">
             {isLoading ? (
-              <div className="text-center py-8">
-                <div
-                  className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto"
-                  style={{ borderColor: '#4682B4' }}
-                ></div>
-                <p className="mt-2" style={{ color: '#D9D9D9' }}>
-                  Loading events...
-                </p>
-              </div>
+              <EventListSkeleton />
             ) : error ? (
               <div className="text-center py-8">
                 <p className="text-red-400">{error}</p>
@@ -280,7 +273,7 @@ export default function AdminDashboard() {
                         className="px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors hover:opacity-90"
                         style={{ backgroundColor: '#4682B4' }}
                       >
-                        View
+                        Manage
                       </Link>
                     </div>
                   </div>

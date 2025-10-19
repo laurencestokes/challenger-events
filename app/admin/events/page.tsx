@@ -5,6 +5,8 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../lib/api-client';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import WelcomeSection from '@/components/WelcomeSection';
+import { EventListSkeleton } from '@/components/SkeletonLoaders';
 
 interface Event {
   id: string;
@@ -41,19 +43,6 @@ export default function ManageEvents() {
       fetchEvents();
     }
   }, [user]);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'ACTIVE':
-        return 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200';
-      case 'COMPLETED':
-        return 'bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200';
-      case 'CANCELLED':
-        return 'bg-error-100 text-error-800 dark:bg-error-900 dark:text-error-200';
-      default:
-        return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200';
-    }
-  };
 
   const formatDate = (dateString: unknown) => {
     if (!dateString) return 'Not set';
@@ -102,11 +91,19 @@ export default function ManageEvents() {
 
   return (
     <ProtectedRoute>
-      <div className="px-4 sm:px-6 lg:px-8 py-6">
-        <div className="max-w-7xl mx-auto">
+      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="container mx-auto px-4 py-8">
+          {/* Welcome Section */}
+          <WelcomeSection
+            showMetrics={true}
+            totalEvents={events.length}
+            activeEvents={events.filter((e) => e.status === 'ACTIVE').length}
+            isLoading={isLoading}
+          />
+
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
               <div>
                 <div className="flex items-center space-x-3 mb-2">
                   <Link
@@ -120,10 +117,8 @@ export default function ManageEvents() {
                     Manage Events
                   </span>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Events</h1>
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
-                  View and manage all your events
-                </p>
+                <h1 className="text-3xl font-bold text-white">Manage Events</h1>
+                <p className="mt-2 text-gray-400">View and manage all your events</p>
               </div>
               <Link
                 href="/admin/events/create"
@@ -135,27 +130,53 @@ export default function ManageEvents() {
           </div>
 
           {/* Events List */}
-          <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white">All Events</h2>
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50">
+            <div className="px-6 py-4 border-b border-gray-700/50">
+              <h2 className="text-xl font-bold text-white">All Events</h2>
             </div>
             <div className="p-6">
               {isLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600 dark:text-gray-400">Loading events...</p>
-                </div>
+                <EventListSkeleton />
               ) : error ? (
                 <div className="text-center py-8">
-                  <p className="text-error-600 dark:text-error-400">{error}</p>
+                  <p className="text-red-400">{error}</p>
                 </div>
               ) : events.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400">No events found.</p>
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      className="w-8 h-8 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-gray-400 text-lg mb-4">No events found</p>
                   <Link
                     href="/admin/events/create"
-                    className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-accent-400 hover:bg-accent-500 transition-colors"
+                    className="inline-flex items-center px-6 py-3 text-white font-medium rounded-lg transition-colors hover:opacity-90"
+                    style={{ backgroundColor: '#4682B4' }}
                   >
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
                     Create Your First Event
                   </Link>
                 </div>
@@ -164,70 +185,72 @@ export default function ManageEvents() {
                   {events.map((event) => (
                     <div
                       key={event.id}
-                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-challenger transition-shadow"
+                      className="flex items-center justify-between p-6 bg-gray-900/50 border border-gray-700/50 rounded-xl hover:bg-gray-900/70 transition-colors"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3">
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                              {event.name}
-                            </h3>
-                            <span
-                              className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(event.status)}`}
-                            >
-                              {event.status}
-                            </span>
-                          </div>
-                          {event.description && (
-                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                              {event.description}
-                            </p>
-                          )}
-                          <div className="mt-2 flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
-                            <span>
-                              Code: <span className="font-mono font-medium">{event.code}</span>
-                            </span>
-                            <span>Start: {formatDate(event.startDate)}</span>
-                            <span>End: {formatDate(event.endDate)}</span>
-                            <span>Created: {formatDate(event.createdAt)}</span>
-                          </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h3 className="text-lg font-semibold text-white">{event.name}</h3>
+                          <span
+                            className={`px-3 py-1 text-xs font-medium rounded-full ${
+                              event.status === 'ACTIVE'
+                                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                : event.status === 'COMPLETED'
+                                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                                  : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+                            }`}
+                          >
+                            {event.status}
+                          </span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          {event.status === 'DRAFT' && (
-                            <button
-                              onClick={async () => {
-                                try {
-                                  await api.put(`/api/events/${event.id}`, { status: 'ACTIVE' });
-                                  // Refresh the page to show updated status
-                                  window.location.reload();
-                                } catch (error: unknown) {
-                                  console.error('Error publishing event:', error);
-                                }
-                              }}
-                              className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 text-sm font-medium"
-                            >
-                              Publish
-                            </button>
-                          )}
-                          <Link
-                            href={`/admin/events/${event.id}/competition-verification`}
-                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
-                          >
-                            Weigh In
-                          </Link>
-                          <Link
-                            href={`/admin/events/${event.id}`}
-                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium"
-                          >
-                            View Details
-                          </Link>
-                          <Link
-                            href={`/admin/events/${event.id}/edit`}
-                            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 text-sm font-medium"
-                          >
-                            Edit
-                          </Link>
+                        {event.description && (
+                          <p className="text-sm text-gray-400 mb-2">{event.description}</p>
+                        )}
+                        <div className="flex items-center space-x-6 text-sm text-gray-400">
+                          <span>
+                            Code:{' '}
+                            <span className="font-mono font-medium text-white">{event.code}</span>
+                          </span>
+                          <span>Start: {formatDate(event.startDate)}</span>
+                          <span>End: {formatDate(event.endDate)}</span>
+                          <span>Created: {formatDate(event.createdAt)}</span>
                         </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        {event.status === 'DRAFT' && (
+                          <button
+                            onClick={async () => {
+                              try {
+                                await api.put(`/api/events/${event.id}`, { status: 'ACTIVE' });
+                                // Refresh the page to show updated status
+                                window.location.reload();
+                              } catch (error: unknown) {
+                                console.error('Error publishing event:', error);
+                              }
+                            }}
+                            className="px-3 py-1 text-sm font-medium text-green-400 hover:text-green-300 transition-colors"
+                          >
+                            Publish
+                          </button>
+                        )}
+                        <Link
+                          href={`/admin/events/${event.id}/competition-verification`}
+                          className="px-3 py-1 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                          Weigh In
+                        </Link>
+                        <Link
+                          href={`/admin/events/${event.id}`}
+                          className="px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors hover:opacity-90"
+                          style={{ backgroundColor: '#4682B4' }}
+                        >
+                          Manage
+                        </Link>
+                        <Link
+                          href={`/admin/events/${event.id}/edit`}
+                          className="px-3 py-1 text-sm font-medium text-gray-400 hover:text-gray-300 transition-colors"
+                        >
+                          Edit
+                        </Link>
                       </div>
                     </div>
                   ))}
