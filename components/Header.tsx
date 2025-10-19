@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import ThemeSwitch from './ThemeSwitch';
 import { FiMenu, FiX, FiGrid, FiCalendar, FiUsers, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import { signOut } from '../lib/firebase-auth';
@@ -44,14 +43,6 @@ export default function Header() {
         <nav className="flex items-center">
           {/* Desktop Menu */}
           <ul className="hidden md:flex items-center space-x-2">
-            <li>
-              <Link
-                href="/"
-                className="text-sm text-gray-800 dark:text-white px-4 py-2 rounded-md hover:text-primary-500 dark:hover:text-primary-400 transition-colors font-sans"
-              >
-                Home
-              </Link>
-            </li>
             {user ? (
               <>
                 <li>
@@ -122,18 +113,27 @@ export default function Header() {
                 </li>
               </>
             ) : (
-              <li>
-                <Link
-                  href="/auth/signin"
-                  className="text-sm text-gray-800 dark:text-white px-4 py-2 rounded-md hover:text-primary-500 dark:hover:text-primary-400 transition-colors font-sans"
-                >
-                  Sign In
-                </Link>
-              </li>
+              <>
+                <li>
+                  <Link
+                    href="/"
+                    className="text-sm text-gray-800 dark:text-white px-4 py-2 rounded-md hover:text-primary-500 dark:hover:text-primary-400 transition-colors font-sans"
+                  >
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/auth/signin"
+                    className="text-sm text-gray-800 dark:text-white px-4 py-2 rounded-md hover:text-primary-500 dark:hover:text-primary-400 transition-colors font-sans"
+                  >
+                    Sign In
+                  </Link>
+                </li>
+              </>
             )}
           </ul>
           <div className="flex items-center">
-            <ThemeSwitch />
             {/* Mobile Menu Button */}
             <div className="md:hidden ml-2">
               <button
@@ -150,15 +150,6 @@ export default function Header() {
       {isMenuOpen && (
         <div className="md:hidden bg-white dark:bg-black">
           <ul className="flex flex-col items-center space-y-4 py-4">
-            <li>
-              <Link
-                href="/"
-                onClick={() => setIsMenuOpen(false)}
-                className="text-lg text-gray-800 dark:text-white hover:text-primary-500 dark:hover:text-primary-400 font-sans"
-              >
-                Home
-              </Link>
-            </li>
             {user ? (
               <>
                 <li>
@@ -238,15 +229,26 @@ export default function Header() {
                 </li>
               </>
             ) : (
-              <li>
-                <Link
-                  href="/auth/signin"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="text-lg text-gray-800 dark:text-white hover:text-primary-500 dark:hover:text-primary-400 font-sans"
-                >
-                  Sign In
-                </Link>
-              </li>
+              <>
+                <li>
+                  <Link
+                    href="/"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-lg text-gray-800 dark:text-white hover:text-primary-500 dark:hover:text-primary-400 font-sans"
+                  >
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/auth/signin"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="text-lg text-gray-800 dark:text-white hover:text-primary-500 dark:hover:text-primary-400 font-sans"
+                  >
+                    Sign In
+                  </Link>
+                </li>
+              </>
             )}
           </ul>
         </div>
