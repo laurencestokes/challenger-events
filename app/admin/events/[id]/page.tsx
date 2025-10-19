@@ -11,6 +11,7 @@ import AddWorkoutModal from '@/components/AddWorkoutModal';
 import EditWorkoutModal from '@/components/EditWorkoutModal';
 import ConfirmModal from '@/components/ConfirmModal';
 import ScoreSubmissionModal from '@/components/ScoreSubmissionModal';
+import WelcomeSection from '@/components/WelcomeSection';
 import {
   LargeEventCardSkeleton,
   QuickActionsSkeleton,
@@ -349,22 +350,7 @@ export default function EventDetails() {
       <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {/* Welcome Section */}
-          <div className="flex items-center mb-8">
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center mr-4"
-              style={{ backgroundColor: '#4682B4' }}
-            >
-              <span className="text-white text-xl font-bold">
-                {(user?.name || user?.email || 'A').charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm" style={{ color: '#D9D9D9' }}>
-                Admin Dashboard
-              </p>
-              <h1 className="text-white text-2xl font-bold">{user?.name || user?.email}</h1>
-            </div>
-          </div>
+          <WelcomeSection />
 
           {/* Header */}
           <div className="mb-8">

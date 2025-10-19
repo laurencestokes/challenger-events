@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../lib/api-client';
 import Link from 'next/link';
+import WelcomeSection from './WelcomeSection';
 
 interface Event {
   id: string;
@@ -43,73 +44,13 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0F0F0F' }}>
       <div className="container mx-auto px-4 py-8">
-        {/* Admin Profile Section */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center">
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center mr-4"
-              style={{ backgroundColor: '#4682B4' }}
-            >
-              <span className="text-white text-xl font-bold">
-                {(user?.name || user?.email || 'A').charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm" style={{ color: '#D9D9D9' }}>
-                Admin Dashboard
-              </p>
-              <h1 className="text-white text-2xl font-bold">{user?.name || user?.email}</h1>
-            </div>
-          </div>
-          <div className="text-right space-y-3">
-            <div className="flex flex-col items-end">
-              <p className="text-white font-medium text-base mb-1">Total Events</p>
-              {isLoading ? (
-                <div
-                  className="px-3 py-2 rounded-lg w-20"
-                  style={{ backgroundColor: '#4682B4', opacity: 0.3 }}
-                >
-                  <div
-                    className="h-6 rounded animate-pulse"
-                    style={{ backgroundColor: '#D9D9D9' }}
-                  ></div>
-                </div>
-              ) : (
-                <div className="px-3 py-2 rounded-lg w-20" style={{ backgroundColor: '#4682B4' }}>
-                  <span className="text-white font-bold">{events.length}</span>
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col items-end">
-              <p className="text-white font-medium text-base mb-1">Active Events</p>
-              {isLoading ? (
-                <div
-                  className="px-3 py-2 rounded-lg w-20"
-                  style={{
-                    background: 'linear-gradient(90deg, #E84C04 0%, #D93D00 50%, #B83200 100%)',
-                    opacity: 0.3,
-                  }}
-                >
-                  <div
-                    className="h-6 rounded animate-pulse"
-                    style={{ backgroundColor: '#FFFFFF', opacity: 0.2 }}
-                  ></div>
-                </div>
-              ) : (
-                <div
-                  className="px-3 py-2 rounded-lg w-20"
-                  style={{
-                    background: 'linear-gradient(90deg, #E84C04 0%, #D93D00 50%, #B83200 100%)',
-                  }}
-                >
-                  <span className="text-white font-bold">
-                    {events.filter((e) => e.status === 'ACTIVE').length}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        {/* Welcome Section */}
+        <WelcomeSection
+          showMetrics={true}
+          totalEvents={events.length}
+          activeEvents={events.filter((e) => e.status === 'ACTIVE').length}
+          isLoading={isLoading}
+        />
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

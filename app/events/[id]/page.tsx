@@ -11,6 +11,7 @@ import Image from 'next/image';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import WelcomeSection from '@/components/WelcomeSection';
 import TeamManagement from '@/components/TeamManagement';
 import {
   LargeEventCardSkeleton,
@@ -345,39 +346,7 @@ export default function EventPage() {
         <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
           <div className="container mx-auto px-4 py-8">
             {/* Welcome Section */}
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center">
-                <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center mr-4">
-                  <span className="text-white text-xl font-bold">
-                    {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <p className="text-gray-400 text-sm">Welcome Back</p>
-                  <h1 className="text-white text-2xl font-bold">{user?.name || user?.email}</h1>
-                </div>
-              </div>
-              <div className="text-right space-y-3">
-                <div className="flex flex-col items-end">
-                  <p className="text-white font-medium text-base mb-1">Verified Score</p>
-                  <div className="bg-green-900/30 border border-green-700/50 px-3 py-2 rounded-lg w-20">
-                    <span className="text-green-400 font-bold">773</span>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end">
-                  <p className="text-white font-medium text-base mb-1">Total Score</p>
-                  <div
-                    className="px-3 py-2 rounded-lg w-20"
-                    style={{
-                      background:
-                        'linear-gradient(90deg, #E5965E 0%, #F26004 35.58%, #C10901 67.79%, #240100 100%)',
-                    }}
-                  >
-                    <span className="text-white font-bold">1,981</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <WelcomeSection showMetrics={true} verifiedScore={773} totalScore={1981} />
 
             {/* Breadcrumbs */}
             <nav

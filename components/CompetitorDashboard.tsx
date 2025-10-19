@@ -3,6 +3,7 @@
 import { useState, useEffect, ComponentProps } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../lib/api-client';
+import WelcomeSection from './WelcomeSection';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -384,58 +385,13 @@ export default function CompetitorDashboard() {
   return (
     <div className="" style={{ backgroundColor: '#0F0F0F' }}>
       <div className="container mx-auto px-4 py-8">
-        {/* User Profile Section */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center">
-            <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center mr-4">
-              <span className="text-white text-xl font-bold">
-                {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div className="flex-1">
-              <p className="text-gray-400 text-sm">Welcome Back</p>
-              <h1 className="text-white text-2xl font-bold">{user?.name || user?.email}</h1>
-            </div>
-          </div>
-          <div className="text-right space-y-3">
-            <div className="flex flex-col items-end">
-              <p className="text-white font-medium text-base mb-1">Verified Score</p>
-              {isLoadingScores ? (
-                <div className="bg-green-900/30 border border-green-700/50 px-3 py-2 rounded-lg w-20">
-                  <div className="h-6 bg-gray-700 rounded animate-pulse"></div>
-                </div>
-              ) : (
-                <div className="bg-green-900/30 border border-green-700/50 px-3 py-2 rounded-lg w-20">
-                  <span className="text-green-400 font-bold">{verifiedScore.toLocaleString()}</span>
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col items-end">
-              <p className="text-white font-medium text-base mb-1">Total Score</p>
-              {isLoadingScores ? (
-                <div
-                  className="px-3 py-2 rounded-lg w-20"
-                  style={{
-                    background:
-                      'linear-gradient(90deg, #E5965E 0%, #F26004 35.58%, #C10901 67.79%, #240100 100%)',
-                  }}
-                >
-                  <div className="h-6 bg-white/20 rounded animate-pulse"></div>
-                </div>
-              ) : (
-                <div
-                  className="px-3 py-2 rounded-lg w-20"
-                  style={{
-                    background:
-                      'linear-gradient(90deg, #E5965E 0%, #F26004 35.58%, #C10901 67.79%, #240100 100%)',
-                  }}
-                >
-                  <span className="text-white font-bold">{totalScore.toLocaleString()}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        {/* Welcome Section */}
+        <WelcomeSection
+          showMetrics={true}
+          verifiedScore={verifiedScore}
+          totalScore={totalScore}
+          isLoading={isLoadingScores}
+        />
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
