@@ -59,8 +59,8 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
       <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-md border border-gray-700/50">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary-500/20 rounded-lg flex items-center justify-center">
-              <FiUsers className="w-5 h-5 text-primary-400" />
+            <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
+              <FiUsers className="w-5 h-5 text-orange-400" />
             </div>
             <h2 className="text-white text-xl font-bold">Create Team</h2>
           </div>
@@ -83,7 +83,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
               required
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               placeholder="Enter team name"
             />
           </div>
@@ -100,14 +100,14 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
               value={teamDescription}
               onChange={(e) => setTeamDescription(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
               placeholder="Enter team description"
             />
           </div>
 
           {error && (
-            <div className="text-red-400 text-sm bg-red-900/20 border border-red-700/50 rounded-lg p-3">
-              {error}
+            <div className="bg-red-900/30 border border-red-700/50 rounded-lg p-3">
+              <p className="text-red-400 text-sm">{error}</p>
             </div>
           )}
 
@@ -122,9 +122,19 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center space-x-2"
             >
-              {isLoading ? 'Creating...' : 'Create Team'}
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Creating...</span>
+                </>
+              ) : (
+                <>
+                  <FiUsers className="w-4 h-4" />
+                  <span>Create Team</span>
+                </>
+              )}
             </button>
           </div>
         </form>

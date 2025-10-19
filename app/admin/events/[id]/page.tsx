@@ -5,12 +5,17 @@ import { useParams } from 'next/navigation';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { api } from '../../../../lib/api-client';
 import Link from 'next/link';
+import Image from 'next/image';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AddWorkoutModal from '@/components/AddWorkoutModal';
 import EditWorkoutModal from '@/components/EditWorkoutModal';
 import ConfirmModal from '@/components/ConfirmModal';
-import Leaderboard from '@/components/Leaderboard';
 import ScoreSubmissionModal from '@/components/ScoreSubmissionModal';
+import {
+  LargeEventCardSkeleton,
+  QuickActionsSkeleton,
+  EventStatsSkeleton,
+} from '@/components/SkeletonLoaders';
 
 interface Event {
   id: string;
@@ -21,6 +26,7 @@ interface Event {
   endDate: unknown | null;
   createdAt: unknown;
   description?: string;
+  imageUrl?: string;
   participants?: Participant[];
 }
 
@@ -72,7 +78,6 @@ export default function EventDetails() {
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [showScoreSubmissionModal, setShowScoreSubmissionModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [leaderboardKey, setLeaderboardKey] = useState(0);
 
   const eventId = params.id as string;
 
@@ -209,11 +214,89 @@ export default function EventDetails() {
   if (isLoading) {
     return (
       <ProtectedRoute>
-        <div className="px-4 sm:px-6 lg:px-8 py-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">Loading event details...</p>
+        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+          <div className="container mx-auto px-4 py-8">
+            {/* Welcome Section Skeleton */}
+            <div className="flex items-center mb-8">
+              <div className="w-16 h-16 bg-gray-700 rounded-full animate-pulse mr-4"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-700 rounded w-24 mb-2 animate-pulse"></div>
+                <div className="h-6 bg-gray-700 rounded w-32 animate-pulse"></div>
+              </div>
+            </div>
+
+            {/* Header Skeleton */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="h-4 bg-gray-700 rounded w-20 animate-pulse"></div>
+                    <div className="h-4 bg-gray-700 rounded w-12 animate-pulse"></div>
+                    <div className="h-4 bg-gray-700 rounded w-16 animate-pulse"></div>
+                    <div className="h-4 bg-gray-700 rounded w-20 animate-pulse"></div>
+                  </div>
+                  <div className="h-8 bg-gray-700 rounded w-48 mb-2 animate-pulse"></div>
+                  <div className="flex items-center space-x-3">
+                    <div className="h-6 bg-gray-700 rounded w-16 animate-pulse"></div>
+                    <div className="h-4 bg-gray-700 rounded w-24 animate-pulse"></div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="h-8 bg-gray-700 rounded w-24 animate-pulse"></div>
+                  <div className="h-8 bg-gray-700 rounded w-20 animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Event Card Skeleton */}
+            <div className="mb-8">
+              <LargeEventCardSkeleton />
+            </div>
+
+            {/* Main Content Grid Skeleton */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Main Event Info Skeleton */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Participants Skeleton */}
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="h-6 bg-gray-700 rounded w-24 animate-pulse"></div>
+                    <div className="h-4 bg-gray-700 rounded w-20 animate-pulse"></div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="h-16 bg-gray-700 rounded-lg animate-pulse"></div>
+                    <div className="h-16 bg-gray-700 rounded-lg animate-pulse"></div>
+                  </div>
+                </div>
+
+                {/* Workouts Skeleton */}
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="h-6 bg-gray-700 rounded w-16 animate-pulse"></div>
+                    <div className="h-8 bg-gray-700 rounded w-24 animate-pulse"></div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="h-20 bg-gray-700 rounded-lg animate-pulse"></div>
+                    <div className="h-20 bg-gray-700 rounded-lg animate-pulse"></div>
+                  </div>
+                </div>
+
+                {/* Leaderboard Skeleton */}
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+                  <div className="h-6 bg-gray-700 rounded w-20 mb-4 animate-pulse"></div>
+                  <div className="space-y-3">
+                    <div className="h-12 bg-gray-700 rounded animate-pulse"></div>
+                    <div className="h-12 bg-gray-700 rounded animate-pulse"></div>
+                    <div className="h-12 bg-gray-700 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sidebar Skeleton */}
+              <div className="space-y-6">
+                <QuickActionsSkeleton />
+                <EventStatsSkeleton />
+              </div>
             </div>
           </div>
         </div>
@@ -224,10 +307,10 @@ export default function EventDetails() {
   if (error) {
     return (
       <ProtectedRoute>
-        <div className="px-4 sm:px-6 lg:px-8 py-6">
-          <div className="max-w-7xl mx-auto">
+        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+          <div className="container mx-auto px-4 py-8">
             <div className="text-center py-8">
-              <p className="text-error-600 dark:text-error-400">{error}</p>
+              <p className="text-red-400">{error}</p>
               <Link
                 href="/admin/events"
                 className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
@@ -244,10 +327,10 @@ export default function EventDetails() {
   if (!event) {
     return (
       <ProtectedRoute>
-        <div className="px-4 sm:px-6 lg:px-8 py-6">
-          <div className="max-w-7xl mx-auto">
+        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+          <div className="container mx-auto px-4 py-8">
             <div className="text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400">Event not found.</p>
+              <p className="text-gray-400">Event not found.</p>
               <Link
                 href="/admin/events"
                 className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
@@ -263,11 +346,29 @@ export default function EventDetails() {
 
   return (
     <ProtectedRoute>
-      <div className="px-4 sm:px-6 lg:px-8 py-6">
-        <div className="max-w-7xl mx-auto">
+      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="container mx-auto px-4 py-8">
+          {/* Welcome Section */}
+          <div className="flex items-center mb-8">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mr-4"
+              style={{ backgroundColor: '#4682B4' }}
+            >
+              <span className="text-white text-xl font-bold">
+                {(user?.name || user?.email || 'A').charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm" style={{ color: '#D9D9D9' }}>
+                Admin Dashboard
+              </p>
+              <h1 className="text-white text-2xl font-bold">{user?.name || user?.email}</h1>
+            </div>
+          </div>
+
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
               <div>
                 <div className="flex items-center space-x-3 mb-2">
                   <Link
@@ -300,7 +401,7 @@ export default function EventDetails() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex flex-wrap items-center gap-2">
                 {event.status === 'DRAFT' && (
                   <button
                     onClick={handlePublishEvent}
@@ -339,53 +440,73 @@ export default function EventDetails() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Event Info */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Event Information */}
-              <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  Event Information
-                </h2>
-                {event.description && (
-                  <div className="mb-4">
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      Description
-                    </h3>
-                    <p className="text-gray-900 dark:text-white">{event.description}</p>
-                  </div>
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      Start Date
-                    </h3>
-                    <p className="text-gray-900 dark:text-white">{formatDate(event.startDate)}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      End Date
-                    </h3>
-                    <p className="text-gray-900 dark:text-white">{formatDate(event.endDate)}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      Created
-                    </h3>
-                    <p className="text-gray-900 dark:text-white">{formatDate(event.createdAt)}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                      Status
-                    </h3>
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(event.status)}`}
-                    >
-                      {event.status}
-                    </span>
+              {/* Event Card */}
+              <div className="w-full h-80 bg-gray-800 rounded-2xl relative overflow-hidden">
+                {/* Event Background Image */}
+                <div className="absolute inset-0">
+                  {event.imageUrl ? (
+                    <Image src={event.imageUrl} alt={event.name} fill className="object-cover" />
+                  ) : (
+                    <Image
+                      src="/event_placeholder.png"
+                      alt={event.name}
+                      fill
+                      className="object-cover"
+                    />
+                  )}
+                  {/* Dark overlay for text readability */}
+                  <div className="absolute inset-0 bg-black/40" />
+                </div>
+
+                {/* Event Title Overlay */}
+                <div className="absolute top-6 left-6 right-6 z-10">
+                  <h2 className="text-white font-bold text-3xl leading-tight mb-2">{event.name}</h2>
+                  {event.description && (
+                    <p className="text-white/90 text-lg leading-relaxed max-w-2xl">
+                      {event.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Event Details Footer */}
+                <div className="absolute bottom-0 left-0 right-0 bg-red-500 p-6">
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center space-x-3 text-white">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-lg font-medium">{formatDate(event.startDate)}</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-white">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-lg font-medium">Location TBD</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-white mt-3">
+                      <span
+                        className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(event.status)}`}
+                      >
+                        {event.status}
+                      </span>
+                      <span className="text-sm text-white/80">
+                        Code: <span className="font-mono font-medium">{event.code}</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Participants */}
-              <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                     Participants
@@ -430,7 +551,7 @@ export default function EventDetails() {
               </div>
 
               {/* Workouts */}
-              <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Workouts</h2>
                   <button
@@ -538,24 +659,19 @@ export default function EventDetails() {
                   </div>
                 )}
               </div>
-
-              {/* Leaderboard */}
-              <Leaderboard key={leaderboardKey} eventId={eventId} />
             </div>
 
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Quick Actions */}
-              <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Quick Actions
-                </h2>
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+                <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
                 <div className="space-y-3">
                   <Link
-                    href={`/events/join?code=${event.code}`}
+                    href={`/events/${eventId}/leaderboard`}
                     className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
                   >
-                    Join Event
+                    📊 View Live Leaderboard
                   </Link>
                   <Link
                     href={`/events/${eventId}/brief`}
@@ -579,19 +695,17 @@ export default function EventDetails() {
               </div>
 
               {/* Event Stats */}
-              <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Event Stats
-                </h2>
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+                <h2 className="text-lg font-semibold text-white mb-4">Event Stats</h2>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Participants</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    <span className="text-sm text-gray-400">Participants</span>
+                    <span className="text-sm font-medium text-white">
                       {event.participants?.length || 0}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Status</span>
+                    <span className="text-sm text-gray-400">Status</span>
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(event.status)}`}
                     >
@@ -599,8 +713,8 @@ export default function EventDetails() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Created</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    <span className="text-sm text-gray-400">Created</span>
+                    <span className="text-sm font-medium text-white">
                       {formatDate(event.createdAt)}
                     </span>
                   </div>
@@ -676,8 +790,7 @@ export default function EventDetails() {
           isOpen={showScoreSubmissionModal}
           onClose={() => setShowScoreSubmissionModal(false)}
           onScoreSubmitted={() => {
-            // Refresh the leaderboard by changing the key
-            setLeaderboardKey((prev) => prev + 1);
+            // Score submitted successfully
           }}
         />
       </div>
