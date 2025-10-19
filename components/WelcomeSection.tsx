@@ -6,6 +6,8 @@ interface WelcomeSectionProps {
   showMetrics?: boolean;
   totalEvents?: number;
   activeEvents?: number;
+  totalUsers?: number;
+  activeUsers?: number;
   verifiedScore?: number;
   totalScore?: number;
   isLoading?: boolean;
@@ -15,6 +17,8 @@ export default function WelcomeSection({
   showMetrics = false,
   totalEvents = 0,
   activeEvents = 0,
+  totalUsers = 0,
+  activeUsers = 0,
   verifiedScore,
   totalScore,
   isLoading = false,
@@ -49,10 +53,14 @@ export default function WelcomeSection({
 
       {showMetrics && (
         <div className="text-right space-y-3">
-          {/* Total Events / Verified Score */}
+          {/* Total Events/Users / Verified Score */}
           <div className="flex flex-col items-end">
             <p className="text-white font-medium text-base mb-1">
-              {user?.role === 'ADMIN' ? 'Total Events' : 'Verified Score'}
+              {user?.role === 'ADMIN'
+                ? totalUsers > 0
+                  ? 'Total Users'
+                  : 'Total Events'
+                : 'Verified Score'}
             </p>
             {isLoading ? (
               <div
@@ -77,16 +85,24 @@ export default function WelcomeSection({
                 <span
                   className={`font-bold ${user?.role === 'ADMIN' ? 'text-white' : 'text-green-400'}`}
                 >
-                  {user?.role === 'ADMIN' ? totalEvents : verifiedScore || 0}
+                  {user?.role === 'ADMIN'
+                    ? totalUsers > 0
+                      ? totalUsers
+                      : totalEvents
+                    : verifiedScore || 0}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Active Events / Total Score */}
+          {/* Active Events/Users / Total Score */}
           <div className="flex flex-col items-end">
             <p className="text-white font-medium text-base mb-1">
-              {user?.role === 'ADMIN' ? 'Active Events' : 'Total Score'}
+              {user?.role === 'ADMIN'
+                ? activeUsers > 0
+                  ? 'Active Users'
+                  : 'Active Events'
+                : 'Total Score'}
             </p>
             {isLoading ? (
               <div
@@ -115,7 +131,11 @@ export default function WelcomeSection({
                 }}
               >
                 <span className="text-white font-bold">
-                  {user?.role === 'ADMIN' ? activeEvents : totalScore || 0}
+                  {user?.role === 'ADMIN'
+                    ? activeUsers > 0
+                      ? activeUsers
+                      : activeEvents
+                    : totalScore || 0}
                 </span>
               </div>
             )}
