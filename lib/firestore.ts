@@ -36,6 +36,9 @@ export interface User {
   publicProfileShowSex?: boolean;
   publicProfileEnabled?: boolean;
   profileName?: string; // Custom profile name for URLs
+  // Event scoping fields
+  organizationId?: string; // For organization membership
+  gymId?: string; // For gym membership
 }
 
 export interface Event {
@@ -51,6 +54,14 @@ export interface Event {
   isTeamEvent: boolean; // Whether this event supports team competition
   teamScoringMethod?: 'SUM' | 'AVERAGE' | 'BEST'; // How team scores are calculated
   maxTeamSize?: number; // Maximum number of members per team
+  // Event scoping fields
+  scope?: 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY';
+  organizationId?: string; // For ORGANIZATION scope
+  gymId?: string; // For GYM scope
+  invitedUserIds?: string[]; // For INVITE_ONLY scope
+  // Location fields
+  country?: string; // Country code (e.g., 'GB' for UK)
+  postcode?: string; // Postal code for location
   createdAt: Date;
   updatedAt: Date;
 }
@@ -220,11 +231,22 @@ export const updateUser = async (userId: string, updates: Partial<User>) => {
   });
 };
 
+// Helper function to filter out undefined values for Firestore
+const filterUndefined = (obj: object): object => {
+  const filtered: object = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      filtered[key as keyof object] = value as never;
+    }
+  }
+  return filtered;
+};
+
 // Event functions
 export const createEvent = async (eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => {
   const eventRef = collection(db, 'events');
   const docRef = await addDoc(eventRef, {
-    ...eventData,
+    ...filterUndefined(eventData),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -480,7 +502,7 @@ export const isSuperAdmin = (role: string): boolean => {
 export const updateEvent = async (eventId: string, updates: Partial<Event>) => {
   const eventRef = doc(db, 'events', eventId);
   await updateDoc(eventRef, {
-    ...updates,
+    ...filterUndefined(updates),
     updatedAt: serverTimestamp(),
   });
   return { id: eventId, ...updates };

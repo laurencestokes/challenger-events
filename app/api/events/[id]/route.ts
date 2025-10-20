@@ -104,6 +104,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       teamScoringMethod,
       maxTeamSize,
       brief,
+      scope,
+      organizationId,
+      gymId,
+      country,
+      postcode,
     } = body;
 
     const updates: Partial<Event> = {};
@@ -116,6 +121,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (teamScoringMethod !== undefined) updates.teamScoringMethod = teamScoringMethod;
     if (maxTeamSize !== undefined) updates.maxTeamSize = maxTeamSize;
     if (brief !== undefined) updates.brief = brief;
+    if (scope !== undefined) updates.scope = scope;
+    if (organizationId !== undefined) updates.organizationId = organizationId;
+    if (gymId !== undefined) updates.gymId = gymId;
+    if (country !== undefined) updates.country = country;
+    if (postcode !== undefined) updates.postcode = postcode;
 
     const updatedEvent = await updateEvent(params.id, updates);
 

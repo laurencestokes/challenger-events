@@ -27,8 +27,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, description, startDate, endDate, isTeamEvent, teamScoringMethod, maxTeamSize } =
-      body;
+    const {
+      name,
+      description,
+      startDate,
+      endDate,
+      isTeamEvent,
+      teamScoringMethod,
+      maxTeamSize,
+      scope,
+      organizationId,
+      gymId,
+      country,
+      postcode,
+      status,
+    } = body;
 
     if (!name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
@@ -51,10 +64,15 @@ export async function POST(request: NextRequest) {
       startDate: startDate ? new Date(startDate) : undefined,
       endDate: endDate ? new Date(endDate) : undefined,
       adminIds: [user.id],
-      status: 'DRAFT',
+      status: status || 'ACTIVE',
       isTeamEvent: isTeamEvent ?? true, // Default to true
       teamScoringMethod: isTeamEvent ? teamScoringMethod : undefined,
       maxTeamSize: isTeamEvent ? maxTeamSize : undefined,
+      scope: scope || 'PUBLIC', // Default to PUBLIC
+      organizationId: scope === 'ORGANIZATION' ? organizationId : undefined,
+      gymId: scope === 'GYM' ? gymId : undefined,
+      country: country || 'GB', // Default to UK
+      postcode: postcode || undefined,
     });
 
     return NextResponse.json(event);

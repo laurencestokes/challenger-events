@@ -32,6 +32,9 @@ interface Event {
   createdAt: unknown;
   imageUrl?: string;
   location?: string;
+  postcode?: string;
+  country?: string;
+  scope?: 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY';
 }
 
 interface Score {
@@ -64,6 +67,9 @@ interface EventWithScores {
   startDate?: string;
   endDate?: string;
   location?: string;
+  postcode?: string;
+  country?: string;
+  scope?: 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY';
 }
 
 interface Team {
@@ -459,7 +465,20 @@ export default function CompetitorDashboard() {
                         </div>
                         <div className="flex items-center space-x-2 text-white text-sm mt-1">
                           <FiMapPin className="w-4 h-4" />
-                          <span>{event.location || 'Location TBD'}</span>
+                          <span>
+                            {event.postcode ? (
+                              <>
+                                {event.postcode}
+                                {event.country && (
+                                  <span className="ml-1">
+                                    {event.country === 'GB' ? '🇬🇧' : event.country}
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              'Location TBD'
+                            )}
+                          </span>
                         </div>
                       </div>
                     </Link>
@@ -672,7 +691,20 @@ export default function CompetitorDashboard() {
                         </div>
                         <div className="flex items-center space-x-2 text-white text-sm mt-1">
                           <FiMapPin className="w-4 h-4" />
-                          <span>{event.location || 'Location TBD'}</span>
+                          <span>
+                            {event.postcode ? (
+                              <>
+                                {event.postcode}
+                                {event.country && (
+                                  <span className="ml-1">
+                                    {event.country === 'GB' ? '🇬🇧' : event.country}
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              'Location TBD'
+                            )}
+                          </span>
                         </div>
                       </div>
                     </Link>

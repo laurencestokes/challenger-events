@@ -14,6 +14,8 @@ interface AuthUser {
   bodyweight?: number | null;
   dateOfBirth?: Date | null;
   sex?: 'M' | 'F' | null;
+  organizationId?: string;
+  gymId?: string;
   createdAt?: unknown;
   updatedAt?: unknown;
 }
@@ -63,6 +65,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               bodyweight: userData.bodyweight,
               dateOfBirth: userData.dateOfBirth,
               sex: userData.sex,
+              organizationId: userData.organizationId,
+              gymId: userData.gymId,
               createdAt: userData.createdAt,
               updatedAt: userData.updatedAt,
             });

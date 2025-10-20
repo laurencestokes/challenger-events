@@ -32,24 +32,19 @@ export async function GET(request: NextRequest) {
 
     // Filter events based on scoping rules
     const scopedEvents = allEvents.filter((event) => {
-      // For now, we'll implement a simple public events system
-      // Later we can extend this to support organization/gym scoping
-
-      // Check if event is public (no scoping restrictions)
-      if (!event.scope || event.scope === 'PUBLIC') {
-        return true;
+      switch (event.scope) {
+        case 'PUBLIC':
+        case undefined: // Default to PUBLIC if no scope set
+          return true;
+        case 'ORGANIZATION':
+          return user.organizationId === event.organizationId;
+        case 'GYM':
+          return user.gymId === event.gymId;
+        case 'INVITE_ONLY':
+          return event.invitedUserIds?.includes(user.id);
+        default:
+          return true; // Default to PUBLIC
       }
-
-      // TODO: Add organization/gym scoping logic here
-      // if (event.scope === 'ORGANIZATION') {
-      //   return user.organizationId === event.organizationId;
-      // }
-      // if (event.scope === 'GYM') {
-      //   return user.gymId === event.gymId;
-      // }
-
-      // For now, only show public events
-      return false;
     });
 
     // Get events the user is already participating in

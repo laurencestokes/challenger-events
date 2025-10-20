@@ -192,12 +192,13 @@ export default function SessionControlPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300">Socket.IO</span>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm ${isConnected
-                      ? 'bg-green-900/30 text-green-400'
-                      : isReconnecting
-                        ? 'bg-yellow-900/30 text-yellow-400 animate-pulse'
-                        : 'bg-red-900/30 text-red-400'
-                      }`}
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      isConnected
+                        ? 'bg-green-900/30 text-green-400'
+                        : isReconnecting
+                          ? 'bg-yellow-900/30 text-yellow-400 animate-pulse'
+                          : 'bg-red-900/30 text-red-400'
+                    }`}
                   >
                     {isConnected
                       ? 'Connected'
@@ -209,10 +210,11 @@ export default function SessionControlPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300">Session Status</span>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm capitalize ${sessionStatus === 'active'
-                      ? 'bg-blue-900/30 text-blue-400'
-                      : 'bg-gray-900/30 text-gray-400'
-                      }`}
+                    className={`px-3 py-1 rounded-full text-sm capitalize ${
+                      sessionStatus === 'active'
+                        ? 'bg-blue-900/30 text-blue-400'
+                        : 'bg-gray-900/30 text-gray-400'
+                    }`}
                   >
                     {sessionStatus}
                   </span>
@@ -220,10 +222,11 @@ export default function SessionControlPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300">Python Client</span>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm ${competitor1Data || competitor2Data
-                      ? 'bg-green-900/30 text-green-400'
-                      : 'bg-yellow-900/30 text-yellow-400'
-                      }`}
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      competitor1Data || competitor2Data
+                        ? 'bg-green-900/30 text-green-400'
+                        : 'bg-yellow-900/30 text-yellow-400'
+                    }`}
                   >
                     {competitor1Data || competitor2Data ? 'Streaming' : 'Waiting'}
                   </span>

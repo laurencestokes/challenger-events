@@ -20,6 +20,18 @@ export default function CreateEvent() {
   const [teamScoringMethod, setTeamScoringMethod] = useState<'SUM' | 'AVERAGE' | 'BEST'>('SUM');
   const [maxTeamSize, setMaxTeamSize] = useState<number>(4);
 
+  // Event scoping state
+  const [scope, setScope] = useState<'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY'>('PUBLIC');
+  const [organizationId, setOrganizationId] = useState('');
+  const [gymId, setGymId] = useState('');
+
+  // Location state
+  const [country, setCountry] = useState('GB'); // Default to UK
+  const [postcode, setPostcode] = useState('');
+
+  // Event status
+  const [status, setStatus] = useState<'DRAFT' | 'ACTIVE'>('ACTIVE');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -34,6 +46,12 @@ export default function CreateEvent() {
         isTeamEvent,
         teamScoringMethod: isTeamEvent ? teamScoringMethod : undefined,
         maxTeamSize: isTeamEvent ? maxTeamSize : undefined,
+        scope,
+        organizationId: scope === 'ORGANIZATION' ? organizationId : undefined,
+        gymId: scope === 'GYM' ? gymId : undefined,
+        country,
+        postcode: postcode || undefined,
+        status,
       };
 
       await api.post('/api/events', eventData);
@@ -144,6 +162,129 @@ export default function CreateEvent() {
                     value={endDate}
                     onChange={handleInputChange}
                   />
+                </div>
+              </div>
+
+              {/* Event Scoping Settings */}
+              <div className="border-t border-gray-700/50 pt-6">
+                <h3 className="text-lg font-medium text-white mb-4">Event Access & Location</h3>
+
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="scope" className="block text-sm font-medium text-gray-300">
+                      Event Scope
+                    </label>
+                    <select
+                      id="scope"
+                      value={scope}
+                      onChange={(e) =>
+                        setScope(
+                          e.target.value as 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY',
+                        )
+                      }
+                      className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    >
+                      <option value="PUBLIC">Public - Anyone can join</option>
+                      <option value="ORGANIZATION">
+                        Organization - Only specific organization members
+                      </option>
+                      <option value="GYM">Gym - Only specific gym members</option>
+                      <option value="INVITE_ONLY">Invite Only - Only invited users</option>
+                    </select>
+                  </div>
+
+                  {scope === 'ORGANIZATION' && (
+                    <div>
+                      <label
+                        htmlFor="organizationId"
+                        className="block text-sm font-medium text-gray-300"
+                      >
+                        Organization ID
+                      </label>
+                      <input
+                        type="text"
+                        id="organizationId"
+                        value={organizationId}
+                        onChange={(e) => setOrganizationId(e.target.value)}
+                        className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        placeholder="Enter organization ID"
+                      />
+                    </div>
+                  )}
+
+                  {scope === 'GYM' && (
+                    <div>
+                      <label htmlFor="gymId" className="block text-sm font-medium text-gray-300">
+                        Gym ID
+                      </label>
+                      <input
+                        type="text"
+                        id="gymId"
+                        value={gymId}
+                        onChange={(e) => setGymId(e.target.value)}
+                        className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        placeholder="Enter gym ID"
+                      />
+                    </div>
+                  )}
+
+                  {/* Location Settings */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="country" className="block text-sm font-medium text-gray-300">
+                        Country
+                      </label>
+                      <div className="relative">
+                        <select
+                          id="country"
+                          value={country}
+                          onChange={(e) => setCountry(e.target.value)}
+                          className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        >
+                          <option value="GB">🇬🇧 United Kingdom</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="postcode" className="block text-sm font-medium text-gray-300">
+                        Postcode (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        id="postcode"
+                        value={postcode}
+                        onChange={(e) => setPostcode(e.target.value)}
+                        className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        placeholder="e.g., SW1A 1AA"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Status */}
+              <div className="border-t border-gray-700/50 pt-6">
+                <h3 className="text-lg font-medium text-white mb-4">Event Status</h3>
+
+                <div>
+                  <label htmlFor="status" className="block text-sm font-medium text-gray-300">
+                    Initial Status
+                  </label>
+                  <select
+                    id="status"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as 'DRAFT' | 'ACTIVE')}
+                    className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  >
+                    <option value="ACTIVE">Active - Available to join immediately</option>
+                    <option value="DRAFT">Draft - Save for later activation</option>
+                  </select>
+                  <p className="mt-2 text-sm text-gray-400">
+                    {status === 'ACTIVE'
+                      ? 'Event will be immediately available for users to join'
+                      : 'Event will be saved as draft and can be activated later from the events management page'}
+                  </p>
                 </div>
               </div>
 
