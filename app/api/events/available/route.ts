@@ -28,6 +28,9 @@ export async function GET(request: NextRequest) {
       scope: string;
       endDate: string | unknown;
       startDate: string | unknown;
+      organizationId?: string;
+      gymId?: string;
+      invitedUserIds?: string[];
     }[];
 
     // Filter events based on scoping rules
