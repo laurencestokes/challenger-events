@@ -19,7 +19,7 @@ RUN set -ex; \
     echo "NPM_TOKEN is not set - skipping .npmrc creation"; \
   fi
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 # Remove token after install
 RUN rm -f /root/.npmrc || true
 
