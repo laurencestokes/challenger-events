@@ -1,9 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import * as d3 from 'd3';
+import { useMemo, useState } from 'react';
 import { EVENT_TYPES } from '@/constants/eventTypes';
 import { useTheme } from 'next-themes';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from 'recharts';
 
 interface Score {
   id: string;
@@ -27,30 +35,13 @@ interface PerformanceGraphProps {
   isLoading: boolean;
 }
 
-export default function PerformanceGraph({ scores, isLoading }: PerformanceGraphProps) {
-  const svgRef = useRef<SVGSVGElement>(null);
+export default function PerformanceGraph({ scores }: PerformanceGraphProps) {
   const [selectedActivity, setSelectedActivity] = useState<string>('all');
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
   const [grouping, setGrouping] = useState<'all' | 'strength' | 'endurance' | 'activity'>('all');
   const { theme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const [chartKey, setChartKey] = useState(0); // Force re-render on resize
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
-  // Add resize listener for responsive chart
-  useEffect(() => {
-    const handleResize = () => {
-      if (svgRef.current && !isLoading && scores.length > 0) {
-        // Force re-render by updating chart key
-        setChartKey((prev) => prev + 1);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isLoading, scores.length]);
+  const isDark = theme === 'dark' || resolvedTheme === 'dark';
 
   // Helper function to parse dates properly
   const parseDate = (dateValue: unknown): Date => {
@@ -85,11 +76,21 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
 
     // Handle number timestamps
     if (typeof dateValue === 'number') {
-      const date = new Date(dateValue);
+      // Heuristic: treat < 1e12 as seconds, otherwise ms
+      const ms = dateValue < 1e12 ? dateValue * 1000 : dateValue;
+      const date = new Date(ms);
       return isNaN(date.getTime()) ? new Date() : date;
     }
 
     return new Date();
+  };
+
+  // Local date key (avoid UTC shifting from toISOString)
+  const toLocalDateKey = (d: Date): string => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   // Get unique activities for filter
@@ -117,407 +118,155 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
     return EVENT_TYPES.filter((e) => e.category === category).map((e) => e.id);
   }
 
-  // For All/Strength/Endurance: build a time series of total score over time
-  const buildTotalScoreSeries = useCallback(
-    (
-      scores: Score[],
-      category: 'all' | 'strength' | 'endurance',
-      timeRange: '7d' | '30d' | '90d' | 'all',
-    ) => {
-      // 1. Sort all scores by date ascending
-      const sorted = [...scores].sort(
-        (a, b) => parseDate(a.submittedAt).getTime() - parseDate(b.submittedAt).getTime(),
-      );
-      // 2. For each date, keep a running best for each event type
-      const bestByType: Record<string, number> = {};
-      const points: { date: Date; total: number }[] = [];
+  // Data builders for Recharts
+  const totalSeries = useMemo(() => {
+    if (scores.length === 0) return [] as { date: string; total: number; verified: number }[];
+    const sorted = [...scores].sort(
+      (a, b) => parseDate(a.submittedAt).getTime() - parseDate(b.submittedAt).getTime(),
+    );
+    const bestByTypeAll: Record<string, number> = {};
+    const bestByTypeVerified: Record<string, number> = {};
+    const points: { date: string; total: number; verified: number }[] = [];
+    const now = new Date();
+    const categoryIds =
+      grouping === 'all'
+        ? EVENT_TYPES.map((e) => e.id)
+        : getEventTypeIdsForCategory(grouping === 'strength' ? 'STRENGTH' : 'ENDURANCE');
+    for (const score of sorted) {
+      const activityId = score.testId || score.activityId;
+      if (!categoryIds.includes(activityId)) continue;
+      const date = parseDate(score.submittedAt);
+      // Time range filter
+      switch (timeRange) {
+        case '7d':
+          if (date < new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)) continue;
+          break;
+        case '30d':
+          if (date < new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)) continue;
+          break;
+        case '90d':
+          if (date < new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)) continue;
+          break;
+      }
+      // Update best for all
+      if (!bestByTypeAll[activityId] || score.calculatedScore > bestByTypeAll[activityId]) {
+        bestByTypeAll[activityId] = score.calculatedScore;
+      }
+      // Update best for verified-only
+      const isVerified = !!(score.verified || score.eventId);
+      if (isVerified) {
+        if (
+          !bestByTypeVerified[activityId] ||
+          score.calculatedScore > bestByTypeVerified[activityId]
+        ) {
+          bestByTypeVerified[activityId] = score.calculatedScore;
+        }
+      }
+      // Compute averages
+      const sumAll = categoryIds.reduce((sum, id) => sum + (bestByTypeAll[id] || 0), 0);
+      const sumVerified = categoryIds.reduce((sum, id) => sum + (bestByTypeVerified[id] || 0), 0);
+      const denom = categoryIds.length || 1;
+      const avgAll = Math.round(sumAll / denom);
+      const avgVerified = Math.round(sumVerified / denom);
+      points.push({ date: toLocalDateKey(date), total: avgAll, verified: avgVerified });
+    }
+    // Collapse same-date points keeping last
+    const collapsed: Record<string, { total: number; verified: number }> = {};
+    points.forEach((p) => (collapsed[p.date] = { total: p.total, verified: p.verified }));
+    return Object.entries(collapsed).map(([date, vals]) => ({ date, ...vals }));
+  }, [scores, grouping, timeRange]);
+
+  const activitySeries = useMemo(() => {
+    if (scores.length === 0)
+      return [] as {
+        date: string;
+        score: number;
+        verified: boolean;
+        name?: string;
+        rawValue?: number;
+        reps?: number;
+        activityId?: string;
+      }[];
+    const filtered = scores.filter((s) => {
+      const id = s.testId || s.activityId;
+      if (selectedActivity !== 'all' && id !== selectedActivity) return false;
+      const date = parseDate(s.submittedAt);
       const now = new Date();
-      const categoryIds =
-        category === 'all'
-          ? EVENT_TYPES.map((e) => e.id)
-          : getEventTypeIdsForCategory(category === 'strength' ? 'STRENGTH' : 'ENDURANCE');
-      for (const score of sorted) {
-        const activityId = score.testId || score.activityId;
-        if (!categoryIds.includes(activityId)) continue;
-        const date = parseDate(score.submittedAt);
-        // Time range filter
-        switch (timeRange) {
-          case '7d':
-            if (date < new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)) continue;
-            break;
-          case '30d':
-            if (date < new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)) continue;
-            break;
-          case '90d':
-            if (date < new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)) continue;
-            break;
-        }
-        // Update best for this event type
-        if (!bestByType[activityId] || score.calculatedScore > bestByType[activityId]) {
-          bestByType[activityId] = score.calculatedScore;
-        }
-        // Calculate total
-        const total = categoryIds.reduce((sum, id) => sum + (bestByType[id] || 0), 0);
-        points.push({ date, total });
+      switch (timeRange) {
+        case '7d':
+          return date >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        case '30d':
+          return date >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        case '90d':
+          return date >= new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        case 'all':
+        default:
+          return true;
       }
-      // Remove duplicate dates (keep last point for each date)
-      const uniquePoints: { date: Date; total: number }[] = [];
-      let lastDate = '';
-      for (const p of points) {
-        const d = p.date.toISOString().split('T')[0];
-        if (d !== lastDate) {
-          uniquePoints.push(p);
-          lastDate = d;
-        } else {
-          uniquePoints[uniquePoints.length - 1] = p;
+    });
+    // Deduplicate identical visual points while preserving Score History semantics
+    // Keyed by (activityId, local day, rawValue if available else rounded score)
+    const pick = new Map<string, (typeof filtered)[number]>();
+    for (const s of filtered) {
+      const d = parseDate(s.submittedAt);
+      const day = toLocalDateKey(d);
+      const activity = s.testId || s.activityId;
+      const rv = (s as unknown as { rawValue?: number }).rawValue;
+      const metric =
+        typeof rv === 'number' && !isNaN(rv)
+          ? `raw:${Math.round(rv * 1000) / 1000}`
+          : `score:${Math.round((s.calculatedScore ?? 0) * 10) / 10}`;
+      const key = `${activity}|${day}|${metric}`;
+      const prev = pick.get(key);
+      if (!prev) {
+        pick.set(key, s);
+      } else {
+        // Prefer verified, then later timestamp
+        const prevVerified = !!(prev.verified || prev.eventId);
+        const currVerified = !!(s.verified || s.eventId);
+        if (currVerified && !prevVerified) {
+          pick.set(key, s);
+        } else if (currVerified === prevVerified) {
+          if (parseDate(s.submittedAt).getTime() > parseDate(prev.submittedAt).getTime()) {
+            pick.set(key, s);
+          }
         }
       }
-      return uniquePoints;
-    },
-    [],
-  );
-
-  useEffect(() => {
-    if (!mounted || !svgRef.current || isLoading || scores.length === 0) return;
-    if (!theme && !resolvedTheme) return;
-
-    // Detect dark mode using next-themes
-    const isDark = theme === 'dark' || resolvedTheme === 'dark';
-    const axisLabelColor = isDark ? '#E84C04' : '#334155'; // primary-500 or slate-700
-    const axisTitleColor = isDark ? '#fff' : '#334155'; // white in dark mode, slate-700 in light
-    const gridLineColor = isDark ? '#fff' : '#e5e7eb'; // white or gray-200
-
-    // Clear previous chart
-    d3.select(svgRef.current).selectAll('*').remove();
-
-    let filteredScores = scores;
-    if (grouping === 'activity') {
-      // Per-activity: filter as before
-      const scoreActivityId = (score: Score) => score.testId || score.activityId;
-      filteredScores = scores.filter((score) => {
-        const isActivityMatch =
-          selectedActivity === 'all' || scoreActivityId(score) === selectedActivity;
-        if (!isActivityMatch) return false;
-        const scoreDate = parseDate(score.submittedAt);
-        const now = new Date();
-        switch (timeRange) {
-          case '7d':
-            return scoreDate >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          case '30d':
-            return scoreDate >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          case '90d':
-            return scoreDate >= new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-          case 'all':
-          default:
-            return true;
-        }
-      });
     }
 
-    // Get container width for responsive chart
-    const container = svgRef.current.parentElement;
-    const containerWidth = container ? container.clientWidth : 800;
+    const compact = Array.from(pick.values());
 
-    // Chart dimensions - responsive to container width
-    const margin = { top: 20, right: 30, bottom: 60, left: 60 };
-    const width = Math.max(containerWidth - margin.left - margin.right, 350); // Minimum width of 350px for mobile
-    const height = 400 - margin.top - margin.bottom;
+    const sorted = compact.sort(
+      (a, b) => parseDate(a.submittedAt).getTime() - parseDate(b.submittedAt).getTime(),
+    );
+    return sorted.map((s) => ({
+      date: toLocalDateKey(parseDate(s.submittedAt)),
+      score: s.calculatedScore,
+      verified: !!(s.verified || s.eventId),
+      name: s.event?.name,
+      rawValue: (s as unknown as { rawValue?: number }).rawValue,
+      reps: (s as unknown as { reps?: number }).reps,
+      activityId: s.testId || s.activityId,
+    }));
+  }, [scores, selectedActivity, timeRange]);
 
-    const svg = d3
-      .select(svgRef.current)
-      .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom)
-      .style('background', 'none'); // Remove default background for theming
-
-    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
-
-    if (grouping === 'activity') {
-      // Per-activity: plot as before
-      const filtered = filteredScores.sort(
-        (a, b) => parseDate(a.submittedAt).getTime() - parseDate(b.submittedAt).getTime(),
-      );
-      const xScale = d3
-        .scaleTime()
-        .domain(d3.extent(filtered, (d) => parseDate(d.submittedAt)) as [Date, Date])
-        .range([0, width]);
-      const yScale = d3
-        .scaleLinear()
-        .domain([0, d3.max(filtered, (d) => d.calculatedScore) as number])
-        .range([height, 0]);
-      const line = d3
-        .line<Score>()
-        .x((d) => xScale(parseDate(d.submittedAt)))
-        .y((d) => yScale(d.calculatedScore))
-        .curve(d3.curveMonotoneX);
-      g.append('g')
-        .attr('class', 'grid')
-        .attr('transform', `translate(0,${height})`)
-        .call(
-          d3
-            .axisBottom(xScale)
-            .tickSize(-height)
-            .tickFormat(() => ''),
-        )
-        .style('stroke-dasharray', '3,3')
-        .style('opacity', 0.2)
-        .selectAll('line')
-        .style('stroke', gridLineColor);
-      g.append('g')
-        .attr('class', 'grid')
-        .call(
-          d3
-            .axisLeft(yScale)
-            .tickSize(-width)
-            .tickFormat(() => ''),
-        )
-        .style('stroke-dasharray', '3,3')
-        .style('opacity', 0.2)
-        .selectAll('line')
-        .style('stroke', gridLineColor);
-      g.append('g')
-        .attr('transform', `translate(0,${height})`)
-        .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat('%b %d, %Y') as unknown as null))
-        .selectAll('text')
-        .style('text-anchor', 'end')
-        .attr('dx', '-.8em')
-        .attr('dy', '.15em')
-        .attr('transform', 'rotate(-45)')
-        .style('fill', axisLabelColor);
-      g.append('g')
-        .call(d3.axisLeft(yScale).tickFormat((d) => d.toString()))
-        .selectAll('text')
-        .style('fill', axisLabelColor);
-      g.append('path')
-        .datum(filtered)
-        .attr('fill', 'none')
-        .attr('stroke', '#E84C04') // Tailwind primary-500 (main theme orange)
-        .attr('stroke-width', 3)
-        .attr('d', line);
-      // Always append axis titles with correct color
-      g.selectAll('text.axis-title').remove();
-      g.append('text')
-        .attr('transform', `translate(${width / 2}, ${height + margin.bottom - 10})`)
-        .style('text-anchor', 'middle')
-        .attr('class', 'axis-title')
-        .attr('fill', axisTitleColor)
-        .style('fill', axisTitleColor)
-        .text('Date');
-      g.append('text')
-        .attr('transform', 'rotate(-90)')
-        .attr('y', 0 - margin.left)
-        .attr('x', 0 - height / 2)
-        .attr('dy', '1em')
-        .style('text-anchor', 'middle')
-        .attr('class', 'axis-title')
-        .attr('fill', axisTitleColor)
-        .style('fill', axisTitleColor)
-        .text('Challenger Score');
-      g.selectAll('.dot')
-        .data(filtered)
-        .enter()
-        .append('circle')
-        .attr('class', 'dot')
-        .attr('cx', (d) => xScale(parseDate(d.submittedAt)))
-        .attr('cy', (d) => yScale(d.calculatedScore))
-        .attr('r', 5)
-        .attr('fill', (d) => (d.verified ? '#10b981' : '#f59e0b'))
-        .attr('stroke', '#ffffff')
-        .attr('stroke-width', 2)
-        .style('cursor', 'pointer')
-        .on('mouseover', function (_event, d) {
-          d3.selectAll('.tooltip').remove();
-          const tooltip = d3
-            .select('body')
-            .append('div')
-            .attr('class', 'tooltip')
-            .style('position', 'absolute')
-            .style('background', 'rgba(0, 0, 0, 0.9)')
-            .style('color', 'white')
-            .style('padding', '12px')
-            .style('border-radius', '8px')
-            .style('font-size', '13px')
-            .style('pointer-events', 'none')
-            .style('z-index', '1000')
-            .style('box-shadow', '0 4px 12px rgba(0, 0, 0, 0.3)')
-            .style('border', '1px solid rgba(255, 255, 255, 0.1)')
-            .style('max-width', '250px')
-            .style('white-space', 'nowrap');
-          tooltip.html(`
-            <div style="font-weight: 600; margin-bottom: 4px; color: #F97316;">${getActivityName(d.testId || d.activityId)}</div>
-            <div style="margin-bottom: 2px;"><span style="color: #9ca3af;">Score:</span> <span style="font-weight: 600; color: #10b981;">${d.calculatedScore}</span></div>
-            <div style="margin-bottom: 2px;"><span style="color: #9ca3af;">Raw:</span> ${formatRawValue(d.rawValue, d.testId || d.activityId, d.reps)}</div>
-            <div style="margin-bottom: 2px;"><span style="color: #9ca3af;">Date:</span> <span style="color: #F97316; font-weight: 600;">${parseDate(d.submittedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span></div>
-            ${d.event ? `<div style=\"margin-bottom: 2px;\"><span style=\"color: #9ca3af;\">Event:</span> ${d.event.name}</div>` : ''}
-            ${d.verified ? '<div style="color: #10b981; font-weight: 600;">✅ Verified</div>' : '<div style="color: #f59e0b;">⚠️ Unverified</div>'}
-          `);
-          // Position tooltip just above the data point, centered
-          if (!svgRef.current) return;
-          const svgRect = svgRef.current.getBoundingClientRect();
-          const cx = xScale(parseDate(d.submittedAt)) + margin.left;
-          const cy = yScale(d.calculatedScore) + margin.top;
-          const tooltipNode = tooltip.node();
-          if (tooltipNode) {
-            const tooltipRect = tooltipNode.getBoundingClientRect();
-            const left = svgRect.left + cx - tooltipRect.width / 2;
-            const top = svgRect.top + cy - tooltipRect.height - 12; // 12px above the point
-            tooltip.style('left', `${left}px`).style('top', `${top}px`);
-          }
-          d3.select(this).attr('r', 8);
-        })
-        .on('mouseout', function () {
-          d3.selectAll('.tooltip').remove();
-          d3.select(this).attr('r', 5);
-        });
-      return;
-    }
-
-    // All/Strength/Endurance: build and plot total score series
-    const series = buildTotalScoreSeries(scores, grouping, timeRange);
-    if (series.length === 0) return;
-    const xScale = d3
-      .scaleTime()
-      .domain(d3.extent(series, (d) => d.date) as [Date, Date])
-      .range([0, width]);
-    const yScale = d3
-      .scaleLinear()
-      .domain([0, d3.max(series, (d) => d.total) as number])
-      .range([height, 0]);
-    const line = d3
-      .line<{ date: Date; total: number }>()
-      .x((d) => xScale(d.date))
-      .y((d) => yScale(d.total))
-      .curve(d3.curveMonotoneX);
-    g.append('g')
-      .attr('class', 'grid')
-      .attr('transform', `translate(0,${height})`)
-      .call(
-        d3
-          .axisBottom(xScale)
-          .tickSize(-height)
-          .tickFormat(() => ''),
-      )
-      .style('stroke-dasharray', '3,3')
-      .style('opacity', 0.2)
-      .selectAll('line')
-      .style('stroke', gridLineColor);
-    g.append('g')
-      .attr('class', 'grid')
-      .call(
-        d3
-          .axisLeft(yScale)
-          .tickSize(-width)
-          .tickFormat(() => ''),
-      )
-      .style('stroke-dasharray', '3,3')
-      .style('opacity', 0.2)
-      .selectAll('line')
-      .style('stroke', gridLineColor);
-    g.append('g')
-      .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat('%b %d, %Y') as unknown as null))
-      .selectAll('text')
-      .style('text-anchor', 'end')
-      .attr('dx', '-.8em')
-      .attr('dy', '.15em')
-      .attr('transform', 'rotate(-45)')
-      .style('fill', axisLabelColor);
-    g.append('g')
-      .call(d3.axisLeft(yScale).tickFormat((d) => d.toString()))
-      .selectAll('text')
-      .style('fill', axisLabelColor);
-    g.append('path')
-      .datum(series)
-      .attr('fill', 'none')
-      .attr('stroke', '#E84C04') // Tailwind primary-500 (main theme orange)
-      .attr('stroke-width', 3)
-      .attr('d', line);
-    g.selectAll('.dot')
-      .data(series)
-      .enter()
-      .append('circle')
-      .attr('class', 'dot')
-      .attr('cx', (d) => xScale(d.date))
-      .attr('cy', (d) => yScale(d.total))
-      .attr('r', 5)
-      .attr('fill', '#3b82f6')
-      .attr('stroke', '#ffffff')
-      .attr('stroke-width', 2)
-      .style('cursor', 'pointer')
-      .on('mouseover', function (event, d) {
-        d3.selectAll('.tooltip').remove();
-        const tooltip = d3
-          .select('body')
-          .append('div')
-          .attr('class', 'tooltip')
-          .style('position', 'absolute')
-          .style('background', 'rgba(0, 0, 0, 0.9)')
-          .style('color', 'white')
-          .style('padding', '12px')
-          .style('border-radius', '8px')
-          .style('font-size', '13px')
-          .style('pointer-events', 'none')
-          .style('z-index', '1000')
-          .style('box-shadow', '0 4px 12px rgba(0, 0, 0, 0.3)')
-          .style('border', '1px solid rgba(255, 255, 255, 0.1)')
-          .style('max-width', '250px')
-          .style('white-space', 'nowrap');
-        tooltip.html(`
-          <div style="font-weight: 600; margin-bottom: 4px; color: #3b82f6;">${grouping === 'all' ? 'Total Challenger Score' : grouping === 'strength' ? 'Strength Score' : 'Endurance Score'}</div>
-          <div style="margin-bottom: 2px;"><span style="color: #9ca3af;">Total:</span> <span style="font-weight: 600; color: #3b82f6;">${d.total}</span></div>
-          <div style="margin-bottom: 2px;"><span style="color: #9ca3af;">Date:</span> ${d.date.toLocaleDateString()}</div>
-        `);
-        const tooltipNode = tooltip.node();
-        if (tooltipNode) {
-          const tooltipRect = tooltipNode.getBoundingClientRect();
-          const mouseX = event.clientX;
-          const mouseY = event.clientY;
-          let left = mouseX + 10;
-          let top = mouseY - tooltipRect.height - 10;
-          if (left + tooltipRect.width > window.innerWidth) {
-            left = mouseX - tooltipRect.width - 10;
-          }
-          if (top < 0) {
-            top = mouseY + 10;
-          }
-          tooltip.style('left', `${left}px`).style('top', `${top}px`);
-        }
-        d3.select(this).attr('r', 8);
-      })
-      .on('mouseout', function () {
-        d3.selectAll('.tooltip').remove();
-        d3.select(this).attr('r', 5);
-      });
-    // Always append axis titles with correct color
-    g.selectAll('text.axis-title').remove();
-    g.append('text')
-      .attr('transform', `translate(${width / 2}, ${height + margin.bottom - 10})`)
-      .style('text-anchor', 'middle')
-      .attr('class', 'axis-title')
-      .attr('fill', axisTitleColor)
-      .style('fill', axisTitleColor)
-      .text('Date');
-    g.append('text')
-      .attr('transform', 'rotate(-90)')
-      .attr('y', 0 - margin.left)
-      .attr('x', 0 - height / 2)
-      .attr('dy', '1em')
-      .style('text-anchor', 'middle')
-      .attr('class', 'axis-title')
-      .attr('fill', axisTitleColor)
-      .style('fill', axisTitleColor)
-      .text('Challenger Score');
-  }, [
-    scores,
-    selectedActivity,
-    timeRange,
-    isLoading,
-    grouping,
-    theme,
-    resolvedTheme,
-    mounted,
-    chartKey,
-    buildTotalScoreSeries,
-  ]);
+  // Build wide series for "all activities" -> one line per activity
+  const activitySeriesWide = useMemo(() => {
+    if (selectedActivity !== 'all')
+      return { data: [] as Array<Record<string, unknown>>, keys: [] as string[] };
+    // dates in ascending order with per-activity values
+    const byDate: Record<string, Record<string, unknown>> = {};
+    const keys = new Set<string>();
+    activitySeries.forEach((p) => {
+      const key = p.activityId as string;
+      if (!key) return;
+      keys.add(key);
+      if (!byDate[p.date]) byDate[p.date] = { date: p.date } as Record<string, unknown>;
+      (byDate[p.date] as Record<string, unknown>)[key] = p.score;
+    });
+    const data = Object.values(byDate).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    return { data, keys: Array.from(keys) };
+  }, [activitySeries, selectedActivity]);
 
   function formatRawValue(rawValue: number, activityId: string, reps?: number): string {
     // Import the beautifyRawScore function logic here
@@ -542,10 +291,6 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
     return rawValue.toString();
   }
 
-  if (!mounted) {
-    return null;
-  }
-
   if (scores.length === 0) {
     return (
       <div className="text-center py-12">
@@ -555,6 +300,124 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
       </div>
     );
   }
+
+  // Custom tooltips
+  const ActivityTooltip = ({ active, payload }: { active?: boolean; payload?: unknown[] }) => {
+    if (!active || !payload || payload.length === 0) return null;
+    const p = (
+      payload[0] as {
+        payload: {
+          score: number;
+          rawValue?: number;
+          reps?: number;
+          activityId?: string;
+          name?: string;
+          date: string;
+          verified: boolean;
+        };
+      }
+    )?.payload;
+    return (
+      <div
+        className="pointer-events-none"
+        style={{
+          background: 'rgba(0,0,0,0.9)',
+          color: 'white',
+          padding: 12,
+          borderRadius: 8,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          border: '1px solid rgba(255,255,255,0.1)',
+        }}
+      >
+        <div style={{ fontWeight: 600, marginBottom: 4, color: '#F97316' }}>
+          {getActivityName(p.activityId || '')}
+        </div>
+        <div style={{ marginBottom: 2 }}>
+          <span style={{ color: '#9ca3af' }}>Score:</span>{' '}
+          <span style={{ fontWeight: 600, color: '#10b981' }}>{p.score}</span>
+        </div>
+        {typeof p.rawValue === 'number' && (
+          <div style={{ marginBottom: 2 }}>
+            <span style={{ color: '#9ca3af' }}>Raw:</span>{' '}
+            {formatRawValue(p.rawValue, p.activityId || '', p.reps)}
+          </div>
+        )}
+        <div style={{ marginBottom: 2 }}>
+          <span style={{ color: '#9ca3af' }}>Date:</span>{' '}
+          <span style={{ color: '#F97316', fontWeight: 600 }}>
+            {new Date(p.date).toLocaleDateString(undefined, {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </span>
+        </div>
+        <div style={{ color: p.verified ? '#10b981' : '#f59e0b', fontWeight: 600 }}>
+          {p.verified ? '✅ Verified' : '⚠️ Unverified'}
+        </div>
+      </div>
+    );
+  };
+
+  const SeriesTooltip = ({ active, payload }: { active?: boolean; payload?: unknown[] }) => {
+    if (!active || !payload || payload.length === 0) return null;
+    const p = (payload[0] as { payload: { total: number; verified?: number; date: string } })
+      ?.payload;
+    const titleBase =
+      grouping === 'all'
+        ? 'Total Challenger Score'
+        : grouping === 'strength'
+          ? 'Strength Score'
+          : 'Endurance Score';
+    return (
+      <div
+        className="pointer-events-none"
+        style={{
+          background: 'rgba(0,0,0,0.9)',
+          color: 'white',
+          padding: 12,
+          borderRadius: 8,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
+      >
+        <div
+          style={{ fontWeight: 600, marginBottom: 4, color: '#F97316' }}
+        >{`${titleBase} (Average)`}</div>
+        <div style={{ marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 9999,
+              background: '#E84C04',
+              display: 'inline-block',
+            }}
+          />
+          <span>Total:</span>
+          <span style={{ fontWeight: 600, color: '#E84C04' }}>{p.total}</span>
+        </div>
+        {typeof p.verified === 'number' && (
+          <div style={{ marginBottom: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: 9999,
+                background: '#3b82f6',
+                display: 'inline-block',
+              }}
+            />
+            <span>Verified:</span>
+            <span style={{ fontWeight: 600, color: '#3b82f6' }}>{p.verified}</span>
+          </div>
+        )}
+        <div style={{ marginTop: 2 }}>
+          <span style={{ color: '#9ca3af' }}>Date:</span> {new Date(p.date).toLocaleDateString()}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -612,22 +475,83 @@ export default function PerformanceGraph({ scores, isLoading }: PerformanceGraph
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="flex items-center justify-center gap-6 text-sm text-gray-300">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-          <span>Verified Scores</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-          <span>Unverified Scores</span>
-        </div>
-      </div>
+      {/* Legend removed per request */}
 
       {/* Chart */}
       <div className="w-full overflow-x-auto border border-gray-700/50 rounded-xl p-4 bg-black/30">
-        <div className="min-w-[450px] w-full">
-          <svg ref={svgRef} className="w-full h-[400px]"></svg>
+        <div className="min-w-[450px] w-full h-[400px]">
+          <ResponsiveContainer width="100%" height="100%">
+            {grouping === 'activity' && selectedActivity !== 'all' ? (
+              <LineChart data={activitySeries} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#ffffff33' : '#e5e7eb'} />
+                <XAxis dataKey="date" tick={{ fill: isDark ? '#F97316' : '#334155' }} />
+                <YAxis tick={{ fill: isDark ? '#F97316' : '#334155' }} />
+                <Tooltip content={<ActivityTooltip />} />
+                <Line
+                  type="monotone"
+                  dataKey="score"
+                  name="Score"
+                  stroke="#E84C04"
+                  strokeWidth={3}
+                  dot={{ r: 4 }}
+                />
+              </LineChart>
+            ) : grouping === 'activity' && selectedActivity === 'all' ? (
+              <LineChart
+                data={activitySeriesWide.data}
+                margin={{ top: 10, right: 20, bottom: 10, left: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#ffffff33' : '#e5e7eb'} />
+                <XAxis dataKey="date" tick={{ fill: isDark ? '#F97316' : '#334155' }} />
+                <YAxis tick={{ fill: isDark ? '#F97316' : '#334155' }} />
+                <Tooltip
+                  contentStyle={{
+                    background: 'rgba(0,0,0,0.9)',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                  }}
+                  labelStyle={{ color: '#F97316' }}
+                />
+                {activitySeriesWide.keys.map((k, idx) => (
+                  <Line
+                    key={k}
+                    type="monotone"
+                    dataKey={k}
+                    name={getActivityName(k)}
+                    stroke={
+                      ['#E84C04', '#3b82f6', '#10b981', '#f59e0b', '#a855f7', '#ef4444', '#22d3ee'][
+                        idx % 7
+                      ]
+                    }
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                  />
+                ))}
+              </LineChart>
+            ) : (
+              <LineChart data={totalSeries} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#ffffff33' : '#e5e7eb'} />
+                <XAxis dataKey="date" tick={{ fill: isDark ? '#F97316' : '#334155' }} />
+                <YAxis tick={{ fill: isDark ? '#F97316' : '#334155' }} />
+                <Tooltip content={<SeriesTooltip />} />
+                <Line
+                  type="monotone"
+                  dataKey="total"
+                  name={`${grouping === 'all' ? 'Total' : grouping === 'strength' ? 'Strength' : 'Endurance'} (Avg)`}
+                  stroke="#E84C04"
+                  strokeWidth={3}
+                  dot={{ r: 4 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="verified"
+                  name={`${grouping === 'all' ? 'Verified Total' : grouping === 'strength' ? 'Verified Strength' : 'Verified Endurance'} (Avg)`}
+                  stroke="#3b82f6"
+                  strokeWidth={3}
+                  dot={{ r: 3 }}
+                />
+              </LineChart>
+            )}
+          </ResponsiveContainer>
         </div>
       </div>
     </div>

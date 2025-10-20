@@ -144,7 +144,7 @@ export default function CompetitorDashboard() {
           });
         });
 
-        // Combine with personal scores
+        // Combine with personal scores (no deduplication here to keep Score History intact)
         const allScores: ScoreWithEvent[] = [...eventActivityScores, ...personalScores];
 
         // Sort by submission date (most recent first) and take the last 50 for the graph
@@ -190,12 +190,33 @@ export default function CompetitorDashboard() {
             return dateB - dateA; // Most recent first
           })
           .slice(0, 50)
-          .map((score) => ({
-            ...score,
-            rawValue: score.rawScore || 0, // Map rawScore to rawValue for PerformanceGraph, ensure it's a number
-            submittedAt: score.timestamp, // Map timestamp to submittedAt for PerformanceGraph
-            verified: score.verified || false, // Ensure verified is boolean
-          }));
+          .map((score) => {
+            // Canonicalize activity id similar to Score History name logic
+            const hasId = (id?: string) => !!id && EVENT_TYPES.some((et) => et.id === id);
+            const fromName = () =>
+              EVENT_TYPES.find((et) =>
+                score.activityName?.toLowerCase().includes(et.name.toLowerCase()),
+              )?.id;
+            const canonicalId = hasId(score.testId)
+              ? (score.testId as string)
+              : hasId(score.activityId)
+                ? (score.activityId as string)
+                : fromName() || (score.activityId as string);
+
+            return {
+              ...score,
+              // Normalize identifiers for the graph and tooltip
+              testId: canonicalId,
+              activityId: canonicalId,
+              // Preserve existing rawValue from event scores; do not fallback to rawScore so graph matches history exactly
+              rawValue:
+                typeof (score as { rawValue?: number }).rawValue === 'number'
+                  ? (score as { rawValue?: number }).rawValue
+                  : undefined,
+              submittedAt: score.timestamp, // Map timestamp to submittedAt for PerformanceGraph
+              verified: !!score.verified, // Ensure verified is boolean
+            };
+          });
 
         setRecentScores(sortedScores);
 
