@@ -10,7 +10,9 @@ ARG NPM_TOKEN
 # Configure temporary npm auth for GitHub Packages (scoped to @challengerco)
 RUN set -eux; \
   if [ -n "$NPM_TOKEN" ]; then \
-    printf "@challengerco:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=%s\nalways-auth=true\n" "$NPM_TOKEN" > /root/.npmrc; \
+    echo "@challengerco:registry=https://npm.pkg.github.com" > /root/.npmrc; \
+    echo "//npm.pkg.github.com/:_authToken=$NPM_TOKEN" >> /root/.npmrc; \
+    echo "always-auth=true" >> /root/.npmrc; \
   fi
 COPY package*.json ./
 RUN npm ci --omit=dev
@@ -24,7 +26,9 @@ ARG NPM_TOKEN
 # Configure temporary npm auth for build step as well
 RUN set -eux; \
   if [ -n "$NPM_TOKEN" ]; then \
-    printf "@challengerco:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=%s\nalways-auth=true\n" "$NPM_TOKEN" > /root/.npmrc; \
+    echo "@challengerco:registry=https://npm.pkg.github.com" > /root/.npmrc; \
+    echo "//npm.pkg.github.com/:_authToken=$NPM_TOKEN" >> /root/.npmrc; \
+    echo "always-auth=true" >> /root/.npmrc; \
   fi
 COPY . .
 RUN npm ci
