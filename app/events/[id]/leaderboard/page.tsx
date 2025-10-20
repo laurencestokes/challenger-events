@@ -28,6 +28,8 @@ interface Event {
   isTeamEvent?: boolean;
   teamScoringMethod?: 'SUM' | 'AVERAGE' | 'BEST';
   maxTeamSize?: number;
+  postcode?: string;
+  country?: string;
 }
 
 interface Participant {
@@ -549,7 +551,20 @@ export default function EventLeaderboard() {
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span className="text-lg font-medium">Location TBD</span>
+                      <span className="text-lg font-medium">
+                        {event.postcode ? (
+                          <>
+                            {event.postcode}
+                            {event.country && (
+                              <span className="ml-1">
+                                {event.country === 'GB' ? '🇬🇧' : event.country}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          'Location TBD'
+                        )}
+                      </span>
                     </div>
                     <div className="flex items-center space-x-3 text-white mt-3">
                       <span

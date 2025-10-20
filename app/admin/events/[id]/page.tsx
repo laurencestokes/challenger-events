@@ -29,6 +29,8 @@ interface Event {
   description?: string;
   imageUrl?: string;
   participants?: Participant[];
+  postcode?: string;
+  country?: string;
 }
 
 interface Activity {
@@ -475,7 +477,20 @@ export default function EventDetails() {
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span className="text-lg font-medium">Location TBD</span>
+                      <span className="text-lg font-medium">
+                        {event.postcode ? (
+                          <>
+                            {event.postcode}
+                            {event.country && (
+                              <span className="ml-1">
+                                {event.country === 'GB' ? '🇬🇧' : event.country}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          'Location TBD'
+                        )}
+                      </span>
                     </div>
                     <div className="flex items-center space-x-3 text-white mt-3">
                       <span
