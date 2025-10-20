@@ -1,0 +1,50 @@
+# cloudbuild.yaml
+substitutions:
+  _REGION: europe-west2
+  _REPO: web
+  _SERVICE: challenger-events
+
+steps:
+  # Build and push the container with NPM_TOKEN from Secret Manager
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - '--build-arg'
+      - 'NPM_TOKEN=$(NPM_TOKEN)'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA'
+      - '.'
+    secretEnv: ['NPM_TOKEN']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - push
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA'
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - '${_SERVICE}'
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
+      - '--concurrency'
+      - '80'
+      - '--timeout'
+      - '600'
+
+secrets:
+  - secretEnv:
+      NPM_TOKEN: projects/$PROJECT_ID/secrets/NPM_TOKEN/versions/latest
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA'
