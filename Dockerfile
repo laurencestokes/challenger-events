@@ -37,7 +37,8 @@ COPY . .
 RUN npm ci
 # Set commit hash from Cloud Build environment variable
 RUN echo "NEXT_PUBLIC_COMMIT_HASH=${SHORT_SHA:-unknown}" > .env.local
-RUN npm run build
+# Run Next.js build directly (bypassing prebuild script)
+RUN npx next build
 RUN rm -f /root/.npmrc || true
 
 # 3) Runtime image
