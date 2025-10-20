@@ -344,9 +344,11 @@ export default function EventsPage() {
     });
   };
 
-  const activeFiltersCount = Object.values(filters).filter(
-    (value) => value !== 'ALL' && value !== '',
-  ).length;
+  const activeFiltersCount =
+    (filters.scope !== 'ALL' ? 1 : 0) +
+    (filters.dateRange !== 'ALL' ? 1 : 0) +
+    (filters.searchTerm.trim() ? 1 : 0) +
+    (filters.postcode.trim() ? 1 : 0);
 
   return (
     <ProtectedRoute>
