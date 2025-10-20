@@ -8,10 +8,10 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 ARG NPM_TOKEN
 # Configure temporary npm auth for GitHub Packages (scoped to @challengerco)
-RUN set -eux; \
-  if [ -n "$NPM_TOKEN" ]; then \
+RUN set -ex; \
+  if [ -n "${NPM_TOKEN:-}" ]; then \
     echo "@challengerco:registry=https://npm.pkg.github.com" > /root/.npmrc; \
-    echo "//npm.pkg.github.com/:_authToken=$NPM_TOKEN" >> /root/.npmrc; \
+    echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> /root/.npmrc; \
     echo "always-auth=true" >> /root/.npmrc; \
   fi
 COPY package*.json ./
@@ -24,10 +24,10 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 ARG NPM_TOKEN
 # Configure temporary npm auth for build step as well
-RUN set -eux; \
-  if [ -n "$NPM_TOKEN" ]; then \
+RUN set -ex; \
+  if [ -n "${NPM_TOKEN:-}" ]; then \
     echo "@challengerco:registry=https://npm.pkg.github.com" > /root/.npmrc; \
-    echo "//npm.pkg.github.com/:_authToken=$NPM_TOKEN" >> /root/.npmrc; \
+    echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> /root/.npmrc; \
     echo "always-auth=true" >> /root/.npmrc; \
   fi
 COPY . .

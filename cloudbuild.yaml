@@ -42,9 +42,10 @@ steps:
       - '--timeout'
       - '600'
 
-secrets:
-  - secretEnv:
-      NPM_TOKEN: projects/$PROJECT_ID/secrets/NPM_TOKEN/versions/latest
+availableSecrets:
+  secretManager:
+  - versionName: projects/$PROJECT_ID/secrets/NPM_TOKEN/versions/latest
+    env: 'NPM_TOKEN'
 
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA'
