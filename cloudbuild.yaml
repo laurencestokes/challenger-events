@@ -4,6 +4,9 @@ substitutions:
   _REPO: web
   _SERVICE: challenger-events
 
+options:
+  logging: CLOUD_LOGGING_ONLY
+
 steps:
   # Build and push the container with NPM_TOKEN from Secret Manager
   - name: 'gcr.io/cloud-builders/docker'
