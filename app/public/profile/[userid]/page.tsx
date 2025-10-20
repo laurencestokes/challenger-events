@@ -254,10 +254,12 @@ export default function PublicProfilePage({ params }: { params: { userid: string
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: '#0F0F0F' }}
+      >
         <div className="text-center">
           <LoadingSpinner />
-          <p className="mt-4 text-gray-600 dark:text-gray-400 animate-pulse">Loading profile...</p>
         </div>
       </div>
     );
@@ -283,10 +285,12 @@ export default function PublicProfilePage({ params }: { params: { userid: string
 
   if (!data || !eventScores) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: '#0F0F0F' }}
+      >
         <div className="text-center">
           <LoadingSpinner />
-          <p className="mt-4 text-gray-600 dark:text-gray-400 animate-pulse">Loading profile...</p>
         </div>
       </div>
     );
