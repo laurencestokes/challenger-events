@@ -1,0 +1,16 @@
+{
+  "hosting": {
+    "site": "challenger-events",
+    "public": "public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "next-ssr",
+          "region": "europe-west2"
+        }
+      }
+    ]
+  }
+}
