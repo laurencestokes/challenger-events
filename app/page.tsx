@@ -50,10 +50,13 @@ export default function Home() {
 
   if (user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: '#0F0F0F' }}
+      >
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4 font-display">Loading...</h1>
-          <p className="text-gray-600 dark:text-gray-400 font-sans">Redirecting...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary-500"></div>
+          <p className="text-white text-lg font-sans">Loading...</p>
         </div>
       </div>
     );

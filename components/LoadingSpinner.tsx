@@ -7,11 +7,10 @@ export default function LoadingSpinner() {
     >
       <div className="text-center">
         <div
-          className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4"
-          style={{ borderColor: '#4682B4' }}
+          className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary-500"
           data-testid="loading-spinner"
         ></div>
-        <p className="text-white text-lg">Loading...</p>
+        <p className="text-white text-lg font-sans">Loading...</p>
       </div>
     </div>
   );

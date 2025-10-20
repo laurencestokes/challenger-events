@@ -33,11 +33,11 @@ export default function SignInPage() {
   // Show loading while checking authentication
   if (user) {
     return (
-      <div className="py-8 px-4 sm:px-6 lg:px-8">
+      <div className="py-8 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: '#0F0F0F' }}>
         <div className="max-w-md w-full space-y-8 mx-auto">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">Redirecting to dashboard...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
+            <p className="mt-2 text-white text-lg font-sans">Loading...</p>
           </div>
         </div>
       </div>

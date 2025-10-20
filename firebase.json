@@ -7,7 +7,7 @@
       {
         "source": "**",
         "run": {
-          "serviceId": "next-ssr",
+          "serviceId": "challenger-events",
           "region": "europe-west2"
         }
       }

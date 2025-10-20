@@ -171,10 +171,7 @@ export default function AdminImageUpload() {
             <h2 className="text-xl font-semibold mb-4 text-white">Image Gallery</h2>
             {galleryLoading ? (
               <div className="text-center py-8">
-                <div
-                  className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4"
-                  style={{ borderColor: '#4682B4' }}
-                ></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4 border-primary-500"></div>
                 <p className="text-gray-400">Loading gallery...</p>
               </div>
             ) : gallery.length === 0 ? (

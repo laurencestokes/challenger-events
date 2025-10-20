@@ -247,10 +247,7 @@ export default function PublicEventLeaderboard() {
       <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-12">
-            <div
-              className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4"
-              style={{ borderColor: '#4682B4' }}
-            ></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary-500"></div>
             <p className="text-white text-lg">Loading leaderboard...</p>
           </div>
         </div>
