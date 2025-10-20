@@ -11,31 +11,11 @@ steps:
   # Build and push the container with all secrets from Secret Manager
   - name: 'gcr.io/cloud-builders/docker'
     entrypoint: 'bash'
-    secretEnv: ['NPM_TOKEN', 'FIREBASE_API_KEY', 'FIREBASE_AUTH_DOMAIN', 'FIREBASE_PROJECT_ID', 'FIREBASE_STORAGE_BUCKET', 'FIREBASE_MESSAGING_SENDER_ID', 'FIREBASE_APP_ID', 'FIREBASE_MEASUREMENT_ID', 'FIREBASE_CLIENT_EMAIL', 'FIREBASE_PRIVATE_KEY', 'SOCKET_SECRET', 'ERG_API_SECRET', 'RESEND_API_KEY', 'FROM_EMAIL', 'APP_URL', 'REVALIDATE_SECRET']
+    secretEnv: ['NPM_TOKEN', 'NEXT_PUBLIC_FIREBASE_API_KEY', 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN', 'NEXT_PUBLIC_FIREBASE_PROJECT_ID', 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET', 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID', 'NEXT_PUBLIC_FIREBASE_APP_ID', 'FIREBASE_PROJECT_ID', 'ERG_API_SECRET', 'RESEND_API_KEY', 'FROM_EMAIL', 'NEXT_PUBLIC_APP_URL']
     args:
     - '-c'
     - |
-      docker build \
-        --build-arg NPM_TOKEN="$$NPM_TOKEN" \
-        --build-arg SHORT_SHA="$SHORT_SHA" \
-        --build-arg NEXT_PUBLIC_FIREBASE_API_KEY="$$FIREBASE_API_KEY" \
-        --build-arg NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="$$FIREBASE_AUTH_DOMAIN" \
-        --build-arg NEXT_PUBLIC_FIREBASE_PROJECT_ID="$$FIREBASE_PROJECT_ID" \
-        --build-arg NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="$$FIREBASE_STORAGE_BUCKET" \
-        --build-arg NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="$$FIREBASE_MESSAGING_SENDER_ID" \
-        --build-arg NEXT_PUBLIC_FIREBASE_APP_ID="$$FIREBASE_APP_ID" \
-        --build-arg NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="$$FIREBASE_MEASUREMENT_ID" \
-        --build-arg FIREBASE_PROJECT_ID="$$FIREBASE_PROJECT_ID" \
-        --build-arg FIREBASE_CLIENT_EMAIL="$$FIREBASE_CLIENT_EMAIL" \
-        --build-arg FIREBASE_PRIVATE_KEY="$$FIREBASE_PRIVATE_KEY" \
-        --build-arg SOCKET_SECRET="$$SOCKET_SECRET" \
-        --build-arg ERG_API_SECRET="$$ERG_API_SECRET" \
-        --build-arg RESEND_API_KEY="$$RESEND_API_KEY" \
-        --build-arg FROM_EMAIL="$$FROM_EMAIL" \
-        --build-arg NEXT_PUBLIC_APP_URL="$$APP_URL" \
-        --build-arg REVALIDATE_SECRET="$$REVALIDATE_SECRET" \
-        -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA \
-        .
+      docker build --build-arg NPM_TOKEN="$$NPM_TOKEN" --build-arg SHORT_SHA="$SHORT_SHA" -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA .
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
