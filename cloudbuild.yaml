@@ -8,16 +8,29 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
+  # Debug: Check if NPM_TOKEN secret is being read correctly
+  - id: 'Debug NPM Token'
+    name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: '/bin/bash'
+    secretEnv: ['NPM_TOKEN']
+    args:
+    - '-c'
+    - |
+      echo "NPM_TOKEN length: ${#NPM_TOKEN}"
+      echo "NPM_TOKEN starts with: ${NPM_TOKEN:0:10}..."
+      echo "NPM_TOKEN ends with: ...${NPM_TOKEN: -10}"
+
   # Build and push the container with NPM_TOKEN from Secret Manager
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - build
-      - '--build-arg'
-      - 'NPM_TOKEN=$(NPM_TOKEN)'
-      - '-t'
-      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA'
-      - '.'
+    entrypoint: 'bash'
     secretEnv: ['NPM_TOKEN']
+    args:
+    - '-c'
+    - |
+      docker build \
+        --build-arg NPM_TOKEN="$$NPM_TOKEN" \
+        -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA \
+        .
 
   - name: 'gcr.io/cloud-builders/docker'
     args:
