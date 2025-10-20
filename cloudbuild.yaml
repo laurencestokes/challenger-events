@@ -1,7 +1,7 @@
 # cloudbuild.yaml
 substitutions:
   _REGION: europe-west2
-  _REPO: web
+  _REPO: challenger-events
   _SERVICE: challenger-events
 
 options:
