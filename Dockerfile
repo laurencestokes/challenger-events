@@ -2,6 +2,8 @@
 
 # Accept NPM token for GitHub Packages (or other registries)
 ARG NPM_TOKEN
+# Accept commit hash from Cloud Build
+ARG SHORT_SHA
 
 # 1) Install production dependencies (cache-friendly)
 FROM node:20-alpine AS deps
@@ -10,13 +12,9 @@ ARG NPM_TOKEN
 # Configure temporary npm auth for GitHub Packages (scoped to @challengerco)
 RUN set -ex; \
   if [ -n "${NPM_TOKEN:-}" ]; then \
-    echo "NPM_TOKEN is set (length: ${#NPM_TOKEN})"; \
     echo "@challengerco:registry=https://npm.pkg.github.com" > /root/.npmrc; \
     echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> /root/.npmrc; \
     echo "always-auth=true" >> /root/.npmrc; \
-    echo "Created .npmrc with GitHub Packages auth"; \
-  else \
-    echo "NPM_TOKEN is not set - skipping .npmrc creation"; \
   fi
 COPY package*.json ./
 RUN npm ci --omit=dev --ignore-scripts
@@ -27,19 +25,18 @@ RUN rm -f /root/.npmrc || true
 FROM node:20-alpine AS builder
 WORKDIR /app
 ARG NPM_TOKEN
+ARG SHORT_SHA
 # Configure temporary npm auth for build step as well
 RUN set -ex; \
   if [ -n "${NPM_TOKEN:-}" ]; then \
-    echo "NPM_TOKEN is set (length: ${#NPM_TOKEN})"; \
     echo "@challengerco:registry=https://npm.pkg.github.com" > /root/.npmrc; \
     echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> /root/.npmrc; \
     echo "always-auth=true" >> /root/.npmrc; \
-    echo "Created .npmrc with GitHub Packages auth"; \
-  else \
-    echo "NPM_TOKEN is not set - skipping .npmrc creation"; \
   fi
 COPY . .
 RUN npm ci
+# Set commit hash from Cloud Build environment variable
+RUN echo "NEXT_PUBLIC_COMMIT_HASH=${SHORT_SHA:-unknown}" > .env.local
 RUN npm run build
 RUN rm -f /root/.npmrc || true
 

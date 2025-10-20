@@ -29,6 +29,7 @@ steps:
     - |
       docker build \
         --build-arg NPM_TOKEN="$$NPM_TOKEN" \
+        --build-arg SHORT_SHA="$SHORT_SHA" \
         -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA \
         .
 
