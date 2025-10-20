@@ -474,8 +474,8 @@ export default function EventPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Column */}
               <div className="space-y-8">
-                {/* Team Management - Only show for team events */}
-                {event.isTeamEvent && (
+                {/* Team Management - Only show for team events and if user has joined */}
+                {event.isTeamEvent && isJoined && (
                   <div>
                     <h2 className="text-white text-2xl font-bold mb-4">Team Management</h2>
                     <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
@@ -491,6 +491,52 @@ export default function EventPage() {
                         </p>
                       </div>
                       <TeamManagement eventId={eventId} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Event Information - Show for non-joined users */}
+                {!isJoined && (
+                  <div>
+                    <h2 className="text-white text-2xl font-bold mb-4">About This Event</h2>
+                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                      <div className="space-y-4">
+                        {event.description && (
+                          <div>
+                            <p className="text-gray-300 text-sm leading-relaxed">
+                              {event.description}
+                            </p>
+                          </div>
+                        )}
+
+                        {event.isTeamEvent && (
+                          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                            <div className="flex items-center mb-2">
+                              <span className="text-blue-400 text-sm font-medium">
+                                👥 Team Event
+                              </span>
+                            </div>
+                            <p className="text-blue-300 text-xs">
+                              This is a team competition. You can create or join teams after joining
+                              the event.
+                              {event.maxTeamSize &&
+                                ` Maximum team size: ${event.maxTeamSize} members.`}
+                            </p>
+                          </div>
+                        )}
+
+                        <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
+                          <div className="flex items-center mb-2">
+                            <span className="text-orange-400 text-sm font-medium">
+                              🎯 Ready to Compete?
+                            </span>
+                          </div>
+                          <p className="text-orange-300 text-xs">
+                            Join this event to participate in the competition and track your
+                            progress.
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
