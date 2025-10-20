@@ -12,6 +12,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import WelcomeSection from '@/components/WelcomeSection';
+import { computeTotalsFromScores } from '@/lib/score-totals';
 import TeamManagement from '@/components/TeamManagement';
 import {
   LargeEventCardSkeleton,
@@ -50,6 +51,9 @@ export default function EventPage() {
   const params = useParams();
   const { user } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
+  const [totalScore, setTotalScore] = useState(0);
+  const [verifiedScore, setVerifiedScore] = useState(0);
+  const [isLoadingScores, setIsLoadingScores] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isJoined, setIsJoined] = useState(false);
@@ -91,6 +95,24 @@ export default function EventPage() {
             (participant: Participant) => participant.id === user.id,
           );
           setIsJoined(isUserJoined);
+        }
+
+        // Compute verified/total for WelcomeSection (consistent with public profile)
+        try {
+          setIsLoadingScores(true);
+          const allScoresResponse = await api
+            .get('/api/user/all-scores')
+            .catch(() => ({ success: false, data: [] }));
+          const personalScores = allScoresResponse.success ? allScoresResponse.data : [];
+
+          const userEventsResponse = await api.get('/api/user/events').catch(() => []);
+          const userEvents = userEventsResponse || [];
+
+          const { total, verifiedTotal } = computeTotalsFromScores(personalScores, userEvents);
+          setTotalScore(total);
+          setVerifiedScore(verifiedTotal);
+        } finally {
+          setIsLoadingScores(false);
         }
       } catch (error: unknown) {
         console.error('Error fetching event details:', error);
@@ -348,7 +370,12 @@ export default function EventPage() {
         <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
           <div className="container mx-auto px-4 py-8">
             {/* Welcome Section */}
-            <WelcomeSection showMetrics={true} verifiedScore={773} totalScore={1981} />
+            <WelcomeSection
+              showMetrics={true}
+              verifiedScore={verifiedScore}
+              totalScore={totalScore}
+              isLoading={isLoadingScores}
+            />
 
             {/* Breadcrumbs */}
             <nav

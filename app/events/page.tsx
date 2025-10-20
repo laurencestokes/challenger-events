@@ -9,7 +9,7 @@ import { EventCardSkeleton } from '@/components/SkeletonLoaders';
 import { isEventWithinDistance } from '@/utils/postcodeUtils';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { EVENT_TYPES } from '@/constants/eventTypes';
+import { computeTotalsFromScores } from '@/lib/score-totals';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiMapPin, FiCalendar, FiUsers, FiFilter, FiSearch, FiChevronDown } from 'react-icons/fi';
@@ -105,54 +105,10 @@ export default function EventsPage() {
         });
       });
 
-      // Combine with personal scores
-      const allScores: ScoreWithEvent[] = [...eventActivityScores, ...personalScores];
-
-      // Get best scores by event type
-      const bestScoresByType: Record<string, number> = {};
-      const bestVerifiedScoresByType: Record<string, number> = {};
-
-      EVENT_TYPES.forEach((type) => {
-        const scoresForType = allScores.filter((s) => (s.testId ?? s.activityId) === type.id);
-
-        // All scores: best of verified or unverified
-        const verifiedScores = scoresForType.filter((s) => s.event || s.verified);
-        const unverifiedScores = scoresForType.filter((s) => !s.event && !s.verified);
-
-        let bestVerified = verifiedScores[0];
-        if (verifiedScores.length > 0) {
-          bestVerified = verifiedScores.reduce((prev, curr) =>
-            curr.calculatedScore > prev.calculatedScore ? curr : prev,
-          );
-        }
-
-        let bestUnverified = unverifiedScores[0];
-        if (unverifiedScores.length > 0) {
-          bestUnverified = unverifiedScores.reduce((prev, curr) =>
-            curr.calculatedScore > prev.calculatedScore ? curr : prev,
-          );
-        }
-
-        const best = bestVerified || bestUnverified;
-        if (best) {
-          bestScoresByType[type.id] = best.calculatedScore;
-        }
-
-        // Only verified scores
-        if (bestVerified) {
-          bestVerifiedScoresByType[type.id] = bestVerified.calculatedScore;
-        }
-      });
-
-      // Calculate totals
-      const total = Object.values(bestScoresByType).reduce((sum, score) => sum + score, 0);
-      const verified = Object.values(bestVerifiedScoresByType).reduce(
-        (sum, score) => sum + score,
-        0,
-      );
-
+      // Use shared helper to compute totals consistently with public profile
+      const { total, verifiedTotal } = computeTotalsFromScores(personalScores, userEvents);
       setTotalScore(total);
-      setVerifiedScore(verified);
+      setVerifiedScore(verifiedTotal);
     } catch (error: unknown) {
       console.error('Error fetching scores:', error);
     } finally {

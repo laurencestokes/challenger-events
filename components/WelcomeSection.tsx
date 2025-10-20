@@ -25,6 +25,21 @@ export default function WelcomeSection({
 }: WelcomeSectionProps) {
   const { user } = useAuth();
 
+  // Lightweight tooltip for info hovers (local-only)
+  const Info = ({ text }: { text: string }) => (
+    <span className="relative inline-block group align-middle ml-2">
+      <span
+        aria-label="info"
+        className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] leading-none border border-gray-500 text-gray-300"
+      >
+        i
+      </span>
+      <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden w-72 rounded-md border border-gray-600/30 bg-black/90 px-3 py-2 text-xs text-white shadow-xl z-[1000] group-hover:block">
+        {text}
+      </span>
+    </span>
+  );
+
   return (
     <div className="flex items-center justify-between mb-8">
       <div className="flex items-center">
@@ -55,12 +70,23 @@ export default function WelcomeSection({
         <div className="text-right space-y-3">
           {/* Total Events/Users / Verified Score */}
           <div className="flex flex-col items-end">
-            <p className="text-white font-medium text-base mb-1">
-              {user?.role === 'ADMIN'
-                ? totalUsers > 0
-                  ? 'Total Users'
-                  : 'Total Events'
-                : 'Verified Score'}
+            <p className="text-white font-medium text-base mb-1 flex items-center">
+              {user?.role === 'ADMIN' ? (
+                totalUsers > 0 ? (
+                  'Total Users'
+                ) : (
+                  'Total Events'
+                )
+              ) : (
+                <>
+                  Verified Score
+                  <Info
+                    text={
+                      'Average of your best verified scores across our canonical events (verified via official events or admin verification).'
+                    }
+                  />
+                </>
+              )}
             </p>
             {isLoading ? (
               <div
@@ -97,12 +123,23 @@ export default function WelcomeSection({
 
           {/* Active Events/Users / Total Score */}
           <div className="flex flex-col items-end">
-            <p className="text-white font-medium text-base mb-1">
-              {user?.role === 'ADMIN'
-                ? activeUsers > 0
-                  ? 'Active Users'
-                  : 'Active Events'
-                : 'Total Score'}
+            <p className="text-white font-medium text-base mb-1 flex items-center">
+              {user?.role === 'ADMIN' ? (
+                activeUsers > 0 ? (
+                  'Active Users'
+                ) : (
+                  'Active Events'
+                )
+              ) : (
+                <>
+                  Total Score
+                  <Info
+                    text={
+                      'Average of your best scores (verified or unverified) across our canonical events during the beta; we continuously review and expand this set.'
+                    }
+                  />
+                </>
+              )}
             </p>
             {isLoading ? (
               <div

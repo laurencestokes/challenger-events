@@ -21,6 +21,7 @@ import JoinEventModal from './JoinEventModal';
 import { EventCardSkeleton, TeamCardSkeleton, PerformanceGraphSkeleton } from './SkeletonLoaders';
 import { beautifyRawScore } from '../utils/scoring';
 import { EVENT_TYPES } from '../constants/eventTypes';
+import { computeTotalsFromScores } from '@/lib/score-totals';
 
 interface Event {
   id: string;
@@ -198,62 +199,13 @@ export default function CompetitorDashboard() {
 
         setRecentScores(sortedScores);
 
-        // Calculate verified and total scores using the same logic as public profile
-        // Only include canonical event types (all EVENT_TYPES) for overall scoring
-        const canonicalEventIds = EVENT_TYPES.map((type) => type.id);
-        const canonicalScores = allScores.filter((score) => {
-          const eventId = score.testId ?? score.activityId;
-          return canonicalEventIds.includes(eventId);
-        });
-
-        // Calculate best scores for each canonical event type
-        const bestScoresByType: Record<string, number> = {};
-        const bestVerifiedScoresByType: Record<string, number> = {};
-
-        EVENT_TYPES.forEach((type) => {
-          const scoresForType = canonicalScores.filter(
-            (s) => (s.testId ?? s.activityId) === type.id,
-          );
-
-          // All scores: best of verified or unverified
-          // A score is verified if it's from an event (has event property) OR has verified flag set to true
-          const verifiedScores = scoresForType.filter((s) => s.event || s.verified);
-          const unverifiedScores = scoresForType.filter((s) => !s.event && !s.verified);
-
-          let bestVerified = verifiedScores[0];
-          if (verifiedScores.length > 0) {
-            bestVerified = verifiedScores.reduce((prev, curr) =>
-              curr.calculatedScore > prev.calculatedScore ? curr : prev,
-            );
-          }
-
-          let bestUnverified = unverifiedScores[0];
-          if (unverifiedScores.length > 0) {
-            bestUnverified = unverifiedScores.reduce((prev, curr) =>
-              curr.calculatedScore > prev.calculatedScore ? curr : prev,
-            );
-          }
-
-          const best = bestVerified || bestUnverified;
-          if (best) {
-            bestScoresByType[type.id] = best.calculatedScore;
-          }
-
-          // Only verified scores
-          if (bestVerified) {
-            bestVerifiedScoresByType[type.id] = bestVerified.calculatedScore;
-          }
-        });
-
-        // Calculate totals
-        const total = Object.values(bestScoresByType).reduce((sum, score) => sum + score, 0);
-        const verified = Object.values(bestVerifiedScoresByType).reduce(
-          (sum, score) => sum + score,
-          0,
+        // Compute totals using shared helper
+        const { total, verifiedTotal } = computeTotalsFromScores(
+          personalScores as unknown as Parameters<typeof computeTotalsFromScores>[0],
+          userEvents as unknown as Parameters<typeof computeTotalsFromScores>[1],
         );
-
         setTotalScore(total);
-        setVerifiedScore(verified);
+        setVerifiedScore(verifiedTotal);
       } catch (error: unknown) {
         console.error('Error fetching data:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';

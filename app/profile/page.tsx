@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../lib/api-client';
 import WelcomeSection from '@/components/WelcomeSection';
+import { computeTotalsFromScores } from '@/lib/score-totals';
 import { convertFirestoreTimestamp, calculateAgeFromDateOfBirth } from '../../lib/utils';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Header from '@/components/Header';
@@ -404,7 +405,22 @@ export default function Profile() {
         <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
           <div className="container mx-auto px-4 py-8">
             {/* Welcome Section */}
-            <WelcomeSection showMetrics={true} verifiedScore={773} totalScore={1981} />
+            <WelcomeSection
+              showMetrics={true}
+              verifiedScore={
+                computeTotalsFromScores(
+                  personalScores as unknown as Parameters<typeof computeTotalsFromScores>[0],
+                  eventScores as unknown as Parameters<typeof computeTotalsFromScores>[1],
+                ).verifiedTotal
+              }
+              totalScore={
+                computeTotalsFromScores(
+                  personalScores as unknown as Parameters<typeof computeTotalsFromScores>[0],
+                  eventScores as unknown as Parameters<typeof computeTotalsFromScores>[1],
+                ).total
+              }
+              isLoading={isLoadingScores}
+            />
 
             {/* Main Content Grid - Row-based layout for proper alignment */}
             <div className="space-y-8">
