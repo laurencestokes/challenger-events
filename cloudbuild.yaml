@@ -8,28 +8,32 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-  # Debug: Check if NPM_TOKEN secret is being read correctly
-  - id: 'Debug NPM Token'
-    name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: '/bin/bash'
-    secretEnv: ['NPM_TOKEN']
-    args:
-    - '-c'
-    - |
-      echo "NPM_TOKEN length: ${#NPM_TOKEN}"
-      echo "NPM_TOKEN starts with: ${NPM_TOKEN:0:10}..."
-      echo "NPM_TOKEN ends with: ...${NPM_TOKEN: -10}"
-
-  # Build and push the container with NPM_TOKEN from Secret Manager
+  # Build and push the container with all secrets from Secret Manager
   - name: 'gcr.io/cloud-builders/docker'
     entrypoint: 'bash'
-    secretEnv: ['NPM_TOKEN']
+    secretEnv: ['NPM_TOKEN', 'FIREBASE_API_KEY', 'FIREBASE_AUTH_DOMAIN', 'FIREBASE_PROJECT_ID', 'FIREBASE_STORAGE_BUCKET', 'FIREBASE_MESSAGING_SENDER_ID', 'FIREBASE_APP_ID', 'FIREBASE_MEASUREMENT_ID', 'FIREBASE_CLIENT_EMAIL', 'FIREBASE_PRIVATE_KEY', 'SOCKET_SECRET', 'ERG_API_SECRET', 'RESEND_API_KEY', 'FROM_EMAIL', 'APP_URL', 'REVALIDATE_SECRET']
     args:
     - '-c'
     - |
       docker build \
         --build-arg NPM_TOKEN="$$NPM_TOKEN" \
         --build-arg SHORT_SHA="$SHORT_SHA" \
+        --build-arg NEXT_PUBLIC_FIREBASE_API_KEY="$$FIREBASE_API_KEY" \
+        --build-arg NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="$$FIREBASE_AUTH_DOMAIN" \
+        --build-arg NEXT_PUBLIC_FIREBASE_PROJECT_ID="$$FIREBASE_PROJECT_ID" \
+        --build-arg NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="$$FIREBASE_STORAGE_BUCKET" \
+        --build-arg NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="$$FIREBASE_MESSAGING_SENDER_ID" \
+        --build-arg NEXT_PUBLIC_FIREBASE_APP_ID="$$FIREBASE_APP_ID" \
+        --build-arg NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="$$FIREBASE_MEASUREMENT_ID" \
+        --build-arg FIREBASE_PROJECT_ID="$$FIREBASE_PROJECT_ID" \
+        --build-arg FIREBASE_CLIENT_EMAIL="$$FIREBASE_CLIENT_EMAIL" \
+        --build-arg FIREBASE_PRIVATE_KEY="$$FIREBASE_PRIVATE_KEY" \
+        --build-arg SOCKET_SECRET="$$SOCKET_SECRET" \
+        --build-arg ERG_API_SECRET="$$ERG_API_SECRET" \
+        --build-arg RESEND_API_KEY="$$RESEND_API_KEY" \
+        --build-arg FROM_EMAIL="$$FROM_EMAIL" \
+        --build-arg NEXT_PUBLIC_APP_URL="$$APP_URL" \
+        --build-arg REVALIDATE_SECRET="$$REVALIDATE_SECRET" \
         -t ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA \
         .
 
@@ -63,6 +67,36 @@ availableSecrets:
   secretManager:
   - versionName: projects/$PROJECT_ID/secrets/NPM_TOKEN/versions/latest
     env: 'NPM_TOKEN'
+  - versionName: projects/$PROJECT_ID/secrets/FIREBASE_API_KEY/versions/latest
+    env: 'FIREBASE_API_KEY'
+  - versionName: projects/$PROJECT_ID/secrets/FIREBASE_AUTH_DOMAIN/versions/latest
+    env: 'FIREBASE_AUTH_DOMAIN'
+  - versionName: projects/$PROJECT_ID/secrets/FIREBASE_PROJECT_ID/versions/latest
+    env: 'FIREBASE_PROJECT_ID'
+  - versionName: projects/$PROJECT_ID/secrets/FIREBASE_STORAGE_BUCKET/versions/latest
+    env: 'FIREBASE_STORAGE_BUCKET'
+  - versionName: projects/$PROJECT_ID/secrets/FIREBASE_MESSAGING_SENDER_ID/versions/latest
+    env: 'FIREBASE_MESSAGING_SENDER_ID'
+  - versionName: projects/$PROJECT_ID/secrets/FIREBASE_APP_ID/versions/latest
+    env: 'FIREBASE_APP_ID'
+  - versionName: projects/$PROJECT_ID/secrets/FIREBASE_MEASUREMENT_ID/versions/latest
+    env: 'FIREBASE_MEASUREMENT_ID'
+  - versionName: projects/$PROJECT_ID/secrets/FIREBASE_CLIENT_EMAIL/versions/latest
+    env: 'FIREBASE_CLIENT_EMAIL'
+  - versionName: projects/$PROJECT_ID/secrets/FIREBASE_PRIVATE_KEY/versions/latest
+    env: 'FIREBASE_PRIVATE_KEY'
+  - versionName: projects/$PROJECT_ID/secrets/SOCKET_SECRET/versions/latest
+    env: 'SOCKET_SECRET'
+  - versionName: projects/$PROJECT_ID/secrets/ERG_API_SECRET/versions/latest
+    env: 'ERG_API_SECRET'
+  - versionName: projects/$PROJECT_ID/secrets/RESEND_API_KEY/versions/latest
+    env: 'RESEND_API_KEY'
+  - versionName: projects/$PROJECT_ID/secrets/FROM_EMAIL/versions/latest
+    env: 'FROM_EMAIL'
+  - versionName: projects/$PROJECT_ID/secrets/APP_URL/versions/latest
+    env: 'APP_URL'
+  - versionName: projects/$PROJECT_ID/secrets/REVALIDATE_SECRET/versions/latest
+    env: 'REVALIDATE_SECRET'
 
 images:
   - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA'
