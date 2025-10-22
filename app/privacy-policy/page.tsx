@@ -135,8 +135,8 @@ export default function PrivacyPolicy() {
                 8. Children's Privacy
               </h2>
               <p className="text-gray-700 dark:text-gray-300 mb-4">
-                Our service is not intended for children under 13 years of age. We do not knowingly
-                collect personal information from children under 13. If you are a parent or guardian
+                Our service is not intended for children under 18 years of age. We do not knowingly
+                collect personal information from children under 18. If you are a parent or guardian
                 and believe your child has provided us with personal information, please contact us.
               </p>
             </section>
