@@ -118,7 +118,10 @@ ENV PORT=8080
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy built app only (no npm credentials)
-COPY --from=builder /app .
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/server.js ./server.js
 
 # Cloud Run listens on $PORT
 EXPOSE 8080
