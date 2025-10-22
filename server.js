@@ -2,6 +2,8 @@ const { createServer } = require('http');
 const { parse } = require('url');
 const next = require('next');
 const { Server } = require('socket.io');
+const path = require('path');
+const fs = require('fs');
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
@@ -14,6 +16,66 @@ app.prepare().then(() => {
   const httpServer = createServer(async (req, res) => {
     try {
       const parsedUrl = parse(req.url, true);
+
+      // Handle static assets explicitly for production
+      if (
+        !dev &&
+        (parsedUrl.pathname.startsWith('/_next/static/') ||
+          parsedUrl.pathname.startsWith('/_next/chunks/'))
+      ) {
+        const staticPath = parsedUrl.pathname.replace(/^\/_next\/(static|chunks)\//, '');
+
+        // Try different possible locations for static assets
+        const possiblePaths = [
+          path.join(process.cwd(), '.next', 'static', staticPath),
+          path.join(process.cwd(), '.next', 'chunks', staticPath),
+          path.join(process.cwd(), '.next', 'standalone', '.next', 'static', staticPath),
+          path.join(process.cwd(), '.next', 'standalone', '.next', 'chunks', staticPath),
+          path.join(process.cwd(), 'static', staticPath),
+          path.join(process.cwd(), 'chunks', staticPath),
+        ];
+
+        console.log('Attempting to serve static asset:', parsedUrl.pathname);
+
+        for (const filePath of possiblePaths) {
+          if (fs.existsSync(filePath)) {
+            const ext = path.extname(filePath);
+            const contentType =
+              {
+                '.js': 'application/javascript',
+                '.css': 'text/css',
+                '.map': 'application/json',
+                '.png': 'image/png',
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.gif': 'image/gif',
+                '.svg': 'image/svg+xml',
+                '.ico': 'image/x-icon',
+                '.woff': 'font/woff',
+                '.woff2': 'font/woff2',
+                '.ttf': 'font/ttf',
+                '.eot': 'application/vnd.ms-fontobject',
+              }[ext] || 'application/octet-stream';
+
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            console.log(
+              'Serving static asset:',
+              parsedUrl.pathname,
+              'from:',
+              filePath,
+              'with content-type:',
+              contentType,
+            );
+            fs.createReadStream(filePath).pipe(res);
+            return;
+          }
+        }
+
+        console.log('Static asset not found in any location:', parsedUrl.pathname);
+        console.log('Tried paths:', possiblePaths);
+      }
+
       await handle(req, res, parsedUrl);
     } catch (err) {
       console.error('Error occurred handling', req.url, err);
@@ -375,7 +437,7 @@ app.prepare().then(() => {
       const session = global.teamErgSessions.get(sessionId);
 
       if (session) {
-        const { competitorId, competitorName, teamId, teamName, ergSlotId, eventType } = assignment;
+        const { competitorId, competitorName, teamId, teamName, ergSlotId } = assignment;
 
         // Add competitor to team's participant scores if not already present
         if (session.teamScores[teamId]) {
