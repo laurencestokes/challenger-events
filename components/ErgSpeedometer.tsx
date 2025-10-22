@@ -16,6 +16,9 @@ interface ErgSpeedometerProps {
   weight: number;
   accentColor: string;
   textColor: string;
+  compact?: boolean;
+  teamScore?: number;
+  showTeamScore?: boolean;
 }
 
 export default function ErgSpeedometer({
@@ -32,7 +35,67 @@ export default function ErgSpeedometer({
   weight,
   accentColor,
   textColor,
+  compact = false,
+  teamScore,
+  showTeamScore = false,
 }: ErgSpeedometerProps) {
+  if (compact) {
+    return (
+      <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
+        <div className="text-center mb-4">
+          <h3 className={`text-lg font-bold mb-1 ${textColor}`}>{name}</h3>
+          <p className="text-gray-400 text-sm">
+            {age}y • {sex} • {weight}kg
+          </p>
+        </div>
+
+        {/* Compact Score Display */}
+        <div className="text-center mb-4">
+          <div
+            className="text-3xl font-bold mb-2"
+            style={{
+              color: accentColor,
+              textShadow: `0 0 10px ${accentColor}40`,
+            }}
+          >
+            {score.toFixed(1)}
+          </div>
+          <div className="text-gray-300 text-sm tracking-wider font-light">SCORE</div>
+        </div>
+
+        {/* Compact Metrics */}
+        <div className="grid grid-cols-2 gap-3 text-center">
+          {pace !== undefined && (
+            <div className="bg-gray-700/50 rounded-lg p-2">
+              <div className="text-2xl font-bold text-cyan-400">{pace}</div>
+              <div className="text-gray-300 text-xs">PACE</div>
+            </div>
+          )}
+          {power !== undefined && (
+            <div className="bg-gray-700/50 rounded-lg p-2">
+              <div className="text-2xl font-bold text-blue-400">{power}</div>
+              <div className="text-gray-300 text-xs">POWER</div>
+            </div>
+          )}
+        </div>
+
+        {/* Compact Distance */}
+        <div className="text-center mt-3">
+          <p className={`text-2xl font-bold ${textColor}`}>{distance || 0}m</p>
+          <p className="text-gray-400 text-xs">distance</p>
+        </div>
+
+        {/* Team Score Display */}
+        {showTeamScore && teamScore !== undefined && (
+          <div className="text-center mt-3 pt-3 border-t border-gray-600">
+            <p className="text-lg font-bold text-yellow-400">{teamScore.toFixed(1)}</p>
+            <p className="text-gray-400 text-xs">TEAM TOTAL</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center">
       <div className="text-center mb-6">

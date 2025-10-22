@@ -32,6 +32,44 @@ export interface HeadToHeadSession {
   eventId?: string;
 }
 
+export interface TeamErgSession {
+  id: string;
+  teamA: {
+    id: string;
+    name: string;
+    members: Competitor[];
+  };
+  teamB: {
+    id: string;
+    name: string;
+    members: Competitor[];
+  };
+  eventId?: string;
+  eventType?: string;
+  sessionType: 'team' | 'head-to-head';
+}
+
+export interface TeamErgUpdate {
+  teamId: string;
+  participantId: string;
+  participantName: string;
+  metrics: ErgMetrics;
+  calculatedScore: number;
+  timestamp: string;
+}
+
+export interface TeamScore {
+  teamId: string;
+  teamName: string;
+  totalScore: number;
+  participantScores: {
+    participantId: string;
+    participantName: string;
+    score: number;
+    isActive: boolean;
+  }[];
+}
+
 interface UseErgSocketReturn {
   isConnected: boolean;
   isReconnecting: boolean;
