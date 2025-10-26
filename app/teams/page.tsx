@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api-client';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -19,6 +20,9 @@ interface Team {
   id: string;
   name: string;
   description?: string;
+  scope?: 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY';
+  organizationId?: string;
+  gymId?: string;
   createdAt: Date;
   updatedAt: Date;
   userRole?: 'CAPTAIN' | 'MEMBER' | null;
@@ -81,9 +85,12 @@ interface TeamInvitation {
 }
 
 export default function TeamsPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const [teams, setTeams] = useState<Team[]>([]);
+  const [publicTeams, setPublicTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingPublicTeams, setIsLoadingPublicTeams] = useState(true);
   const [totalScore, setTotalScore] = useState(0);
   const [verifiedScore, setVerifiedScore] = useState(0);
   const [isLoadingScores, setIsLoadingScores] = useState(true);
@@ -92,13 +99,24 @@ export default function TeamsPage() {
   const [pendingInvitations, setPendingInvitations] = useState<TeamInvitation[]>([]);
   const [isLoadingInvitations, setIsLoadingInvitations] = useState(true);
 
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+
   useEffect(() => {
     if (user) {
       fetchTeams();
       fetchUserScores();
       fetchPendingInvitations();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // Fetch public teams after user teams are loaded
+  useEffect(() => {
+    if (user && !isAdmin && teams.length >= 0) {
+      fetchPublicTeams();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teams]);
 
   const fetchTeams = async () => {
     try {
@@ -108,6 +126,25 @@ export default function TeamsPage() {
       console.error('Error fetching teams:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchPublicTeams = async () => {
+    try {
+      const response = await api.get('/api/teams/public');
+      const allPublicTeams = response.teams || [];
+
+      // Filter out teams that the user is already a member of
+      const userTeamIds = teams.map((team) => team.id);
+      const availablePublicTeams = allPublicTeams.filter(
+        (team: Team) => !userTeamIds.includes(team.id),
+      );
+
+      setPublicTeams(availablePublicTeams);
+    } catch (error) {
+      console.error('Error fetching public teams:', error);
+    } finally {
+      setIsLoadingPublicTeams(false);
     }
   };
 
@@ -246,6 +283,19 @@ export default function TeamsPage() {
   const handleTeamSuccess = () => {
     // Refresh the data to show the newly created/joined team
     fetchTeams();
+    if (!isAdmin) {
+      fetchPublicTeams();
+    }
+  };
+
+  const handleJoinPublicTeam = async (teamId: string) => {
+    try {
+      await api.post(`/api/teams/${teamId}/join`, {});
+      handleTeamSuccess();
+    } catch (error) {
+      console.error('Error joining team:', error);
+      // TODO: Add toast notification for error
+    }
   };
 
   return (
@@ -285,12 +335,12 @@ export default function TeamsPage() {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-white text-2xl font-bold">My Teams</h2>
-                <Link
-                  href="/teams/create"
+                <button
+                  onClick={() => setIsCreateModalOpen(true)}
                   className="text-gray-400 hover:text-white text-sm border border-gray-600 px-3 py-1 rounded-lg transition-colors"
                 >
                   Create Team
-                </Link>
+                </button>
               </div>
 
               {isLoading ? (
@@ -390,6 +440,105 @@ export default function TeamsPage() {
                 </div>
               )}
             </div>
+
+            {/* Public Teams Section - For non-admin users */}
+            {!isAdmin && (
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-white text-2xl font-bold">Public Teams</h2>
+                  {publicTeams.length > 0 && (
+                    <span className="text-sm text-gray-400">{publicTeams.length} available</span>
+                  )}
+                </div>
+
+                {isLoadingPublicTeams ? (
+                  <div className="flex space-x-4 pb-4 overflow-hidden">
+                    <TeamCardSkeleton />
+                    <TeamCardSkeleton />
+                    <TeamCardSkeleton />
+                  </div>
+                ) : publicTeams.length > 0 ? (
+                  <div className="flex space-x-4 pb-4 overflow-x-auto">
+                    {publicTeams.map((team, index) => (
+                      <div
+                        key={team.id}
+                        className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 relative overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200"
+                        onClick={() => router.push(`/teams/${team.id}`)}
+                      >
+                        {/* Team Background/Logo */}
+                        <div className="absolute inset-0">
+                          {team.logoUrl ? (
+                            <Image
+                              src={team.logoUrl}
+                              alt={team.name}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Image
+                                src="/challenger-logo-no-text.png"
+                                alt="Challenger logo"
+                                width={80}
+                                height={80}
+                                className="opacity-80"
+                              />
+                            </div>
+                          )}
+                          {/* Dark overlay for text readability */}
+                          <div className="absolute inset-0 bg-black/30" />
+                        </div>
+
+                        {/* Team Title Overlay */}
+                        <div className="absolute top-4 left-4 right-4 z-10">
+                          <h3 className="text-white font-bold text-lg leading-tight">
+                            {team.name}
+                          </h3>
+                          {team.description && (
+                            <p className="text-white/80 text-sm mt-1 line-clamp-2">
+                              {team.description}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Team Info Footer */}
+                        <div
+                          className={`absolute bottom-0 left-0 right-0 ${getTeamFooterColor(index)} p-3`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2 text-white text-sm">
+                              <FiUsers className="w-4 h-4" />
+                              <span>{formatMemberCount(team.memberCount || 0)}</span>
+                            </div>
+                            <div className="text-white text-sm">Public</div>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleJoinPublicTeam(team.id);
+                            }}
+                            className="w-full mt-2 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white text-sm rounded transition-colors"
+                          >
+                            Join Team
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                    <div className="text-center py-8">
+                      <FiUsers className="w-12 h-12 mx-auto mb-4 text-gray-400 opacity-50" />
+                      <p className="text-gray-400 mb-4">No public teams available</p>
+                      <p className="text-gray-500 text-sm">
+                        Public teams will appear here when created by administrators
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Pending Invitations Section */}
             <div>

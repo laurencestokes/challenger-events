@@ -19,7 +19,7 @@ const convertTimestamp = (timestamp: Date | Timestamp): Date => {
   if (timestamp instanceof Date) {
     return timestamp;
   }
-  return new Date((timestamp as unknown as Date));
+  return new Date(timestamp as unknown as Date);
 };
 
 interface LeaderboardEntry {

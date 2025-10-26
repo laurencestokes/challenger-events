@@ -104,6 +104,9 @@ export interface Team {
   id: string;
   name: string;
   description?: string;
+  scope?: 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY';
+  organizationId?: string;
+  gymId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -579,8 +582,14 @@ export const updateParticipation = async (
 // Team functions
 export const createTeam = async (teamData: Omit<Team, 'id' | 'createdAt' | 'updatedAt'>) => {
   const teamRef = collection(db, 'teams');
+
+  // Filter out undefined values as Firestore doesn't accept them
+  const cleanedData = Object.fromEntries(
+    Object.entries(teamData).filter(([_, value]) => value !== undefined),
+  );
+
   const docRef = await addDoc(teamRef, {
-    ...teamData,
+    ...cleanedData,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -599,6 +608,13 @@ export const getTeam = async (teamId: string) => {
 export const getAllTeams = async () => {
   const teamsRef = collection(db, 'teams');
   const querySnapshot = await getDocs(teamsRef);
+  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Team[];
+};
+
+export const getPublicTeams = async () => {
+  const teamsRef = collection(db, 'teams');
+  const q = query(teamsRef, where('scope', '==', 'PUBLIC'));
+  const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Team[];
 };
 

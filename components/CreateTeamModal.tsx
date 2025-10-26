@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { api } from '../lib/api-client';
+import { useAuth } from '../contexts/AuthContext';
 import { FiX, FiUsers } from 'react-icons/fi';
 
 interface CreateTeamModalProps {
@@ -11,10 +12,18 @@ interface CreateTeamModalProps {
 }
 
 export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTeamModalProps) {
+  const { user } = useAuth();
   const [teamName, setTeamName] = useState('');
   const [teamDescription, setTeamDescription] = useState('');
+  const [scope, setScope] = useState<'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY'>(
+    'INVITE_ONLY',
+  );
+  const [organizationId, setOrganizationId] = useState('');
+  const [gymId, setGymId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,15 +36,34 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
     setError('');
 
     try {
-      const response = await api.post('/api/teams', {
+      const teamData: {
+        name: string;
+        description?: string;
+        scope: string;
+        organizationId?: string;
+        gymId?: string;
+      } = {
         name: teamName.trim(),
         description: teamDescription.trim() || undefined,
-      });
+        scope,
+      };
+
+      if (scope === 'ORGANIZATION' && organizationId) {
+        teamData.organizationId = organizationId;
+      }
+      if (scope === 'GYM' && gymId) {
+        teamData.gymId = gymId;
+      }
+
+      const response = await api.post('/api/teams', teamData);
 
       if (response.team) {
         onSuccess();
         setTeamName('');
         setTeamDescription('');
+        setScope('INVITE_ONLY');
+        setOrganizationId('');
+        setGymId('');
         onClose();
       }
     } catch (error: { message: string } | unknown) {
@@ -48,6 +76,9 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
   const handleClose = () => {
     setTeamName('');
     setTeamDescription('');
+    setScope('INVITE_ONLY');
+    setOrganizationId('');
+    setGymId('');
     setError('');
     onClose();
   };
@@ -104,6 +135,63 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
               placeholder="Enter team description"
             />
           </div>
+
+          {/* Team Scope Settings */}
+          {isAdmin && (
+            <div className="border-t border-gray-700/50 pt-4">
+              <label htmlFor="scope" className="block text-sm font-medium text-gray-300 mb-2">
+                Team Scope
+              </label>
+              <select
+                id="scope"
+                value={scope}
+                onChange={(e) =>
+                  setScope(e.target.value as 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY')
+                }
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              >
+                <option value="INVITE_ONLY">Invite Only - Only invited members</option>
+                <option value="PUBLIC">Public - Anyone can join</option>
+                <option value="ORGANIZATION">Organization - Specific organization members</option>
+                <option value="GYM">Gym - Specific gym members</option>
+              </select>
+
+              {scope === 'ORGANIZATION' && (
+                <div className="mt-3">
+                  <label
+                    htmlFor="organizationId"
+                    className="block text-sm font-medium text-gray-300 mb-2"
+                  >
+                    Organization ID
+                  </label>
+                  <input
+                    type="text"
+                    id="organizationId"
+                    value={organizationId}
+                    onChange={(e) => setOrganizationId(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Enter organization ID"
+                  />
+                </div>
+              )}
+
+              {scope === 'GYM' && (
+                <div className="mt-3">
+                  <label htmlFor="gymId" className="block text-sm font-medium text-gray-300 mb-2">
+                    Gym ID
+                  </label>
+                  <input
+                    type="text"
+                    id="gymId"
+                    value={gymId}
+                    onChange={(e) => setGymId(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Enter gym ID"
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-900/30 border border-red-700/50 rounded-lg p-3">

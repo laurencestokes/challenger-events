@@ -27,6 +27,7 @@ interface Team {
   id: string;
   name: string;
   description?: string;
+  scope?: 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY';
   createdAt: Date | string;
 }
 
@@ -71,6 +72,24 @@ export default function TeamDetailPage() {
       setIsLoading(false);
     }
   }, [params.id]);
+
+  // Check if current user is a member (to show member details properly)
+  const _isMember = members.some((member) => member.userId === user?.id);
+
+  const handleJoinPublicTeam = async () => {
+    try {
+      setIsProcessing(true);
+      await api.post(`/api/teams/${params.id}/join`, { params });
+      // Refresh team details to show updated membership
+      fetchTeamDetails();
+    } catch (error: unknown) {
+      console.error('Error joining team:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to join team';
+      setError(errorMessage);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const fetchPendingInvitations = useCallback(async () => {
     // Check if current user is captain
@@ -463,52 +482,66 @@ export default function TeamDetailPage() {
                     {team.name}
                   </h1>
                 </div>
-                {user && members.some((member) => member.userId === user.id) && (
-                  <div className="flex flex-wrap items-center gap-2">
-                    {isCaptain && (
-                      <>
-                        <button
-                          onClick={openEditModal}
-                          className="px-3 sm:px-4 py-2 text-sm font-medium text-white rounded-md whitespace-nowrap"
-                          style={{ backgroundColor: '#4682b4' }}
-                          onMouseEnter={(e) =>
-                            ((e.target as unknown as HTMLElement).style.backgroundColor = '#5a8bc4')
-                          }
-                          onMouseLeave={(e) =>
-                            ((e.target as unknown as HTMLElement).style.backgroundColor = '#4682b4')
-                          }
-                        >
-                          Edit Team
-                        </button>
+                {user && (
+                  <>
+                    {members.some((member) => member.userId === user.id) ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {isCaptain && (
+                          <>
+                            <button
+                              onClick={openEditModal}
+                              className="px-3 sm:px-4 py-2 text-sm font-medium text-white rounded-md whitespace-nowrap"
+                              style={{ backgroundColor: '#4682b4' }}
+                              onMouseEnter={(e) =>
+                                ((e.target as unknown as HTMLElement).style.backgroundColor =
+                                  '#5a8bc4')
+                              }
+                              onMouseLeave={(e) =>
+                                ((e.target as unknown as HTMLElement).style.backgroundColor =
+                                  '#4682b4')
+                              }
+                            >
+                              Edit Team
+                            </button>
+                            <button
+                              onClick={() => {
+                                setConfirmAction({
+                                  type: 'delete',
+                                  memberId: '',
+                                  memberName: 'the team',
+                                });
+                                setShowConfirmModal(true);
+                              }}
+                              className="px-3 sm:px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md whitespace-nowrap"
+                            >
+                              Delete Team
+                            </button>
+                          </>
+                        )}
                         <button
                           onClick={() => {
                             setConfirmAction({
-                              type: 'delete',
-                              memberId: '',
+                              type: 'remove',
+                              memberId: '', // Will be set in handleLeaveTeam
                               memberName: 'the team',
                             });
                             setShowConfirmModal(true);
                           }}
-                          className="px-3 sm:px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md whitespace-nowrap"
+                          className="px-3 sm:px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-600 rounded-md hover:bg-red-900/20 whitespace-nowrap"
                         >
-                          Delete Team
+                          Leave Team
                         </button>
-                      </>
-                    )}
-                    <button
-                      onClick={() => {
-                        setConfirmAction({
-                          type: 'remove',
-                          memberId: '', // Will be set in handleLeaveTeam
-                          memberName: 'the team',
-                        });
-                        setShowConfirmModal(true);
-                      }}
-                      className="px-3 sm:px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-600 rounded-md hover:bg-red-900/20 whitespace-nowrap"
-                    >
-                      Leave Team
-                    </button>
-                  </div>
+                      </div>
+                    ) : team.scope === 'PUBLIC' ? (
+                      <button
+                        onClick={handleJoinPublicTeam}
+                        disabled={isProcessing}
+                        className="px-3 sm:px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isProcessing ? 'Joining...' : 'Join Team'}
+                      </button>
+                    ) : null}
+                  </>
                 )}
               </div>
               {team.description && <p className="text-gray-400 mb-4">{team.description}</p>}
@@ -542,78 +575,119 @@ export default function TeamDetailPage() {
                 <p className="text-gray-400 text-center py-8">No members found</p>
               ) : (
                 <div className="space-y-4">
-                  {members.map((member) => (
-                    <div
-                      key={member.id}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-gray-700/50 rounded-lg bg-gray-900/50 gap-4"
-                    >
-                      <div className="flex items-center space-x-4 min-w-0 flex-1">
-                        <div className="flex-shrink-0">
-                          <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
-                            <span className="text-white font-medium">
-                              {member.user?.name?.charAt(0) || member.user?.email?.charAt(0) || '?'}
+                  {members.map((member) => {
+                    // Show privacy message for hidden members
+                    if (!member.user) {
+                      return (
+                        <div
+                          key={member.id}
+                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-gray-700/50 rounded-lg bg-gray-900/50 gap-4"
+                        >
+                          <div className="flex items-center space-x-4 min-w-0 flex-1">
+                            <div className="flex-shrink-0">
+                              <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                                <span className="text-white font-medium">?</span>
+                              </div>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-medium text-gray-400">Private Member</h3>
+                              <p className="text-sm text-gray-500">Member details are private</p>
+                              <p className="text-xs text-gray-500">
+                                Joined {formatDate(member.joinedAt)}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap self-start sm:self-auto ${
+                                member.role === 'CAPTAIN'
+                                  ? 'bg-primary-500/20 text-primary-400'
+                                  : 'bg-gray-500/20 text-gray-400'
+                              }`}
+                            >
+                              {getRoleDisplayName(member.role)}
                             </span>
                           </div>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-medium text-white truncate">
-                            {member.user?.name || 'Unknown User'}
-                          </h3>
-                          <p className="text-sm text-gray-400 truncate">{member.user?.email}</p>
-                          <p className="text-xs text-gray-500">
-                            Joined {formatDate(member.joinedAt)}
-                          </p>
+                      );
+                    }
+
+                    // Show full member details for visible members
+                    return (
+                      <div
+                        key={member.id}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-gray-700/50 rounded-lg bg-gray-900/50 gap-4"
+                      >
+                        <div className="flex items-center space-x-4 min-w-0 flex-1">
+                          <div className="flex-shrink-0">
+                            <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
+                              <span className="text-white font-medium">
+                                {member.user?.name?.charAt(0) ||
+                                  member.user?.email?.charAt(0) ||
+                                  '?'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-medium text-white truncate">
+                              {member.user?.name || 'Unknown User'}
+                            </h3>
+                            <p className="text-sm text-gray-400 truncate">{member.user?.email}</p>
+                            <p className="text-xs text-gray-500">
+                              Joined {formatDate(member.joinedAt)}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                        {/* Captain-only actions */}
-                        {isCaptain && member.userId !== user?.id && (
-                          <div className="flex flex-wrap items-center gap-2">
-                            {member.role === 'MEMBER' && (
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                          {/* Captain-only actions */}
+                          {isCaptain && member.userId !== user?.id && (
+                            <div className="flex flex-wrap items-center gap-2">
+                              {member.role === 'MEMBER' && (
+                                <button
+                                  onClick={() => {
+                                    setConfirmAction({
+                                      type: 'promote',
+                                      memberId: member.id,
+                                      memberName:
+                                        member.user?.name || member.user?.email || 'Unknown User',
+                                    });
+                                    setShowConfirmModal(true);
+                                  }}
+                                  className="text-sm text-primary-400 hover:text-primary-300 whitespace-nowrap"
+                                >
+                                  Promote to Captain
+                                </button>
+                              )}
                               <button
                                 onClick={() => {
                                   setConfirmAction({
-                                    type: 'promote',
+                                    type: 'remove',
                                     memberId: member.id,
                                     memberName:
                                       member.user?.name || member.user?.email || 'Unknown User',
                                   });
                                   setShowConfirmModal(true);
                                 }}
-                                className="text-sm text-primary-400 hover:text-primary-300 whitespace-nowrap"
+                                className="text-sm text-red-400 hover:text-red-300 whitespace-nowrap"
                               >
-                                Promote to Captain
+                                Remove
                               </button>
-                            )}
-                            <button
-                              onClick={() => {
-                                setConfirmAction({
-                                  type: 'remove',
-                                  memberId: member.id,
-                                  memberName:
-                                    member.user?.name || member.user?.email || 'Unknown User',
-                                });
-                                setShowConfirmModal(true);
-                              }}
-                              className="text-sm text-red-400 hover:text-red-300 whitespace-nowrap"
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        )}
+                            </div>
+                          )}
 
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap self-start sm:self-auto ${
-                            member.role === 'CAPTAIN'
-                              ? 'bg-primary-500/20 text-primary-400'
-                              : 'bg-gray-500/20 text-gray-400'
-                          }`}
-                        >
-                          {getRoleDisplayName(member.role)}
-                        </span>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap self-start sm:self-auto ${
+                              member.role === 'CAPTAIN'
+                                ? 'bg-primary-500/20 text-primary-400'
+                                : 'bg-gray-500/20 text-gray-400'
+                            }`}
+                          >
+                            {getRoleDisplayName(member.role)}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

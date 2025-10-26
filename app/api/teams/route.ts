@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, createTeam, addTeamMember } from '@/lib/firestore';
+import { getUserByUid, createTeam, addTeamMember, isAdmin } from '@/lib/firestore';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,16 +16,39 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, description } = body;
+    const { name, description, scope, organizationId, gymId } = body;
 
     if (!name) {
       return NextResponse.json({ error: 'Team name is required' }, { status: 400 });
+    }
+
+    // Validate scope - non-admins can only create INVITE_ONLY teams
+    const requestedScope = scope || 'INVITE_ONLY';
+    if (!isAdmin(user.role) && requestedScope !== 'INVITE_ONLY') {
+      return NextResponse.json(
+        { error: 'Only administrators can create teams with PUBLIC, ORGANIZATION, or GYM scope' },
+        { status: 403 },
+      );
+    }
+
+    // Validate scope-specific fields
+    if (requestedScope === 'ORGANIZATION' && !organizationId) {
+      return NextResponse.json(
+        { error: 'Organization ID is required for ORGANIZATION scope' },
+        { status: 400 },
+      );
+    }
+    if (requestedScope === 'GYM' && !gymId) {
+      return NextResponse.json({ error: 'Gym ID is required for GYM scope' }, { status: 400 });
     }
 
     // Create the team
     const team = await createTeam({
       name,
       description: description || '',
+      scope: requestedScope,
+      organizationId: requestedScope === 'ORGANIZATION' ? organizationId : undefined,
+      gymId: requestedScope === 'GYM' ? gymId : undefined,
     });
 
     // Add the creator as the team captain
@@ -37,6 +60,7 @@ export async function POST(request: NextRequest) {
         id: team.id,
         name: team.name,
         description: team.description,
+        scope: team.scope,
       },
     });
   } catch (error) {
