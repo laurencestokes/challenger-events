@@ -100,6 +100,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         name: team.name,
         description: team.description,
         scope: team.scope,
+        logoUrl: team.logoUrl,
         createdAt: convertFirestoreTimestamp(team.createdAt),
       },
       members: membersWithPrivacy.map((member) => ({

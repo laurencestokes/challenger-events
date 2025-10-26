@@ -15,6 +15,7 @@ export async function GET(_request: NextRequest) {
         return {
           ...team,
           memberCount: teamMembers.length,
+          logoUrl: team.logoUrl,
         };
       }),
     );

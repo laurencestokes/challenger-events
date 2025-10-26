@@ -28,6 +28,7 @@ interface Team {
   name: string;
   description?: string;
   scope?: 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY';
+  logoUrl?: string;
   createdAt: Date | string;
 }
 
@@ -57,6 +58,8 @@ export default function TeamDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [pendingInvitations, setPendingInvitations] = useState<TeamInvitation[]>([]);
   const [isLoadingInvitations, setIsLoadingInvitations] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [logoUploadError, setLogoUploadError] = useState('');
 
   const fetchTeamDetails = useCallback(async () => {
     try {
@@ -319,6 +322,60 @@ export default function TeamDetailPage() {
     setShowInviteModal(true);
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setLogoUploadError('Invalid file type. Only PNG, JPEG, JPG, GIF, and WEBP are allowed.');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setLogoUploadError('File size exceeds 5MB limit.');
+      return;
+    }
+
+    setIsUploadingLogo(true);
+    setLogoUploadError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Use fetch directly instead of api.post to handle FormData properly
+      const response = await fetch(`/api/teams/${params.id}/upload-logo`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${user?.uid || user?.id}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to upload logo');
+      }
+
+      if (data.logoUrl) {
+        // Update team state with new logo URL
+        setTeam((prev) => (prev ? { ...prev, logoUrl: data.logoUrl } : null));
+      }
+    } catch (error: unknown) {
+      console.error('Error uploading logo:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload logo';
+      setLogoUploadError(errorMessage);
+    } finally {
+      setIsUploadingLogo(false);
+      // Reset file input
+      e.target.value = '';
+    }
+  };
+
   const closeInviteModal = () => {
     setInviteError(''); // Clear any errors when closing
     setInviteSuccess(''); // Clear any success messages when closing
@@ -503,6 +560,26 @@ export default function TeamDetailPage() {
                             >
                               Edit Team
                             </button>
+                            <div className="relative">
+                              <input
+                                type="file"
+                                accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+                                onChange={handleLogoUpload}
+                                disabled={isUploadingLogo}
+                                className="hidden"
+                                id="logo-upload"
+                              />
+                              <label
+                                htmlFor="logo-upload"
+                                className={`px-3 sm:px-4 py-2 text-sm font-medium text-white rounded-md whitespace-nowrap cursor-pointer ${
+                                  isUploadingLogo
+                                    ? 'bg-gray-600 cursor-not-allowed'
+                                    : 'bg-green-600 hover:bg-green-700'
+                                }`}
+                              >
+                                {isUploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                              </label>
+                            </div>
                             <button
                               onClick={() => {
                                 setConfirmAction({
@@ -546,6 +623,11 @@ export default function TeamDetailPage() {
               </div>
               {team.description && <p className="text-gray-400 mb-4">{team.description}</p>}
               <p className="text-sm text-gray-500">Created on {formatDate(team.createdAt)}</p>
+              {logoUploadError && (
+                <div className="mt-2 p-2 bg-red-900/30 border border-red-700/50 rounded text-red-400 text-sm">
+                  {logoUploadError}
+                </div>
+              )}
             </div>
 
             {/* Team Members */}

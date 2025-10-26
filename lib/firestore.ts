@@ -107,6 +107,7 @@ export interface Team {
   scope?: 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY';
   organizationId?: string;
   gymId?: string;
+  logoUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -594,6 +595,14 @@ export const createTeam = async (teamData: Omit<Team, 'id' | 'createdAt' | 'upda
     updatedAt: serverTimestamp(),
   });
   return { id: docRef.id, ...teamData };
+};
+
+export const updateTeamLogo = async (teamId: string, logoUrl: string) => {
+  const teamRef = doc(db, 'teams', teamId);
+  await updateDoc(teamRef, {
+    logoUrl,
+    updatedAt: serverTimestamp(),
+  });
 };
 
 export const getTeam = async (teamId: string) => {

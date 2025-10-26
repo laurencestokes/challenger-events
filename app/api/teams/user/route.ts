@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
           userRole: userMember ? userMember.role : null,
           isMember: !!userMember,
           memberCount: teamMembers.length,
+          logoUrl: team.logoUrl,
         };
       }),
     );
