@@ -9,6 +9,18 @@ import {
   getTeamMembers,
 } from '@/lib/firestore';
 import { calculateTeamScore, calculateTeamOverallScore } from '@/utils/teamScoring';
+import { Timestamp } from '@google-cloud/firestore';
+
+// Helper function to convert Firebase timestamp to Date
+const convertTimestamp = (timestamp: Date | Timestamp): Date => {
+  if (timestamp && typeof (timestamp as Timestamp).toDate === 'function') {
+    return (timestamp as Timestamp).toDate();
+  }
+  if (timestamp instanceof Date) {
+    return timestamp;
+  }
+  return new Date((timestamp as unknown as Date));
+};
 
 interface LeaderboardEntry {
   userId: string;
@@ -74,6 +86,20 @@ interface TeamWorkoutLeaderboard {
     reps?: number;
     rank: number;
   }[];
+}
+
+interface LatestResult {
+  id: string;
+  userId: string;
+  name: string;
+  teamName?: string;
+  activityId: string;
+  activityName: string;
+  score: number;
+  rawValue: number;
+  reps?: number;
+  submittedAt: Date;
+  scoringSystemId?: string;
 }
 
 export async function GET(_request: NextRequest, { params }: { params: { eventId: string } }) {
@@ -232,6 +258,42 @@ export async function GET(_request: NextRequest, { params }: { params: { eventId
       entry.rank = index + 1;
     });
 
+    // Create latest results (most recent 5 scores)
+    const latestResults: LatestResult[] = scores
+      .sort((a, b) => {
+        // Handle Firebase timestamp format properly
+        const aTime = convertTimestamp(a.submittedAt);
+        const bTime = convertTimestamp(b.submittedAt);
+        return bTime.getTime() - aTime.getTime();
+      })
+      .slice(0, 5)
+      .map((score) => {
+        const participant = participants.find((p) => p.id === score.userId);
+        const activity = activities.find((a) => a.id === score.activityId);
+
+        // Get team info from the participant data (already populated with team names)
+        const teamName = participant?.teamName;
+
+        // Handle Firebase timestamp conversion properly
+        const submittedAt = convertTimestamp(score.submittedAt);
+
+        return {
+          id: score.id,
+          userId: score.userId,
+          name: participant?.name || 'Unknown User',
+          teamName,
+          activityId: score.activityId,
+          activityName: activity?.name || 'Unknown Activity',
+          score: score.calculatedScore || 0,
+          rawValue: score.rawValue || 0,
+          reps: score.reps,
+          submittedAt,
+          scoringSystemId: activity?.scoringSystemId,
+        };
+      });
+
+    console.log('latestResults', latestResults);
+
     // Calculate team leaderboards if this is a team event
     let teamOverallLeaderboard: TeamLeaderboardEntry[] | undefined;
     let teamWorkoutLeaderboards: TeamWorkoutLeaderboard[] | undefined;
@@ -349,6 +411,7 @@ export async function GET(_request: NextRequest, { params }: { params: { eventId
       workoutLeaderboards,
       teamOverallLeaderboard,
       teamWorkoutLeaderboards,
+      latestResults,
     });
   } catch (error) {
     console.error('Error fetching public leaderboard:', error);

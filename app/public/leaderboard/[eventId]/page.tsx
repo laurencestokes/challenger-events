@@ -65,6 +65,7 @@ interface LeaderboardData {
   workoutLeaderboards: WorkoutLeaderboard[];
   teamOverallLeaderboard?: TeamLeaderboardEntry[];
   teamWorkoutLeaderboards?: TeamWorkoutLeaderboard[];
+  latestResults?: LatestResult[];
 }
 
 interface TeamLeaderboardEntry {
@@ -107,6 +108,20 @@ interface EventDetails {
   maxTeamSize?: number;
 }
 
+interface LatestResult {
+  id: string;
+  userId: string;
+  name: string;
+  teamName?: string;
+  activityId: string;
+  activityName: string;
+  score: number;
+  rawValue: number;
+  reps?: number;
+  submittedAt: Date;
+  scoringSystemId?: string;
+}
+
 export default function PublicEventLeaderboard() {
   const params = useParams();
   const eventId = params.eventId as string;
@@ -115,6 +130,7 @@ export default function PublicEventLeaderboard() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [eventInfo, setEventInfo] = useState<string | null>(null);
   const [eventDetails, setEventDetails] = useState<EventDetails | null>(null);
+  const [latestResults, setLatestResults] = useState<LatestResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overall' | 'team-overall' | string>('overall');
@@ -156,6 +172,7 @@ export default function PublicEventLeaderboard() {
       ]);
       setLeaderboardData(leaderboardData);
       setActivities(activitiesData);
+      setLatestResults(leaderboardData.latestResults || []);
 
       // Set event details and info if available
       if (eventData) {
@@ -184,8 +201,11 @@ export default function PublicEventLeaderboard() {
 
       // Refresh activities to show the newly revealed workout
       fetchData();
+    } else if (lastEvent?.type === 'score_submitted') {
+      // Refresh all data when a new score is submitted to get updated latest results
+      fetchData();
     }
-  }, [lastEvent, fetchData]);
+  }, [lastEvent, fetchData, eventId]);
 
   useEffect(() => {
     fetchData();
@@ -1259,6 +1279,89 @@ export default function PublicEventLeaderboard() {
               )}
             </div>
           </div>
+
+          {/* Latest Results Section */}
+          {latestResults.length > 0 && (
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg mb-6 border border-gray-700/50">
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-white">Latest Results</h2>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-gray-400">Live Updates</span>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-600">
+                    <thead className="bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Competitor
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Activity
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Score
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Performance
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Time
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-gray-800 divide-y divide-gray-600">
+                      {latestResults.map((result) => (
+                        <tr key={result.id} className="hover:bg-gray-700">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div>
+                                <div className="text-sm font-medium text-white">{result.name}</div>
+                                {result.teamName && (
+                                  <div className="text-xs text-gray-400">{result.teamName}</div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-300">{result.activityName}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-bold text-white">
+                              {result.score.toFixed(1)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-400">
+                              {result.rawValue
+                                ? formatRawValue(
+                                    result.rawValue,
+                                    result.activityId,
+                                    result.reps,
+                                    result.scoringSystemId,
+                                  )
+                                : 'No data'}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-500">
+                              {new Date(result.submittedAt).toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
