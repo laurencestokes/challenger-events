@@ -3,7 +3,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [],
+    domains: ['firebasestorage.googleapis.com'],
     unoptimized: false,
   },
   // Ensure static files are served correctly

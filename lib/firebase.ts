@@ -1,6 +1,7 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { Firestore, getFirestore } from 'firebase/firestore';
 import { Auth, getAuth as getFirebaseAuth } from 'firebase/auth';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -39,6 +40,7 @@ const firebaseConfig = {
 let app: FirebaseApp | null = null;
 let firestoreInstance: Firestore | null = null;
 let authInstance: Auth | null = null;
+let storageInstance: FirebaseStorage | null = null;
 
 try {
   // Check if we have the minimum required config
@@ -46,6 +48,7 @@ try {
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
     firestoreInstance = getFirestore(app);
     authInstance = getFirebaseAuth(app);
+    storageInstance = getStorage(app);
   } else {
     console.warn('⚠️ Firebase not initialized - missing required configuration');
   }
@@ -56,5 +59,6 @@ try {
 // Export the instances with proper null checks
 export const db = firestoreInstance!;
 export const auth = authInstance!;
+export const storage = storageInstance!;
 
 export default app;

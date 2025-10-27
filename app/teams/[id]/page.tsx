@@ -9,6 +9,7 @@ import { api } from '@/lib/api-client';
 import { useAuth } from '@/contexts/AuthContext';
 import { TeamHeaderSkeleton, TeamMembersListSkeleton } from '@/components/SkeletonLoaders';
 import { TeamInvitation } from '@/lib/firestore';
+import Image from 'next/image';
 
 interface TeamMember {
   id: string;
@@ -343,27 +344,17 @@ export default function TeamDetailPage() {
     setLogoUploadError('');
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      // Import the upload function dynamically to avoid SSR issues
+      const { uploadTeamLogo } = await import('@/lib/api-client');
 
-      // Use fetch directly instead of api.post to handle FormData properly
-      const response = await fetch(`/api/teams/${params.id}/upload-logo`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${user?.uid || user?.id}`,
-        },
-        body: formData,
-      });
+      const logoUrl = await uploadTeamLogo(params.id as string, file);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to upload logo');
-      }
-
-      if (data.logoUrl) {
+      if (logoUrl) {
         // Update team state with new logo URL
-        setTeam((prev) => (prev ? { ...prev, logoUrl: data.logoUrl } : null));
+        setTeam((prev) => (prev ? { ...prev, logoUrl } : null));
+
+        // Also refresh team details from server to ensure consistency
+        await fetchTeamDetails();
       }
     } catch (error: unknown) {
       console.error('Error uploading logo:', error);
@@ -531,14 +522,41 @@ export default function TeamDetailPage() {
               <span className="text-white font-semibold truncate">{team.name}</span>
             </nav>
 
-            {/* Header */}
+            {/* Team Logo Background */}
+            <div className="mb-8 relative h-64 sm:h-80 rounded-lg overflow-hidden">
+              <div className="absolute inset-0">
+                {team.logoUrl ? (
+                  <Image
+                    src={team.logoUrl}
+                    alt={`${team.name} logo`}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                    <Image
+                      src="/challenger-logo-no-text.png"
+                      alt="Challenger logo"
+                      width={120}
+                      height={120}
+                      className="opacity-60"
+                    />
+                  </div>
+                )}
+                {/* Dark overlay for text readability */}
+                <div className="absolute inset-0 bg-black/40" />
+              </div>
+
+              {/* Team Name Overlay */}
+              <div className="absolute bottom-6 left-6 right-6 z-10">
+                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">{team.name}</h1>
+                {team.description && <p className="text-white/90 text-lg">{team.description}</p>}
+              </div>
+            </div>
+
+            {/* Team Actions */}
             <div className="mb-8">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
-                <div className="flex items-center space-x-4">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white break-words">
-                    {team.name}
-                  </h1>
-                </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end mb-4 gap-4">
                 {user && (
                   <>
                     {members.some((member) => member.userId === user.id) ? (
