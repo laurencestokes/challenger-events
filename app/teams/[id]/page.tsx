@@ -523,7 +523,7 @@ export default function TeamDetailPage() {
             </nav>
 
             {/* Team Logo Background */}
-            <div className="mb-8 relative h-64 sm:h-80 rounded-lg overflow-hidden">
+            <div className="mb-8 relative w-64 h-48 sm:w-80 sm:h-60 rounded-lg overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900">
               <div className="absolute inset-0">
                 {team.logoUrl ? (
                   <Image
@@ -533,7 +533,7 @@ export default function TeamDetailPage() {
                     className="object-cover"
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                  <div className="absolute inset-0 flex items-center justify-center">
                     <Image
                       src="/challenger-logo-no-text.png"
                       alt="Challenger logo"

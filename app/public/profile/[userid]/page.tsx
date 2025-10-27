@@ -88,56 +88,56 @@ export default function PublicProfilePage({ params }: { params: { userid: string
       name: 'Recruit',
       min: 0,
       max: 149,
-      image: '/rank-images/challenger-grandmaster.png',
+      image: '/rank-images/challenger-recruit.png',
       color: '#CD7F32',
     },
     {
       name: 'Warrior',
       min: 150,
       max: 299,
-      image: '/rank-images/challenger-grandmaster.png',
+      image: '/rank-images/challenger-warrior.png',
       color: '#C0C0C0',
     },
     {
       name: 'Gladiator',
       min: 300,
       max: 449,
-      image: '/rank-images/challenger-grandmaster.png',
+      image: '/rank-images/challenger-gladiator.png',
       color: '#FFD700',
     },
     {
       name: 'Spartan',
       min: 450,
       max: 549,
-      image: '/rank-images/challenger-grandmaster.png',
+      image: '/rank-images/challenger-spartan.png',
       color: '#E5E4E2',
     },
     {
       name: 'Champion',
       min: 550,
       max: 649,
-      image: '/rank-images/challenger-grandmaster.png',
+      image: '/rank-images/challenger-champion.png',
       color: '#B9F2FF',
     },
     {
       name: 'Legend',
       min: 650,
       max: 749,
-      image: '/rank-images/challenger-grandmaster.png',
+      image: '/rank-images/challenger-legend.png',
       color: '#8A2BE2',
     },
     {
       name: 'Titan',
       min: 750,
       max: 849,
-      image: '/rank-images/challenger-grandmaster.png',
+      image: '/rank-images/challenger-titan.png',
       color: '#FF6B35',
     },
     {
       name: 'Apex',
       min: 850,
       max: Infinity,
-      image: '/rank-images/challenger-grandmaster.png',
+      image: '/rank-images/challenger-apex.png',
       color: '#FF0000',
     },
   ];
@@ -713,12 +713,61 @@ export default function PublicProfilePage({ params }: { params: { userid: string
               </div>
 
               {/* Rank Badge */}
-              <div className="w-32 h-32 mx-auto mb-4">
+              <div className="w-32 h-32 mx-auto mb-4 relative group">
                 <img
                   src={userRank.image}
                   alt={`${userRank.name} Rank`}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain cursor-help"
                 />
+                {/* Rank Tooltip */}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 px-4 py-3 bg-black/95 backdrop-blur-sm text-white text-xs rounded-lg z-50 w-80 border border-gray-600/30 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                  <div className="text-center mb-3">
+                    <h4
+                      className="font-bold text-sm mb-2"
+                      style={{ fontFamily: 'Montserrat, sans-serif' }}
+                    >
+                      RANK SYSTEM
+                    </h4>
+                    <p
+                      className="text-gray-300 text-xs"
+                      style={{ fontFamily: 'Montserrat, sans-serif' }}
+                    >
+                      Verified Score Requirements
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    {RANK_TIERS.map((rank, _index) => (
+                      <div key={rank.name} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <img
+                            src={rank.image}
+                            alt={`${rank.name} Rank`}
+                            className="w-6 h-6 object-contain"
+                          />
+                          <span
+                            className="font-medium text-xs"
+                            style={{
+                              fontFamily: 'Montserrat, sans-serif',
+                              color: rank.name === userRank.name ? rank.color : 'white',
+                            }}
+                          >
+                            {rank.name}
+                          </span>
+                        </div>
+                        <span
+                          className="text-xs font-bold"
+                          style={{
+                            fontFamily: 'Montserrat, sans-serif',
+                            color: rank.name === userRank.name ? rank.color : '#e84c04',
+                          }}
+                        >
+                          {rank.max === Infinity ? `${rank.min}+` : `${rank.min}-${rank.max}`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-black/95"></div>
+                </div>
               </div>
 
               <h3
