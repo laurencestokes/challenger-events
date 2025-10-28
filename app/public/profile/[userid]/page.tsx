@@ -418,22 +418,11 @@ export default function PublicProfilePage({ params }: { params: { userid: string
       );
     }
 
+    // Always show verified if available, and unverified if available
     const showVerified = bestVerified || null;
-    let showUnverified = null;
-    if (!showVerified && bestUnverified) {
-      showUnverified = bestUnverified;
-    } else if (
-      showVerified &&
-      bestUnverified &&
-      bestUnverified.calculatedScore > showVerified.calculatedScore
-    ) {
-      showUnverified = bestUnverified;
-    }
+    const showUnverified = bestUnverified || null;
 
-    const displayScore = showVerified || showUnverified;
-    const isVerified = !!showVerified;
-
-    if (!displayScore) {
+    if (!showVerified && !showUnverified) {
       return (
         <div
           key={type.id}
@@ -479,27 +468,56 @@ export default function PublicProfilePage({ params }: { params: { userid: string
         </div>
 
         <div className="text-center mb-3">
-          <div
-            className="text-3xl font-bold mb-2"
-            style={{ fontFamily: 'Montserrat, sans-serif', color: '#e84c04' }}
-          >
-            {displayScore.calculatedScore}
-          </div>
-          <div
-            className="text-sm text-gray-300 mb-2"
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
-          >
-            {beautifyRawScore(displayScore.rawValue, type.id, getReps(displayScore))}
-          </div>
-          <div
-            className={`px-2 py-1 rounded-full text-xs font-medium ${isVerified ? 'text-white' : 'bg-yellow-900 text-yellow-200'}`}
-            style={{
-              fontFamily: 'Montserrat, sans-serif',
-              backgroundColor: isVerified ? '#4682B4' : undefined,
-            }}
-          >
-            {isVerified ? 'Verified' : 'Unverified'}
-          </div>
+          {/* Verified Score (Primary) */}
+          {showVerified && (
+            <div className="mb-3">
+              <div
+                className="text-3xl font-bold mb-2"
+                style={{ fontFamily: 'Montserrat, sans-serif', color: '#e84c04' }}
+              >
+                {showVerified.calculatedScore}
+              </div>
+              <div
+                className="text-sm text-gray-300 mb-2"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                {beautifyRawScore(showVerified.rawValue, type.id, getReps(showVerified))}
+              </div>
+              <div
+                className="px-2 py-1 rounded-full text-xs font-medium text-white"
+                style={{
+                  fontFamily: 'Montserrat, sans-serif',
+                  backgroundColor: '#4682B4',
+                }}
+              >
+                Verified
+              </div>
+            </div>
+          )}
+
+          {/* Unverified Score (Secondary) */}
+          {showUnverified && (
+            <div className="border-t border-gray-600/30 pt-3">
+              <div
+                className="text-xl font-bold mb-1"
+                style={{ fontFamily: 'Montserrat, sans-serif', color: '#e84c04' }}
+              >
+                {showUnverified.calculatedScore}
+              </div>
+              <div
+                className="text-xs text-gray-300 mb-1"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                {beautifyRawScore(showUnverified.rawValue, type.id, getReps(showUnverified))}
+              </div>
+              <div
+                className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-900 text-yellow-200"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                Unverified
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Date/Event information */}
@@ -507,15 +525,28 @@ export default function PublicProfilePage({ params }: { params: { userid: string
           className="text-xs text-gray-400 space-y-1"
           style={{ fontFamily: 'Montserrat, sans-serif' }}
         >
-          {displayScore.submittedAt && (
+          {showVerified?.submittedAt && (
             <div>
-              <span className="font-semibold">Date:</span>{' '}
-              {formatFullTimestamp(displayScore.submittedAt, { dateOnly: true })}
+              <span className="font-semibold">Verified Date:</span>{' '}
+              {formatFullTimestamp(showVerified.submittedAt, { dateOnly: true })}
             </div>
           )}
-          <div>
-            <span className="font-semibold">Event:</span> {displayScore.event?.name || '-'}
-          </div>
+          {showVerified?.event?.name && (
+            <div>
+              <span className="font-semibold">Verified Event:</span> {showVerified.event.name}
+            </div>
+          )}
+          {showUnverified?.submittedAt && (
+            <div>
+              <span className="font-semibold">Unverified Date:</span>{' '}
+              {formatFullTimestamp(showUnverified.submittedAt, { dateOnly: true })}
+            </div>
+          )}
+          {showUnverified?.event?.name && (
+            <div>
+              <span className="font-semibold">Unverified Event:</span> {showUnverified.event.name}
+            </div>
+          )}
         </div>
       </div>
     );

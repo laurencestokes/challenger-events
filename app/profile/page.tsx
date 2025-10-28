@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { api } from '../../lib/api-client';
+import { api, getUserScores } from '../../lib/api-client';
 import WelcomeSection from '@/components/WelcomeSection';
 import { computeTotalsFromScores } from '@/lib/score-totals';
 import { convertFirestoreTimestamp, calculateAgeFromDateOfBirth } from '../../lib/utils';
@@ -12,17 +12,18 @@ import Footer from '@/components/Footer';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { EVENT_TYPES, EventType } from '@/constants/eventTypes';
+import { EVENT_TYPES } from '@/constants/eventTypes';
 import type { Score, Team as BaseTeam } from '@/lib/firestore';
+import { beautifyRawScore } from '@/utils/scoring';
+import Link from 'next/link';
+import Image from 'next/image';
+import { FiPlus, FiUsers, FiClock } from 'react-icons/fi';
 
 interface Team extends BaseTeam {
   userRole?: 'CAPTAIN' | 'MEMBER' | null;
   isMember?: boolean;
   logoUrl?: string;
 }
-import Link from 'next/link';
-import Image from 'next/image';
-import { FiPlus, FiUsers, FiClock } from 'react-icons/fi';
 import {
   TeamCardSkeleton,
   ProfileInfoSkeleton,
@@ -59,6 +60,25 @@ interface EventWithScores {
   scores?: Score[];
 }
 
+interface EnrichedScore {
+  id: string;
+  eventId?: string | null;
+  eventName?: string | null;
+  activityId: string;
+  activityName?: string | null;
+  rawScore: number; // Note: all-scores endpoint uses rawScore instead of rawValue
+  rawValue?: number; // For PerformanceGraph compatibility
+  calculatedScore: number;
+  reps?: number;
+  timestamp: unknown; // Note: all-scores endpoint uses timestamp instead of submittedAt
+  submittedAt?: unknown; // For PerformanceGraph compatibility
+  testId?: string;
+  verified?: boolean; // Whether the score is verified
+  notes?: string;
+  workoutName?: string;
+  event?: EventWithScores; // Event context for verification
+}
+
 // Zod schema for validation
 const today = new Date();
 const minBirthDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
@@ -91,6 +111,196 @@ const ProfileSchema = z.object({
 
 type ProfileFormType = z.infer<typeof ProfileSchema>;
 
+// Quick Score Submission Form Component
+function QuickScoreSubmissionForm({ onScoreAdded }: { onScoreAdded: () => void }) {
+  const [activityId, setActivityId] = useState('');
+  const [rawValue, setRawValue] = useState('');
+  const [reps, setReps] = useState('');
+  const [notes, setNotes] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const selectedActivity = EVENT_TYPES.find((a) => a.id === activityId);
+
+  const isTimeInput = () => {
+    return selectedActivity?.inputType === 'TIME';
+  };
+
+  const handleScoreChange = (value: string) => {
+    if (isTimeInput()) {
+      // For time input, allow mm:ss.ms format (e.g., "1:26.3") or ss.ms format (e.g., "86.3")
+      const timeRegex = /^[0-9]*:?[0-9]*\.?[0-9]*$/;
+      if (timeRegex.test(value) || value === '') {
+        setRawValue(value);
+      }
+    } else {
+      // For other inputs, only allow numbers
+      setRawValue(value.replace(/[^0-9.]/g, ''));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      if (!activityId || !rawValue) {
+        setError('Please select a test and enter a value.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Validate reps if the activity supports them
+      if (selectedActivity?.supportsReps && reps) {
+        const repsNum = Number(reps);
+        if (
+          isNaN(repsNum) ||
+          repsNum < (selectedActivity.minReps || 1) ||
+          repsNum > (selectedActivity.maxReps || 10)
+        ) {
+          setError(
+            `Reps must be between ${selectedActivity.minReps || 1} and ${selectedActivity.maxReps || 10}`,
+          );
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Parse the score value based on input type
+      let parsedRawValue: number;
+      if (isTimeInput()) {
+        const { parseTimeWithMilliseconds } = await import('@/utils/scoring');
+        parsedRawValue = parseTimeWithMilliseconds(rawValue);
+      } else {
+        parsedRawValue = Number(rawValue);
+      }
+
+      await api.post('/api/user/scores', {
+        activityId,
+        rawValue: parsedRawValue,
+        reps: selectedActivity?.supportsReps && reps ? Number(reps) : undefined,
+        notes,
+      });
+
+      // Reset form
+      setActivityId('');
+      setRawValue('');
+      setReps('');
+      setNotes('');
+
+      // Call the callback to refresh scores
+      onScoreAdded();
+
+      // Show success message (you could add a toast notification here)
+      setError(''); // Clear any previous errors
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'Failed to add score');
+      } else {
+        setError('Failed to add score');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">Test</label>
+          <select
+            value={activityId}
+            onChange={(e) => setActivityId(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            required
+          >
+            <option value="">Select a test...</option>
+            {EVENT_TYPES.map((type) => (
+              <option key={type.id} value={type.id}>
+                {type.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {selectedActivity && (
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              {selectedActivity.inputType === 'WEIGHT' && 'Weight (kg)'}
+              {selectedActivity.inputType === 'TIME' && 'Time (mm:ss.ms or ss.ms)'}
+              {selectedActivity.inputType === 'DISTANCE' && 'Distance (m)'}
+            </label>
+            <input
+              type={isTimeInput() ? 'text' : 'number'}
+              step="any"
+              value={rawValue}
+              onChange={(e) => handleScoreChange(e.target.value)}
+              placeholder={isTimeInput() ? 'e.g., 1:26.3 or 86.3' : undefined}
+              className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              required
+            />
+          </div>
+        )}
+      </div>
+
+      {selectedActivity?.supportsReps && (
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">Reps (optional)</label>
+          <input
+            type="number"
+            min={selectedActivity.minReps || 1}
+            max={selectedActivity.maxReps || 10}
+            placeholder={`${selectedActivity.defaultReps || 1} (default)`}
+            value={reps}
+            onChange={(e) => setReps(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Leave empty for 1RM. Range: {selectedActivity.minReps || 1}-
+            {selectedActivity.maxReps || 10}
+          </p>
+        </div>
+      )}
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-1">Notes (optional)</label>
+        <input
+          type="text"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Add any notes about this score..."
+          className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        />
+      </div>
+
+      {error && (
+        <div className="text-red-400 text-sm bg-red-900/20 border border-red-700/50 rounded p-3">
+          {error}
+        </div>
+      )}
+
+      <div className="flex justify-end">
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="px-6 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50 flex items-center"
+        >
+          {isSubmitting ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Submitting...
+            </>
+          ) : (
+            'Submit Score'
+          )}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export default function Profile() {
   const { user } = useAuth();
   const [profile, setProfile] = useState<User | null>(null);
@@ -114,6 +324,7 @@ export default function Profile() {
 
   const [eventScores, setEventScores] = useState<EventWithScores[]>([]); // event objects with .scores
   const [personalScores, setPersonalScores] = useState<Score[]>([]);
+  const [allScores, setAllScores] = useState<EnrichedScore[]>([]); // All scores from getUserScores
   const [teams, setTeams] = useState<Team[]>([]);
 
   // Loading states for different sections
@@ -157,6 +368,12 @@ export default function Profile() {
         // Fetch personal scores
         const personalScoresData = await api.get('/api/user/scores');
         setPersonalScores(personalScoresData);
+
+        // Fetch all scores for the latest scores section
+        const allScoresResponse = await getUserScores();
+        if (allScoresResponse.success) {
+          setAllScores(allScoresResponse.data || []);
+        }
       } catch (error: unknown) {
         console.error('Error fetching scores:', error);
       } finally {
@@ -285,15 +502,72 @@ export default function Profile() {
     }
   };
 
-  const formatDate = (date: unknown) => {
-    const dateObj = convertFirestoreTimestamp(date);
-    return dateObj ? dateObj.toLocaleDateString() : 'Not set';
-  };
-
   const calculateAge = (dateOfBirth: unknown) => {
     const birthDate = convertFirestoreTimestamp(dateOfBirth);
     if (!birthDate) return 'Not set';
     return calculateAgeFromDateOfBirth(birthDate);
+  };
+
+  // Helper functions copied from profile/scores page
+  const getCanonicalEventId = (score: EnrichedScore): string | undefined => {
+    if (score.testId && EVENT_TYPES.some((et) => et.id === score.testId)) return score.testId;
+    if (score.activityId && EVENT_TYPES.some((et) => et.id === score.activityId))
+      return score.activityId;
+    if (score.activityName) {
+      // Fuzzy match: if activityName contains canonical event name
+      const match = EVENT_TYPES.find((et) =>
+        score.activityName?.toLowerCase().includes(et.name.toLowerCase()),
+      );
+      if (match) return match.id;
+    }
+    return undefined;
+  };
+
+  const getCanonicalEventName = (score: EnrichedScore) => {
+    const id = getCanonicalEventId(score);
+    const eventType = EVENT_TYPES.find((et) => et.id === id);
+    return eventType ? eventType.name : score.activityName || score.activityId;
+  };
+
+  const formatRawScoreWithReps = (score: EnrichedScore) => {
+    const canonicalId = getCanonicalEventId(score) || '';
+    const eventType = EVENT_TYPES.find((et) => et.id === canonicalId);
+    // For lifts, always show x reps (default to 1)
+    if (eventType && eventType.inputType === 'WEIGHT') {
+      const reps = score.reps ?? 1;
+      return beautifyRawScore(score.rawScore, canonicalId, reps);
+    }
+    // For other events, just use beautifyRawScore
+    return beautifyRawScore(score.rawScore, canonicalId);
+  };
+
+  const formatDate = (timestamp: unknown) => {
+    if (!timestamp) return 'Unknown date';
+    let date: Date | null = null;
+    try {
+      if (typeof timestamp === 'object' && timestamp !== null) {
+        if (typeof (timestamp as { toDate: () => Date }).toDate === 'function') {
+          date = (timestamp as { toDate: () => Date }).toDate();
+        } else if (timestamp instanceof Date) {
+          date = timestamp;
+        } else if ('seconds' in timestamp && typeof timestamp.seconds === 'number') {
+          // Firestore Timestamp object
+          date = new Date(timestamp.seconds * 1000);
+        }
+      } else if (typeof timestamp === 'string' || typeof timestamp === 'number') {
+        date = new Date(timestamp);
+      }
+      if (!date || isNaN(date.getTime())) return 'Unknown date';
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return 'Unknown date';
+    }
   };
 
   // Colors for team card footers (cycling through)
@@ -314,7 +588,7 @@ export default function Profile() {
     return teamFooterColors[index % teamFooterColors.length];
   };
 
-  const formatEventDate = (dateString: unknown) => {
+  const _formatEventDate = (dateString: unknown) => {
     if (!dateString) return 'TBD';
 
     let date: Date;
@@ -374,7 +648,7 @@ export default function Profile() {
   };
 
   // Helper to merge and group scores by activity
-  const getAllScoresByActivity = () => {
+  const _getAllScoresByActivity = () => {
     // Flatten event scores into activity scores
     type ScoreWithEvent = Score & { event?: EventWithScores; testId?: string };
     const eventActivityScores: ScoreWithEvent[] = [];
@@ -878,115 +1152,118 @@ export default function Profile() {
                 </div>
               </div>
 
-              {/* Row 3: My Latest Scores (spans full width) */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-white text-2xl font-bold">My Latest Scores</h2>
-                  <Link
-                    href="/profile/scores"
-                    className="text-gray-400 hover:text-white text-sm border border-gray-600 px-3 py-1 rounded-lg transition-colors"
-                  >
-                    More
-                  </Link>
-                </div>
-                {isLoadingScores ? (
-                  <ScoresListSkeleton />
-                ) : (
+              {/* Row 3: Submit New Score & My Latest Scores */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Submit New Score Section */}
+                <div>
+                  <h2 className="text-white text-2xl font-bold mb-4">Submit New Score</h2>
                   <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
-                    <div className="space-y-3">
-                      {(() => {
-                        // Get all scores and sort by timestamp (most recent first)
-                        const allScores = getAllScoresByActivity();
-                        const recentScores: Array<{
-                          type: EventType;
-                          score: Score & { event?: EventWithScores; testId?: string };
-                          timestamp: number | Date | string;
-                        }> = [];
-
-                        EVENT_TYPES.forEach((type) => {
-                          const scores = allScores[type.id] || [];
-                          if (scores.length > 0) {
-                            // Get the most recent score for this type
-                            const mostRecent = scores.reduce((prev, curr) => {
-                              const prevTime = prev.submittedAt;
-                              const currTime = curr.submittedAt;
-                              return currTime > prevTime ? curr : prev;
-                            });
-                            recentScores.push({
-                              type,
-                              score: mostRecent,
-                              timestamp: mostRecent.submittedAt,
-                            });
-                          }
-                        });
-
-                        // Sort by timestamp and take the 5 most recent
-                        recentScores.sort((a, b) => {
-                          const timeA = a.timestamp;
-                          const timeB = b.timestamp;
-                          return timeB > timeA ? 1 : -1;
-                        });
-
-                        return recentScores.slice(0, 5).map(({ type, score, timestamp }) => {
-                          const isVerified = score.event || score.verified;
-                          return (
-                            <div
-                              key={`${type.id}-${score.id}`}
-                              className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/30"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center space-x-2 mb-1">
-                                    <span className="px-2 py-1 text-xs bg-primary-500/20 text-primary-400 rounded font-semibold">
-                                      {type.name}
-                                    </span>
-                                    {/* Verification Status Badge */}
-                                    <span
-                                      className={`px-2 py-1 text-xs rounded font-medium ${
-                                        isVerified
-                                          ? 'bg-green-500/20 text-green-400'
-                                          : 'bg-gray-500/20 text-gray-400'
-                                      }`}
-                                    >
-                                      {isVerified ? 'Verified' : 'Unverified'}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center space-x-1 text-xs text-gray-400">
-                                    <FiClock className="w-3 h-3" />
-                                    <span>{formatEventDate(timestamp)}</span>
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <div className="text-lg font-bold text-primary-400">
-                                    {score.calculatedScore.toFixed(1)}
-                                  </div>
-                                  <div className="text-xs text-gray-400">Challenger Score</div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        });
-                      })()}
-                      {(() => {
-                        const allScores = getAllScoresByActivity();
-                        const hasAnyScores = EVENT_TYPES.some(
-                          (type) => (allScores[type.id] || []).length > 0,
-                        );
-                        if (!hasAnyScores) {
-                          return (
-                            <div className="text-center py-8">
-                              <div className="text-gray-400 mb-2">No scores yet</div>
-                              <div className="text-gray-500 text-sm">
-                                Start participating in events to see your scores here!
-                              </div>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })()}
-                    </div>
+                    <QuickScoreSubmissionForm
+                      onScoreAdded={() => {
+                        // Refresh all score data when a new score is added
+                        // Add a small delay to ensure Firestore write has propagated
+                        setTimeout(() => {
+                          Promise.all([
+                            api.get('/api/user/scores').then(setPersonalScores),
+                            api.get('/api/user/events').then(setEventScores),
+                            getUserScores().then((response) => {
+                              if (response.success) {
+                                setAllScores(response.data || []);
+                              }
+                            }),
+                          ]).catch(() => {});
+                        }, 500);
+                      }}
+                    />
                   </div>
-                )}
+                </div>
+
+                {/* My Latest Scores Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-white text-2xl font-bold">My Latest Scores</h2>
+                    <Link
+                      href="/profile/scores"
+                      className="text-gray-400 hover:text-white text-sm border border-gray-600 px-3 py-1 rounded-lg transition-colors"
+                    >
+                      More
+                    </Link>
+                  </div>
+                  {isLoadingScores ? (
+                    <ScoresListSkeleton />
+                  ) : allScores.length === 0 ? (
+                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 text-center">
+                      <div className="text-gray-400">
+                        <p>
+                          No scores found. Start participating in events to see your scores here!
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                      <div className="space-y-3">
+                        {allScores
+                          .sort((a, b) => {
+                            const dateA = a.timestamp
+                              ? new Date(formatDate(a.timestamp)).getTime()
+                              : 0;
+                            const dateB = b.timestamp
+                              ? new Date(formatDate(b.timestamp)).getTime()
+                              : 0;
+                            return dateB - dateA;
+                          })
+                          .slice(0, 5)
+                          .map((score) => {
+                            const isVerified = score.eventId; // Event scores are considered verified
+                            return (
+                              <div
+                                key={score.id}
+                                className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/30"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-2 mb-1">
+                                      <span className="px-2 py-1 text-xs bg-primary-500/20 text-primary-400 rounded font-semibold">
+                                        {getCanonicalEventName(score)}
+                                      </span>
+                                      {/* Verification Status Badge */}
+                                      <span
+                                        className={`px-2 py-1 text-xs rounded font-medium ${
+                                          isVerified
+                                            ? 'bg-green-500/20 text-green-400'
+                                            : 'bg-gray-500/20 text-gray-400'
+                                        }`}
+                                      >
+                                        {isVerified ? 'Verified' : 'Unverified'}
+                                      </span>
+                                      {score.eventName && (
+                                        <span className="px-2 py-1 text-xs bg-gray-500/20 text-gray-400 rounded">
+                                          {score.eventName}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center space-x-1 text-xs text-gray-400">
+                                      <FiClock className="w-3 h-3" />
+                                      <span>{formatDate(score.timestamp)}</span>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-lg font-bold text-primary-400">
+                                      {score.calculatedScore.toFixed(1)}
+                                    </div>
+                                    <div className="text-xs text-gray-400">Challenger Score</div>
+                                    <div className="text-xs text-gray-500 mt-1">
+                                      {formatRawScoreWithReps(score)}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

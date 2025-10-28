@@ -15,13 +15,16 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    // Fetch all scores for this user where eventId is null/undefined
+    // Fetch all scores for this user and filter for personal scores (eventId is null/undefined)
     const { collection, query, where, getDocs } = await import('firebase/firestore');
     const db = (await import('@/lib/firebase')).db;
     const scoresRef = collection(db, 'scores');
-    const q = query(scoresRef, where('userId', '==', user.id), where('eventId', '==', null));
+    const q = query(scoresRef, where('userId', '==', user.id));
     const querySnapshot = await getDocs(q);
-    const scores = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const allScores = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+    // Filter for personal scores (eventId is null or undefined)
+    const scores = allScores.filter((score) => !score.eventId);
     return NextResponse.json(scores);
   } catch (error) {
     console.error('Error fetching personal scores:', error);
