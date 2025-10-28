@@ -30,6 +30,7 @@ export interface HeadToHeadSession {
   competitor1: Competitor;
   competitor2: Competitor;
   eventId?: string;
+  eventType?: string;
 }
 
 export interface TeamErgSession {

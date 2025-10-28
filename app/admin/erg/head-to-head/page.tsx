@@ -8,6 +8,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import WelcomeSection from '@/components/WelcomeSection';
 import Button from '@/components/ui/Button';
 import { HeadToHeadSession } from '@/hooks/useErgSocket';
+import { EVENT_TYPES } from '@/constants/eventTypes';
 
 interface User {
   id: string;
@@ -18,24 +19,38 @@ interface User {
   sex?: 'M' | 'F';
 }
 
+interface Event {
+  id: string;
+  name: string;
+  description?: string;
+  status: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  isTeamEvent: boolean;
+}
+
 export default function HeadToHeadSetupPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const [events, setEvents] = useState<Event[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState('');
+  const [selectedEventType, setSelectedEventType] = useState('');
   const [competitor1Id, setCompetitor1Id] = useState('');
   const [competitor2Id, setCompetitor2Id] = useState('');
   const [error, setError] = useState('');
 
-  const fetchUsers = useCallback(async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       if (!user) {
         console.log('No user available yet, skipping fetch');
+        setLoading(false);
         return;
       }
 
-      const response = await fetch('/api/admin/users', {
+      const response = await fetch('/api/events', {
         headers: {
           Authorization: `Bearer ${user.uid || user.id}`,
         },
@@ -43,18 +58,44 @@ export default function HeadToHeadSetupPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch users');
+        throw new Error(errorData.error || 'Failed to fetch events');
       }
 
       const data = await response.json();
-      setUsers(data.users || []);
+      setEvents(data || []);
     } catch (err) {
-      console.error('Error fetching users:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load users');
+      console.error('Error fetching events:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load events');
     } finally {
       setLoading(false);
     }
   }, [user]);
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      if (!user || !selectedEventId) {
+        console.log('No user or event selected, skipping fetch');
+        return;
+      }
+
+      const response = await fetch(`/api/events/${selectedEventId}/participants`, {
+        headers: {
+          Authorization: `Bearer ${user.uid || user.id}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch participants');
+      }
+
+      const data = await response.json();
+      setUsers(data.participants || []);
+    } catch (err) {
+      console.error('Error fetching participants:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load participants');
+    }
+  }, [user, selectedEventId]);
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'ADMIN')) {
@@ -64,9 +105,19 @@ export default function HeadToHeadSetupPage() {
 
   useEffect(() => {
     if (user && !authLoading) {
-      fetchUsers();
+      fetchEvents();
     }
-  }, [user, authLoading, fetchUsers]);
+  }, [user, authLoading, fetchEvents]);
+
+  useEffect(() => {
+    if (selectedEventId) {
+      fetchUsers();
+    } else {
+      setUsers([]);
+      setCompetitor1Id('');
+      setCompetitor2Id('');
+    }
+  }, [selectedEventId, fetchUsers]);
 
   const calculateAge = (dateOfBirth: Date | string | { seconds: number }): number => {
     let dob: Date;
@@ -92,6 +143,16 @@ export default function HeadToHeadSetupPage() {
   };
 
   const createSession = async () => {
+    if (!selectedEventId) {
+      setError('Please select an event');
+      return;
+    }
+
+    if (!selectedEventType) {
+      setError('Please select an event type');
+      return;
+    }
+
     if (!competitor1Id || !competitor2Id) {
       setError('Please select both competitors');
       return;
@@ -136,6 +197,8 @@ export default function HeadToHeadSetupPage() {
           sex: comp2.sex === 'M' ? 'male' : 'female',
           weight: comp2.bodyweight,
         },
+        eventId: selectedEventId,
+        eventType: selectedEventType,
       };
 
       const response = await fetch('/api/erg/sessions', {
@@ -212,11 +275,46 @@ export default function HeadToHeadSetupPage() {
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8">
             <div className="space-y-6">
               <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Event</label>
+                <select
+                  value={selectedEventId}
+                  onChange={(e) => setSelectedEventId(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                >
+                  <option value="">Select Event</option>
+                  {events.map((event) => (
+                    <option key={event.id} value={event.id}>
+                      {event.name} ({event.status})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Event Type</label>
+                <select
+                  value={selectedEventType}
+                  onChange={(e) => setSelectedEventType(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                >
+                  <option value="">Select Event Type</option>
+                  {EVENT_TYPES.filter((eventType) => eventType.category === 'ENDURANCE').map(
+                    (eventType) => (
+                      <option key={eventType.id} value={eventType.id}>
+                        {eventType.name} - {eventType.description}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Competitor 1</label>
                 <select
                   value={competitor1Id}
                   onChange={(e) => setCompetitor1Id(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  disabled={!selectedEventId}
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="">Select Competitor 1</option>
                   {users.map((user) => {
@@ -240,7 +338,8 @@ export default function HeadToHeadSetupPage() {
                 <select
                   value={competitor2Id}
                   onChange={(e) => setCompetitor2Id(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  disabled={!selectedEventId}
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="">Select Competitor 2</option>
                   {users.map((user) => {
@@ -268,7 +367,13 @@ export default function HeadToHeadSetupPage() {
               <div className="flex gap-4">
                 <Button
                   onClick={createSession}
-                  disabled={creating || !competitor1Id || !competitor2Id}
+                  disabled={
+                    creating ||
+                    !selectedEventId ||
+                    !selectedEventType ||
+                    !competitor1Id ||
+                    !competitor2Id
+                  }
                   className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   {creating ? 'Creating Session...' : 'Create Session & Start'}
@@ -285,7 +390,9 @@ export default function HeadToHeadSetupPage() {
               <div className="mt-6 p-6 bg-gray-700/50 rounded-lg border border-gray-600/50">
                 <h3 className="font-semibold text-white mb-3">How it works:</h3>
                 <ol className="list-decimal list-inside space-y-2 text-sm text-gray-300">
-                  <li>Select two competitors from the dropdown above</li>
+                  <li>Select an event to pull competitors from</li>
+                  <li>Choose the event type (erg endurance events only)</li>
+                  <li>Select two competitors from the event participants</li>
                   <li>Click "Create Session & Start" to generate a unique session</li>
                   <li>You'll be taken to the control page where you can start the competition</li>
                   <li>A public display URL will be generated for spectators to view</li>

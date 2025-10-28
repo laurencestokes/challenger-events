@@ -8,6 +8,8 @@
     :root {
         --font-montserrat: 'Montserrat', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
         --font-orbitron: 'Orbitron', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+        --font-helvetica: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        --font-ropa-sans: 'Ropa Sans', sans-serif;
     }
 
     /* Smooth transitions for theme changes */

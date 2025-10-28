@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Providers } from '@/components/Providers';
-import { Montserrat, Orbitron } from 'next/font/google';
+import { Montserrat, Orbitron, Ropa_Sans } from 'next/font/google';
 
 import 'styles/globals.css';
 
@@ -14,6 +14,13 @@ const orbitron = Orbitron({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800', '900'],
   variable: '--font-orbitron',
+  display: 'swap',
+});
+
+const ropaSans = Ropa_Sans({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-ropa-sans',
   display: 'swap',
 });
 
@@ -101,7 +108,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${montserrat.variable} ${orbitron.variable} bg-white`}
+        className={`${montserrat.variable} ${orbitron.variable} ${ropaSans.variable} bg-white`}
         style={{ backgroundColor: '#0F0F0F' }}
       >
         <Providers>{children}</Providers>
