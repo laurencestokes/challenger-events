@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, createScore } from '@/lib/firestore';
+import { getUserByUid, createScore, Score } from '@/lib/firestore';
 import { EVENT_TYPES } from '@/constants/eventTypes';
 import { calculateScore } from '@/utils/scoreCalculation';
 
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const allScores = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
     // Filter for personal scores (eventId is null or undefined)
-    const scores = allScores.filter((score) => !score.eventId);
+    const scores = (allScores as Score[]).filter((score: Score) => !score.eventId);
     return NextResponse.json(scores);
   } catch (error) {
     console.error('Error fetching personal scores:', error);
