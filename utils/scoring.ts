@@ -212,6 +212,20 @@ export function calculateSkiScoreNew(timeInSeconds: number, sex: 'male' | 'femal
   }
 }
 
+export function calculateBike500mScoreNew(
+  timeInSeconds: number,
+  sex: 'male' | 'female',
+  age: number,
+) {
+  try {
+    return challengerData.bike500mScore(timeInSeconds, sex, age);
+  } catch (error) {
+    console.error('Error in calculateBike500mScoreNew:', error);
+    // Return a fallback result
+    return { score: timeInSeconds, percentile: 50 };
+  }
+}
+
 // Epley formula to convert rep-based weight to estimated 1RM
 export function epleyFormula(weight: number, reps: number): number {
   if (reps === 1) return weight;
@@ -263,8 +277,8 @@ export function beautifyRawScore(rawValue: number, activityId: string, reps?: nu
     return `${rawValue}kg × ${repsToShow}`;
   }
 
-  // Handle time-based activities (rowing_500m, bike_4km, ski_500m)
-  if (['rowing_500m', 'bike_4km', 'ski_500m'].includes(activityId)) {
+  // Handle time-based activities (rowing_500m, bike_4km, ski_500m, bike_500m)
+  if (['rowing_500m', 'bike_4km', 'ski_500m', 'bike_500m'].includes(activityId)) {
     return formatTimeWithMilliseconds(rawValue);
   }
 

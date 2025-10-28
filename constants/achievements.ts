@@ -1,7 +1,10 @@
 import { EVENT_TYPES } from './eventTypes';
 
-// Canonical events are all events minus the 4-minute row
-export const CANONICAL_EVENTS = EVENT_TYPES.filter((event) => event.id !== 'rowing_4min');
+// Canonical events are the core events used for achievements and public profiles
+// These are hardcoded to ensure consistency and prevent accidental inclusion of non-canonical events
+export const CANONICAL_EVENTS = EVENT_TYPES.filter((event) =>
+  ['squat', 'bench', 'deadlift', 'rowing_500m', 'bike_4km', 'ski_500m'].includes(event.id),
+);
 
 // Achievement types and definitions
 export interface Achievement {

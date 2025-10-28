@@ -180,6 +180,18 @@ export const SCORING_SYSTEMS: ScoringSystem[] = [
     requiresSex: true,
     calculationFunction: 'ski500mScore',
   },
+  {
+    id: 'bike_500m',
+    name: '500m Bike',
+    description: '500m bike scoring based on time, age, and sex',
+    category: 'ENDURANCE',
+    inputType: 'TIME',
+    unit: 'seconds',
+    requiresBodyweight: false,
+    requiresAge: true,
+    requiresSex: true,
+    calculationFunction: 'bike500mScore',
+  },
 ];
 
 export const getScoringSystemById = (id: string): ScoringSystem | undefined => {

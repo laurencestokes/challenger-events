@@ -31,7 +31,7 @@
     }
   },
   "dependencies": {
-    "@challengerco/challenger-data": "^5.0.1",
+    "@challengerco/challenger-data": "^6.1.0",
     "@hookform/resolvers": "^3.3.4",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/react-query": "^5.90.2",

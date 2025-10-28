@@ -92,6 +92,10 @@ export async function calculateScore(
       const skiTimeInSeconds = Number(value);
       result = challengerData.ski500mScore(skiTimeInSeconds, sexConverted, age);
       break;
+    case 'bike500mScore':
+      const bike500mTimeInSeconds = Number(value);
+      result = challengerData.bike500mScore(bike500mTimeInSeconds, sexConverted, age);
+      break;
     case 'customWeight':
       // Simple weight-based scoring (no age/sex adjustments)
       result = { score: value, percentile: 50 };
