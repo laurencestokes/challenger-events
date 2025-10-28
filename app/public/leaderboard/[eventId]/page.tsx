@@ -37,6 +37,7 @@ interface LeaderboardEntry {
   rank: number;
   teamId?: string;
   teamName?: string;
+  teamLogoUrl?: string;
 }
 
 interface WorkoutLeaderboard {
@@ -52,6 +53,7 @@ interface WorkoutLeaderboard {
     rank: number;
     teamId?: string;
     teamName?: string;
+    teamLogoUrl?: string;
     scoringSystemId?: string;
   }[];
 }
@@ -81,6 +83,7 @@ interface TeamLeaderboardEntry {
     };
   };
   rank: number;
+  logoUrl?: string;
 }
 
 interface TeamWorkoutLeaderboard {
@@ -545,7 +548,10 @@ export default function PublicEventLeaderboard() {
                             <div className="flex justify-center mb-4">
                               <div className="w-20 h-20 bg-gray-400 rounded-full flex items-center justify-center border-2 border-gray-400 overflow-hidden">
                                 <Image
-                                  src="/challenger-logo-no-text.png"
+                                  src={
+                                    leaderboardData.teamOverallLeaderboard[1].logoUrl ||
+                                    '/challenger-logo-no-text.png'
+                                  }
                                   alt={leaderboardData.teamOverallLeaderboard[1].teamName}
                                   width={80}
                                   height={80}
@@ -586,7 +592,10 @@ export default function PublicEventLeaderboard() {
                             <div className="flex justify-center mb-4">
                               <div className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-yellow-400 overflow-hidden">
                                 <Image
-                                  src="/challenger-logo-no-text.png"
+                                  src={
+                                    leaderboardData.teamOverallLeaderboard[0].logoUrl ||
+                                    '/challenger-logo-no-text.png'
+                                  }
                                   alt={leaderboardData.teamOverallLeaderboard[0].teamName}
                                   width={96}
                                   height={96}
@@ -627,7 +636,10 @@ export default function PublicEventLeaderboard() {
                             <div className="flex justify-center mb-4">
                               <div className="w-20 h-20 bg-amber-600 rounded-full flex items-center justify-center border-2 border-amber-600 overflow-hidden">
                                 <Image
-                                  src="/challenger-logo-no-text.png"
+                                  src={
+                                    leaderboardData.teamOverallLeaderboard[2].logoUrl ||
+                                    '/challenger-logo-no-text.png'
+                                  }
                                   alt={leaderboardData.teamOverallLeaderboard[2].teamName}
                                   width={80}
                                   height={80}
@@ -672,7 +684,10 @@ export default function PublicEventLeaderboard() {
                             <div className="flex justify-center mb-4">
                               <div className="w-20 h-20 bg-gray-400 rounded-full flex items-center justify-center border-2 border-gray-400 overflow-hidden">
                                 <Image
-                                  src="/challenger-logo-no-text.png"
+                                  src={
+                                    leaderboardData.overallLeaderboard[1].teamLogoUrl ||
+                                    '/challenger-logo-no-text.png'
+                                  }
                                   alt={leaderboardData.overallLeaderboard[1].name}
                                   width={80}
                                   height={80}
@@ -717,7 +732,10 @@ export default function PublicEventLeaderboard() {
                             <div className="flex justify-center mb-4">
                               <div className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-yellow-400 overflow-hidden">
                                 <Image
-                                  src="/challenger-logo-no-text.png"
+                                  src={
+                                    leaderboardData.overallLeaderboard[0].teamLogoUrl ||
+                                    '/challenger-logo-no-text.png'
+                                  }
                                   alt={leaderboardData.overallLeaderboard[0].name}
                                   width={96}
                                   height={96}
@@ -762,7 +780,10 @@ export default function PublicEventLeaderboard() {
                             <div className="flex justify-center mb-4">
                               <div className="w-20 h-20 bg-amber-600 rounded-full flex items-center justify-center border-2 border-amber-600 overflow-hidden">
                                 <Image
-                                  src="/challenger-logo-no-text.png"
+                                  src={
+                                    leaderboardData.overallLeaderboard[2].teamLogoUrl ||
+                                    '/challenger-logo-no-text.png'
+                                  }
                                   alt={leaderboardData.overallLeaderboard[2].name}
                                   width={80}
                                   height={80}

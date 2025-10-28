@@ -61,6 +61,7 @@ interface TeamLeaderboardEntry {
     };
   };
   rank: number;
+  logoUrl?: string;
 }
 
 interface TeamWorkoutLeaderboard {
@@ -349,6 +350,7 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
             totalScore: teamOverallScore.totalScore,
             workoutScores: teamOverallScore.workoutScores,
             rank: 0, // Will be calculated below
+            logoUrl: team.logoUrl,
           });
         }
       }

@@ -40,6 +40,7 @@ interface LeaderboardEntry {
   rank: number;
   teamId?: string;
   teamName?: string;
+  teamLogoUrl?: string;
 }
 
 interface WorkoutLeaderboard {
@@ -55,6 +56,7 @@ interface WorkoutLeaderboard {
     rank: number;
     teamId?: string;
     teamName?: string;
+    teamLogoUrl?: string;
     scoringSystemId?: string;
   }[];
 }
@@ -73,6 +75,7 @@ interface TeamLeaderboardEntry {
     };
   };
   rank: number;
+  logoUrl?: string;
 }
 
 interface TeamWorkoutLeaderboard {
@@ -135,6 +138,7 @@ export async function GET(_request: NextRequest, { params }: { params: { eventId
         // Get team information if this is a team event
         let teamId: string | undefined;
         let teamName: string | undefined;
+        let teamLogoUrl: string | undefined;
 
         if (event.isTeamEvent) {
           // Find the participation record for this user in this event
@@ -146,6 +150,7 @@ export async function GET(_request: NextRequest, { params }: { params: { eventId
             if (team) {
               teamId = team.id;
               teamName = team.name;
+              teamLogoUrl = team.logoUrl;
             }
           }
         }
@@ -156,6 +161,7 @@ export async function GET(_request: NextRequest, { params }: { params: { eventId
           email: user?.email || 'unknown@example.com',
           teamId,
           teamName,
+          teamLogoUrl,
         };
       }),
     );
@@ -178,6 +184,7 @@ export async function GET(_request: NextRequest, { params }: { params: { eventId
             rank: 0, // Will be calculated below
             teamId: participant?.teamId,
             teamName: participant?.teamName,
+            teamLogoUrl: participant?.teamLogoUrl,
           };
         })
         .sort((a, b) => b.score - a.score); // Sort by score descending
@@ -249,6 +256,7 @@ export async function GET(_request: NextRequest, { params }: { params: { eventId
         rank: 0, // Will be calculated below
         teamId: participant.teamId,
         teamName: participant.teamName,
+        teamLogoUrl: participant.teamLogoUrl,
       };
     });
 
@@ -324,13 +332,14 @@ export async function GET(_request: NextRequest, { params }: { params: { eventId
             totalScore: teamOverallScore.totalScore,
             workoutScores: teamOverallScore.workoutScores,
             rank: 0, // Will be calculated below
+            logoUrl: team.logoUrl,
           };
         }),
       );
 
       // Filter out null results and sort
       teamOverallLeaderboard = teamOverallScores
-        .filter((score): score is TeamLeaderboardEntry => score !== null)
+        .filter((score): score is NonNullable<typeof score> => score !== null)
         .sort((a, b) => b.totalScore - a.totalScore);
 
       // Assign ranks

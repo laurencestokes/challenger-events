@@ -110,6 +110,7 @@ interface TeamLeaderboardEntry {
     };
   };
   rank: number;
+  logoUrl?: string;
 }
 
 interface TeamWorkoutLeaderboard {
