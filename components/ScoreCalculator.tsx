@@ -148,6 +148,10 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
       return 300; // Default 500m row distance: 300m
     }
 
+    if (activity.scoringSystemId === 'bike_500m') {
+      return 45; // Default 500m bike time: 45 seconds
+    }
+
     // Generic defaults based on unit
     switch (activity.unit) {
       case 'kg':
@@ -170,6 +174,11 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
     // Check for other specific activity types
     if (activity.scoringSystemId === 'rowing_500m_distance') {
       return { min: 100, max: 500 }; // 500m row distance: 100m to 500m
+    }
+
+    // Check for bike500m specific ranges
+    if (activity.scoringSystemId === 'bike_500m') {
+      return { min: 20, max: 80 }; // 500m bike: 20 seconds to 1 minute 20 seconds
     }
 
     // Generic ranges based on unit
@@ -476,6 +485,10 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
         case 'ski500mScore':
           requiredRawInput = challengerData.getSki500mTimeForScore(targetScore, sex, age);
           actualScore = challengerData.ski500mScore(requiredRawInput, sex, age).score;
+          break;
+        case 'bike500mScore':
+          requiredRawInput = challengerData.getBike500mTimeForScore(targetScore, sex, age);
+          actualScore = challengerData.bike500mScore(requiredRawInput, sex, age).score;
           break;
         default:
           throw new Error(`Unsupported calculation function: ${scoringSystem.calculationFunction}`);
