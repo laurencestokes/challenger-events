@@ -132,7 +132,6 @@ export async function calculateScore(
 
   return {
     score: result.score,
-    percentile: result.percentile,
     scoringSystem: {
       id: scoringSystem.id,
       name: scoringSystem.name,

@@ -63,7 +63,6 @@ export function calculateLiftScore(
 ): {
   score: number;
   benchmark: number;
-  percentile: number;
   p95: number;
   p50: number;
   max: number;
@@ -85,7 +84,6 @@ export function calculateLiftScore(
       return {
         score: 0,
         benchmark: 0,
-        percentile: 0,
         p95: 0,
         p50: 0,
         max: 0,
@@ -95,7 +93,6 @@ export function calculateLiftScore(
   return {
     score: result.score,
     benchmark: result.score * 0.9, // Approximate 90th percentile
-    percentile: result.percentile,
     p95: result.score * 0.95, // Approximate 95th percentile
     p50: result.score * 0.5, // Approximate 50th percentile
     max: result.score * 1.0, // Maximum score
