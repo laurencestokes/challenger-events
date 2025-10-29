@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   try {
     // TODO: Add admin authentication check here
     const body = await request.json();
-    const { competitor1, competitor2, eventId } = body;
+    const { competitor1, competitor2, eventId, eventType } = body;
 
     if (!competitor1 || !competitor2) {
       return NextResponse.json({ error: 'Both competitors are required' }, { status: 400 });
@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
       competitor1,
       competitor2,
       eventId,
+      eventType,
       createdAt: new Date().toISOString(),
       status: 'active',
     };
@@ -40,7 +41,14 @@ export async function POST(request: NextRequest) {
     }
     globalThis.ergSessions.set(sessionId, sessionData);
 
-    console.log('Session created and stored:', sessionId);
+    console.log(
+      'Session created and stored:',
+      sessionId,
+      'with eventId:',
+      eventId,
+      'eventType:',
+      eventType,
+    );
 
     return NextResponse.json({
       success: true,
@@ -82,6 +90,69 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error fetching session:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    // TODO: Add admin authentication check here
+    const body = await request.json();
+    const { sessionId, competitor1, competitor2 } = body;
+
+    if (!sessionId) {
+      return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
+    }
+
+    if (!competitor1 || !competitor2) {
+      return NextResponse.json({ error: 'Both competitors are required' }, { status: 400 });
+    }
+
+    // Get existing session
+    if (!globalThis.ergSessions) {
+      globalThis.ergSessions = new Map();
+    }
+
+    const existingSession = globalThis.ergSessions.get(sessionId);
+    if (!existingSession) {
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+    }
+
+    // Update session data
+    const updatedSession = {
+      ...existingSession,
+      competitor1,
+      competitor2,
+      updatedAt: new Date().toISOString(),
+    };
+
+    globalThis.ergSessions.set(sessionId, updatedSession);
+
+    // Emit socket event to notify Python client and viewers
+    if (globalThis.io) {
+      // Notify Python client to update competitors
+      globalThis.io.to('python-client').emit('session:competitors-updated', {
+        sessionId,
+        competitor1,
+        competitor2,
+      });
+
+      // Broadcast to all viewers
+      globalThis.io.to(`session:${sessionId}`).emit('session:competitors-updated', {
+        sessionId,
+        competitor1,
+        competitor2,
+      });
+    }
+
+    console.log('Session competitors updated:', sessionId);
+
+    return NextResponse.json({
+      success: true,
+      session: updatedSession,
+    });
+  } catch (error) {
+    console.error('Error updating session:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

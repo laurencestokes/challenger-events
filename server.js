@@ -128,11 +128,17 @@ app.prepare().then(() => {
 
     // Admin starts a head-to-head session
     socket.on('session:start', (data) => {
-      const { sessionId, competitor1, competitor2 } = data;
+      const { sessionId, competitor1, competitor2, eventId, eventType } = data;
+
+      // Get existing session data if it exists, otherwise create new
+      const existingSession = global.ergSessions.get(sessionId) || {};
 
       global.ergSessions.set(sessionId, {
+        ...existingSession, // Preserve existing data like eventId, eventType, etc.
         competitor1,
         competitor2,
+        eventId: eventId || existingSession.eventId,
+        eventType: eventType || existingSession.eventType,
         pythonSocketId: null,
         startedAt: new Date().toISOString(),
       });
@@ -146,7 +152,12 @@ app.prepare().then(() => {
         competitor2,
       });
 
-      console.log('Session started:', sessionId);
+      console.log(
+        'Session started:',
+        sessionId,
+        'with eventId:',
+        eventId || existingSession.eventId,
+      );
     });
 
     // Public viewer joins session
@@ -192,6 +203,48 @@ app.prepare().then(() => {
 
       global.ergSessions.delete(sessionId);
       console.log('Session stopped:', sessionId);
+    });
+
+    // Admin updates competitors in an existing session
+    socket.on('session:update-competitors', (data) => {
+      const { sessionId, competitor1, competitor2 } = data;
+      const session = global.ergSessions.get(sessionId);
+
+      if (!session) {
+        console.error('Session not found for competitor update:', sessionId);
+        return;
+      }
+
+      // Update session data
+      session.competitor1 = competitor1;
+      session.competitor2 = competitor2;
+      session.updatedAt = new Date().toISOString();
+      global.ergSessions.set(sessionId, session);
+
+      // Notify Python client to update competitors and restart streaming
+      if (session.pythonSocketId) {
+        io.to(session.pythonSocketId).emit('session:competitors-updated', {
+          sessionId,
+          competitor1,
+          competitor2,
+        });
+      } else {
+        // Broadcast to all Python clients if no specific socket ID
+        io.to('python-client').emit('session:competitors-updated', {
+          sessionId,
+          competitor1,
+          competitor2,
+        });
+      }
+
+      // Broadcast to all viewers
+      io.to(`session:${sessionId}`).emit('session:competitors-updated', {
+        sessionId,
+        competitor1,
+        competitor2,
+      });
+
+      console.log('Session competitors updated:', sessionId);
     });
 
     // Team session handlers

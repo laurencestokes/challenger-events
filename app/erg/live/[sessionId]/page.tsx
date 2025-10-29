@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { HeadToHeadSession, useErgSocket } from '@/hooks/useErgSocket';
+import { HeadToHeadSession, useErgSocket, Competitor } from '@/hooks/useErgSocket';
 import ErgSpeedometer from '@/components/ErgSpeedometer';
 import Image from 'next/image';
 import { animate, createScope, Scope } from 'animejs';
@@ -13,6 +13,7 @@ export default function LiveErgDisplayPage() {
   const [session, setSession] = useState<null | undefined | HeadToHeadSession>(null);
   const [loading, setLoading] = useState(true);
   const [animationInitialized, setAnimationInitialized] = useState(false);
+  const [competitorsUpdating, setCompetitorsUpdating] = useState(false);
 
   // Refs for animations
   const rootRef = useRef<HTMLDivElement>(null);
@@ -39,6 +40,10 @@ export default function LiveErgDisplayPage() {
       if (!response.ok) throw new Error('Session not found');
       const data = await response.json();
       console.log('Session data received:', data);
+      console.log('Updated competitors:', {
+        comp1: data.session?.competitor1?.name,
+        comp2: data.session?.competitor2?.name,
+      });
       setSession(data.session);
     } catch (err) {
       console.error('Error fetching session:', err);
@@ -47,9 +52,36 @@ export default function LiveErgDisplayPage() {
     }
   }, [sessionId]);
 
+  // Initial fetch
   useEffect(() => {
     fetchSession();
-  }, [sessionId, fetchSession]);
+  }, [fetchSession]);
+
+  // Handle competitor updates - refetch session when competitors are updated
+  useEffect(() => {
+    const handleCompetitorsUpdated = async (data: {
+      sessionId: string;
+      competitor1: Competitor;
+      competitor2: Competitor;
+    }) => {
+      console.log('Competitors updated, refetching session...', data);
+      setCompetitorsUpdating(true);
+      // Refetch session to get updated competitor data
+      await fetchSession();
+      // Clear the updating state after a short delay
+      setTimeout(() => setCompetitorsUpdating(false), 2000);
+    };
+
+    // Listen for competitor updates via socket
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { getSocket } = require('@/lib/socket-client');
+    const socket = getSocket();
+    socket.on('session:competitors-updated', handleCompetitorsUpdated);
+
+    return () => {
+      socket.off('session:competitors-updated', handleCompetitorsUpdated);
+    };
+  }, [fetchSession]);
 
   // Initialize animations when session data is loaded
   useEffect(() => {
@@ -286,13 +318,12 @@ export default function LiveErgDisplayPage() {
                   </div>
                   <div className="flex items-center space-x-3 text-white mt-3">
                     <span
-                      className={`px-3 py-1 text-sm font-medium rounded-full ${
-                        isConnected
-                          ? 'bg-green-500/20 text-green-400'
-                          : isReconnecting
-                            ? 'bg-yellow-500/20 text-yellow-400 animate-pulse'
-                            : 'bg-red-500/20 text-red-400'
-                      }`}
+                      className={`px-3 py-1 text-sm font-medium rounded-full ${isConnected
+                        ? 'bg-green-500/20 text-green-400'
+                        : isReconnecting
+                          ? 'bg-yellow-500/20 text-yellow-400 animate-pulse'
+                          : 'bg-red-500/20 text-red-400'
+                        }`}
                     >
                       {isConnected
                         ? '🟢 LIVE'
@@ -303,9 +334,17 @@ export default function LiveErgDisplayPage() {
                     <span className="text-sm text-white/80">
                       Type: <span className="font-medium">Individual</span>
                     </span>
-                    {!competitor1Data && !competitor2Data && isConnected && (
+                    {!competitor1Data &&
+                      !competitor2Data &&
+                      isConnected &&
+                      !competitorsUpdating && (
+                        <span className="text-yellow-400 animate-pulse text-sm">
+                          Waiting for competitors to start...
+                        </span>
+                      )}
+                    {competitorsUpdating && (
                       <span className="text-yellow-400 animate-pulse text-sm">
-                        Waiting for competitors to start...
+                        Updating competitors...
                       </span>
                     )}
                   </div>
@@ -322,6 +361,7 @@ export default function LiveErgDisplayPage() {
         {competitor1Data && competitor2Data && (
           <div className="text-center pb-8">
             <div
+              key={`leader-${session.competitor1.id}-${session.competitor2.id}`}
               ref={leaderRef}
               className="leader-indicator inline-block bg-orange-500/20 text-orange-500 px-8 py-4 rounded-full text-3xl font-bold border-2 border-orange-500/40 shadow-lg"
               style={{ fontFamily: 'var(--font-montserrat)' }}
@@ -341,7 +381,7 @@ export default function LiveErgDisplayPage() {
               {/* Competitor 1 Speedometer */}
               <div ref={speedometer1Ref} className="speedometer-1">
                 <ErgSpeedometer
-                  key={`comp1-${competitor1Data?.calculatedScore || 0}`}
+                  key={`comp1-${session.competitor1.id}-${competitor1Data?.calculatedScore || 0}`}
                   name={session.competitor1.name}
                   age={session.competitor1.age}
                   sex={session.competitor1.sex}
@@ -362,7 +402,7 @@ export default function LiveErgDisplayPage() {
               {/* Competitor 2 Speedometer */}
               <div ref={speedometer2Ref} className="speedometer-2">
                 <ErgSpeedometer
-                  key={`comp2-${competitor2Data?.calculatedScore || 0}`}
+                  key={`comp2-${session.competitor2.id}-${competitor2Data?.calculatedScore || 0}`}
                   name={session.competitor2.name}
                   age={session.competitor2.age}
                   sex={session.competitor2.sex}

@@ -78,6 +78,7 @@ interface UseErgSocketReturn {
   reconnectAttempt: number;
   startSession: (session: HeadToHeadSession) => void;
   stopSession: () => void;
+  updateCompetitors: (competitor1: Competitor, competitor2: Competitor) => void;
   competitor1Data: ErgUpdate | null;
   competitor2Data: ErgUpdate | null;
   sessionStatus: 'idle' | 'starting' | 'active' | 'ended';
@@ -177,6 +178,14 @@ export function useErgSocket(sessionId: string | null): UseErgSocketReturn {
       setSessionStatus('active');
     };
 
+    const handleCompetitorsUpdated = (data: any) => {
+      console.log('Competitors updated:', data);
+      // Clear current competitor data when competitors are updated
+      setCompetitor1Data(null);
+      setCompetitor2Data(null);
+      setSessionStatus('active');
+    };
+
     // Attach event listeners
     socket.on('connect', handleConnect);
     socket.on('disconnect', handleDisconnect);
@@ -188,6 +197,7 @@ export function useErgSocket(sessionId: string | null): UseErgSocketReturn {
     socket.on('session:ended', handleSessionEnded);
     socket.on('session:python-disconnected', handlePythonDisconnected);
     socket.on('session:data', handleSessionData);
+    socket.on('session:competitors-updated', handleCompetitorsUpdated);
 
     // Connect socket
     connectSocket();
@@ -204,6 +214,7 @@ export function useErgSocket(sessionId: string | null): UseErgSocketReturn {
       socket.off('session:ended', handleSessionEnded);
       socket.off('session:python-disconnected', handlePythonDisconnected);
       socket.off('session:data', handleSessionData);
+      socket.off('session:competitors-updated', handleCompetitorsUpdated);
     };
   }, [sessionId]);
 
@@ -215,6 +226,8 @@ export function useErgSocket(sessionId: string | null): UseErgSocketReturn {
       sessionId: session.id,
       competitor1: session.competitor1,
       competitor2: session.competitor2,
+      eventId: session.eventId,
+      eventType: session.eventType,
     });
 
     setSessionStatus('active');
@@ -230,12 +243,39 @@ export function useErgSocket(sessionId: string | null): UseErgSocketReturn {
     }
   }, [sessionId]);
 
+  const updateCompetitors = useCallback(
+    (competitor1: Competitor, competitor2: Competitor) => {
+      const socket = socketRef.current;
+      console.log('useErgSocket: updateCompetitors called with:', {
+        competitor1,
+        competitor2,
+        sessionId,
+      });
+      if (sessionId) {
+        console.log('useErgSocket: Emitting session:update-competitors event');
+        socket.emit('session:update-competitors', {
+          sessionId,
+          competitor1,
+          competitor2,
+        });
+        // Clear current data when updating competitors
+        setCompetitor1Data(null);
+        setCompetitor2Data(null);
+        console.log('useErgSocket: Cleared competitor data');
+      } else {
+        console.log('useErgSocket: No sessionId, not emitting event');
+      }
+    },
+    [sessionId],
+  );
+
   return {
     isConnected,
     isReconnecting,
     reconnectAttempt,
     startSession,
     stopSession,
+    updateCompetitors,
     competitor1Data,
     competitor2Data,
     sessionStatus,

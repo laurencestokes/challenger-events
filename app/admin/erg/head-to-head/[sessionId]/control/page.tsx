@@ -26,11 +26,38 @@ export default function SessionControlPage() {
     reconnectAttempt,
     startSession,
     stopSession,
+    updateCompetitors,
     competitor1Data,
     competitor2Data,
     sessionStatus,
     error: socketError,
   } = useErgSocket(sessionId);
+
+  // State for updating competitors
+  const [users, setUsers] = useState<
+    Array<{
+      id: string;
+      name: string;
+      email: string;
+      bodyweight?: number;
+      dateOfBirth?: Date | string | { seconds: number };
+      sex?: string;
+      status?: string;
+      role?: string;
+    }>
+  >([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [newCompetitor1Id, setNewCompetitor1Id] = useState('');
+  const [newCompetitor2Id, setNewCompetitor2Id] = useState('');
+  const [updatingCompetitors, setUpdatingCompetitors] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState('');
+  const [events, setEvents] = useState<
+    Array<{
+      id: string;
+      name: string;
+      status: string;
+    }>
+  >([]);
 
   const {
     isRunning: isMockRunning,
@@ -49,6 +76,8 @@ export default function SessionControlPage() {
       const response = await fetch(`/api/erg/sessions?sessionId=${sessionId}`);
       if (!response.ok) throw new Error('Session not found');
       const data = await response.json();
+      console.log('Fetched session data:', data.session);
+      console.log('Session eventId:', data.session?.eventId);
       setSession(data.session);
 
       // Start the session (notify Python client) only once
@@ -73,6 +102,197 @@ export default function SessionControlPage() {
   useEffect(() => {
     fetchSession();
   }, [sessionId, fetchSession]);
+
+  // Fetch events list
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (!user) return;
+
+      try {
+        const response = await fetch('/api/events', {
+          headers: {
+            Authorization: `Bearer ${user.uid || user.id}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setEvents(data || []);
+          // If session has an eventId, set it as selected
+          if (session?.eventId) {
+            setSelectedEventId(session.eventId);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching events:', err);
+      }
+    };
+
+    fetchEvents();
+  }, [user, session?.eventId]);
+
+  // Fetch participants - either from selected event or all users
+  useEffect(() => {
+    const fetchParticipants = async () => {
+      if (!user) return;
+
+      setLoadingUsers(true);
+      try {
+        let response;
+
+        if (selectedEventId) {
+          // Fetch participants from selected event
+          response = await fetch(`/api/events/${selectedEventId}/participants`, {
+            headers: {
+              Authorization: `Bearer ${user.uid || user.id}`,
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            setUsers(data.participants || []);
+          }
+        } else {
+          // Fetch all users (admin only)
+          response = await fetch('/api/admin/users', {
+            headers: {
+              Authorization: `Bearer ${user.uid || user.id}`,
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            // Filter to only active competitors
+            const activeCompetitors = (data.users || []).filter(
+              (u: { status?: string; role?: string }) =>
+                u.status === 'ACTIVE' && (u.role === 'COMPETITOR' || u.role === 'ADMIN'),
+            );
+            setUsers(activeCompetitors);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching participants:', err);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    fetchParticipants();
+  }, [selectedEventId, user]);
+
+  const calculateAge = (dateOfBirth: Date | string | { seconds: number }): number => {
+    let dob: Date;
+
+    // Handle Firestore Timestamp format
+    if (dateOfBirth && typeof dateOfBirth === 'object' && 'seconds' in dateOfBirth) {
+      dob = new Date(dateOfBirth.seconds * 1000);
+    } else if (dateOfBirth) {
+      dob = new Date(dateOfBirth);
+    } else {
+      return 0;
+    }
+
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const handleUpdateCompetitors = async () => {
+    if (!newCompetitor1Id || !newCompetitor2Id) {
+      setError('Please select both competitors');
+      return;
+    }
+
+    if (newCompetitor1Id === newCompetitor2Id) {
+      setError('Please select different competitors');
+      return;
+    }
+
+    setUpdatingCompetitors(true);
+    setError('');
+
+    try {
+      const comp1 = users.find((u) => u.id === newCompetitor1Id);
+      const comp2 = users.find((u) => u.id === newCompetitor2Id);
+
+      if (!comp1 || !comp2) {
+        throw new Error('Competitors not found');
+      }
+
+      // Validate required data
+      if (!comp1.bodyweight || !comp1.dateOfBirth || !comp1.sex) {
+        throw new Error(`${comp1.name} is missing required profile data (weight, age, sex)`);
+      }
+      if (!comp2.bodyweight || !comp2.dateOfBirth || !comp2.sex) {
+        throw new Error(`${comp2.name} is missing required profile data (weight, age, sex)`);
+      }
+
+      const competitor1 = {
+        id: comp1.id,
+        name: comp1.name,
+        age: calculateAge(comp1.dateOfBirth),
+        sex: (comp1.sex === 'M' ? 'male' : 'female') as 'male' | 'female',
+        weight: comp1.bodyweight,
+      };
+
+      const competitor2 = {
+        id: comp2.id,
+        name: comp2.name,
+        age: calculateAge(comp2.dateOfBirth),
+        sex: (comp2.sex === 'M' ? 'male' : 'female') as 'male' | 'female',
+        weight: comp2.bodyweight,
+      };
+
+      // Update via API
+      const response = await fetch('/api/erg/sessions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          competitor1,
+          competitor2,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update competitors');
+      }
+
+      // Update via socket
+      console.log('Calling updateCompetitors with:', { competitor1, competitor2 });
+      updateCompetitors(competitor1, competitor2);
+
+      // Update local session state
+      if (session) {
+        const updatedSession = {
+          ...session,
+          competitor1,
+          competitor2,
+        };
+        console.log('Updated session with new competitors:', updatedSession);
+        setSession(updatedSession);
+      }
+
+      // Reset selections
+      setNewCompetitor1Id('');
+      setNewCompetitor2Id('');
+
+      // Stop mock data if running (it will restart automatically with new competitors)
+      if (isMockRunning) {
+        console.log('Stopping mock data due to competitor update - it will restart automatically');
+      }
+    } catch (err) {
+      console.error('Error updating competitors:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update competitors');
+    } finally {
+      setUpdatingCompetitors(false);
+    }
+  };
 
   const handleStopSession = () => {
     if (confirm('Are you sure you want to stop this session?')) {
@@ -282,6 +502,129 @@ export default function SessionControlPage() {
             </div>
           </div>
 
+          {/* Update Competitors Section */}
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
+            <h3 className="text-lg font-semibold text-white mb-4">Update Competitors</h3>
+            <p className="text-sm text-gray-400 mb-4">
+              Replace the current competitors with new ones. This will stop the current erg session
+              and restart with the new competitors.
+            </p>
+
+            {/* Event Selection (Optional) */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Filter by Event (Optional)
+              </label>
+              <select
+                value={selectedEventId}
+                onChange={(e) => setSelectedEventId(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              >
+                <option value="">All Users</option>
+                {events.map((event) => (
+                  <option key={event.id} value={event.id}>
+                    {event.name} ({event.status})
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                {selectedEventId
+                  ? 'Showing participants from selected event'
+                  : 'Showing all active users'}
+              </p>
+            </div>
+
+            {loadingUsers ? (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto border-primary-500"></div>
+                <p className="text-gray-400 mt-2">
+                  {selectedEventId ? 'Loading participants...' : 'Loading users...'}
+                </p>
+              </div>
+            ) : users.length === 0 ? (
+              <p className="text-gray-400 text-sm text-center py-4">
+                {selectedEventId
+                  ? 'No participants found for this event.'
+                  : 'No active users found.'}
+              </p>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      New Competitor 1
+                    </label>
+                    <select
+                      value={newCompetitor1Id}
+                      onChange={(e) => setNewCompetitor1Id(e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    >
+                      <option value="">Select Competitor 1</option>
+                      {users.map((user) => {
+                        const age = user.dateOfBirth ? calculateAge(user.dateOfBirth) : null;
+                        const hasCompleteData = user.bodyweight && user.dateOfBirth && user.sex;
+
+                        return (
+                          <option key={user.id} value={user.id}>
+                            {user.name} ({user.email})
+                            {hasCompleteData
+                              ? ` - ${age}y, ${user.sex}, ${user.bodyweight}kg`
+                              : ' - Missing profile data'}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      New Competitor 2
+                    </label>
+                    <select
+                      value={newCompetitor2Id}
+                      onChange={(e) => setNewCompetitor2Id(e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    >
+                      <option value="">Select Competitor 2</option>
+                      {users.map((user) => {
+                        const age = user.dateOfBirth ? calculateAge(user.dateOfBirth) : null;
+                        const hasCompleteData = user.bodyweight && user.dateOfBirth && user.sex;
+
+                        return (
+                          <option key={user.id} value={user.id}>
+                            {user.name} ({user.email})
+                            {hasCompleteData
+                              ? ` - ${age}y, ${user.sex}, ${user.bodyweight}kg`
+                              : ' - Missing profile data'}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="bg-red-900/30 border border-red-700/50 rounded-lg p-3">
+                    <p className="text-red-400">{error}</p>
+                  </div>
+                )}
+
+                <Button
+                  onClick={handleUpdateCompetitors}
+                  disabled={
+                    updatingCompetitors ||
+                    !newCompetitor1Id ||
+                    !newCompetitor2Id ||
+                    newCompetitor1Id === newCompetitor2Id
+                  }
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {updatingCompetitors ? 'Updating Competitors...' : 'Update Competitors'}
+                </Button>
+              </div>
+            )}
+          </div>
+
           {/* Public Display URL */}
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
             <h3 className="text-lg font-semibold text-white mb-4">Public Display</h3>
@@ -342,6 +685,11 @@ export default function SessionControlPage() {
                 {isMockRunning && (
                   <span className="text-sm text-blue-400 animate-pulse">
                     Demo data streaming...
+                  </span>
+                )}
+                {updatingCompetitors && isMockRunning && (
+                  <span className="text-sm text-yellow-400 animate-pulse">
+                    Restarting demo with new competitors...
                   </span>
                 )}
               </div>
