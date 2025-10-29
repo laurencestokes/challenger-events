@@ -95,7 +95,7 @@ export default function TeamErgLiveDisplayPage() {
   const teamAScore = teamScores.find((score) => score.teamId === session.teamA.id)?.totalScore || 0;
   const teamBScore = teamScores.find((score) => score.teamId === session.teamB.id)?.totalScore || 0;
   const activeParticipants = participantUpdates.filter(
-    (update) => update.metrics.distance > 0 || update.metrics.pace > 0,
+    (update) => update.metrics.distance_m > 0 || update.metrics.average_pace_s > 0,
   );
 
   return (
@@ -226,9 +226,9 @@ export default function TeamErgLiveDisplayPage() {
                     sex="male" // We don't have sex in the update
                     weight={0} // We don't have weight in the update
                     score={participant.calculatedScore}
-                    pace={participant.metrics.pace}
-                    power={participant.metrics.power}
-                    distance={participant.metrics.distance}
+                    pace={participant.metrics.average_pace_s}
+                    power={participant.metrics.average_power_W}
+                    distance={participant.metrics.distance_m}
                     heartRate={participant.metrics.heartRate}
                     strokeRate={participant.metrics.strokeRate}
                     calories={participant.metrics.calories}

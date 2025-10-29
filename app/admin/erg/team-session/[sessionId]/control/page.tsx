@@ -383,7 +383,7 @@ export default function TeamErgControlPage() {
   console.log('Team scores array:', teamScores);
   console.log('Team A score:', teamAScore, 'Team B score:', teamBScore);
   const activeParticipants = participantUpdates.filter(
-    (update) => update.metrics.distance > 0 || update.metrics.pace > 0,
+    (update) => update.metrics.distance_m > 0 || update.metrics.average_pace_s > 0,
   );
 
   return (
@@ -502,7 +502,7 @@ export default function TeamErgControlPage() {
                       <div>
                         <p className="font-medium text-white">{update.participantName}</p>
                         <p className="text-sm text-gray-400">
-                          {update.metrics.distance}m @ {update.metrics.pace}s/500m
+                          {update.metrics.distance_m}m @ {update.metrics.average_pace_s}s/500m
                         </p>
                       </div>
                       <div className="text-right">
@@ -538,7 +538,7 @@ export default function TeamErgControlPage() {
                       <div>
                         <p className="font-medium text-white">{update.participantName}</p>
                         <p className="text-sm text-gray-400">
-                          {update.metrics.distance}m @ {update.metrics.pace}s/500m
+                          {update.metrics.distance_m}m @ {update.metrics.average_pace_s}s/500m
                         </p>
                       </div>
                       <div className="text-right">
@@ -786,8 +786,8 @@ export default function TeamErgControlPage() {
                       </div>
                       <div className="text-sm text-gray-400">Score</div>
                       <div className="flex justify-between text-xs text-gray-400 mt-2">
-                        <span>Distance: {participant.metrics.distance}m</span>
-                        <span>Pace: {participant.metrics.pace}s/500m</span>
+                        <span>Distance: {participant.metrics.distance_m}m</span>
+                        <span>Pace: {participant.metrics.average_pace_s}s/500m</span>
                       </div>
                     </div>
                   );

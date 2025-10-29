@@ -2,12 +2,13 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { getSocket, connectSocket, disconnectSocket } from '@/lib/socket-client';
 
 export interface ErgMetrics {
-  pace: number; // seconds per 500m
-  distance: number; // meters
-  heartRate?: number; // bpm
-  strokeRate?: number; // strokes per minute
-  power?: number; // watts
-  calories?: number;
+  average_power_W: number; // watts
+  average_pace_s: number; // seconds per 500m
+  duration_s: number; // duration in seconds
+  distance_m: number; // distance in meters
+  heartRate?: number; // bpm (optional, not in current data)
+  strokeRate?: number; // strokes per minute (optional, not in current data)
+  calories?: number; // calories (optional, not in current data)
 }
 
 export interface ErgUpdate {

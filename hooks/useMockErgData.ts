@@ -68,9 +68,10 @@ export function useMockErgData(config: MockErgConfig | null) {
         const power = Math.floor(basePower + powerVariation);
 
         return {
-          pace: Math.max(80, Math.min(140, pace)), // Keep pace realistic
-          distance: Math.floor(elapsed * 4.2 + competitorIndex * 0.1), // Slight variation
-          power: Math.max(100, Math.min(400, power)), // Keep power realistic
+          average_pace_s: Math.max(80, Math.min(140, pace)), // Keep pace realistic
+          distance_m: Math.floor(elapsed * 4.2 + competitorIndex * 0.1), // Slight variation
+          average_power_W: Math.max(100, Math.min(400, power)), // Keep power realistic
+          duration_s: elapsed,
           heartRate: Math.floor(140 + profile.baseLevel / 20 + Math.sin(elapsed / 4) * 15),
           strokeRate: Math.floor(24 + profile.baseLevel / 50 + Math.sin(elapsed / 5) * 4),
           calories: Math.floor(elapsed * 1.8 + competitorIndex * 0.1),
@@ -90,6 +91,7 @@ export function useMockErgData(config: MockErgConfig | null) {
         competitorIndex: 0,
         metrics: comp1Metrics,
         calculatedScore: comp1Score,
+        timestamp: new Date().toISOString(),
       });
 
       // Competitor 2
@@ -105,10 +107,11 @@ export function useMockErgData(config: MockErgConfig | null) {
         competitorIndex: 1,
         metrics: comp2Metrics,
         calculatedScore: comp2Score,
+        timestamp: new Date().toISOString(),
       });
 
       // Auto-stop after 2000m (about 7-8 minutes)
-      if (comp1Metrics.distance >= 2000 || comp2Metrics.distance >= 2000) {
+      if (comp1Metrics.distance_m >= 2000 || comp2Metrics.distance_m >= 2000) {
         stopMockData();
       }
     }, 1000); // Send update every second

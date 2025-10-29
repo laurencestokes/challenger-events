@@ -253,7 +253,8 @@ export default function SessionControlPage() {
                         Score: {competitor1Data.calculatedScore.toFixed(1)}
                       </p>
                       <p className="text-sm text-gray-400">
-                        {competitor1Data.metrics.distance}m @ {competitor1Data.metrics.pace}s/500m
+                        {competitor1Data.metrics.distance_m}m @{' '}
+                        {competitor1Data.metrics.average_pace_s}s/500m
                       </p>
                     </div>
                   )}
@@ -271,7 +272,8 @@ export default function SessionControlPage() {
                         Score: {competitor2Data.calculatedScore.toFixed(1)}
                       </p>
                       <p className="text-sm text-gray-400">
-                        {competitor2Data.metrics.distance}m @ {competitor2Data.metrics.pace}s/500m
+                        {competitor2Data.metrics.distance_m}m @{' '}
+                        {competitor2Data.metrics.average_pace_s}s/500m
                       </p>
                     </div>
                   )}

@@ -177,7 +177,7 @@ export default function LiveErgDisplayPage() {
                     {competitor1Data?.calculatedScore.toFixed(1) || '0'}
                   </p>
                   <p className="text-sm text-gray-400 mt-2">
-                    {competitor1Data?.metrics.distance || 0}m
+                    {competitor1Data?.metrics.distance_m || 0}m
                   </p>
                 </div>
                 <div className="bg-orange-500/20 rounded-xl p-6">
@@ -194,7 +194,7 @@ export default function LiveErgDisplayPage() {
                     {competitor2Data?.calculatedScore.toFixed(1) || '0'}
                   </p>
                   <p className="text-sm text-gray-400 mt-2">
-                    {competitor2Data?.metrics.distance || 0}m
+                    {competitor2Data?.metrics.distance_m || 0}m
                   </p>
                 </div>
               </div>
@@ -347,9 +347,10 @@ export default function LiveErgDisplayPage() {
                   sex={session.competitor1.sex}
                   weight={session.competitor1.weight}
                   score={competitor1Data?.calculatedScore || 0}
-                  pace={competitor1Data?.metrics.pace}
-                  power={competitor1Data?.metrics.power}
-                  distance={competitor1Data?.metrics.distance}
+                  pace={competitor1Data?.metrics.average_pace_s}
+                  power={competitor1Data?.metrics.average_power_W}
+                  distance={competitor1Data?.metrics.distance_m}
+                  duration={competitor1Data?.metrics.duration_s}
                   heartRate={competitor1Data?.metrics.heartRate}
                   strokeRate={competitor1Data?.metrics.strokeRate}
                   calories={competitor1Data?.metrics.calories}
@@ -367,9 +368,10 @@ export default function LiveErgDisplayPage() {
                   sex={session.competitor2.sex}
                   weight={session.competitor2.weight}
                   score={competitor2Data?.calculatedScore || 0}
-                  pace={competitor2Data?.metrics.pace}
-                  power={competitor2Data?.metrics.power}
-                  distance={competitor2Data?.metrics.distance}
+                  pace={competitor2Data?.metrics.average_pace_s}
+                  power={competitor2Data?.metrics.average_power_W}
+                  distance={competitor2Data?.metrics.distance_m}
+                  duration={competitor2Data?.metrics.duration_s}
                   heartRate={competitor2Data?.metrics.heartRate}
                   strokeRate={competitor2Data?.metrics.strokeRate}
                   calories={competitor2Data?.metrics.calories}

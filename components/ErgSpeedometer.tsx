@@ -125,11 +125,12 @@ function getScoreTextShadow(score: number): string {
 
 interface ErgSpeedometerProps {
   score: number;
-  pace?: number;
-  power?: number;
-  distance?: number;
-  heartRate?: number;
-  strokeRate?: number;
+  pace?: number; // seconds per 500m
+  power?: number; // watts
+  distance?: number; // meters
+  duration?: number; // seconds
+  heartRate?: number; // bpm
+  strokeRate?: number; // strokes per minute
   calories?: number;
   name: string;
   age: number;
