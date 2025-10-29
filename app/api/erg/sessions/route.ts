@@ -15,10 +15,14 @@ export async function POST(request: NextRequest) {
   try {
     // TODO: Add admin authentication check here
     const body = await request.json();
-    const { competitor1, competitor2, eventId, eventType } = body;
+    const { competitors, eventId, eventType } = body;
 
-    if (!competitor1 || !competitor2) {
-      return NextResponse.json({ error: 'Both competitors are required' }, { status: 400 });
+    if (!competitors || !Array.isArray(competitors)) {
+      return NextResponse.json({ error: 'Competitors must be an array' }, { status: 400 });
+    }
+
+    if (competitors.length > 6) {
+      return NextResponse.json({ error: 'Maximum 6 competitors allowed' }, { status: 400 });
     }
 
     // Generate unique session ID
@@ -27,8 +31,7 @@ export async function POST(request: NextRequest) {
     // Store session data (in production, save to database)
     const sessionData = {
       id: sessionId,
-      competitor1,
-      competitor2,
+      competitors,
       eventId,
       eventType,
       createdAt: new Date().toISOString(),
@@ -48,6 +51,8 @@ export async function POST(request: NextRequest) {
       eventId,
       'eventType:',
       eventType,
+      'competitors:',
+      competitors,
     );
 
     return NextResponse.json({
@@ -98,14 +103,18 @@ export async function PATCH(request: NextRequest) {
   try {
     // TODO: Add admin authentication check here
     const body = await request.json();
-    const { sessionId, competitor1, competitor2 } = body;
+    const { sessionId, competitors } = body;
 
     if (!sessionId) {
       return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
     }
 
-    if (!competitor1 || !competitor2) {
-      return NextResponse.json({ error: 'Both competitors are required' }, { status: 400 });
+    if (!competitors || !Array.isArray(competitors)) {
+      return NextResponse.json({ error: 'Competitors must be an array' }, { status: 400 });
+    }
+
+    if (competitors.length > 6) {
+      return NextResponse.json({ error: 'Maximum 6 competitors allowed' }, { status: 400 });
     }
 
     // Get existing session
@@ -121,8 +130,7 @@ export async function PATCH(request: NextRequest) {
     // Update session data
     const updatedSession = {
       ...existingSession,
-      competitor1,
-      competitor2,
+      competitors,
       updatedAt: new Date().toISOString(),
     };
 
@@ -133,15 +141,13 @@ export async function PATCH(request: NextRequest) {
       // Notify Python client to update competitors
       globalThis.io.to('python-client').emit('session:competitors-updated', {
         sessionId,
-        competitor1,
-        competitor2,
+        competitors,
       });
 
       // Broadcast to all viewers
       globalThis.io.to(`session:${sessionId}`).emit('session:competitors-updated', {
         sessionId,
-        competitor1,
-        competitor2,
+        competitors,
       });
     }
 

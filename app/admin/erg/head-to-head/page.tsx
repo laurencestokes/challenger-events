@@ -10,15 +10,6 @@ import Button from '@/components/ui/Button';
 import { HeadToHeadSession } from '@/hooks/useErgSocket';
 import { EVENT_TYPES } from '@/constants/eventTypes';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  bodyweight?: number;
-  dateOfBirth?: Date | string;
-  sex?: 'M' | 'F';
-}
-
 interface Event {
   id: string;
   name: string;
@@ -33,13 +24,10 @@ export default function HeadToHeadSetupPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState('');
   const [selectedEventType, setSelectedEventType] = useState('');
-  const [competitor1Id, setCompetitor1Id] = useState('');
-  const [competitor2Id, setCompetitor2Id] = useState('');
   const [error, setError] = useState('');
 
   const fetchEvents = useCallback(async () => {
@@ -71,32 +59,6 @@ export default function HeadToHeadSetupPage() {
     }
   }, [user]);
 
-  const fetchUsers = useCallback(async () => {
-    try {
-      if (!user || !selectedEventId) {
-        console.log('No user or event selected, skipping fetch');
-        return;
-      }
-
-      const response = await fetch(`/api/events/${selectedEventId}/participants`, {
-        headers: {
-          Authorization: `Bearer ${user.uid || user.id}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch participants');
-      }
-
-      const data = await response.json();
-      setUsers(data.participants || []);
-    } catch (err) {
-      console.error('Error fetching participants:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load participants');
-    }
-  }, [user, selectedEventId]);
-
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'ADMIN')) {
       router.push('/');
@@ -109,39 +71,6 @@ export default function HeadToHeadSetupPage() {
     }
   }, [user, authLoading, fetchEvents]);
 
-  useEffect(() => {
-    if (selectedEventId) {
-      fetchUsers();
-    } else {
-      setUsers([]);
-      setCompetitor1Id('');
-      setCompetitor2Id('');
-    }
-  }, [selectedEventId, fetchUsers]);
-
-  const calculateAge = (dateOfBirth: Date | string | { seconds: number }): number => {
-    let dob: Date;
-
-    // Handle Firestore Timestamp format
-    if (dateOfBirth && typeof dateOfBirth === 'object' && 'seconds' in dateOfBirth) {
-      // Firestore Timestamp: convert seconds to milliseconds
-      dob = new Date(dateOfBirth.seconds * 1000);
-    } else if (dateOfBirth) {
-      // Regular date string or Date object
-      dob = new Date(dateOfBirth);
-    } else {
-      return 0;
-    }
-
-    const today = new Date();
-    let age = today.getFullYear() - dob.getFullYear();
-    const monthDiff = today.getMonth() - dob.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-      age--;
-    }
-    return age;
-  };
-
   const createSession = async () => {
     if (!selectedEventId) {
       setError('Please select an event');
@@ -153,50 +82,12 @@ export default function HeadToHeadSetupPage() {
       return;
     }
 
-    if (!competitor1Id || !competitor2Id) {
-      setError('Please select both competitors');
-      return;
-    }
-
-    if (competitor1Id === competitor2Id) {
-      setError('Please select different competitors');
-      return;
-    }
-
     setCreating(true);
     setError('');
 
     try {
-      const comp1 = users.find((u) => u.id === competitor1Id);
-      const comp2 = users.find((u) => u.id === competitor2Id);
-
-      if (!comp1 || !comp2) {
-        throw new Error('Competitors not found');
-      }
-
-      // Validate required data
-      if (!comp1.bodyweight || !comp1.dateOfBirth || !comp1.sex) {
-        throw new Error(`${comp1.name} is missing required profile data (weight, age, sex)`);
-      }
-      if (!comp2.bodyweight || !comp2.dateOfBirth || !comp2.sex) {
-        throw new Error(`${comp2.name} is missing required profile data (weight, age, sex)`);
-      }
-
       const sessionData: Omit<HeadToHeadSession, 'id'> = {
-        competitor1: {
-          id: comp1.id,
-          name: comp1.name,
-          age: calculateAge(comp1.dateOfBirth),
-          sex: comp1.sex === 'M' ? 'male' : 'female',
-          weight: comp1.bodyweight,
-        },
-        competitor2: {
-          id: comp2.id,
-          name: comp2.name,
-          age: calculateAge(comp2.dateOfBirth),
-          sex: comp2.sex === 'M' ? 'male' : 'female',
-          weight: comp2.bodyweight,
-        },
+        competitors: [], // Empty competitors array - will be managed in control panel
         eventId: selectedEventId,
         eventType: selectedEventType,
       };
@@ -308,54 +199,21 @@ export default function HeadToHeadSetupPage() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Competitor 1</label>
-                <select
-                  value={competitor1Id}
-                  onChange={(e) => setCompetitor1Id(e.target.value)}
-                  disabled={!selectedEventId}
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <option value="">Select Competitor 1</option>
-                  {users.map((user) => {
-                    const age = user.dateOfBirth ? calculateAge(user.dateOfBirth) : null;
-                    const hasCompleteData = user.bodyweight && user.dateOfBirth && user.sex;
-
-                    return (
-                      <option key={user.id} value={user.id}>
-                        {user.name} ({user.email})
-                        {hasCompleteData
-                          ? ` - ${age}y, ${user.sex}, ${user.bodyweight}kg`
-                          : ' - Missing profile data'}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Competitor 2</label>
-                <select
-                  value={competitor2Id}
-                  onChange={(e) => setCompetitor2Id(e.target.value)}
-                  disabled={!selectedEventId}
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <option value="">Select Competitor 2</option>
-                  {users.map((user) => {
-                    const age = user.dateOfBirth ? calculateAge(user.dateOfBirth) : null;
-                    const hasCompleteData = user.bodyweight && user.dateOfBirth && user.sex;
-
-                    return (
-                      <option key={user.id} value={user.id}>
-                        {user.name} ({user.email})
-                        {hasCompleteData
-                          ? ` - ${age}y, ${user.sex}, ${user.bodyweight}kg`
-                          : ' - Missing profile data'}
-                      </option>
-                    );
-                  })}
-                </select>
+              <div className="col-span-2">
+                <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="text-blue-400 text-xl">ℹ️</div>
+                    <div>
+                      <h3 className="text-blue-400 font-medium">
+                        Competitors will be managed in the control panel
+                      </h3>
+                      <p className="text-gray-300 text-sm mt-1">
+                        After creating the session, you'll be able to add and manage competitors
+                        from the control panel.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {error && (
@@ -367,13 +225,7 @@ export default function HeadToHeadSetupPage() {
               <div className="flex gap-4">
                 <Button
                   onClick={createSession}
-                  disabled={
-                    creating ||
-                    !selectedEventId ||
-                    !selectedEventType ||
-                    !competitor1Id ||
-                    !competitor2Id
-                  }
+                  disabled={creating || !selectedEventId || !selectedEventType}
                   className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   {creating ? 'Creating Session...' : 'Create Session & Start'}

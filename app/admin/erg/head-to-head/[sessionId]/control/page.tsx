@@ -27,8 +27,7 @@ export default function SessionControlPage() {
     startSession,
     stopSession,
     updateCompetitors,
-    competitor1Data,
-    competitor2Data,
+    competitorData,
     sessionStatus,
     error: socketError,
   } = useErgSocket(sessionId);
@@ -47,8 +46,7 @@ export default function SessionControlPage() {
     }>
   >([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [newCompetitor1Id, setNewCompetitor1Id] = useState('');
-  const [newCompetitor2Id, setNewCompetitor2Id] = useState('');
+  const [newCompetitors, setNewCompetitors] = useState<Array<{ id: string; name: string }>>([]);
   const [updatingCompetitors, setUpdatingCompetitors] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState('');
   const [events, setEvents] = useState<
@@ -65,11 +63,19 @@ export default function SessionControlPage() {
     stopMockData,
   } = useMockErgData(
     session
-      ? { sessionId, competitor1: session.competitor1, competitor2: session.competitor2 }
+      ? {
+          sessionId,
+          competitors:
+            session.competitors ||
+            (session.competitor1 && session.competitor2
+              ? [session.competitor1, session.competitor2]
+              : []),
+        }
       : null,
   );
 
   const sessionStartedRef = useRef(false);
+  const [_sessionManuallyStopped, setSessionManuallyStopped] = useState(false);
 
   const fetchSession = useCallback(async () => {
     try {
@@ -78,11 +84,16 @@ export default function SessionControlPage() {
       const data = await response.json();
       console.log('Fetched session data:', data.session);
       console.log('Session eventId:', data.session?.eventId);
+      console.log('Session competitors:', data.session?.competitors);
+      console.log('Session competitor1:', data.session?.competitor1);
+      console.log('Session competitor2:', data.session?.competitor2);
       setSession(data.session);
 
       // Start the session (notify Python client) only once
       if (data.session && !sessionStartedRef.current) {
         sessionStartedRef.current = true;
+        console.log('About to start session with data:', data.session);
+        console.log('Session competitors before start:', data.session.competitors);
         startSession(data.session);
       }
     } catch (err) {
@@ -102,6 +113,24 @@ export default function SessionControlPage() {
   useEffect(() => {
     fetchSession();
   }, [sessionId, fetchSession]);
+
+  // Auto-stop mock data when session ends
+  useEffect(() => {
+    if (sessionStatus === 'ended' && isMockRunning) {
+      console.log('Session ended, stopping mock data');
+      stopMockData();
+    }
+  }, [sessionStatus, isMockRunning, stopMockData]);
+
+  // Cleanup mock data when component unmounts
+  useEffect(() => {
+    return () => {
+      if (isMockRunning) {
+        console.log('Component unmounting, stopping mock data');
+        stopMockData();
+      }
+    };
+  }, [isMockRunning, stopMockData]);
 
   // Fetch events list
   useEffect(() => {
@@ -202,12 +231,19 @@ export default function SessionControlPage() {
   };
 
   const handleUpdateCompetitors = async () => {
-    if (!newCompetitor1Id || !newCompetitor2Id) {
-      setError('Please select both competitors');
+    if (newCompetitors.length === 0) {
+      setError('Please select at least one competitor');
       return;
     }
 
-    if (newCompetitor1Id === newCompetitor2Id) {
+    if (newCompetitors.length > 6) {
+      setError('Maximum 6 competitors allowed');
+      return;
+    }
+
+    // Check for duplicate competitors
+    const competitorIds = newCompetitors.map((c) => c.id);
+    if (new Set(competitorIds).size !== competitorIds.length) {
       setError('Please select different competitors');
       return;
     }
@@ -216,36 +252,29 @@ export default function SessionControlPage() {
     setError('');
 
     try {
-      const comp1 = users.find((u) => u.id === newCompetitor1Id);
-      const comp2 = users.find((u) => u.id === newCompetitor2Id);
+      // Find and validate all selected competitors
+      const selectedCompetitors = newCompetitors.map((comp) => {
+        const user = users.find((u) => u.id === comp.id);
+        if (!user) {
+          throw new Error(`Competitor ${comp.name} not found`);
+        }
+        return user;
+      });
 
-      if (!comp1 || !comp2) {
-        throw new Error('Competitors not found');
+      // Validate required data for all competitors
+      for (const comp of selectedCompetitors) {
+        if (!comp.bodyweight || !comp.dateOfBirth || !comp.sex) {
+          throw new Error(`${comp.name} is missing required profile data (weight, age, sex)`);
+        }
       }
 
-      // Validate required data
-      if (!comp1.bodyweight || !comp1.dateOfBirth || !comp1.sex) {
-        throw new Error(`${comp1.name} is missing required profile data (weight, age, sex)`);
-      }
-      if (!comp2.bodyweight || !comp2.dateOfBirth || !comp2.sex) {
-        throw new Error(`${comp2.name} is missing required profile data (weight, age, sex)`);
-      }
-
-      const competitor1 = {
-        id: comp1.id,
-        name: comp1.name,
-        age: calculateAge(comp1.dateOfBirth),
-        sex: (comp1.sex === 'M' ? 'male' : 'female') as 'male' | 'female',
-        weight: comp1.bodyweight,
-      };
-
-      const competitor2 = {
-        id: comp2.id,
-        name: comp2.name,
-        age: calculateAge(comp2.dateOfBirth),
-        sex: (comp2.sex === 'M' ? 'male' : 'female') as 'male' | 'female',
-        weight: comp2.bodyweight,
-      };
+      const competitors = selectedCompetitors.map((comp) => ({
+        id: comp.id,
+        name: comp.name,
+        age: calculateAge(comp.dateOfBirth!),
+        sex: (comp.sex === 'M' ? 'male' : 'female') as 'male' | 'female',
+        weight: comp.bodyweight!,
+      }));
 
       // Update via API
       const response = await fetch('/api/erg/sessions', {
@@ -253,8 +282,7 @@ export default function SessionControlPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionId,
-          competitor1,
-          competitor2,
+          competitors,
         }),
       });
 
@@ -264,23 +292,21 @@ export default function SessionControlPage() {
       }
 
       // Update via socket
-      console.log('Calling updateCompetitors with:', { competitor1, competitor2 });
-      updateCompetitors(competitor1, competitor2);
+      console.log('Calling updateCompetitors with:', { competitors });
+      updateCompetitors(competitors);
 
       // Update local session state
       if (session) {
         const updatedSession = {
           ...session,
-          competitor1,
-          competitor2,
+          competitors,
         };
         console.log('Updated session with new competitors:', updatedSession);
         setSession(updatedSession);
       }
 
       // Reset selections
-      setNewCompetitor1Id('');
-      setNewCompetitor2Id('');
+      setNewCompetitors([]);
 
       // Stop mock data if running (it will restart automatically with new competitors)
       if (isMockRunning) {
@@ -296,7 +322,9 @@ export default function SessionControlPage() {
 
   const handleStopSession = () => {
     if (confirm('Are you sure you want to stop this session?')) {
+      setSessionManuallyStopped(true);
       stopSession();
+      stopMockData(); // Also stop the mock data
       setTimeout(() => {
         router.push('/admin/erg/head-to-head');
       }, 1000);
@@ -440,12 +468,12 @@ export default function SessionControlPage() {
                   <span className="text-gray-300">Python Client</span>
                   <span
                     className={`px-3 py-1 rounded-full text-sm ${
-                      competitor1Data || competitor2Data
+                      competitorData.length > 0
                         ? 'bg-green-900/30 text-green-400'
                         : 'bg-yellow-900/30 text-yellow-400'
                     }`}
                   >
-                    {competitor1Data || competitor2Data ? 'Streaming' : 'Waiting'}
+                    {competitorData.length > 0 ? 'Streaming' : 'Waiting'}
                   </span>
                 </div>
               </div>
@@ -458,46 +486,156 @@ export default function SessionControlPage() {
 
             {/* Competitors Card */}
             <div className="lg:col-span-2 bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Competitors</h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-semibold text-blue-400 mb-2">Competitor 1</h4>
-                  <p className="text-xl font-bold text-white mb-1">{session.competitor1.name}</p>
-                  <p className="text-sm text-gray-400">
-                    {session.competitor1.age} years, {session.competitor1.sex}
-                  </p>
-                  <p className="text-sm text-gray-400">{session.competitor1.weight}kg</p>
-                  {competitor1Data && (
-                    <div className="mt-4 p-3 bg-blue-900/20 border border-blue-700/50 rounded">
-                      <p className="text-2xl font-bold text-blue-400">
-                        Score: {competitor1Data.calculatedScore.toFixed(1)}
-                      </p>
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Competitors (
+                {session.competitors?.length ||
+                  (session.competitor1 && session.competitor2 ? 2 : 0)}
+                )
+              </h3>
+              <div
+                className={`grid gap-6 ${
+                  (session.competitors?.length ||
+                    (session.competitor1 && session.competitor2 ? 2 : 0)) === 1
+                    ? 'grid-cols-1'
+                    : (session.competitors?.length ||
+                          (session.competitor1 && session.competitor2 ? 2 : 0)) === 2
+                      ? 'grid-cols-2'
+                      : 'grid-cols-3'
+                }`}
+              >
+                {(
+                  session.competitors ||
+                  (session.competitor1 && session.competitor2
+                    ? [session.competitor1, session.competitor2]
+                    : [])
+                ).map((competitor, index) => {
+                  const data = competitorData[index];
+                  const colors = [
+                    {
+                      bg: 'bg-blue-900/20',
+                      border: 'border-blue-700/50',
+                      text: 'text-blue-400',
+                      label: 'text-blue-400',
+                    },
+                    {
+                      bg: 'bg-purple-900/20',
+                      border: 'border-purple-700/50',
+                      text: 'text-purple-400',
+                      label: 'text-purple-400',
+                    },
+                    {
+                      bg: 'bg-green-900/20',
+                      border: 'border-green-700/50',
+                      text: 'text-green-400',
+                      label: 'text-green-400',
+                    },
+                    {
+                      bg: 'bg-yellow-900/20',
+                      border: 'border-yellow-700/50',
+                      text: 'text-yellow-400',
+                      label: 'text-yellow-400',
+                    },
+                    {
+                      bg: 'bg-red-900/20',
+                      border: 'border-red-700/50',
+                      text: 'text-red-400',
+                      label: 'text-red-400',
+                    },
+                    {
+                      bg: 'bg-pink-900/20',
+                      border: 'border-pink-700/50',
+                      text: 'text-pink-400',
+                      label: 'text-pink-400',
+                    },
+                  ];
+                  const color = colors[index % colors.length];
+
+                  return (
+                    <div key={competitor.id}>
+                      <h4 className={`font-semibold ${color.label} mb-2`}>
+                        Competitor {index + 1}
+                      </h4>
+                      <p className="text-xl font-bold text-white mb-1">{competitor.name}</p>
                       <p className="text-sm text-gray-400">
-                        {competitor1Data.metrics.distance_m}m @{' '}
-                        {competitor1Data.metrics.average_pace_s}s/500m
+                        {competitor.age} years, {competitor.sex}
                       </p>
+                      <p className="text-sm text-gray-400">{competitor.weight}kg</p>
+                      {data ? (
+                        <div className={`mt-4 p-4 ${color.bg} border ${color.border} rounded-lg`}>
+                          <div className="space-y-2">
+                            <div className="flex items-baseline justify-between">
+                              <span className={`text-3xl font-bold ${color.text}`}>
+                                {data.calculatedScore.toFixed(1)}
+                              </span>
+                              <span className="text-xs text-gray-400 uppercase">Score</span>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-gray-700/50">
+                              <div>
+                                <p className="text-xs text-gray-400 uppercase">Distance</p>
+                                <p className={`text-lg font-semibold ${color.text}`}>
+                                  {data.metrics.distance_m.toFixed(0)}m
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-400 uppercase">Pace</p>
+                                <p className={`text-lg font-semibold ${color.text}`}>
+                                  {data.metrics.average_pace_s.toFixed(1)}s/500m
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-400 uppercase">Power</p>
+                                <p className={`text-lg font-semibold ${color.text}`}>
+                                  {data.metrics.average_power_W.toFixed(0)}W
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-400 uppercase">Time</p>
+                                <p className={`text-lg font-semibold ${color.text}`}>
+                                  {Math.floor(data.metrics.duration_s / 60)}:
+                                  {String(Math.floor(data.metrics.duration_s % 60)).padStart(
+                                    2,
+                                    '0',
+                                  )}
+                                </p>
+                              </div>
+                              {data.metrics.heartRate && (
+                                <div>
+                                  <p className="text-xs text-gray-400 uppercase">Heart Rate</p>
+                                  <p className={`text-lg font-semibold ${color.text}`}>
+                                    {data.metrics.heartRate} bpm
+                                  </p>
+                                </div>
+                              )}
+                              {data.metrics.strokeRate && (
+                                <div>
+                                  <p className="text-xs text-gray-400 uppercase">Stroke Rate</p>
+                                  <p className={`text-lg font-semibold ${color.text}`}>
+                                    {data.metrics.strokeRate} spm
+                                  </p>
+                                </div>
+                              )}
+                              {data.metrics.calories && (
+                                <div>
+                                  <p className="text-xs text-gray-400 uppercase">Calories</p>
+                                  <p className={`text-lg font-semibold ${color.text}`}>
+                                    {data.metrics.calories} kcal
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          className={`mt-4 p-4 ${color.bg} border ${color.border} rounded-lg opacity-50`}
+                        >
+                          <p className="text-sm text-gray-400 text-center">Waiting for data...</p>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div>
-                  <h4 className="font-semibold text-purple-400 mb-2">Competitor 2</h4>
-                  <p className="text-xl font-bold text-white mb-1">{session.competitor2.name}</p>
-                  <p className="text-sm text-gray-400">
-                    {session.competitor2.age} years, {session.competitor2.sex}
-                  </p>
-                  <p className="text-sm text-gray-400">{session.competitor2.weight}kg</p>
-                  {competitor2Data && (
-                    <div className="mt-4 p-3 bg-purple-900/20 border border-purple-700/50 rounded">
-                      <p className="text-2xl font-bold text-purple-400">
-                        Score: {competitor2Data.calculatedScore.toFixed(1)}
-                      </p>
-                      <p className="text-sm text-gray-400">
-                        {competitor2Data.metrics.distance_m}m @{' '}
-                        {competitor2Data.metrics.average_pace_s}s/500m
-                      </p>
-                    </div>
-                  )}
-                </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -549,57 +687,73 @@ export default function SessionControlPage() {
               </p>
             ) : (
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      New Competitor 1
-                    </label>
-                    <select
-                      value={newCompetitor1Id}
-                      onChange={(e) => setNewCompetitor1Id(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    >
-                      <option value="">Select Competitor 1</option>
-                      {users.map((user) => {
-                        const age = user.dateOfBirth ? calculateAge(user.dateOfBirth) : null;
-                        const hasCompleteData = user.bodyweight && user.dateOfBirth && user.sex;
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    New Competitors ({newCompetitors.length}/6)
+                  </label>
+                  <div className="space-y-3">
+                    {/* Selected Competitors */}
+                    {newCompetitors.map((competitor, index) => (
+                      <div
+                        key={competitor.id}
+                        className="flex items-center gap-3 p-3 bg-gray-700/50 rounded-lg"
+                      >
+                        <span className="text-orange-500 font-medium w-8">{index + 1}.</span>
+                        <span className="text-white flex-1">{competitor.name}</span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setNewCompetitors((prev) => prev.filter((c) => c.id !== competitor.id))
+                          }
+                          className="text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
 
-                        return (
-                          <option key={user.id} value={user.id}>
-                            {user.name} ({user.email})
-                            {hasCompleteData
-                              ? ` - ${age}y, ${user.sex}, ${user.bodyweight}kg`
-                              : ' - Missing profile data'}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </div>
+                    {/* Add Competitor Dropdown */}
+                    {newCompetitors.length < 6 && (
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            const user = users.find((u) => u.id === e.target.value);
+                            if (user && !newCompetitors.find((c) => c.id === user.id)) {
+                              setNewCompetitors((prev) => [
+                                ...prev,
+                                { id: user.id, name: user.name },
+                              ]);
+                            }
+                            e.target.value = '';
+                          }
+                        }}
+                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      >
+                        <option value="">Add Competitor ({newCompetitors.length + 1})</option>
+                        {users
+                          .filter((user) => !newCompetitors.find((c) => c.id === user.id))
+                          .map((user) => {
+                            const age = user.dateOfBirth ? calculateAge(user.dateOfBirth) : null;
+                            const hasCompleteData = user.bodyweight && user.dateOfBirth && user.sex;
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      New Competitor 2
-                    </label>
-                    <select
-                      value={newCompetitor2Id}
-                      onChange={(e) => setNewCompetitor2Id(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    >
-                      <option value="">Select Competitor 2</option>
-                      {users.map((user) => {
-                        const age = user.dateOfBirth ? calculateAge(user.dateOfBirth) : null;
-                        const hasCompleteData = user.bodyweight && user.dateOfBirth && user.sex;
+                            return (
+                              <option key={user.id} value={user.id}>
+                                {user.name} ({user.email})
+                                {hasCompleteData
+                                  ? ` - ${age}y, ${user.sex}, ${user.bodyweight}kg`
+                                  : ' - Missing profile data'}
+                              </option>
+                            );
+                          })}
+                      </select>
+                    )}
 
-                        return (
-                          <option key={user.id} value={user.id}>
-                            {user.name} ({user.email})
-                            {hasCompleteData
-                              ? ` - ${age}y, ${user.sex}, ${user.bodyweight}kg`
-                              : ' - Missing profile data'}
-                          </option>
-                        );
-                      })}
-                    </select>
+                    {newCompetitors.length === 0 && (
+                      <p className="text-gray-400 text-sm text-center py-4">
+                        Select at least one competitor to update
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -611,12 +765,7 @@ export default function SessionControlPage() {
 
                 <Button
                   onClick={handleUpdateCompetitors}
-                  disabled={
-                    updatingCompetitors ||
-                    !newCompetitor1Id ||
-                    !newCompetitor2Id ||
-                    newCompetitor1Id === newCompetitor2Id
-                  }
+                  disabled={updatingCompetitors || newCompetitors.length === 0}
                   className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {updatingCompetitors ? 'Updating Competitors...' : 'Update Competitors'}

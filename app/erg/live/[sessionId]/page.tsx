@@ -19,19 +19,11 @@ export default function LiveErgDisplayPage() {
   const rootRef = useRef<HTMLDivElement>(null);
   const scopeRef = useRef<Scope | null>(null);
   const headerRef = useRef<HTMLDivElement>(null);
-  const speedometer1Ref = useRef<HTMLDivElement>(null);
-  const speedometer2Ref = useRef<HTMLDivElement>(null);
-  const leaderRef = useRef<HTMLDivElement>(null);
+  const _speedometer1Ref = useRef<HTMLDivElement>(null);
+  const _speedometer2Ref = useRef<HTMLDivElement>(null);
 
-  const {
-    isConnected,
-    isReconnecting,
-    reconnectAttempt,
-    competitor1Data,
-    competitor2Data,
-    sessionStatus,
-    error,
-  } = useErgSocket(sessionId);
+  const { isConnected, isReconnecting, reconnectAttempt, competitorData, sessionStatus, error } =
+    useErgSocket(sessionId);
 
   const fetchSession = useCallback(async () => {
     try {
@@ -41,8 +33,11 @@ export default function LiveErgDisplayPage() {
       const data = await response.json();
       console.log('Session data received:', data);
       console.log('Updated competitors:', {
-        comp1: data.session?.competitor1?.name,
-        comp2: data.session?.competitor2?.name,
+        competitors:
+          data.session?.competitors?.map((c: Competitor) => c.name) ||
+          (data.session?.competitor1 && data.session?.competitor2
+            ? [data.session.competitor1.name, data.session.competitor2.name]
+            : []),
       });
       setSession(data.session);
     } catch (err) {
@@ -72,14 +67,35 @@ export default function LiveErgDisplayPage() {
       setTimeout(() => setCompetitorsUpdating(false), 2000);
     };
 
-    // Listen for competitor updates via socket
+    const handleSessionEnded = (_data: unknown) => {
+      // The useErgSocket hook should handle this via its own listener
+    };
+
+    // Listen for competitor updates and session ended via socket
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { getSocket } = require('@/lib/socket-client');
     const socket = getSocket();
+
+    // Join the session room to receive events
+    if (sessionId) {
+      socket.emit('session:join', sessionId);
+    }
+
     socket.on('session:competitors-updated', handleCompetitorsUpdated);
+    socket.on('session:ended', handleSessionEnded);
+
+    // Add connection event listeners
+    socket.on('connect', () => {
+      if (sessionId) {
+        socket.emit('session:join', sessionId);
+      }
+    });
 
     return () => {
       socket.off('session:competitors-updated', handleCompetitorsUpdated);
+      socket.off('session:ended', handleSessionEnded);
+      socket.off('connect');
+      socket.off('disconnect');
     };
   }, [fetchSession]);
 
@@ -123,15 +139,6 @@ export default function LiveErgDisplayPage() {
           ease: 'out(4)',
         });
 
-        // Leader indicator animation
-        animate('.leader-indicator', {
-          opacity: [0, 1],
-          scale: [0.9, 1],
-          duration: 800,
-          delay: 1000,
-          ease: 'out(4)',
-        });
-
         // Register method for score updates
         self?.add('animateScoreUpdate', (selector: string) => {
           animate(selector, {
@@ -155,7 +162,7 @@ export default function LiveErgDisplayPage() {
 
   // Animate score updates
   useEffect(() => {
-    if (competitor1Data || competitor2Data) {
+    if (competitorData.length > 0) {
       // Animate score changes using the registered method
       if (scopeRef.current?.methods?.animateScoreUpdate) {
         const scoreElements = document.querySelectorAll('.score-value');
@@ -164,7 +171,7 @@ export default function LiveErgDisplayPage() {
         });
       }
     }
-  }, [competitor1Data, competitor2Data]);
+  }, [competitorData]);
 
   if (loading) {
     return (
@@ -191,44 +198,47 @@ export default function LiveErgDisplayPage() {
         <div className="text-center">
           <h2 className="text-3xl font-bold mb-4">Competition Ended</h2>
           <p className="text-gray-400 mb-8">This session has concluded.</p>
-          {(competitor1Data || competitor2Data) && (
+          {competitorData.length > 0 && (
             <div className="mt-8">
               <h3 className="text-2xl mb-6 text-yellow-400">Final Scores</h3>
-              <div className="flex gap-12 justify-center">
-                <div className="bg-orange-500/20 rounded-xl p-6">
-                  <p
-                    className="text-xl mb-2 text-orange-500"
-                    style={{ fontFamily: 'var(--font-montserrat)' }}
-                  >
-                    {session.competitor1.name.toUpperCase()}
-                  </p>
-                  <p
-                    className="text-5xl font-bold text-orange-500"
-                    style={{ fontFamily: 'var(--font-montserrat)' }}
-                  >
-                    {competitor1Data?.calculatedScore.toFixed(1) || '0'}
-                  </p>
-                  <p className="text-sm text-gray-400 mt-2">
-                    {competitor1Data?.metrics.distance_m || 0}m
-                  </p>
-                </div>
-                <div className="bg-orange-500/20 rounded-xl p-6">
-                  <p
-                    className="text-xl mb-2 text-orange-500"
-                    style={{ fontFamily: 'var(--font-montserrat)' }}
-                  >
-                    {session.competitor2.name.toUpperCase()}
-                  </p>
-                  <p
-                    className="text-5xl font-bold text-orange-500"
-                    style={{ fontFamily: 'var(--font-montserrat)' }}
-                  >
-                    {competitor2Data?.calculatedScore.toFixed(1) || '0'}
-                  </p>
-                  <p className="text-sm text-gray-400 mt-2">
-                    {competitor2Data?.metrics.distance_m || 0}m
-                  </p>
-                </div>
+              <div
+                className={`flex gap-12 justify-center ${competitorData.length === 1 ? 'flex-col items-center' : competitorData.length === 2 ? 'flex-row' : 'flex-wrap'}`}
+              >
+                {(
+                  session.competitors ||
+                  (session.competitor1 && session.competitor2
+                    ? [session.competitor1, session.competitor2]
+                    : [])
+                ).map((competitor, index) => {
+                  const data = competitorData[index];
+                  const colors = [
+                    'text-blue-400',
+                    'text-purple-400',
+                    'text-green-400',
+                    'text-yellow-400',
+                    'text-red-400',
+                    'text-pink-400',
+                  ];
+                  const color = colors[index % colors.length];
+
+                  return (
+                    <div key={competitor.id} className="bg-orange-500/20 rounded-xl p-6">
+                      <p
+                        className={`text-xl mb-2 ${color}`}
+                        style={{ fontFamily: 'var(--font-montserrat)' }}
+                      >
+                        {competitor.name.toUpperCase()}
+                      </p>
+                      <p
+                        className={`text-5xl font-bold ${color}`}
+                        style={{ fontFamily: 'var(--font-montserrat)' }}
+                      >
+                        {data?.calculatedScore.toFixed(1) || '0'}
+                      </p>
+                      <p className="text-sm text-gray-400 mt-2">{data?.metrics.distance_m || 0}m</p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -318,12 +328,13 @@ export default function LiveErgDisplayPage() {
                   </div>
                   <div className="flex items-center space-x-3 text-white mt-3">
                     <span
-                      className={`px-3 py-1 text-sm font-medium rounded-full ${isConnected
-                        ? 'bg-green-500/20 text-green-400'
-                        : isReconnecting
-                          ? 'bg-yellow-500/20 text-yellow-400 animate-pulse'
-                          : 'bg-red-500/20 text-red-400'
-                        }`}
+                      className={`px-3 py-1 text-sm font-medium rounded-full ${
+                        isConnected
+                          ? 'bg-green-500/20 text-green-400'
+                          : isReconnecting
+                            ? 'bg-yellow-500/20 text-yellow-400 animate-pulse'
+                            : 'bg-red-500/20 text-red-400'
+                      }`}
                     >
                       {isConnected
                         ? '🟢 LIVE'
@@ -334,14 +345,11 @@ export default function LiveErgDisplayPage() {
                     <span className="text-sm text-white/80">
                       Type: <span className="font-medium">Individual</span>
                     </span>
-                    {!competitor1Data &&
-                      !competitor2Data &&
-                      isConnected &&
-                      !competitorsUpdating && (
-                        <span className="text-yellow-400 animate-pulse text-sm">
-                          Waiting for competitors to start...
-                        </span>
-                      )}
+                    {competitorData.length === 0 && isConnected && !competitorsUpdating && (
+                      <span className="text-yellow-400 animate-pulse text-sm">
+                        Waiting for competitors to start...
+                      </span>
+                    )}
                     {competitorsUpdating && (
                       <span className="text-yellow-400 animate-pulse text-sm">
                         Updating competitors...
@@ -357,68 +365,58 @@ export default function LiveErgDisplayPage() {
 
       {/* Speedometer Dashboard */}
       <div className="container mx-auto px-4">
-        {/* Leader Indicator */}
-        {competitor1Data && competitor2Data && (
-          <div className="text-center pb-8">
-            <div
-              key={`leader-${session.competitor1.id}-${session.competitor2.id}`}
-              ref={leaderRef}
-              className="leader-indicator inline-block bg-orange-500/20 text-orange-500 px-8 py-4 rounded-full text-3xl font-bold border-2 border-orange-500/40 shadow-lg"
-              style={{ fontFamily: 'var(--font-montserrat)' }}
-            >
-              {competitor1Data.calculatedScore > competitor2Data.calculatedScore
-                ? `${session.competitor1.name.toUpperCase()} LEADS by ${(competitor1Data.calculatedScore - competitor2Data.calculatedScore).toFixed(1)}`
-                : competitor2Data.calculatedScore > competitor1Data.calculatedScore
-                  ? `${session.competitor2.name.toUpperCase()} LEADS by ${(competitor2Data.calculatedScore - competitor1Data.calculatedScore).toFixed(1)}`
-                  : "IT'S A TIE!"}
-            </div>
-          </div>
-        )}
-
         <div className="bg-orange-500/10 backdrop-blur-sm rounded-2xl shadow-lg mb-6 border border-orange-500/20">
           <div className="p-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Competitor 1 Speedometer */}
-              <div ref={speedometer1Ref} className="speedometer-1">
-                <ErgSpeedometer
-                  key={`comp1-${session.competitor1.id}-${competitor1Data?.calculatedScore || 0}`}
-                  name={session.competitor1.name}
-                  age={session.competitor1.age}
-                  sex={session.competitor1.sex}
-                  weight={session.competitor1.weight}
-                  score={competitor1Data?.calculatedScore || 0}
-                  pace={competitor1Data?.metrics.average_pace_s}
-                  power={competitor1Data?.metrics.average_power_W}
-                  distance={competitor1Data?.metrics.distance_m}
-                  duration={competitor1Data?.metrics.duration_s}
-                  heartRate={competitor1Data?.metrics.heartRate}
-                  strokeRate={competitor1Data?.metrics.strokeRate}
-                  calories={competitor1Data?.metrics.calories}
-                  accentColor="#3b82f6"
-                  textColor="text-blue-400"
-                />
-              </div>
+            <div
+              className={`grid gap-8 ${
+                (session.competitors?.length ||
+                  (session.competitor1 && session.competitor2 ? 2 : 0)) === 1
+                  ? 'grid-cols-1'
+                  : (session.competitors?.length ||
+                        (session.competitor1 && session.competitor2 ? 2 : 0)) === 2
+                    ? 'grid-cols-1 lg:grid-cols-2'
+                    : 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
+              }`}
+            >
+              {(
+                session.competitors ||
+                (session.competitor1 && session.competitor2
+                  ? [session.competitor1, session.competitor2]
+                  : [])
+              ).map((competitor, index) => {
+                const data = competitorData[index];
+                const colors = [
+                  { accent: '#3b82f6', text: 'text-blue-400' },
+                  { accent: '#a855f7', text: 'text-purple-400' },
+                  { accent: '#10b981', text: 'text-green-400' },
+                  { accent: '#f59e0b', text: 'text-yellow-400' },
+                  { accent: '#ef4444', text: 'text-red-400' },
+                  { accent: '#ec4899', text: 'text-pink-400' },
+                ];
+                const color = colors[index % colors.length];
 
-              {/* Competitor 2 Speedometer */}
-              <div ref={speedometer2Ref} className="speedometer-2">
-                <ErgSpeedometer
-                  key={`comp2-${session.competitor2.id}-${competitor2Data?.calculatedScore || 0}`}
-                  name={session.competitor2.name}
-                  age={session.competitor2.age}
-                  sex={session.competitor2.sex}
-                  weight={session.competitor2.weight}
-                  score={competitor2Data?.calculatedScore || 0}
-                  pace={competitor2Data?.metrics.average_pace_s}
-                  power={competitor2Data?.metrics.average_power_W}
-                  distance={competitor2Data?.metrics.distance_m}
-                  duration={competitor2Data?.metrics.duration_s}
-                  heartRate={competitor2Data?.metrics.heartRate}
-                  strokeRate={competitor2Data?.metrics.strokeRate}
-                  calories={competitor2Data?.metrics.calories}
-                  accentColor="#a855f7"
-                  textColor="text-purple-400"
-                />
-              </div>
+                return (
+                  <div key={competitor.id} className={`speedometer-${index + 1}`}>
+                    <ErgSpeedometer
+                      key={`comp${index + 1}-${competitor.id}-${data?.calculatedScore || 0}`}
+                      name={competitor.name}
+                      age={competitor.age}
+                      sex={competitor.sex}
+                      weight={competitor.weight}
+                      score={data?.calculatedScore || 0}
+                      pace={data?.metrics.average_pace_s}
+                      power={data?.metrics.average_power_W}
+                      distance={data?.metrics.distance_m}
+                      duration={data?.metrics.duration_s}
+                      heartRate={data?.metrics.heartRate}
+                      strokeRate={data?.metrics.strokeRate}
+                      calories={data?.metrics.calories}
+                      accentColor={color.accent}
+                      textColor={color.text}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

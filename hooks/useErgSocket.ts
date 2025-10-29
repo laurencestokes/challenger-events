@@ -12,7 +12,7 @@ export interface ErgMetrics {
 }
 
 export interface ErgUpdate {
-  competitorIndex: 0 | 1;
+  competitorIndex: number; // 0-5 for up to 6 competitors
   metrics: ErgMetrics;
   calculatedScore: number;
   timestamp: string;
@@ -28,8 +28,9 @@ export interface Competitor {
 
 export interface HeadToHeadSession {
   id: string;
-  competitor1: Competitor;
-  competitor2: Competitor;
+  competitors?: Competitor[]; // 1-6 competitors (new format)
+  competitor1?: Competitor; // Legacy format
+  competitor2?: Competitor; // Legacy format
   eventId?: string;
   eventType?: string;
 }
@@ -78,9 +79,8 @@ interface UseErgSocketReturn {
   reconnectAttempt: number;
   startSession: (session: HeadToHeadSession) => void;
   stopSession: () => void;
-  updateCompetitors: (competitor1: Competitor, competitor2: Competitor) => void;
-  competitor1Data: ErgUpdate | null;
-  competitor2Data: ErgUpdate | null;
+  updateCompetitors: (competitors: Competitor[]) => void;
+  competitorData: ErgUpdate[]; // Array of competitor data
   sessionStatus: 'idle' | 'starting' | 'active' | 'ended';
   error: string | null;
 }
@@ -89,8 +89,7 @@ export function useErgSocket(sessionId: string | null): UseErgSocketReturn {
   const [isConnected, setIsConnected] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
   const [reconnectAttempt, setReconnectAttempt] = useState(0);
-  const [competitor1Data, setCompetitor1Data] = useState<ErgUpdate | null>(null);
-  const [competitor2Data, setCompetitor2Data] = useState<ErgUpdate | null>(null);
+  const [competitorData, setCompetitorData] = useState<ErgUpdate[]>(new Array(6).fill(undefined));
   const [sessionStatus, setSessionStatus] = useState<'idle' | 'starting' | 'active' | 'ended'>(
     'idle',
   );
@@ -155,16 +154,18 @@ export function useErgSocket(sessionId: string | null): UseErgSocketReturn {
     };
 
     const handleErgUpdate = (data: ErgUpdate) => {
-      console.log('Erg update received:', data);
-      if (data.competitorIndex === 0) {
-        setCompetitor1Data(data);
-      } else {
-        setCompetitor2Data(data);
-      }
+      setCompetitorData((prev) => {
+        const newData = [...prev];
+        // Ensure the array is large enough for the competitor index
+        while (newData.length <= data.competitorIndex) {
+          newData.push(undefined as any);
+        }
+        newData[data.competitorIndex] = data;
+        return newData;
+      });
     };
 
-    const handleSessionEnded = () => {
-      console.log('Session ended');
+    const handleSessionEnded = (data: any) => {
       setSessionStatus('ended');
     };
 
@@ -179,10 +180,9 @@ export function useErgSocket(sessionId: string | null): UseErgSocketReturn {
     };
 
     const handleCompetitorsUpdated = (data: any) => {
-      console.log('Competitors updated:', data);
-      // Clear current competitor data when competitors are updated
-      setCompetitor1Data(null);
-      setCompetitor2Data(null);
+      // Initialize competitor data array to max size (6) to avoid array expansion issues
+      const newArray = new Array(6).fill(undefined);
+      setCompetitorData(newArray);
       setSessionStatus('active');
     };
 
@@ -222,10 +222,26 @@ export function useErgSocket(sessionId: string | null): UseErgSocketReturn {
     const socket = socketRef.current;
     setSessionStatus('starting');
 
+    // Handle both new and legacy session formats
+    const competitors =
+      session.competitors ||
+      (session.competitor1 && session.competitor2
+        ? [session.competitor1, session.competitor2]
+        : []);
+
+    console.log('Starting session with competitors:', competitors);
+    console.log('Session data:', session);
+
+    // Don't start session if no competitors
+    if (competitors.length === 0) {
+      console.warn('No competitors found, not starting session');
+      setSessionStatus('idle');
+      return;
+    }
+
     socket.emit('session:start', {
       sessionId: session.id,
-      competitor1: session.competitor1,
-      competitor2: session.competitor2,
+      competitors,
       eventId: session.eventId,
       eventType: session.eventType,
     });
@@ -244,23 +260,20 @@ export function useErgSocket(sessionId: string | null): UseErgSocketReturn {
   }, [sessionId]);
 
   const updateCompetitors = useCallback(
-    (competitor1: Competitor, competitor2: Competitor) => {
+    (competitors: Competitor[]) => {
       const socket = socketRef.current;
       console.log('useErgSocket: updateCompetitors called with:', {
-        competitor1,
-        competitor2,
+        competitors,
         sessionId,
       });
       if (sessionId) {
         console.log('useErgSocket: Emitting session:update-competitors event');
         socket.emit('session:update-competitors', {
           sessionId,
-          competitor1,
-          competitor2,
+          competitors,
         });
         // Clear current data when updating competitors
-        setCompetitor1Data(null);
-        setCompetitor2Data(null);
+        setCompetitorData([]);
         console.log('useErgSocket: Cleared competitor data');
       } else {
         console.log('useErgSocket: No sessionId, not emitting event');
@@ -276,8 +289,7 @@ export function useErgSocket(sessionId: string | null): UseErgSocketReturn {
     startSession,
     stopSession,
     updateCompetitors,
-    competitor1Data,
-    competitor2Data,
+    competitorData,
     sessionStatus,
     error,
   };

@@ -94,7 +94,11 @@ app.prepare().then(() => {
 
   // Store active sessions and Python client connections
   global.io = io;
-  global.ergSessions = new Map(); // sessionId -> { competitor1, competitor2, pythonSocketId }
+  // Use the same storage as the API
+  if (!globalThis.ergSessions) {
+    globalThis.ergSessions = new Map();
+  }
+  global.ergSessions = globalThis.ergSessions; // Reference the same Map
   global.pythonClients = new Map(); // socketId -> socket
   global.teamErgSessions = new Map(); // sessionId -> session data
 
@@ -128,28 +132,36 @@ app.prepare().then(() => {
 
     // Admin starts a head-to-head session
     socket.on('session:start', (data) => {
-      const { sessionId, competitor1, competitor2, eventId, eventType } = data;
+      const { sessionId, competitors, eventId, eventType } = data;
+
+      console.log('Session start received:', { sessionId, competitors, eventId, eventType });
+      console.log('Available sessions in storage:', Array.from(global.ergSessions.keys()));
+      console.log('Competitors type:', typeof competitors, 'Length:', competitors?.length);
+      console.log('Competitors content:', JSON.stringify(competitors, null, 2));
 
       // Get existing session data if it exists, otherwise create new
       const existingSession = global.ergSessions.get(sessionId) || {};
+      console.log('Existing session data:', existingSession);
+      console.log('Existing competitors:', existingSession.competitors);
 
       global.ergSessions.set(sessionId, {
         ...existingSession, // Preserve existing data like eventId, eventType, etc.
-        competitor1,
-        competitor2,
+        competitors: competitors.length > 0 ? competitors : existingSession.competitors,
         eventId: eventId || existingSession.eventId,
         eventType: eventType || existingSession.eventType,
         pythonSocketId: null,
         startedAt: new Date().toISOString(),
       });
 
+      console.log('Session stored in global.ergSessions:', global.ergSessions.get(sessionId));
+      console.log('Final competitors after update:', global.ergSessions.get(sessionId).competitors);
+
       socket.join(`session:${sessionId}`);
 
       // Notify Python client about new session
       io.to('python-client').emit('session:new', {
         sessionId,
-        competitor1,
-        competitor2,
+        competitors,
       });
 
       console.log(
@@ -175,6 +187,8 @@ app.prepare().then(() => {
     // Python client sends erg data
     socket.on('erg:data', (data) => {
       const { sessionId, competitorIndex, metrics, calculatedScore } = data;
+      console.log('Server received erg:data:', data);
+      console.log('Broadcasting to session:', `session:${sessionId}`);
 
       // Broadcast to all viewers of this session
       io.to(`session:${sessionId}`).emit('erg:update', {
@@ -183,6 +197,7 @@ app.prepare().then(() => {
         calculatedScore,
         timestamp: new Date().toISOString(),
       });
+      console.log('Server broadcasted erg:update for competitor', competitorIndex);
 
       console.log(
         `Erg data for session ${sessionId}, competitor ${competitorIndex}:`,
@@ -191,14 +206,22 @@ app.prepare().then(() => {
     });
 
     // Admin stops session
-    socket.on('session:stop', (sessionId) => {
+    socket.on('session:stop', (data) => {
+      // Handle both object and string formats
+      const sessionId = typeof data === 'string' ? data : data.sessionId;
+
       const session = global.ergSessions.get(sessionId);
+
       if (session && session.pythonSocketId) {
         // Notify Python client to disconnect from ergs
         io.to(session.pythonSocketId).emit('session:stop', { sessionId });
       }
 
-      // Notify all viewers
+      // Notify all viewers that the session has ended
+      const roomName = `session:${sessionId}`;
+      io.to(roomName).emit('session:ended', { sessionId });
+
+      // Notify Python clients
       io.to(`python-client`).emit('session:stop', { sessionId });
 
       global.ergSessions.delete(sessionId);
@@ -207,7 +230,7 @@ app.prepare().then(() => {
 
     // Admin updates competitors in an existing session
     socket.on('session:update-competitors', (data) => {
-      const { sessionId, competitor1, competitor2 } = data;
+      const { sessionId, competitors } = data;
       const session = global.ergSessions.get(sessionId);
 
       if (!session) {
@@ -216,8 +239,7 @@ app.prepare().then(() => {
       }
 
       // Update session data
-      session.competitor1 = competitor1;
-      session.competitor2 = competitor2;
+      session.competitors = competitors;
       session.updatedAt = new Date().toISOString();
       global.ergSessions.set(sessionId, session);
 
@@ -225,23 +247,20 @@ app.prepare().then(() => {
       if (session.pythonSocketId) {
         io.to(session.pythonSocketId).emit('session:competitors-updated', {
           sessionId,
-          competitor1,
-          competitor2,
+          competitors,
         });
       } else {
         // Broadcast to all Python clients if no specific socket ID
         io.to('python-client').emit('session:competitors-updated', {
           sessionId,
-          competitor1,
-          competitor2,
+          competitors,
         });
       }
 
       // Broadcast to all viewers
       io.to(`session:${sessionId}`).emit('session:competitors-updated', {
         sessionId,
-        competitor1,
-        competitor2,
+        competitors,
       });
 
       console.log('Session competitors updated:', sessionId);
