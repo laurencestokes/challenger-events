@@ -514,7 +514,7 @@ See [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
-MIT
+See LICENSE.MD
 
 ---
 
