@@ -15,6 +15,8 @@ interface Event {
   startDate: unknown | null;
   endDate: unknown | null;
   createdAt: unknown;
+  description?: string;
+  scope?: 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY';
 }
 
 export default function AdminDashboard() {
@@ -41,6 +43,66 @@ export default function AdminDashboard() {
       fetchEvents();
     }
   }, [user]);
+
+  const formatDate = (dateString: unknown) => {
+    if (!dateString) return 'Not set';
+
+    // Handle Firestore Timestamp objects
+    if (typeof dateString === 'object' && dateString !== null) {
+      // Check if it's a Firestore Timestamp with seconds and nanoseconds
+      if (
+        'seconds' in dateString &&
+        typeof (dateString as { seconds: number }).seconds === 'number'
+      ) {
+        const date = new Date((dateString as { seconds: number }).seconds * 1000); // Convert seconds to milliseconds
+        return date.toLocaleDateString();
+      }
+
+      // Check if it has toDate method (Firestore SDK Timestamp)
+      if (
+        'toDate' in dateString &&
+        typeof (dateString as { toDate: () => Date }).toDate === 'function'
+      ) {
+        return (dateString as { toDate: () => Date }).toDate().toLocaleDateString();
+      }
+    }
+
+    // Handle string dates
+    if (typeof dateString === 'string') {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+      return date.toLocaleDateString();
+    }
+
+    // Handle Date objects
+    if (dateString instanceof Date) {
+      return dateString.toLocaleDateString();
+    }
+
+    // Handle numbers (timestamps)
+    if (typeof dateString === 'number') {
+      return new Date(dateString).toLocaleDateString();
+    }
+
+    return 'Invalid date';
+  };
+
+  const formatScope = (scope: 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY' | undefined) => {
+    const value = scope ?? 'INVITE_ONLY';
+    switch (value) {
+      case 'PUBLIC':
+        return 'Public';
+      case 'ORGANIZATION':
+        return 'Organization';
+      case 'GYM':
+        return 'Gym';
+      case 'INVITE_ONLY':
+      default:
+        return 'Invite Only';
+    }
+  };
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0F0F0F' }}>
@@ -320,23 +382,37 @@ export default function AdminDashboard() {
                     className="flex items-center justify-between p-6 bg-gray-900/50 border border-gray-700/50 rounded-xl hover:bg-gray-900/70 transition-colors"
                   >
                     <div className="flex-1">
-                      <h4 className="text-lg font-semibold text-white mb-1">{event.name}</h4>
-                      <p className="text-sm" style={{ color: '#D9D9D9' }}>
-                        Code: {event.code}
-                      </p>
+                      <div className="flex items-center space-x-3 mb-2">
+                        <h4 className="text-lg font-semibold text-white">{event.name}</h4>
+                        <span
+                          className={`px-3 py-1 text-xs font-medium rounded-full ${
+                            event.status === 'ACTIVE'
+                              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                              : event.status === 'COMPLETED'
+                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                                : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+                          }`}
+                        >
+                          {event.status}
+                        </span>
+                      </div>
+                      {event.description && (
+                        <p className="text-sm text-gray-400 mb-2">{event.description}</p>
+                      )}
+                      <div className="flex items-center space-x-6 text-sm text-gray-400">
+                        <span>
+                          Code:{' '}
+                          <span className="font-mono font-medium text-white">{event.code}</span>
+                        </span>
+                        <span>
+                          Scope: <span className="text-white">{formatScope(event.scope)}</span>
+                        </span>
+                        <span>Start: {formatDate(event.startDate)}</span>
+                        <span>End: {formatDate(event.endDate)}</span>
+                        <span>Created: {formatDate(event.createdAt)}</span>
+                      </div>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <span
-                        className={`px-3 py-1 text-xs font-medium rounded-full ${
-                          event.status === 'ACTIVE'
-                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                            : event.status === 'COMPLETED'
-                              ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                              : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
-                        }`}
-                      >
-                        {event.status}
-                      </span>
                       <Link
                         href={`/admin/events/${event.id}`}
                         className="px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors hover:opacity-90"
