@@ -17,6 +17,7 @@ interface Event {
   endDate: unknown | null;
   createdAt: unknown;
   description?: string;
+  scope?: 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY';
 }
 
 export default function ManageEvents() {
@@ -87,6 +88,21 @@ export default function ManageEvents() {
     }
 
     return 'Invalid date';
+  };
+
+  const formatScope = (scope: 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY' | undefined) => {
+    const value = scope ?? 'INVITE_ONLY';
+    switch (value) {
+      case 'PUBLIC':
+        return 'Public';
+      case 'ORGANIZATION':
+        return 'Organization';
+      case 'GYM':
+        return 'Gym';
+      case 'INVITE_ONLY':
+      default:
+        return 'Invite Only';
+    }
   };
 
   return (
@@ -209,6 +225,9 @@ export default function ManageEvents() {
                           <span>
                             Code:{' '}
                             <span className="font-mono font-medium text-white">{event.code}</span>
+                          </span>
+                          <span>
+                            Scope: <span className="text-white">{formatScope(event.scope)}</span>
                           </span>
                           <span>Start: {formatDate(event.startDate)}</span>
                           <span>End: {formatDate(event.endDate)}</span>

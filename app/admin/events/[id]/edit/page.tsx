@@ -20,6 +20,9 @@ interface Event {
   maxTeamSize?: number;
   country?: string;
   postcode?: string;
+  scope?: 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY';
+  organizationId?: string;
+  gymId?: string;
 }
 
 export default function EditEvent({ params }: { params: { id: string } }) {
@@ -42,6 +45,11 @@ export default function EditEvent({ params }: { params: { id: string } }) {
   const [maxTeamSize, setMaxTeamSize] = useState<number>(4);
   const [country, setCountry] = useState('GB');
   const [postcode, setPostcode] = useState('');
+  const [scope, setScope] = useState<'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY'>(
+    'INVITE_ONLY',
+  );
+  const [organizationId, setOrganizationId] = useState('');
+  const [gymId, setGymId] = useState('');
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -58,6 +66,9 @@ export default function EditEvent({ params }: { params: { id: string } }) {
         setMaxTeamSize(eventData.maxTeamSize || 4);
         setCountry(eventData.country || 'GB');
         setPostcode(eventData.postcode || '');
+        setScope(eventData.scope || 'INVITE_ONLY');
+        setOrganizationId(eventData.organizationId || '');
+        setGymId(eventData.gymId || '');
 
         // Format dates for input fields
         if (eventData.startDate) {
@@ -107,6 +118,9 @@ export default function EditEvent({ params }: { params: { id: string } }) {
         maxTeamSize: isTeamEvent ? maxTeamSize : undefined,
         country,
         postcode: postcode || undefined,
+        scope,
+        organizationId: scope === 'ORGANIZATION' ? organizationId : undefined,
+        gymId: scope === 'GYM' ? gymId : undefined,
       };
 
       await api.put(`/api/events/${params.id}`, updates);
@@ -320,6 +334,78 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                     onChange={(e) => setEndDate(e.target.value)}
                     className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   />
+                </div>
+              </div>
+
+              {/* Event Access (Scope) */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  Event Access
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="scope"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Event Scope
+                    </label>
+                    <select
+                      id="scope"
+                      value={scope}
+                      onChange={(e) =>
+                        setScope(
+                          e.target.value as 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY',
+                        )
+                      }
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                      <option value="PUBLIC">Public - Anyone can join</option>
+                      <option value="ORGANIZATION">
+                        Organization - Only specific organization members
+                      </option>
+                      <option value="GYM">Gym - Only specific gym members</option>
+                      <option value="INVITE_ONLY">Invite Only - Only invited users</option>
+                    </select>
+                  </div>
+
+                  {scope === 'ORGANIZATION' && (
+                    <div>
+                      <label
+                        htmlFor="organizationId"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        Organization ID
+                      </label>
+                      <input
+                        type="text"
+                        id="organizationId"
+                        value={organizationId}
+                        onChange={(e) => setOrganizationId(e.target.value)}
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Enter organization ID"
+                      />
+                    </div>
+                  )}
+
+                  {scope === 'GYM' && (
+                    <div>
+                      <label
+                        htmlFor="gymId"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        Gym ID
+                      </label>
+                      <input
+                        type="text"
+                        id="gymId"
+                        value={gymId}
+                        onChange={(e) => setGymId(e.target.value)}
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Enter gym ID"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
