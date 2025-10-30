@@ -418,6 +418,13 @@ export default function TeamErgControlPage() {
           </div>
 
           {/* Connection Status */}
+          <div className="mb-6 bg-red-900/30 border border-red-700/50 rounded-2xl p-4 text-red-300">
+            <h3 className="font-semibold mb-1">Feature not ready</h3>
+            <p className="text-sm">
+              This team session feature is under development and not yet ready for use.
+            </p>
+          </div>
+
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">

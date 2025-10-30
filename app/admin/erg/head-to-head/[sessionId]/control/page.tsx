@@ -19,6 +19,7 @@ export default function SessionControlPage() {
   const [session, setSession] = useState<HeadToHeadSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showDevNotice, setShowDevNotice] = useState(true);
 
   const {
     isConnected,
@@ -428,6 +429,24 @@ export default function SessionControlPage() {
               </div>
             </div>
           </div>
+
+          {showDevNotice && (
+            <div className="mb-6 bg-yellow-900/30 border border-yellow-700/50 rounded-lg p-4 text-yellow-300 relative">
+              <div className="pr-8">
+                <h3 className="font-semibold mb-1">Reminder!</h3>
+                <p className="text-sm">
+                  This head-to-head feature is still under development but functional.
+                </p>
+              </div>
+              <button
+                aria-label="Dismiss"
+                onClick={() => setShowDevNotice(false)}
+                className="absolute top-2 right-2 text-yellow-300 hover:text-yellow-200"
+              >
+                ×
+              </button>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             {/* Status Card */}

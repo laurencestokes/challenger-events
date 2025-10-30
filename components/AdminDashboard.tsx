@@ -157,7 +157,8 @@ export default function AdminDashboard() {
             </div>
           </Link>
 
-          <Link
+          {/* Admin Image Upload - disabled for now */}
+          {/* <Link
             href="/admin/images/upload"
             className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:scale-105 transition-all duration-200"
           >
@@ -189,7 +190,7 @@ export default function AdminDashboard() {
                 </p>
               </div>
             </div>
-          </Link>
+          </Link> */}
 
           <Link
             href="/teams"
