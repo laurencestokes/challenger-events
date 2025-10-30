@@ -90,6 +90,40 @@ export default function AdminDashboard() {
           </Link>
 
           <Link
+            href="/admin/score-tool"
+            className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:scale-105 transition-all duration-200"
+          >
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
+                  style={{ backgroundColor: '#DB2777' }}
+                >
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 17v-2a4 4 0 014-4h6m-6 0l2-2m-2 2l2 2M7 7h.01M7 11h.01M7 15h.01M4 6h8a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-medium text-white">Score Tool</h3>
+                <p className="text-sm" style={{ color: '#D9D9D9' }}>
+                  Quickly compute event scores
+                </p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
             href="/admin/events"
             className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:scale-105 transition-all duration-200"
           >

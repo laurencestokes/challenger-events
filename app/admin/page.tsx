@@ -45,6 +45,36 @@ export default function AdminDashboard() {
 
           {/* Admin Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {/* Admin Score Tool */}
+            <Link
+              href="/admin/score-tool"
+              className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 hover:bg-gray-700/50 transition-colors group"
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-pink-500/20 rounded-lg flex items-center justify-center mr-4">
+                  <svg
+                    className="w-6 h-6 text-pink-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 17v-2a4 4 0 014-4h6m-6 0l2-2m-2 2l2 2M7 7h.01M7 11h.01M7 15h.01M4 6h8a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-white group-hover:text-pink-400 transition-colors">
+                  Score Tool
+                </h3>
+              </div>
+              <p className="text-gray-400 mb-4">
+                Quickly compute scores for any event without saving data
+              </p>
+              <div className="text-pink-400 text-sm font-medium">Open Score Tool →</div>
+            </Link>
             {/* Events Management */}
             <Link
               href="/admin/events"
