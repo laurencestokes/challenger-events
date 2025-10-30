@@ -141,6 +141,7 @@ interface ErgSpeedometerProps {
   compact?: boolean;
   teamScore?: number;
   showTeamScore?: boolean;
+  distanceLabel?: string;
 }
 
 export default function ErgSpeedometer({
@@ -155,7 +156,16 @@ export default function ErgSpeedometer({
   compact = false,
   teamScore,
   showTeamScore = false,
+  distanceLabel,
 }: ErgSpeedometerProps) {
+  const formatPace = (s?: number) => {
+    if (s === undefined || isNaN(s)) return '-:--.-';
+    const minutes = Math.floor(s / 60);
+    const seconds = s - minutes * 60;
+    const secondsStr = seconds < 10 ? `0${seconds.toFixed(1)}` : seconds.toFixed(1);
+    return `${minutes}:${secondsStr}`;
+  };
+
   if (compact) {
     return (
       <div className="bg-orange-500/10 rounded-xl p-4 border border-orange-500/20">
@@ -194,15 +204,29 @@ export default function ErgSpeedometer({
         {/* Compact Metrics */}
         <div className="grid grid-cols-2 gap-3 text-center">
           {pace !== undefined && (
-            <div className="bg-gray-800/50 rounded-lg p-2 border border-orange-500/20">
-              <AnimatedCounter
-                value={pace}
-                label="PACE"
-                unit="s/500m"
-                color="text-orange-500"
-                size="md"
-                precision={1}
-              />
+            <div className="bg-gray-800/50 rounded-lg p-2 border border-orange-500/20 text-center">
+              <div
+                className="font-bold mb-1 text-3xl"
+                style={{
+                  color: '#FF8333',
+                  textShadow: `0 0 5px #FF8333`,
+                  fontFamily: 'var(--font-ropa-sans)',
+                }}
+              >
+                {formatPace(pace)}
+              </div>
+              <div
+                className="text-gray-300 text-sm font-medium uppercase tracking-wider"
+                style={{ fontFamily: 'var(--font-ropa-sans)' }}
+              >
+                PACE
+              </div>
+              <div
+                className="text-gray-400 text-xs uppercase tracking-wider"
+                style={{ fontFamily: 'var(--font-ropa-sans)' }}
+              >
+                /500m
+              </div>
             </div>
           )}
           {power !== undefined && (
@@ -223,7 +247,7 @@ export default function ErgSpeedometer({
         <div className="text-center mt-3">
           <AnimatedCounter
             value={distance || 0}
-            label="DISTANCE"
+            label={distanceLabel || 'DISTANCE'}
             unit="m"
             color="text-orange-500"
             size="md"
@@ -308,15 +332,29 @@ export default function ErgSpeedometer({
         <div className="grid grid-cols-2 gap-6">
           {/* Pace Card */}
           {pace !== undefined && (
-            <div className="bg-gray-800/30 rounded-xl p-6 border border-orange-500/20 backdrop-blur-sm">
-              <AnimatedCounter
-                value={pace}
-                label="PACE"
-                unit="s/500m"
-                color="text-orange-500"
-                size="lg"
-                precision={1}
-              />
+            <div className="bg-gray-800/30 rounded-xl p-6 border border-orange-500/20 backdrop-blur-sm text-center">
+              <div
+                className="font-bold mb-2 text-5xl"
+                style={{
+                  color: '#FF8333',
+                  textShadow: `0 0 5px #FF8333`,
+                  fontFamily: 'var(--font-ropa-sans)',
+                }}
+              >
+                {formatPace(pace)}
+              </div>
+              <div
+                className="text-gray-300 text-lg font-medium uppercase tracking-wider"
+                style={{ fontFamily: 'var(--font-ropa-sans)' }}
+              >
+                PACE
+              </div>
+              <div
+                className="text-gray-400 text-sm uppercase tracking-wider"
+                style={{ fontFamily: 'var(--font-ropa-sans)' }}
+              >
+                /500m
+              </div>
             </div>
           )}
 
@@ -353,7 +391,7 @@ export default function ErgSpeedometer({
         <div className="text-center mb-4">
           <AnimatedCounter
             value={distance || 0}
-            label="DISTANCE"
+            label={distanceLabel || 'DISTANCE'}
             unit="meters"
             color="text-orange-500"
             size="xl"

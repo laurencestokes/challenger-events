@@ -47,7 +47,21 @@ export default function SessionControlPage() {
     }>
   >([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [newCompetitors, setNewCompetitors] = useState<Array<{ id: string; name: string }>>([]);
+  type ManualCompetitor = {
+    name: string;
+    age: number;
+    sex: 'male' | 'female';
+    weight: number;
+    isManual: true;
+  };
+
+  type SelectedCompetitor = { id: string; name: string } | ManualCompetitor;
+
+  const [newCompetitors, setNewCompetitors] = useState<SelectedCompetitor[]>([]);
+  const [manualName, setManualName] = useState('');
+  const [manualSex, setManualSex] = useState<'male' | 'female'>('male');
+  const [manualAge, setManualAge] = useState<number | ''>('');
+  const [manualWeight, setManualWeight] = useState<number | ''>('');
   const [updatingCompetitors, setUpdatingCompetitors] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState('');
   const [events, setEvents] = useState<
@@ -242,10 +256,19 @@ export default function SessionControlPage() {
       return;
     }
 
-    // Check for duplicate competitors
-    const competitorIds = newCompetitors.map((c) => c.id);
-    if (new Set(competitorIds).size !== competitorIds.length) {
+    // Check for duplicate competitors (ids for users, names for manual)
+    const userIds = newCompetitors
+      .filter((c): c is { id: string; name: string } => 'id' in c)
+      .map((c) => c.id);
+    if (new Set(userIds).size !== userIds.length) {
       setError('Please select different competitors');
+      return;
+    }
+    const manualNames = newCompetitors
+      .filter((c): c is ManualCompetitor => 'isManual' in c)
+      .map((c) => c.name.trim().toLowerCase());
+    if (new Set(manualNames).size !== manualNames.length) {
+      setError('Manual competitors must have unique names');
       return;
     }
 
@@ -253,29 +276,35 @@ export default function SessionControlPage() {
     setError('');
 
     try {
-      // Find and validate all selected competitors
-      const selectedCompetitors = newCompetitors.map((comp) => {
-        const user = users.find((u) => u.id === comp.id);
+      // Build competitors list from mix of manual and users
+      const competitors = newCompetitors.map((entry) => {
+        if ('isManual' in entry) {
+          if (!entry.name.trim() || entry.age <= 0 || entry.weight <= 0) {
+            throw new Error('Manual competitors require valid name, age and weight');
+          }
+          return {
+            id: `manual_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+            name: entry.name.trim(),
+            age: entry.age,
+            sex: entry.sex,
+            weight: entry.weight,
+          };
+        }
+        const user = users.find((u) => u.id === entry.id);
         if (!user) {
-          throw new Error(`Competitor ${comp.name} not found`);
+          throw new Error(`Competitor ${entry.name} not found`);
         }
-        return user;
+        if (!user.bodyweight || !user.dateOfBirth || !user.sex) {
+          throw new Error(`${user.name} is missing required profile data (weight, age, sex)`);
+        }
+        return {
+          id: user.id,
+          name: user.name,
+          age: calculateAge(user.dateOfBirth!),
+          sex: (user.sex === 'M' ? 'male' : 'female') as 'male' | 'female',
+          weight: user.bodyweight!,
+        };
       });
-
-      // Validate required data for all competitors
-      for (const comp of selectedCompetitors) {
-        if (!comp.bodyweight || !comp.dateOfBirth || !comp.sex) {
-          throw new Error(`${comp.name} is missing required profile data (weight, age, sex)`);
-        }
-      }
-
-      const competitors = selectedCompetitors.map((comp) => ({
-        id: comp.id,
-        name: comp.name,
-        age: calculateAge(comp.dateOfBirth!),
-        sex: (comp.sex === 'M' ? 'male' : 'female') as 'male' | 'female',
-        weight: comp.bodyweight!,
-      }));
 
       // Update via API
       const response = await fetch('/api/erg/sessions', {
@@ -308,6 +337,10 @@ export default function SessionControlPage() {
 
       // Reset selections
       setNewCompetitors([]);
+      setManualName('');
+      setManualAge('');
+      setManualWeight('');
+      setManualSex('male');
 
       // Stop mock data if running (it will restart automatically with new competitors)
       if (isMockRunning) {
@@ -599,7 +632,14 @@ export default function SessionControlPage() {
                               <div>
                                 <p className="text-xs text-gray-400 uppercase">Pace</p>
                                 <p className={`text-lg font-semibold ${color.text}`}>
-                                  {data.metrics.average_pace_s.toFixed(1)}s/500m
+                                  {(() => {
+                                    const s = data.metrics.average_pace_s;
+                                    const m = Math.floor(s / 60);
+                                    const rem = s - m * 60;
+                                    const remStr = rem < 10 ? `0${rem.toFixed(1)}` : rem.toFixed(1);
+                                    return `${m}:${remStr}`;
+                                  })()}{' '}
+                                  /500m
                                 </p>
                               </div>
                               <div>
@@ -712,24 +752,36 @@ export default function SessionControlPage() {
                   </label>
                   <div className="space-y-3">
                     {/* Selected Competitors */}
-                    {newCompetitors.map((competitor, index) => (
-                      <div
-                        key={competitor.id}
-                        className="flex items-center gap-3 p-3 bg-gray-700/50 rounded-lg"
-                      >
-                        <span className="text-orange-500 font-medium w-8">{index + 1}.</span>
-                        <span className="text-white flex-1">{competitor.name}</span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setNewCompetitors((prev) => prev.filter((c) => c.id !== competitor.id))
-                          }
-                          className="text-red-400 hover:text-red-300 transition-colors"
+                    {newCompetitors.map((competitor, index) => {
+                      const key = 'id' in competitor ? competitor.id : `manual_${index}`;
+                      const detail =
+                        'isManual' in competitor
+                          ? `${competitor.age}y, ${competitor.sex}, ${competitor.weight}kg`
+                          : '';
+                      return (
+                        <div
+                          key={key}
+                          className="flex items-center gap-3 p-3 bg-gray-700/50 rounded-lg"
                         >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
+                          <span className="text-orange-500 font-medium w-8">{index + 1}.</span>
+                          <span className="text-white flex-1">
+                            {competitor.name}
+                            {detail && (
+                              <span className="text-gray-400 text-xs ml-2">({detail})</span>
+                            )}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setNewCompetitors((prev) => prev.filter((_c, i) => i !== index))
+                            }
+                            className="text-red-400 hover:text-red-300 transition-colors"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      );
+                    })}
 
                     {/* Add Competitor Dropdown */}
                     {newCompetitors.length < 6 && (
@@ -738,7 +790,10 @@ export default function SessionControlPage() {
                         onChange={(e) => {
                           if (e.target.value) {
                             const user = users.find((u) => u.id === e.target.value);
-                            if (user && !newCompetitors.find((c) => c.id === user.id)) {
+                            if (
+                              user &&
+                              !newCompetitors.find((c) => 'id' in c && c.id === user.id)
+                            ) {
                               setNewCompetitors((prev) => [
                                 ...prev,
                                 { id: user.id, name: user.name },
@@ -751,7 +806,9 @@ export default function SessionControlPage() {
                       >
                         <option value="">Add Competitor ({newCompetitors.length + 1})</option>
                         {users
-                          .filter((user) => !newCompetitors.find((c) => c.id === user.id))
+                          .filter(
+                            (user) => !newCompetitors.find((c) => 'id' in c && c.id === user.id),
+                          )
                           .map((user) => {
                             const age = user.dateOfBirth ? calculateAge(user.dateOfBirth) : null;
                             const hasCompleteData = user.bodyweight && user.dateOfBirth && user.sex;
@@ -766,6 +823,106 @@ export default function SessionControlPage() {
                             );
                           })}
                       </select>
+                    )}
+
+                    {newCompetitors.length < 6 && (
+                      <div className="mt-6 pt-6 border-t border-gray-700/50">
+                        <div className="mb-3">
+                          <span className="text-gray-300 text-sm font-medium">
+                            Or add manual competitor
+                          </span>
+                        </div>
+                        <div className="bg-gray-800/40 border border-gray-700/60 rounded-lg p-4">
+                          <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+                            <div>
+                              <label className="block text-xs text-gray-400 mb-1">Name</label>
+                              <input
+                                type="text"
+                                placeholder="e.g., Jane Doe"
+                                value={manualName}
+                                onChange={(e) => setManualName(e.target.value)}
+                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-gray-400 mb-1">Sex</label>
+                              <select
+                                value={manualSex}
+                                onChange={(e) => setManualSex(e.target.value as 'male' | 'female')}
+                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                              >
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs text-gray-400 mb-1">Age</label>
+                              <input
+                                type="number"
+                                placeholder="Age"
+                                value={manualAge}
+                                onChange={(e) =>
+                                  setManualAge(e.target.value === '' ? '' : Number(e.target.value))
+                                }
+                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-gray-400 mb-1">
+                                Weight (kg)
+                              </label>
+                              <input
+                                type="number"
+                                placeholder="kg"
+                                value={manualWeight}
+                                onChange={(e) =>
+                                  setManualWeight(
+                                    e.target.value === '' ? '' : Number(e.target.value),
+                                  )
+                                }
+                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (
+                                    !manualName.trim() ||
+                                    manualAge === '' ||
+                                    manualWeight === '' ||
+                                    Number(manualAge) <= 0 ||
+                                    Number(manualWeight) <= 0
+                                  ) {
+                                    setError(
+                                      'Enter a valid name, age and weight for manual competitor',
+                                    );
+                                    return;
+                                  }
+                                  setError('');
+                                  setNewCompetitors((prev) => [
+                                    ...prev,
+                                    {
+                                      name: manualName.trim(),
+                                      age: Number(manualAge),
+                                      sex: manualSex,
+                                      weight: Number(manualWeight),
+                                      isManual: true,
+                                    },
+                                  ]);
+                                  setManualName('');
+                                  setManualAge('');
+                                  setManualWeight('');
+                                  setManualSex('male');
+                                }}
+                                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg"
+                              >
+                                Add Manual Competitor
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     )}
 
                     {newCompetitors.length === 0 && (

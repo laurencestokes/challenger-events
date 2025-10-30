@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { HeadToHeadSession, useErgSocket, Competitor } from '@/hooks/useErgSocket';
+import { getEventTypeById } from '@/constants/eventTypes';
 import ErgSpeedometer from '@/components/ErgSpeedometer';
 import Image from 'next/image';
 import { animate, createScope, Scope } from 'animejs';
@@ -235,7 +236,18 @@ export default function LiveErgDisplayPage() {
                       >
                         {data?.calculatedScore.toFixed(1) || '0'}
                       </p>
-                      <p className="text-sm text-gray-400 mt-2">{data?.metrics.distance_m || 0}m</p>
+                      <p className="text-sm text-gray-400 mt-2">
+                        {(() => {
+                          const eventType = session.eventType
+                            ? getEventTypeById(session.eventType)
+                            : undefined;
+                          const label = eventType?.inputType === 'TIME' ? 'remaining' : 'm';
+                          const value = data?.metrics.distance_m || 0;
+                          return eventType?.inputType === 'TIME'
+                            ? `${value}m ${label}`
+                            : `${value}${label}`;
+                        })()}
+                      </p>
                     </div>
                   );
                 })}
@@ -395,6 +407,10 @@ export default function LiveErgDisplayPage() {
                 ];
                 const color = colors[index % colors.length];
 
+                const eventType = session.eventType
+                  ? getEventTypeById(session.eventType)
+                  : undefined;
+                const distanceLabel = eventType?.inputType === 'TIME' ? 'REMAINING' : 'DISTANCE';
                 return (
                   <div key={competitor.id} className={`speedometer-${index + 1}`}>
                     <ErgSpeedometer
@@ -413,6 +429,7 @@ export default function LiveErgDisplayPage() {
                       calories={data?.metrics.calories}
                       accentColor={color.accent}
                       textColor={color.text}
+                      distanceLabel={distanceLabel}
                     />
                   </div>
                 );
