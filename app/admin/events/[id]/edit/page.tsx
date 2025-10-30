@@ -18,6 +18,8 @@ interface Event {
   isTeamEvent?: boolean;
   teamScoringMethod?: 'SUM' | 'AVERAGE' | 'BEST';
   maxTeamSize?: number;
+  country?: string;
+  postcode?: string;
 }
 
 export default function EditEvent({ params }: { params: { id: string } }) {
@@ -38,6 +40,8 @@ export default function EditEvent({ params }: { params: { id: string } }) {
   const [isTeamEvent, setIsTeamEvent] = useState(true);
   const [teamScoringMethod, setTeamScoringMethod] = useState<'SUM' | 'AVERAGE' | 'BEST'>('SUM');
   const [maxTeamSize, setMaxTeamSize] = useState<number>(4);
+  const [country, setCountry] = useState('GB');
+  const [postcode, setPostcode] = useState('');
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -52,6 +56,8 @@ export default function EditEvent({ params }: { params: { id: string } }) {
         setIsTeamEvent(eventData.isTeamEvent ?? true);
         setTeamScoringMethod(eventData.teamScoringMethod || 'SUM');
         setMaxTeamSize(eventData.maxTeamSize || 4);
+        setCountry(eventData.country || 'GB');
+        setPostcode(eventData.postcode || '');
 
         // Format dates for input fields
         if (eventData.startDate) {
@@ -99,6 +105,8 @@ export default function EditEvent({ params }: { params: { id: string } }) {
         isTeamEvent,
         teamScoringMethod: isTeamEvent ? teamScoringMethod : undefined,
         maxTeamSize: isTeamEvent ? maxTeamSize : undefined,
+        country,
+        postcode: postcode || undefined,
       };
 
       await api.put(`/api/events/${params.id}`, updates);
@@ -312,6 +320,46 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                     onChange={(e) => setEndDate(e.target.value)}
                     className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                   />
+                </div>
+              </div>
+
+              {/* Location Settings */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Location</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label
+                      htmlFor="country"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Country
+                    </label>
+                    <select
+                      id="country"
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                      <option value="GB">United Kingdom</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="postcode"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Postcode (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      id="postcode"
+                      value={postcode}
+                      onChange={(e) => setPostcode(e.target.value)}
+                      placeholder="e.g., SW1A 1AA"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
                 </div>
               </div>
 

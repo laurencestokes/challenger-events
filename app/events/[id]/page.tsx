@@ -630,12 +630,12 @@ export default function EventPage() {
                   <h2 className="text-white text-2xl font-bold mb-4">Event Stats</h2>
                   <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
                     <div className="space-y-3">
-                      <div className="flex justify-between">
+                      {/* <div className="flex justify-between">
                         <span className="text-sm text-gray-400">Participants</span>
                         <span className="text-sm font-medium text-white">
                           {event.participants?.length || 0}
                         </span>
-                      </div>
+                      </div> */}
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-400">Status</span>
                         <span
