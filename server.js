@@ -84,12 +84,23 @@ app.prepare().then(() => {
     }
   });
 
-  // Initialize Socket.IO
+  // Initialize Socket.IO with extended timeouts for erg client stability
   const io = new Server(httpServer, {
     cors: {
       origin: dev ? '*' : process.env.NEXT_PUBLIC_APP_URL,
       methods: ['GET', 'POST'],
     },
+    // Extended timeouts to prevent disconnects during inactivity
+    // pingInterval: how often server sends ping (default 25s)
+    pingInterval: 30000, // 30 seconds
+    // pingTimeout: time to wait for pong response before considering client dead (default 5s)
+    pingTimeout: 20000, // 20 seconds - longer timeout for erg client to respond
+    // upgradeTimeout: time to wait for upgrade from HTTP to WebSocket
+    upgradeTimeout: 30000, // 30 seconds
+    // allowEIO3: allow Engine.IO v3 clients (for compatibility)
+    allowEIO3: true,
+    // transports: allow both websocket and polling
+    transports: ['websocket', 'polling'],
   });
 
   // Store active sessions and Python client connections
@@ -102,29 +113,144 @@ app.prepare().then(() => {
   global.pythonClients = new Map(); // socketId -> socket
   global.teamErgSessions = new Map(); // sessionId -> session data
 
+  // Configure HTTP server keep-alive to prevent connection timeouts
+  httpServer.keepAliveTimeout = 65000; // 65 seconds (slightly longer than Socket.IO pingInterval)
+  httpServer.headersTimeout = 66000; // 66 seconds (must be > keepAliveTimeout)
+
   io.on('connection', (socket) => {
-    console.log('Client connected:', socket.id);
+    const transport = socket.conn.transport.name; // 'polling' or 'websocket'
+    console.log(`[CONNECT] Client connected: ${socket.id}, transport: ${transport}`);
+    console.log(`[CONNECT] Timestamp: ${new Date().toISOString()}`);
+
+    // Log connection details for debugging
+    socket.on('error', (error) => {
+      console.error(`[ERROR] Socket ${socket.id} error:`, error);
+    });
 
     // Python client authentication
     socket.on('python:authenticate', (data) => {
       const { apiSecret, sessionId } = data;
 
+      console.log(`[AUTH] Python client attempting authentication: ${socket.id}`);
+      console.log(`[AUTH] Has sessionId: ${!!sessionId}, sessionId: ${sessionId || 'none'}`);
+
       if (apiSecret === process.env.ERG_API_SECRET) {
         global.pythonClients.set(socket.id, socket);
         socket.join(`python-client`);
 
-        // Store Python client with session
+        // Check if this is a reconnection scenario
+        let reconnectedSession = null;
         if (sessionId) {
           const session = global.ergSessions.get(sessionId);
           if (session) {
+            // Check if session lost its Python client (reconnection scenario)
+            if (session.pythonSocketId && session.pythonSocketId !== socket.id) {
+              const oldSocketId = session.pythonSocketId;
+              // Check if old socket is still connected
+              const oldSocket = global.pythonClients.get(oldSocketId);
+              if (!oldSocket) {
+                console.log(
+                  `[RECONNECT] Session ${sessionId} lost Python client, attempting to reconnect`,
+                );
+                reconnectedSession = session;
+              }
+            }
+
             session.pythonSocketId = socket.id;
             global.ergSessions.set(sessionId, session);
+            console.log(`[AUTH] Python client ${socket.id} linked to session ${sessionId}`);
+
+            // If reconnecting, restore session data
+            if (reconnectedSession) {
+              console.log(
+                `[RECONNECT] ✅ Restoring session ${sessionId} for Python client ${socket.id}`,
+              );
+              console.log(`[RECONNECT] Competitors: ${JSON.stringify(session.competitors || [])}`);
+
+              socket.emit('python:authenticated', {
+                success: true,
+                reconnected: true,
+                sessionId,
+                session: {
+                  sessionId,
+                  competitors: session.competitors || [],
+                  eventId: session.eventId,
+                  eventType: session.eventType,
+                },
+              });
+
+              // Automatically restore the session by sending session:new event
+              // This tells the Python client to resume streaming for this session
+              setTimeout(() => {
+                console.log(
+                  `[RECONNECT] Sending session:new event to restore streaming for session ${sessionId}`,
+                );
+                socket.emit('session:new', {
+                  sessionId,
+                  competitors: session.competitors || [],
+                });
+              }, 500); // Small delay to ensure authentication response is sent first
+
+              // Notify session viewers that Python client reconnected
+              io.to(`session:${sessionId}`).emit('session:python-reconnected', { sessionId });
+            } else {
+              socket.emit('python:authenticated', { success: true });
+            }
+          } else {
+            console.warn(`[AUTH] Session ${sessionId} not found for Python client ${socket.id}`);
+            socket.emit('python:authenticated', { success: true });
+          }
+        } else {
+          // No sessionId provided - check if there's an orphaned session looking for a Python client
+          for (const [sId, s] of global.ergSessions.entries()) {
+            if (
+              s.competitors &&
+              s.competitors.length > 0 &&
+              (!s.pythonSocketId || !global.pythonClients.has(s.pythonSocketId))
+            ) {
+              console.log(
+                `[RECONNECT] Found orphaned session ${sId}, linking to Python client ${socket.id}`,
+              );
+              s.pythonSocketId = socket.id;
+              global.ergSessions.set(sId, s);
+              reconnectedSession = s;
+              socket.emit('python:authenticated', {
+                success: true,
+                reconnected: true,
+                sessionId: sId,
+                session: {
+                  sessionId: sId,
+                  competitors: s.competitors || [],
+                  eventId: s.eventId,
+                  eventType: s.eventType,
+                },
+              });
+
+              // Automatically restore the session by sending session:new event
+              setTimeout(() => {
+                console.log(
+                  `[RECONNECT] Sending session:new event to restore streaming for orphaned session ${sId}`,
+                );
+                socket.emit('session:new', {
+                  sessionId: sId,
+                  competitors: s.competitors || [],
+                });
+              }, 500); // Small delay to ensure authentication response is sent first
+
+              io.to(`session:${sId}`).emit('session:python-reconnected', { sessionId: sId });
+              break;
+            }
+          }
+
+          if (!reconnectedSession) {
+            socket.emit('python:authenticated', { success: true });
           }
         }
 
-        socket.emit('python:authenticated', { success: true });
-        console.log('Python client authenticated:', socket.id);
+        console.log(`[AUTH] ✅ Python client authenticated successfully: ${socket.id}`);
+        console.log(`[AUTH] Total Python clients connected: ${global.pythonClients.size}`);
       } else {
+        console.error(`[AUTH] ❌ Authentication failed for ${socket.id}: Invalid API secret`);
         socket.emit('python:authenticated', { success: false, error: 'Invalid API secret' });
         socket.disconnect();
       }
@@ -635,20 +761,52 @@ app.prepare().then(() => {
       }
     });
 
-    socket.on('disconnect', () => {
-      console.log('Client disconnected:', socket.id);
+    socket.on('disconnect', (reason) => {
+      const isPythonClient = global.pythonClients.has(socket.id);
+      const clientType = isPythonClient ? 'Python Erg Client' : 'Web Client';
 
-      // Clean up Python client
-      if (global.pythonClients.has(socket.id)) {
-        global.pythonClients.delete(socket.id);
-        console.log('Python client removed:', socket.id);
+      console.log(`[DISCONNECT] ${clientType} disconnected:`, socket.id);
+      console.log(`[DISCONNECT] Reason:`, reason);
+      console.log(`[DISCONNECT] Timestamp:`, new Date().toISOString());
+
+      // Common disconnect reasons:
+      // - 'transport close': Network error or client closed connection
+      // - 'ping timeout': Client didn't respond to ping (server-side timeout)
+      // - 'transport error': WebSocket transport error
+      // - 'server namespace disconnect': Server forcefully disconnected
+      // - 'client namespace disconnect': Client manually disconnected
+
+      if (reason === 'ping timeout') {
+        console.warn(`[DISCONNECT] ${clientType} timed out - client not responding to pings`);
+        console.warn(`[DISCONNECT] This may indicate network issues or client busy`);
       }
 
-      // Clean up sessions where this was the Python client
-      for (const [sessionId, session] of global.ergSessions.entries()) {
-        if (session.pythonSocketId === socket.id) {
-          io.to(`session:${sessionId}`).emit('session:python-disconnected');
-          session.pythonSocketId = null;
+      // Clean up Python client
+      if (isPythonClient) {
+        global.pythonClients.delete(socket.id);
+        console.log('[DISCONNECT] Python client removed from tracking:', socket.id);
+
+        // Mark sessions as disconnected but keep session data for reconnection
+        for (const [sessionId, session] of global.ergSessions.entries()) {
+          if (session.pythonSocketId === socket.id) {
+            console.log(
+              `[DISCONNECT] Session ${sessionId} lost Python client - keeping session data for reconnection`,
+            );
+            console.log(
+              `[DISCONNECT] Session has ${session.competitors?.length || 0} competitors - will attempt auto-reconnect`,
+            );
+
+            // Notify viewers of disconnect but keep session alive
+            io.to(`session:${sessionId}`).emit('session:python-disconnected');
+
+            // Clear Python socket ID to allow reconnection, but keep session data
+            session.pythonSocketId = null;
+            session.disconnectedAt = new Date().toISOString();
+            global.ergSessions.set(sessionId, session);
+
+            // Note: Session data is preserved - when Python client reconnects,
+            // it will automatically be linked back via the authentication handler
+          }
         }
       }
     });
