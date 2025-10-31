@@ -1020,9 +1020,40 @@ export default function SessionControlPage() {
               </div>
             )}
 
+            {/* Start Session Button - Show when session is idle or ended */}
+            {(sessionStatus === 'idle' || sessionStatus === 'ended') && (
+              <Button
+                onClick={() => {
+                  if (session) {
+                    startSession(session);
+                  }
+                }}
+                disabled={
+                  !isConnected ||
+                  !session ||
+                  (session.competitors?.length || 0) === 0 ||
+                  (!session.competitors && !session.competitor1)
+                }
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {sessionStatus === 'ended' ? 'Restart Session' : 'Start Session'}
+              </Button>
+            )}
+
+            {/* Show when session is starting */}
+            {sessionStatus === 'starting' && (
+              <Button
+                disabled
+                className="bg-green-600 text-white px-6 py-3 rounded-lg font-medium opacity-50 cursor-not-allowed"
+              >
+                Starting Session...
+              </Button>
+            )}
+
             <Button
               onClick={handleStopSession}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+              disabled={sessionStatus === 'idle' || sessionStatus === 'ended'}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Stop Session
             </Button>
