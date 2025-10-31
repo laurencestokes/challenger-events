@@ -219,7 +219,7 @@ export default function ErgSpeedometer({
                 className="text-gray-300 text-sm font-medium uppercase tracking-wider"
                 style={{ fontFamily: 'var(--font-ropa-sans)' }}
               >
-                PACE
+                AVERAGE PACE
               </div>
               <div
                 className="text-gray-400 text-xs uppercase tracking-wider"
@@ -233,7 +233,7 @@ export default function ErgSpeedometer({
             <div className="bg-gray-800/50 rounded-lg p-2 border border-orange-500/20">
               <AnimatedCounter
                 value={power}
-                label="POWER"
+                label="AVERAGE POWER"
                 unit="WATTS"
                 color="text-orange-500"
                 size="md"
