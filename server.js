@@ -291,6 +291,7 @@ app.prepare().then(() => {
       io.to('python-client').emit('session:new', {
         sessionId,
         competitors,
+        eventType: eventType || existingSession.eventType,
       });
 
       console.log(
