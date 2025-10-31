@@ -144,16 +144,19 @@ app.prepare().then(() => {
           const session = global.ergSessions.get(sessionId);
           if (session) {
             // Check if session lost its Python client (reconnection scenario)
-            if (session.pythonSocketId && session.pythonSocketId !== socket.id) {
-              const oldSocketId = session.pythonSocketId;
-              // Check if old socket is still connected
-              const oldSocket = global.pythonClients.get(oldSocketId);
-              if (!oldSocket) {
-                console.log(
-                  `[RECONNECT] Session ${sessionId} lost Python client, attempting to reconnect`,
-                );
-                reconnectedSession = session;
-              }
+            // This happens when:
+            // 1. Session has competitors (was active)
+            // 2. pythonSocketId is null or points to a disconnected client
+            const hasCompetitors = session.competitors && session.competitors.length > 0;
+            const oldSocketId = session.pythonSocketId;
+            const oldSocketStillConnected = oldSocketId && global.pythonClients.has(oldSocketId);
+
+            // Reconnection if: has competitors AND (no pythonSocketId OR old socket is disconnected)
+            if (hasCompetitors && (!oldSocketId || !oldSocketStillConnected)) {
+              console.log(
+                `[RECONNECT] Session ${sessionId} lost Python client (had ${session.competitors.length} competitors), reconnecting`,
+              );
+              reconnectedSession = session;
             }
 
             session.pythonSocketId = socket.id;
