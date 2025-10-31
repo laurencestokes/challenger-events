@@ -11,6 +11,7 @@ interface AnimatedCounterProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   precision?: number;
+  useOrbitron?: boolean;
 }
 
 export default function AnimatedCounter({
@@ -20,6 +21,7 @@ export default function AnimatedCounter({
   size = 'lg',
   className = '',
   precision = 0,
+  useOrbitron = false,
 }: AnimatedCounterProps) {
   const [displayValue, setDisplayValue] = useState(value);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -91,7 +93,7 @@ export default function AnimatedCounter({
       <div className="relative">
         {/* Subtle background glow effect */}
         <div
-          className="absolute inset-0 rounded-lg opacity-10 blur-sm"
+          className="absolute inset-0 rounded-lg opacity-5 blur-sm"
           style={{
             background: `radial-gradient(circle at center, #FF8333 0%, transparent 70%)`,
           }}
@@ -99,27 +101,26 @@ export default function AnimatedCounter({
 
         {/* Counter value */}
         <div
-          className={`counter-value font-bold mb-2 ${sizeClasses[size]} relative z-10`}
+          className={`counter-value font-bold mb-2 ${sizeClasses[size]} relative z-10 text-white ${useOrbitron ? 'font-display' : ''}`}
           style={{
-            fontFamily: 'var(--font-ropa-sans)',
-            color: '#FF8333',
-            textShadow: `0 0 5px #FF8333`,
+            fontFamily: useOrbitron ? 'var(--font-orbitron)' : 'var(--font-ropa-sans)',
             letterSpacing: '0.02em',
+            textShadow: '0 0 12px rgba(255, 131, 51, 0.8)',
           }}
         >
           {displayValue.toFixed(precision)}
         </div>
       </div>
       <div
-        className="text-gray-300 text-lg font-medium uppercase tracking-wider"
-        style={{ fontFamily: 'var(--font-ropa-sans)' }}
+        className={`text-gray-300 text-lg font-medium uppercase tracking-wider ${useOrbitron ? 'font-display' : ''}`}
+        style={{ fontFamily: useOrbitron ? 'var(--font-orbitron)' : 'var(--font-ropa-sans)' }}
       >
         {label}
       </div>
       {unit && (
         <div
-          className="text-gray-400 text-sm uppercase tracking-wider"
-          style={{ fontFamily: 'var(--font-ropa-sans)' }}
+          className={`text-gray-400 text-sm uppercase tracking-wider ${useOrbitron ? 'font-display' : ''}`}
+          style={{ fontFamily: useOrbitron ? 'var(--font-orbitron)' : 'var(--font-ropa-sans)' }}
         >
           {unit}
         </div>

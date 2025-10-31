@@ -14,7 +14,7 @@ export default function LiveErgDisplayPage() {
   const [session, setSession] = useState<null | undefined | HeadToHeadSession>(null);
   const [loading, setLoading] = useState(true);
   const [animationInitialized, setAnimationInitialized] = useState(false);
-  const [competitorsUpdating, setCompetitorsUpdating] = useState(false);
+  const [_competitorsUpdating, setCompetitorsUpdating] = useState(false);
 
   // Refs for animations
   const rootRef = useRef<HTMLDivElement>(null);
@@ -226,15 +226,15 @@ export default function LiveErgDisplayPage() {
                     <div key={competitor.id} className="bg-orange-500/20 rounded-xl p-6">
                       <p
                         className={`text-xl mb-2 ${color}`}
-                        style={{ fontFamily: 'var(--font-montserrat)' }}
+                        style={{ fontFamily: 'var(--font-ropa-sans)' }}
                       >
                         {competitor.name.toUpperCase()}
                       </p>
                       <p
-                        className={`text-5xl font-bold ${color}`}
-                        style={{ fontFamily: 'var(--font-montserrat)' }}
+                        className={`text-5xl font-bold ${color} font-display`}
+                        style={{ fontFamily: 'var(--font-orbitron)' }}
                       >
-                        {data?.calculatedScore.toFixed(1) || '0'}
+                        {data?.calculatedScore ? Math.round(data.calculatedScore) : '0'}
                       </p>
                       <p className="text-sm text-gray-400 mt-2">
                         {(() => {
@@ -265,110 +265,51 @@ export default function LiveErgDisplayPage() {
       className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col"
       style={{ backgroundColor: '#0F0F0F' }}
     >
-      {/* Header with Event Information Card */}
-      <div className="container mx-auto px-4 pt-8">
-        <div className="text-center mb-8">
-          {/* Event Information Card */}
-          <div ref={headerRef} className="header-card">
-            <div className="w-full h-80 bg-gray-800 rounded-2xl relative overflow-hidden">
-              {/* Event Background Image */}
-              <div className="absolute inset-0">
-                <Image
-                  src="/event_placeholder.png"
-                  alt="Head to Head Competition"
-                  fill
-                  className="object-cover"
-                />
-                {/* Dark overlay for text readability */}
-                <div className="absolute inset-0 bg-black/40" />
-              </div>
-
-              {/* Event Title and Description Overlay */}
-              <div className="absolute top-6 left-6 right-6 z-10">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h1 className="text-white font-bold text-4xl mb-2 font-display text-left">
-                      HEAD TO HEAD
-                    </h1>
-                    <p className="text-white/90 text-xl text-left">Live Erg Competition</p>
-                  </div>
-                  {/* Challenger Branding */}
-                  <div className="flex flex-col items-center space-y-2 ml-6">
-                    <a
-                      href="/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:opacity-80 transition-opacity"
-                    >
-                      <Image
-                        src="/challengerco-logo-text-only.png"
-                        alt="The Challenger Co."
-                        width={120}
-                        height={48}
-                        className="h-8 w-auto"
-                        priority
-                      />
-                    </a>
-                    <span className="px-3 py-1 text-xs font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
-                      LIVE
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Event Details Footer */}
-              <div
-                className="absolute bottom-0 left-0 right-0 p-6"
-                style={{ backgroundColor: '#4682b4' }}
+      {/* Header with Challenger Branding and Live Indicator */}
+      <div className="container mx-auto px-4 pt-8 pb-4">
+        <div ref={headerRef} className="header-card">
+          <div className="flex justify-between items-center">
+            {/* Spacer for balance */}
+            <div className="flex-1"></div>
+            {/* Challenger Branding - Centered */}
+            <div className="flex flex-col items-center">
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity"
               >
-                <div className="flex flex-col space-y-2">
-                  <div className="flex items-center space-x-3 text-white">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span className="text-lg font-medium">
-                      {new Date().toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-white mt-3">
-                    <span
-                      className={`px-3 py-1 text-sm font-medium rounded-full ${
-                        isConnected
-                          ? 'bg-green-500/20 text-green-400'
-                          : isReconnecting
-                            ? 'bg-yellow-500/20 text-yellow-400 animate-pulse'
-                            : 'bg-red-500/20 text-red-400'
-                      }`}
-                    >
-                      {isConnected
-                        ? '🟢 LIVE'
-                        : isReconnecting
-                          ? `🟡 RECONNECTING (${reconnectAttempt})`
-                          : '🔴 DISCONNECTED'}
-                    </span>
-                    <span className="text-sm text-white/80">
-                      Type: <span className="font-medium">Individual</span>
-                    </span>
-                    {competitorData.length === 0 && isConnected && !competitorsUpdating && (
-                      <span className="text-yellow-400 animate-pulse text-sm">
-                        Waiting for competitors to start...
-                      </span>
-                    )}
-                    {competitorsUpdating && (
-                      <span className="text-yellow-400 animate-pulse text-sm">
-                        Updating competitors...
-                      </span>
-                    )}
-                  </div>
-                </div>
+                <Image
+                  src="/challengerco-logo-text-only.png"
+                  alt="The Challenger Co."
+                  width={240}
+                  height={96}
+                  className="h-12 md:h-16 lg:h-20 w-auto"
+                  priority
+                />
+              </a>
+            </div>
+            {/* Live Indicator */}
+            <div className="flex-1 flex justify-end">
+              <div className="flex flex-col items-end space-y-2">
+                <span className="px-4 py-2 text-sm md:text-base font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
+                  LIVE
+                </span>
+                <span
+                  className={`px-3 py-1 text-xs font-medium rounded-full ${
+                    isConnected
+                      ? 'bg-green-500/20 text-green-400'
+                      : isReconnecting
+                        ? 'bg-yellow-500/20 text-yellow-400 animate-pulse'
+                        : 'bg-red-500/20 text-red-400'
+                  }`}
+                >
+                  {isConnected
+                    ? '🟢 CONNECTED'
+                    : isReconnecting
+                      ? `🟡 RECONNECTING (${reconnectAttempt})`
+                      : '🔴 DISCONNECTED'}
+                </span>
               </div>
             </div>
           </div>
@@ -376,8 +317,11 @@ export default function LiveErgDisplayPage() {
       </div>
 
       {/* Speedometer Dashboard */}
-      <div className="container mx-auto px-4">
-        <div className="bg-orange-500/10 backdrop-blur-sm rounded-2xl shadow-lg mb-6 border border-orange-500/20">
+      <div className="container mx-auto px-4 mt-8">
+        <div
+          className="backdrop-blur-sm rounded-2xl shadow-lg mb-6 border-2 border-orange-500/20"
+          style={{ backgroundColor: '#0F0F0F' }}
+        >
           <div className="p-8">
             <div
               className={`grid gap-8 ${

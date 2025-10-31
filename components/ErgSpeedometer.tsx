@@ -4,7 +4,8 @@ import React from 'react';
 import AnimatedCounter from './AnimatedCounter';
 
 // Helper function to create temperature-based gradient
-function getScoreGradient(score: number): string {
+// Currently not used
+function _getScoreGradient(score: number): string {
   if (score <= 100) {
     // Cold blue to cool green (0-100)
     const _intensity = score / 100;
@@ -49,7 +50,7 @@ function getScoreGradient(score: number): string {
 }
 
 // Helper function to create temperature-based glow
-function getScoreGlow(score: number): string {
+function _getScoreGlow(score: number): string {
   if (score <= 100) {
     return `0 0 10px #1e40af40`;
   } else if (score <= 200) {
@@ -74,7 +75,7 @@ function getScoreGlow(score: number): string {
 }
 
 // Helper function to get temperature-based text color
-function getScoreTextColor(score: number): string {
+function _getScoreTextColor(score: number): string {
   if (score <= 100) {
     return '#1e40af'; // Cold blue
   } else if (score <= 200) {
@@ -99,7 +100,7 @@ function getScoreTextColor(score: number): string {
 }
 
 // Helper function to get temperature-based text shadow
-function getScoreTextShadow(score: number): string {
+function _getScoreTextShadow(score: number): string {
   if (score <= 100) {
     return `0 0 20px #1e40af40, 0 0 40px #1e40af20`;
   } else if (score <= 200) {
@@ -168,11 +169,14 @@ export default function ErgSpeedometer({
 
   if (compact) {
     return (
-      <div className="bg-orange-500/10 rounded-xl p-4 border border-orange-500/20">
+      <div
+        className="rounded-xl p-4 border-2 border-orange-500/20"
+        style={{ backgroundColor: '#0F0F0F' }}
+      >
         <div className="text-center mb-4">
           <h3
-            className="text-lg font-bold mb-1 text-orange-500"
-            style={{ fontFamily: 'var(--font-montserrat)' }}
+            className="text-lg font-bold mb-1 text-white"
+            style={{ fontFamily: 'var(--font-ropa-sans)' }}
           >
             {name.toUpperCase()}
           </h3>
@@ -185,17 +189,18 @@ export default function ErgSpeedometer({
         {/* Compact Score Display */}
         <div className="text-center mb-4">
           <div
-            className="text-3xl font-bold mb-2"
+            className="text-2xl font-bold mb-2 font-display"
             style={{
-              color: getScoreTextColor(score),
-              textShadow: getScoreGlow(score),
+              color: '#E84C04',
+              textShadow: '0 0 10px rgba(232, 76, 4, 0.5)',
+              fontFamily: 'var(--font-orbitron)',
             }}
           >
-            <span className="score-value">{score.toFixed(1)}</span>
+            <span className="score-value">{Math.round(score)}</span>
           </div>
           <div
-            className="text-orange-500 text-sm tracking-wider font-light"
-            style={{ fontFamily: 'var(--font-montserrat)' }}
+            className="text-orange-500 text-sm tracking-wider font-light font-display"
+            style={{ fontFamily: 'var(--font-orbitron)' }}
           >
             CHALLENGER SCORE
           </div>
@@ -204,13 +209,15 @@ export default function ErgSpeedometer({
         {/* Compact Metrics */}
         <div className="grid grid-cols-2 gap-3 text-center">
           {pace !== undefined && (
-            <div className="bg-gray-800/50 rounded-lg p-2 border border-orange-500/20 text-center">
+            <div
+              className="rounded-lg p-2 border-2 border-orange-500/20 text-center"
+              style={{ backgroundColor: '#0F0F0F' }}
+            >
               <div
-                className="font-bold mb-1 text-3xl"
+                className="font-bold mb-1 text-3xl text-white"
                 style={{
-                  color: '#FF8333',
-                  textShadow: `0 0 5px #FF8333`,
                   fontFamily: 'var(--font-ropa-sans)',
+                  textShadow: '0 0 10px rgba(255, 131, 51, 0.8)',
                 }}
               >
                 {formatPace(pace)}
@@ -230,15 +237,26 @@ export default function ErgSpeedometer({
             </div>
           )}
           {power !== undefined && (
-            <div className="bg-gray-800/50 rounded-lg p-2 border border-orange-500/20">
-              <AnimatedCounter
-                value={power}
-                label="AVERAGE POWER"
-                unit="WATTS"
-                color="text-orange-500"
-                size="md"
-                precision={0}
-              />
+            <div
+              className="rounded-lg p-2 border-2 border-orange-500/20 text-center"
+              style={{ backgroundColor: '#0F0F0F' }}
+            >
+              <div
+                className="font-bold mb-1 text-3xl text-white"
+                style={{
+                  fontFamily: 'var(--font-ropa-sans)',
+                  textShadow: '0 0 10px rgba(255, 131, 51, 0.8)',
+                }}
+              >
+                {Math.round(power)}
+                <span className="text-xl">W</span>
+              </div>
+              <div
+                className="text-gray-300 text-sm font-medium uppercase tracking-wider"
+                style={{ fontFamily: 'var(--font-ropa-sans)' }}
+              >
+                AVERAGE POWER
+              </div>
             </div>
           )}
         </div>
@@ -270,8 +288,8 @@ export default function ErgSpeedometer({
     <div className="flex flex-col items-center">
       <div className="text-center mb-6">
         <h2
-          className="text-4xl font-bold mb-2 text-orange-500"
-          style={{ fontFamily: 'var(--font-montserrat)' }}
+          className="text-4xl font-bold mb-2 text-white"
+          style={{ fontFamily: 'var(--font-ropa-sans)' }}
         >
           {name.toUpperCase()}
         </h2>
@@ -282,42 +300,49 @@ export default function ErgSpeedometer({
       </div>
 
       {/* Futuristic Dashboard */}
-      <div className="bg-orange-500/5 rounded-2xl p-8 mb-6 relative overflow-hidden border border-orange-500/10 backdrop-blur-sm">
+      <div
+        className="rounded-2xl p-8 mb-6 relative overflow-hidden border-2 border-orange-500/10 backdrop-blur-sm"
+        style={{ backgroundColor: '#0F0F0F' }}
+      >
         {/* Background glow effect */}
         <div
-          className="absolute inset-0 rounded-2xl opacity-10"
+          className="absolute inset-0 rounded-2xl opacity-5"
           style={{
-            background: `radial-gradient(circle at center, #FF833320 0%, transparent 70%)`,
+            background: `radial-gradient(circle at center, #ffffff20 0%, transparent 70%)`,
           }}
         />
 
         {/* Main Score Display */}
         <div className="text-center mb-8">
           <div
-            className="text-9xl font-bold mb-4 relative"
+            className="text-7xl font-bold mb-4 relative font-display"
             style={{
-              color: getScoreTextColor(score),
-              textShadow: getScoreTextShadow(score),
+              color: '#E84C04',
+              textShadow: '0 0 20px rgba(232, 76, 4, 0.5), 0 0 40px rgba(232, 76, 4, 0.3)',
+              fontFamily: 'var(--font-orbitron)',
             }}
           >
-            <span className="score-value">{score.toFixed(1)}</span>
+            <span className="score-value">{Math.round(score)}</span>
           </div>
           <div
-            className="text-orange-500 text-2xl tracking-wider font-light"
-            style={{ fontFamily: 'var(--font-montserrat)' }}
+            className="text-orange-500 text-2xl tracking-wider font-light font-display"
+            style={{ fontFamily: 'var(--font-orbitron)' }}
           >
             CHALLENGER SCORE
           </div>
 
-          {/* Progress bar with temperature gradient */}
+          {/* Progress bar with challenger orange */}
           <div className="mt-6 max-w-md mx-auto">
-            <div className="bg-gray-800/50 rounded-full h-3 overflow-hidden">
+            <div
+              className="rounded-full h-3 overflow-hidden"
+              style={{ backgroundColor: '#1a1a1a' }}
+            >
               <div
                 className="h-full rounded-full transition-all duration-300 ease-out"
                 style={{
                   width: `${(score / 1000) * 100}%`,
-                  background: getScoreGradient(score),
-                  boxShadow: getScoreGlow(score),
+                  background: '#E84C04',
+                  boxShadow: '0 0 10px rgba(232, 76, 4, 0.5)',
                 }}
               />
             </div>
@@ -332,13 +357,15 @@ export default function ErgSpeedometer({
         <div className="grid grid-cols-2 gap-6">
           {/* Pace Card */}
           {pace !== undefined && (
-            <div className="bg-gray-800/30 rounded-xl p-6 border border-orange-500/20 backdrop-blur-sm text-center">
+            <div
+              className="rounded-xl p-6 border-2 border-orange-500/20 backdrop-blur-sm text-center"
+              style={{ backgroundColor: '#0F0F0F' }}
+            >
               <div
-                className="font-bold mb-2 text-5xl"
+                className="font-bold mb-2 text-5xl text-white"
                 style={{
-                  color: '#FF8333',
-                  textShadow: `0 0 5px #FF8333`,
                   fontFamily: 'var(--font-ropa-sans)',
+                  textShadow: '0 0 12px rgba(255, 131, 51, 0.8)',
                 }}
               >
                 {formatPace(pace)}
@@ -347,7 +374,7 @@ export default function ErgSpeedometer({
                 className="text-gray-300 text-lg font-medium uppercase tracking-wider"
                 style={{ fontFamily: 'var(--font-ropa-sans)' }}
               >
-                PACE
+                AVERAGE PACE
               </div>
               <div
                 className="text-gray-400 text-sm uppercase tracking-wider"
@@ -360,15 +387,26 @@ export default function ErgSpeedometer({
 
           {/* Power Card */}
           {power !== undefined && (
-            <div className="bg-gray-800/30 rounded-xl p-6 border border-orange-500/20 backdrop-blur-sm">
-              <AnimatedCounter
-                value={power}
-                label="POWER"
-                unit="WATTS"
-                color="text-orange-500"
-                size="lg"
-                precision={0}
-              />
+            <div
+              className="rounded-xl p-6 border-2 border-orange-500/20 backdrop-blur-sm text-center"
+              style={{ backgroundColor: '#0F0F0F' }}
+            >
+              <div
+                className="font-bold mb-2 text-5xl text-white"
+                style={{
+                  fontFamily: 'var(--font-ropa-sans)',
+                  textShadow: '0 0 12px rgba(255, 131, 51, 0.8)',
+                }}
+              >
+                {Math.round(power)}
+                <span className="text-2xl">W</span>
+              </div>
+              <div
+                className="text-gray-300 text-lg font-medium uppercase tracking-wider"
+                style={{ fontFamily: 'var(--font-ropa-sans)' }}
+              >
+                AVERAGE POWER
+              </div>
             </div>
           )}
         </div>
@@ -387,7 +425,10 @@ export default function ErgSpeedometer({
       </div>
 
       {/* Distance & Metrics Panel */}
-      <div className="bg-orange-500/20 rounded-xl p-6 w-full max-w-md border border-orange-500/30">
+      <div
+        className="rounded-xl p-6 w-full max-w-md border-2 border-orange-500/30"
+        style={{ backgroundColor: '#0F0F0F' }}
+      >
         <div className="text-center mb-4">
           <AnimatedCounter
             value={distance || 0}
