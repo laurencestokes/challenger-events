@@ -269,10 +269,10 @@ export default function LiveErgDisplayPage() {
       <div className="container mx-auto px-4 pt-8 pb-4">
         <div ref={headerRef} className="header-card">
           <div className="flex justify-between items-center">
-            {/* Spacer for balance */}
-            <div className="flex-1"></div>
-            {/* Challenger Branding - Centered */}
-            <div className="flex flex-col items-center">
+            {/* Spacer for balance - only on desktop */}
+            <div className="hidden md:block flex-1"></div>
+            {/* Challenger Branding - Left on mobile, centered on desktop */}
+            <div className="flex flex-col items-start md:items-center">
               <a
                 href="/"
                 target="_blank"
@@ -317,14 +317,14 @@ export default function LiveErgDisplayPage() {
       </div>
 
       {/* Speedometer Dashboard */}
-      <div className="container mx-auto px-4 mt-8">
+      <div className="container mx-auto px-4 mt-8 mb-8">
         <div
           className="backdrop-blur-sm rounded-2xl shadow-lg mb-6 border-2 border-orange-500/20"
           style={{ backgroundColor: '#0F0F0F' }}
         >
-          <div className="p-8">
+          <div className="p-4 sm:p-8">
             <div
-              className={`grid gap-8 ${
+              className={`grid gap-4 sm:gap-6 md:gap-8 ${
                 (session.competitors?.length ||
                   (session.competitor1 && session.competitor2 ? 2 : 0)) === 1
                   ? 'grid-cols-1'

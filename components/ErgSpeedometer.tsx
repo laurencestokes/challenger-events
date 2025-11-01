@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { animate } from 'animejs';
 import AnimatedCounter from './AnimatedCounter';
 
 // Helper function to create temperature-based gradient
@@ -159,6 +160,9 @@ export default function ErgSpeedometer({
   showTeamScore = false,
   distanceLabel,
 }: ErgSpeedometerProps) {
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const previousScore = useRef(score);
+
   const formatPace = (s?: number) => {
     if (s === undefined || isNaN(s)) return '-:--.-';
     const minutes = Math.floor(s / 60);
@@ -166,6 +170,40 @@ export default function ErgSpeedometer({
     const secondsStr = seconds < 10 ? `0${seconds.toFixed(1)}` : seconds.toFixed(1);
     return `${minutes}:${secondsStr}`;
   };
+
+  // Initialize progress bar width on mount
+  useEffect(() => {
+    if (progressBarRef.current) {
+      const initialWidth = (score / 1000) * 100;
+      progressBarRef.current.style.width = `${initialWidth}%`;
+      previousScore.current = score;
+    }
+  }, []);
+
+  // Animate progress bar width when score changes
+  useEffect(() => {
+    const targetWidth = (score / 1000) * 100;
+    const startWidth = (previousScore.current / 1000) * 100;
+
+    if (progressBarRef.current && score !== previousScore.current) {
+      animate(
+        {
+          targets: { width: startWidth },
+          width: targetWidth,
+          duration: 1200,
+          easing: 'easeOutCubic',
+          update: (anim: { animatables: { target: { width: number } }[] }) => {
+            if (progressBarRef.current) {
+              progressBarRef.current.style.width = `${anim.animatables[0].target.width}%`;
+            }
+          },
+        },
+        { width: targetWidth },
+      );
+    }
+
+    previousScore.current = score;
+  }, [score]);
 
   if (compact) {
     return (
@@ -301,7 +339,7 @@ export default function ErgSpeedometer({
 
       {/* Futuristic Dashboard */}
       <div
-        className="rounded-2xl p-8 mb-6 relative overflow-hidden border-2 border-orange-500/10 backdrop-blur-sm"
+        className="rounded-2xl p-4 sm:p-8 mb-4 sm:mb-6 relative overflow-hidden border-2 border-orange-500/10 backdrop-blur-sm"
         style={{ backgroundColor: '#0F0F0F' }}
       >
         {/* Background glow effect */}
@@ -313,9 +351,9 @@ export default function ErgSpeedometer({
         />
 
         {/* Main Score Display */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-4 sm:mb-6 md:mb-8 px-2">
           <div
-            className="text-7xl font-bold mb-4 relative font-display"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-3 sm:mb-4 relative font-display"
             style={{
               color: '#E84C04',
               textShadow: '0 0 20px rgba(232, 76, 4, 0.5), 0 0 40px rgba(232, 76, 4, 0.3)',
@@ -325,22 +363,22 @@ export default function ErgSpeedometer({
             <span className="score-value">{Math.round(score)}</span>
           </div>
           <div
-            className="text-orange-500 text-2xl tracking-wider font-light font-display"
+            className="text-orange-500 text-base sm:text-lg md:text-xl lg:text-2xl tracking-wider font-light font-display"
             style={{ fontFamily: 'var(--font-orbitron)' }}
           >
             CHALLENGER SCORE
           </div>
 
           {/* Progress bar with challenger orange */}
-          <div className="mt-6 max-w-md mx-auto">
+          <div className="mt-3 sm:mt-4 md:mt-6 max-w-md mx-auto px-2">
             <div
               className="rounded-full h-3 overflow-hidden"
               style={{ backgroundColor: '#1a1a1a' }}
             >
               <div
-                className="h-full rounded-full transition-all duration-300 ease-out"
+                ref={progressBarRef}
+                className="h-full rounded-full"
                 style={{
-                  width: `${(score / 1000) * 100}%`,
                   background: '#E84C04',
                   boxShadow: '0 0 10px rgba(232, 76, 4, 0.5)',
                 }}
@@ -354,15 +392,15 @@ export default function ErgSpeedometer({
         </div>
 
         {/* Metrics Grid */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6">
           {/* Pace Card */}
           {pace !== undefined && (
             <div
-              className="rounded-xl p-6 border-2 border-orange-500/20 backdrop-blur-sm text-center"
+              className="rounded-xl p-3 sm:p-6 border-2 border-orange-500/20 backdrop-blur-sm text-center"
               style={{ backgroundColor: '#0F0F0F' }}
             >
               <div
-                className="font-bold mb-2 text-5xl text-white"
+                className="font-bold mb-2 text-3xl sm:text-4xl md:text-5xl text-white"
                 style={{
                   fontFamily: 'var(--font-ropa-sans)',
                   textShadow: '0 0 12px rgba(255, 131, 51, 0.8)',
@@ -388,11 +426,11 @@ export default function ErgSpeedometer({
           {/* Power Card */}
           {power !== undefined && (
             <div
-              className="rounded-xl p-6 border-2 border-orange-500/20 backdrop-blur-sm text-center"
+              className="rounded-xl p-3 sm:p-6 border-2 border-orange-500/20 backdrop-blur-sm text-center"
               style={{ backgroundColor: '#0F0F0F' }}
             >
               <div
-                className="font-bold mb-2 text-5xl text-white"
+                className="font-bold mb-2 text-3xl sm:text-4xl md:text-5xl text-white"
                 style={{
                   fontFamily: 'var(--font-ropa-sans)',
                   textShadow: '0 0 12px rgba(255, 131, 51, 0.8)',
@@ -426,28 +464,28 @@ export default function ErgSpeedometer({
 
       {/* Distance & Metrics Panel */}
       <div
-        className="rounded-xl p-6 w-full max-w-md border-2 border-orange-500/30"
+        className="rounded-xl p-4 sm:p-6 w-full max-w-md border-2 border-orange-500/30"
         style={{ backgroundColor: '#0F0F0F' }}
       >
-        <div className="text-center mb-4">
+        <div className="text-center mb-3 sm:mb-4">
           <AnimatedCounter
             value={distance || 0}
             label={distanceLabel || 'DISTANCE'}
             unit="meters"
             color="text-orange-500"
-            size="xl"
+            size="md"
             precision={0}
           />
         </div>
 
-        <div className="flex justify-center gap-8">
+        <div className="flex justify-center gap-3 sm:gap-4 md:gap-6 lg:gap-8">
           {heartRate !== undefined && (
             <AnimatedCounter
               value={heartRate}
               label="HEART RATE"
               unit="BPM"
               color="text-orange-500"
-              size="md"
+              size="sm"
               precision={0}
             />
           )}
@@ -457,7 +495,7 @@ export default function ErgSpeedometer({
               label="STROKE RATE"
               unit="SPM"
               color="text-orange-500"
-              size="md"
+              size="sm"
               precision={0}
             />
           )}
@@ -467,7 +505,7 @@ export default function ErgSpeedometer({
               label="CALORIES"
               unit="CAL"
               color="text-orange-500"
-              size="md"
+              size="sm"
               precision={0}
             />
           )}
