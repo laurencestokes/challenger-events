@@ -15,6 +15,8 @@ export default function LiveErgDisplayPage() {
   const [loading, setLoading] = useState(true);
   const [animationInitialized, setAnimationInitialized] = useState(false);
   const [_competitorsUpdating, setCompetitorsUpdating] = useState(false);
+  const [viewMode, setViewMode] = useState<'full' | 'focused'>('full');
+  const [focusedCompetitorIndex, setFocusedCompetitorIndex] = useState(0);
 
   // Refs for animations
   const rootRef = useRef<HTMLDivElement>(null);
@@ -289,7 +291,7 @@ export default function LiveErgDisplayPage() {
                 />
               </a>
             </div>
-            {/* Live Indicator */}
+            {/* View Toggle & Live Indicator */}
             <div className="flex-1 flex justify-end">
               <div className="flex flex-col items-end space-y-2">
                 <span className="px-4 py-2 text-sm md:text-base font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
@@ -310,6 +312,20 @@ export default function LiveErgDisplayPage() {
                       ? `🟡 RECONNECTING (${reconnectAttempt})`
                       : '🔴 DISCONNECTED'}
                 </span>
+                {/* View Toggle Button */}
+                {session &&
+                  (session.competitors?.length ||
+                    (session.competitor1 && session.competitor2 ? 2 : 0)) > 1 && (
+                    <button
+                      onClick={() => {
+                        setViewMode(viewMode === 'full' ? 'focused' : 'full');
+                      }}
+                      className="px-3 py-1.5 text-xs font-medium rounded-lg border-2 border-orange-500/30 bg-orange-500/10 hover:bg-orange-500/20 text-white transition-colors"
+                      title={viewMode === 'full' ? 'Switch to focused view' : 'Switch to full view'}
+                    >
+                      {viewMode === 'full' ? '👁️ Focus' : '📊 Full'}
+                    </button>
+                  )}
               </div>
             </div>
           </div>
@@ -318,69 +334,205 @@ export default function LiveErgDisplayPage() {
 
       {/* Speedometer Dashboard */}
       <div className="container mx-auto px-4 mt-8 mb-8">
-        <div
-          className="backdrop-blur-sm rounded-2xl shadow-lg mb-6 border-2 border-orange-500/20"
-          style={{ backgroundColor: '#0F0F0F' }}
-        >
-          <div className="p-4 sm:p-8">
+        {viewMode === 'focused' ? (
+          /* Focused View */
+          <div className="space-y-6">
+            {/* Main Focused Competitor */}
             <div
-              className={`grid gap-4 sm:gap-6 md:gap-8 ${
-                (session.competitors?.length ||
-                  (session.competitor1 && session.competitor2 ? 2 : 0)) === 1
-                  ? 'grid-cols-1'
-                  : (session.competitors?.length ||
-                        (session.competitor1 && session.competitor2 ? 2 : 0)) === 2
-                    ? 'grid-cols-1 lg:grid-cols-2'
-                    : 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
-              }`}
+              className="backdrop-blur-sm rounded-2xl shadow-lg border-2 border-orange-500/20"
+              style={{ backgroundColor: '#0F0F0F' }}
             >
-              {(
+              <div className="p-4 sm:p-8">
+                {(() => {
+                  const competitors =
+                    session.competitors ||
+                    (session.competitor1 && session.competitor2
+                      ? [session.competitor1, session.competitor2]
+                      : []);
+                  const focusedCompetitor = competitors[focusedCompetitorIndex];
+                  const focusedData = competitorData[focusedCompetitorIndex];
+                  const colors = [
+                    { accent: '#3b82f6', text: 'text-blue-400' },
+                    { accent: '#a855f7', text: 'text-purple-400' },
+                    { accent: '#10b981', text: 'text-green-400' },
+                    { accent: '#f59e0b', text: 'text-yellow-400' },
+                    { accent: '#ef4444', text: 'text-red-400' },
+                    { accent: '#ec4899', text: 'text-pink-400' },
+                  ];
+                  const color = colors[focusedCompetitorIndex % colors.length];
+                  const eventType = session.eventType
+                    ? getEventTypeById(session.eventType)
+                    : undefined;
+                  const distanceLabel = eventType?.inputType === 'TIME' ? 'REMAINING' : 'DISTANCE';
+
+                  return focusedCompetitor ? (
+                    <div className={`speedometer-1`}>
+                      <ErgSpeedometer
+                        key={`focused-${focusedCompetitor.id}-${focusedData?.calculatedScore || 0}`}
+                        name={focusedCompetitor.name}
+                        age={focusedCompetitor.age}
+                        sex={focusedCompetitor.sex}
+                        weight={focusedCompetitor.weight}
+                        score={focusedData?.calculatedScore || 0}
+                        pace={focusedData?.metrics.average_pace_s}
+                        power={focusedData?.metrics.average_power_W}
+                        distance={focusedData?.metrics.distance_m}
+                        duration={focusedData?.metrics.duration_s}
+                        heartRate={focusedData?.metrics.heartRate}
+                        strokeRate={focusedData?.metrics.strokeRate}
+                        calories={focusedData?.metrics.calories}
+                        accentColor={color.accent}
+                        textColor={color.text}
+                        distanceLabel={distanceLabel}
+                        wideLayout={true}
+                      />
+                    </div>
+                  ) : null;
+                })()}
+              </div>
+            </div>
+
+            {/* Other Competitors - Compact View */}
+            {(() => {
+              const competitors =
                 session.competitors ||
                 (session.competitor1 && session.competitor2
                   ? [session.competitor1, session.competitor2]
-                  : [])
-              ).map((competitor, index) => {
-                const data = competitorData[index];
-                const colors = [
-                  { accent: '#3b82f6', text: 'text-blue-400' },
-                  { accent: '#a855f7', text: 'text-purple-400' },
-                  { accent: '#10b981', text: 'text-green-400' },
-                  { accent: '#f59e0b', text: 'text-yellow-400' },
-                  { accent: '#ef4444', text: 'text-red-400' },
-                  { accent: '#ec4899', text: 'text-pink-400' },
-                ];
-                const color = colors[index % colors.length];
+                  : []);
+              const otherCompetitors = competitors.filter(
+                (_, index) => index !== focusedCompetitorIndex,
+              );
 
-                const eventType = session.eventType
-                  ? getEventTypeById(session.eventType)
-                  : undefined;
-                const distanceLabel = eventType?.inputType === 'TIME' ? 'REMAINING' : 'DISTANCE';
-                return (
-                  <div key={competitor.id} className={`speedometer-${index + 1}`}>
-                    <ErgSpeedometer
-                      key={`comp${index + 1}-${competitor.id}-${data?.calculatedScore || 0}`}
-                      name={competitor.name}
-                      age={competitor.age}
-                      sex={competitor.sex}
-                      weight={competitor.weight}
-                      score={data?.calculatedScore || 0}
-                      pace={data?.metrics.average_pace_s}
-                      power={data?.metrics.average_power_W}
-                      distance={data?.metrics.distance_m}
-                      duration={data?.metrics.duration_s}
-                      heartRate={data?.metrics.heartRate}
-                      strokeRate={data?.metrics.strokeRate}
-                      calories={data?.metrics.calories}
-                      accentColor={color.accent}
-                      textColor={color.text}
-                      distanceLabel={distanceLabel}
-                    />
+              if (otherCompetitors.length === 0) return null;
+
+              return (
+                <div
+                  className="backdrop-blur-sm rounded-2xl shadow-lg border-2 border-orange-500/20"
+                  style={{ backgroundColor: '#0F0F0F' }}
+                >
+                  <div className="p-4">
+                    <h3 className="text-sm font-medium text-gray-400 mb-3 text-center">
+                      OTHER COMPETITORS
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {otherCompetitors.map((competitor) => {
+                        const index = competitors.findIndex((c) => c.id === competitor.id);
+                        const data = competitorData[index];
+                        const colors = [
+                          { accent: '#3b82f6', text: 'text-blue-400' },
+                          { accent: '#a855f7', text: 'text-purple-400' },
+                          { accent: '#10b981', text: 'text-green-400' },
+                          { accent: '#f59e0b', text: 'text-yellow-400' },
+                          { accent: '#ef4444', text: 'text-red-400' },
+                          { accent: '#ec4899', text: 'text-pink-400' },
+                        ];
+                        const color = colors[index % colors.length];
+                        const eventType = session.eventType
+                          ? getEventTypeById(session.eventType)
+                          : undefined;
+                        const distanceLabel =
+                          eventType?.inputType === 'TIME' ? 'REMAINING' : 'DISTANCE';
+
+                        return (
+                          <div
+                            key={competitor.id}
+                            className="cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => setFocusedCompetitorIndex(index)}
+                          >
+                            <ErgSpeedometer
+                              key={`compact-${competitor.id}-${data?.calculatedScore || 0}`}
+                              name={competitor.name}
+                              age={competitor.age}
+                              sex={competitor.sex}
+                              weight={competitor.weight}
+                              score={data?.calculatedScore || 0}
+                              pace={data?.metrics.average_pace_s}
+                              power={data?.metrics.average_power_W}
+                              distance={data?.metrics.distance_m}
+                              duration={data?.metrics.duration_s}
+                              heartRate={data?.metrics.heartRate}
+                              strokeRate={data?.metrics.strokeRate}
+                              calories={data?.metrics.calories}
+                              accentColor={color.accent}
+                              textColor={color.text}
+                              distanceLabel={distanceLabel}
+                              compact={true}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                );
-              })}
+                </div>
+              );
+            })()}
+          </div>
+        ) : (
+          /* Full View */
+          <div
+            className="backdrop-blur-sm rounded-2xl shadow-lg mb-6 border-2 border-orange-500/20"
+            style={{ backgroundColor: '#0F0F0F' }}
+          >
+            <div className="p-4 sm:p-8">
+              <div
+                className={`grid gap-4 sm:gap-6 md:gap-8 ${
+                  (session.competitors?.length ||
+                    (session.competitor1 && session.competitor2 ? 2 : 0)) === 1
+                    ? 'grid-cols-1'
+                    : (session.competitors?.length ||
+                          (session.competitor1 && session.competitor2 ? 2 : 0)) === 2
+                      ? 'grid-cols-1 lg:grid-cols-2'
+                      : 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
+                }`}
+              >
+                {(
+                  session.competitors ||
+                  (session.competitor1 && session.competitor2
+                    ? [session.competitor1, session.competitor2]
+                    : [])
+                ).map((competitor, index) => {
+                  const data = competitorData[index];
+                  const colors = [
+                    { accent: '#3b82f6', text: 'text-blue-400' },
+                    { accent: '#a855f7', text: 'text-purple-400' },
+                    { accent: '#10b981', text: 'text-green-400' },
+                    { accent: '#f59e0b', text: 'text-yellow-400' },
+                    { accent: '#ef4444', text: 'text-red-400' },
+                    { accent: '#ec4899', text: 'text-pink-400' },
+                  ];
+                  const color = colors[index % colors.length];
+
+                  const eventType = session.eventType
+                    ? getEventTypeById(session.eventType)
+                    : undefined;
+                  const distanceLabel = eventType?.inputType === 'TIME' ? 'REMAINING' : 'DISTANCE';
+                  return (
+                    <div key={competitor.id} className={`speedometer-${index + 1}`}>
+                      <ErgSpeedometer
+                        key={`comp${index + 1}-${competitor.id}-${data?.calculatedScore || 0}`}
+                        name={competitor.name}
+                        age={competitor.age}
+                        sex={competitor.sex}
+                        weight={competitor.weight}
+                        score={data?.calculatedScore || 0}
+                        pace={data?.metrics.average_pace_s}
+                        power={data?.metrics.average_power_W}
+                        distance={data?.metrics.distance_m}
+                        duration={data?.metrics.duration_s}
+                        heartRate={data?.metrics.heartRate}
+                        strokeRate={data?.metrics.strokeRate}
+                        calories={data?.metrics.calories}
+                        accentColor={color.accent}
+                        textColor={color.text}
+                        distanceLabel={distanceLabel}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {error && (
           <div className="mt-4 text-center">

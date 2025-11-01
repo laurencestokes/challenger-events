@@ -144,6 +144,7 @@ interface ErgSpeedometerProps {
   teamScore?: number;
   showTeamScore?: boolean;
   distanceLabel?: string;
+  wideLayout?: boolean; // For focused view with side-by-side layout
 }
 
 export default function ErgSpeedometer({
@@ -159,6 +160,7 @@ export default function ErgSpeedometer({
   teamScore,
   showTeamScore = false,
   distanceLabel,
+  wideLayout = false,
 }: ErgSpeedometerProps) {
   const progressBarRef = useRef<HTMLDivElement>(null);
   const previousScore = useRef(score);
@@ -322,6 +324,192 @@ export default function ErgSpeedometer({
     );
   }
 
+  // Wide layout for focused view (side-by-side)
+  if (wideLayout) {
+    return (
+      <div className="w-full">
+        <div className="text-center mb-6">
+          <h2
+            className="text-4xl font-bold mb-2 text-white"
+            style={{ fontFamily: 'var(--font-ropa-sans)' }}
+          >
+            {name.toUpperCase()}
+          </h2>
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
+          {/* Left side: Main Dashboard */}
+          <div className="flex-1 w-full lg:w-auto">
+            <div
+              className="rounded-2xl p-4 sm:p-8 relative overflow-hidden border-2 border-orange-500/10 backdrop-blur-sm"
+              style={{ backgroundColor: '#0F0F0F' }}
+            >
+              {/* Background glow effect */}
+              <div
+                className="absolute inset-0 rounded-2xl opacity-5"
+                style={{
+                  background: `radial-gradient(circle at center, #ffffff20 0%, transparent 70%)`,
+                }}
+              />
+
+              {/* Main Score Display */}
+              <div className="text-center mb-4 sm:mb-6 md:mb-8 px-2">
+                <div
+                  className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-3 sm:mb-4 relative font-display"
+                  style={{
+                    color: '#E84C04',
+                    textShadow: '0 0 20px rgba(232, 76, 4, 0.5), 0 0 40px rgba(232, 76, 4, 0.3)',
+                    fontFamily: 'var(--font-orbitron)',
+                  }}
+                >
+                  <span className="score-value">{Math.round(score)}</span>
+                </div>
+                <div
+                  className="text-orange-500 text-base sm:text-lg md:text-xl lg:text-2xl tracking-wider font-light font-display"
+                  style={{ fontFamily: 'var(--font-orbitron)' }}
+                >
+                  CHALLENGER SCORE
+                </div>
+
+                {/* Progress bar with challenger orange */}
+                <div className="mt-3 sm:mt-4 md:mt-6 max-w-md mx-auto px-2">
+                  <div
+                    className="rounded-full h-3 overflow-hidden"
+                    style={{ backgroundColor: '#1a1a1a' }}
+                  >
+                    <div
+                      ref={progressBarRef}
+                      className="h-full rounded-full"
+                      style={{
+                        background: '#E84C04',
+                        boxShadow: '0 0 10px rgba(232, 76, 4, 0.5)',
+                      }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-400 mt-2">
+                    <span>0</span>
+                    <span>1000</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Metrics Grid */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-6">
+                {/* Pace Card */}
+                {pace !== undefined && (
+                  <div
+                    className="rounded-xl p-3 sm:p-6 border-2 border-orange-500/20 backdrop-blur-sm text-center"
+                    style={{ backgroundColor: '#0F0F0F' }}
+                  >
+                    <div
+                      className="font-bold mb-2 text-3xl sm:text-4xl md:text-5xl text-white"
+                      style={{
+                        fontFamily: 'var(--font-ropa-sans)',
+                        textShadow: '0 0 12px rgba(255, 131, 51, 0.8)',
+                      }}
+                    >
+                      {formatPace(pace)}
+                    </div>
+                    <div
+                      className="text-gray-300 text-lg font-medium uppercase tracking-wider"
+                      style={{ fontFamily: 'var(--font-ropa-sans)' }}
+                    >
+                      AVERAGE PACE
+                    </div>
+                    <div
+                      className="text-gray-400 text-sm uppercase tracking-wider"
+                      style={{ fontFamily: 'var(--font-ropa-sans)' }}
+                    >
+                      /500m
+                    </div>
+                  </div>
+                )}
+
+                {/* Power Card */}
+                {power !== undefined && (
+                  <div
+                    className="rounded-xl p-3 sm:p-6 border-2 border-orange-500/20 backdrop-blur-sm text-center"
+                    style={{ backgroundColor: '#0F0F0F' }}
+                  >
+                    <div
+                      className="font-bold mb-2 text-3xl sm:text-4xl md:text-5xl text-white"
+                      style={{
+                        fontFamily: 'var(--font-ropa-sans)',
+                        textShadow: '0 0 12px rgba(255, 131, 51, 0.8)',
+                      }}
+                    >
+                      {Math.round(power)}
+                      <span className="text-2xl">W</span>
+                    </div>
+                    <div
+                      className="text-gray-300 text-lg font-medium uppercase tracking-wider"
+                      style={{ fontFamily: 'var(--font-ropa-sans)' }}
+                    >
+                      AVERAGE POWER
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right side: Distance & Metrics Panel */}
+          <div className="w-full lg:w-auto lg:min-w-[280px]">
+            <div
+              className="rounded-xl p-4 sm:p-6 border-2 border-orange-500/30"
+              style={{ backgroundColor: '#0F0F0F' }}
+            >
+              <div className="text-center mb-3 sm:mb-4">
+                <AnimatedCounter
+                  value={distance || 0}
+                  label={distanceLabel || 'DISTANCE'}
+                  unit="meters"
+                  color="text-orange-500"
+                  size="md"
+                  precision={0}
+                />
+              </div>
+
+              <div className="flex justify-center gap-3 sm:gap-4 md:gap-6 lg:gap-8">
+                {heartRate !== undefined && (
+                  <AnimatedCounter
+                    value={heartRate}
+                    label="HEART RATE"
+                    unit="BPM"
+                    color="text-orange-500"
+                    size="sm"
+                    precision={0}
+                  />
+                )}
+                {strokeRate !== undefined && (
+                  <AnimatedCounter
+                    value={strokeRate}
+                    label="STROKE RATE"
+                    unit="SPM"
+                    color="text-orange-500"
+                    size="sm"
+                    precision={0}
+                  />
+                )}
+                {calories !== undefined && (
+                  <AnimatedCounter
+                    value={calories}
+                    label="CALORIES"
+                    unit="CAL"
+                    color="text-orange-500"
+                    size="sm"
+                    precision={0}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Standard vertical layout
   return (
     <div className="flex flex-col items-center">
       <div className="text-center mb-6">
