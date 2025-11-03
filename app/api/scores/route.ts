@@ -61,36 +61,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Competitor not found' }, { status: 404 });
     }
 
-    // Check if competitor is verified (only for competitors)
-    if (competitor.role === 'COMPETITOR' && competitor.verificationStatus !== 'VERIFIED') {
-      const statusMessage =
-        competitor.verificationStatus === 'NEEDS_REVERIFICATION'
-          ? 'Competitor needs re-verification due to profile changes. Please contact an administrator.'
-          : 'Competitor verification required. Please contact an administrator to verify this competitor before submitting scores.';
+    // Skip verification checks for guest users
+    if (!competitor.isGuest) {
+      // Check if competitor is verified (only for regular competitors)
+      if (competitor.role === 'COMPETITOR' && competitor.verificationStatus !== 'VERIFIED') {
+        const statusMessage =
+          competitor.verificationStatus === 'NEEDS_REVERIFICATION'
+            ? 'Competitor needs re-verification due to profile changes. Please contact an administrator.'
+            : 'Competitor verification required. Please contact an administrator to verify this competitor before submitting scores.';
 
-      return NextResponse.json(
-        {
-          error: statusMessage,
-          requiresVerification: true,
-        },
-        { status: 403 },
-      );
-    }
+        return NextResponse.json(
+          {
+            error: statusMessage,
+            requiresVerification: true,
+          },
+          { status: 403 },
+        );
+      }
 
-    // Check if competitor has been weighed and verified for this specific competition
-    const needsCompetitionVerification = await checkCompetitionVerificationRequired(
-      competitorId,
-      eventId,
-    );
-    if (needsCompetitionVerification) {
-      return NextResponse.json(
-        {
-          error:
-            'Competitor must be weighed and verified for this competition before submitting scores. Please contact an administrator.',
-          requiresCompetitionVerification: true,
-        },
-        { status: 403 },
+      // Check if competitor has been weighed and verified for this specific competition
+      const needsCompetitionVerification = await checkCompetitionVerificationRequired(
+        competitorId,
+        eventId,
       );
+      if (needsCompetitionVerification) {
+        return NextResponse.json(
+          {
+            error:
+              'Competitor must be weighed and verified for this competition before submitting scores. Please contact an administrator.',
+            requiresCompetitionVerification: true,
+          },
+          { status: 403 },
+        );
+      }
     }
 
     // Calculate the scoring system result

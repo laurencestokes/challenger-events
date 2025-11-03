@@ -669,6 +669,49 @@ export default function EventDetails() {
                 <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
                 <div className="space-y-3">
                   <Link
+                    href={`/admin/events/${eventId}/participants`}
+                    className="block w-full px-4 py-3 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-lg transition-colors group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <svg
+                          className="w-5 h-5 text-green-400 mr-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                          />
+                        </svg>
+                        <span className="text-white font-medium group-hover:text-green-400 transition-colors">
+                          Manage Participants
+                        </span>
+                      </div>
+                      <svg
+                        className="w-5 h-5 text-gray-400 group-hover:text-green-400 transition-colors"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-sm text-gray-400 mt-1 block ml-8">
+                      Add guest participants & manage event participants
+                    </span>
+                  </Link>
+                </div>
+                <div className="space-y-3 mt-3">
+                  <Link
                     href={`/events/${eventId}/leaderboard`}
                     className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
                   >

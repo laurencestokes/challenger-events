@@ -19,10 +19,12 @@ interface Activity {
 interface Participant {
   id: string;
   name: string;
-  email: string;
+  email?: string;
   bodyweight?: number;
   dateOfBirth?: Date;
   sex?: 'M' | 'F';
+  isGuest?: boolean;
+  age?: number;
 }
 
 interface CompetitionVerification {
@@ -236,11 +238,29 @@ export default function ScoreSubmissionModal({
               className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
               <option value="">Select a competitor</option>
-              {participants.map((participant) => (
-                <option key={participant.id} value={participant.id}>
-                  {participant.name} ({participant.email})
-                </option>
-              ))}
+              {participants.map((participant) => {
+                // For guest participants, show only name and stats
+                if (participant.isGuest) {
+                  const stats = [
+                    participant.age ? `${participant.age}yo` : null,
+                    participant.sex || null,
+                    participant.bodyweight ? `${participant.bodyweight}kg` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(', ');
+                  return (
+                    <option key={participant.id} value={participant.id}>
+                      {participant.name} {stats ? `(${stats})` : ''}
+                    </option>
+                  );
+                }
+                // For regular participants, show name and email (if available)
+                return (
+                  <option key={participant.id} value={participant.id}>
+                    {participant.name} {participant.email ? `(${participant.email})` : ''}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -268,17 +288,19 @@ export default function ScoreSubmissionModal({
                 <div>
                   <span className="text-gray-400">Age:</span>
                   <span className="ml-1 text-white">
-                    {competitorDetails.dateOfBirth
-                      ? (() => {
-                          const birthDate = convertFirestoreTimestamp(
-                            competitorDetails.dateOfBirth,
-                          );
-                          const calculatedAge = birthDate
-                            ? calculateAgeFromDateOfBirth(birthDate)
-                            : null;
-                          return calculatedAge || 'Not set';
-                        })()
-                      : 'Not set'}
+                    {competitorDetails.isGuest && competitorDetails.age
+                      ? competitorDetails.age
+                      : competitorDetails.dateOfBirth
+                        ? (() => {
+                            const birthDate = convertFirestoreTimestamp(
+                              competitorDetails.dateOfBirth,
+                            );
+                            const calculatedAge = birthDate
+                              ? calculateAgeFromDateOfBirth(birthDate)
+                              : null;
+                            return calculatedAge || 'Not set';
+                          })()
+                        : 'Not set'}
                   </span>
                 </div>
                 <div>

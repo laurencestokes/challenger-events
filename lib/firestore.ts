@@ -39,6 +39,9 @@ export interface User {
   // Event scoping fields
   organizationId?: string; // For organization membership
   gymId?: string; // For gym membership
+  // Guest participant fields
+  isGuest?: boolean; // Whether this is a temporary guest participant
+  guestEventId?: string; // Event ID this guest participant belongs to (required for guests)
 }
 
 export interface Event {

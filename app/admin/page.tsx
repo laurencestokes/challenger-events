@@ -75,6 +75,37 @@ export default function AdminDashboard() {
               </p>
               <div className="text-pink-400 text-sm font-medium">Open Score Tool →</div>
             </Link>
+            {/* Quick Event Creation */}
+            <Link
+              href="/admin/events/quick-create"
+              className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 hover:bg-gray-700/50 transition-colors group"
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center mr-4">
+                  <svg
+                    className="w-6 h-6 text-yellow-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-white group-hover:text-yellow-400 transition-colors">
+                  Quick Event
+                </h3>
+              </div>
+              <p className="text-gray-400 mb-4">
+                Create on-the-fly competitions and add participants on the day
+              </p>
+              <div className="text-yellow-400 text-sm font-medium">Create Quick Event →</div>
+            </Link>
+
             {/* Events Management */}
             <Link
               href="/admin/events"

@@ -128,8 +128,22 @@ export async function GET(_request: NextRequest, { params }: { params: { eventId
     // Get all unique user IDs from scores
     const scoreUserIds = Array.from(new Set(scores.map((score) => score.userId)));
 
-    // Combine both sets of user IDs
-    const allUserIds = Array.from(new Set([...participationUserIds, ...scoreUserIds]));
+    // Get guest participants for this specific event (who may not have scored yet)
+    const { db } = await import('@/lib/firebase');
+    const { collection, query, where, getDocs } = await import('firebase/firestore');
+    const usersRef = collection(db, 'users');
+    const guestQuery = query(
+      usersRef,
+      where('isGuest', '==', true),
+      where('guestEventId', '==', eventId),
+    );
+    const guestSnapshot = await getDocs(guestQuery);
+    const guestUserIds = guestSnapshot.docs.map((doc) => doc.id);
+
+    // Combine all sets of user IDs (regular participants, score submitters, and guests)
+    const allUserIds = Array.from(
+      new Set([...participationUserIds, ...scoreUserIds, ...guestUserIds]),
+    );
 
     const participants = await Promise.all(
       allUserIds.map(async (userId) => {
