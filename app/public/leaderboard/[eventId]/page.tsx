@@ -8,6 +8,7 @@ import { useSSEUnauth } from '@/hooks/useSSEUnauth';
 import { QRCodeSVG } from 'qrcode.react';
 import Image from 'next/image';
 import Footer from '@/components/Footer';
+import LeaderboardBarChart from '@/components/LeaderboardBarChart';
 
 interface Activity {
   id: string;
@@ -138,6 +139,7 @@ export default function PublicEventLeaderboard() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overall' | 'team-overall' | string>('overall');
   const [viewMode, setViewMode] = useState<'individual' | 'team'>('individual');
+  const [displayMode, setDisplayMode] = useState<'table' | 'barchart'>('table');
 
   // SSE and notification state
   const { isConnected, lastEvent } = useSSEUnauth(eventId);
@@ -353,9 +355,8 @@ export default function PublicEventLeaderboard() {
       {/* Connection Status */}
       <div className="fixed bottom-4 left-4 z-40">
         <div
-          className={`px-3 py-1 rounded-full text-xs ${
-            isConnected ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-          }`}
+          className={`px-3 py-1 rounded-full text-xs ${isConnected ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`}
         >
           {isConnected ? '🟢 Live' : '🔴 Offline'}
         </div>
@@ -475,32 +476,55 @@ export default function PublicEventLeaderboard() {
           </div>
 
           {/* View Mode Toggle */}
-          {leaderboardData.isTeamEvent && (
-            <div className="flex justify-center mb-6">
-              <button
-                onClick={() => setViewMode('individual')}
-                className={`px-3 py-1 text-sm font-medium rounded-md mr-4 ${
-                  viewMode === 'individual'
+          <div className="flex justify-center gap-4 mb-6 flex-wrap">
+            {leaderboardData.isTeamEvent && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setViewMode('individual')}
+                  className={`px-3 py-1 text-sm font-medium rounded-md ${viewMode === 'individual'
                     ? 'text-white'
                     : 'text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600'
-                }`}
-                style={viewMode === 'individual' ? { backgroundColor: '#4682b4' } : {}}
+                    }`}
+                  style={viewMode === 'individual' ? { backgroundColor: '#4682b4' } : {}}
+                >
+                  Individual
+                </button>
+                <button
+                  onClick={() => setViewMode('team')}
+                  className={`px-3 py-1 text-sm font-medium rounded-md ${viewMode === 'team'
+                    ? 'text-white'
+                    : 'text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600'
+                    }`}
+                  style={viewMode === 'team' ? { backgroundColor: '#4682b4' } : {}}
+                >
+                  Team
+                </button>
+              </div>
+            )}
+            {/* Display Mode Toggle */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDisplayMode('table')}
+                className={`px-3 py-1 text-sm font-medium rounded-md ${displayMode === 'table'
+                  ? 'text-white'
+                  : 'text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600'
+                  }`}
+                style={displayMode === 'table' ? { backgroundColor: '#4682b4' } : {}}
               >
-                Individual
+                📊 Table
               </button>
               <button
-                onClick={() => setViewMode('team')}
-                className={`px-3 py-1 text-sm font-medium rounded-md ${
-                  viewMode === 'team'
-                    ? 'text-white'
-                    : 'text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600'
-                }`}
-                style={viewMode === 'team' ? { backgroundColor: '#4682b4' } : {}}
+                onClick={() => setDisplayMode('barchart')}
+                className={`px-3 py-1 text-sm font-medium rounded-md ${displayMode === 'barchart'
+                  ? 'text-white'
+                  : 'text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600'
+                  }`}
+                style={displayMode === 'barchart' ? { backgroundColor: '#4682b4' } : {}}
               >
-                Team
+                📈 Chart
               </button>
             </div>
-          )}
+          </div>
 
           {/* Tabs */}
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg mb-6 border border-gray-700/50">
@@ -510,11 +534,10 @@ export default function PublicEventLeaderboard() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                      activeTab === tab.id
-                        ? ''
-                        : 'border-transparent text-gray-400 hover:text-white'
-                    }`}
+                    className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === tab.id
+                      ? ''
+                      : 'border-transparent text-gray-400 hover:text-white'
+                      }`}
                     style={
                       activeTab === tab.id ? { borderBottomColor: '#4682b4', color: '#4682b4' } : {}
                     }
@@ -531,8 +554,8 @@ export default function PublicEventLeaderboard() {
                 <div className="space-y-6">
                   {/* Top 3 Podium Cards */}
                   {viewMode === 'team' &&
-                  leaderboardData.teamOverallLeaderboard &&
-                  leaderboardData.teamOverallLeaderboard.length > 0 ? (
+                    leaderboardData.teamOverallLeaderboard &&
+                    leaderboardData.teamOverallLeaderboard.length > 0 ? (
                     // Team Podium
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                       {/* 2nd Place Team (Silver) */}
@@ -565,7 +588,6 @@ export default function PublicEventLeaderboard() {
                               <h3 className="text-white font-semibold text-lg">
                                 {leaderboardData.teamOverallLeaderboard[1].teamName}
                               </h3>
-                              <p className="text-gray-400 text-sm">Team</p>
                             </div>
 
                             {/* Score */}
@@ -609,7 +631,6 @@ export default function PublicEventLeaderboard() {
                               <h3 className="text-white font-semibold text-xl">
                                 {leaderboardData.teamOverallLeaderboard[0].teamName}
                               </h3>
-                              <p className="text-gray-400 text-sm">Team</p>
                             </div>
 
                             {/* Score */}
@@ -653,7 +674,6 @@ export default function PublicEventLeaderboard() {
                               <h3 className="text-white font-semibold text-lg">
                                 {leaderboardData.teamOverallLeaderboard[2].teamName}
                               </h3>
-                              <p className="text-gray-400 text-sm">Team</p>
                             </div>
 
                             {/* Score */}
@@ -817,37 +837,38 @@ export default function PublicEventLeaderboard() {
                     </div>
                   ) : null}
 
-                  {/* Full Leaderboard Table */}
+                  {/* Full Leaderboard Table/Chart */}
                   {leaderboardData.overallLeaderboard &&
                     leaderboardData.overallLeaderboard.length > 0 && (
-                      <div>
+                      <div className="transition-opacity duration-300">
                         <h3 className="text-white text-lg font-semibold mb-4">Full Leaderboard</h3>
-                        <div className="overflow-x-auto">
-                          <table className="min-w-full divide-y divide-gray-600">
-                            <thead className="bg-gray-700">
-                              <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                  Rank
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                  {viewMode === 'team' ? 'Team' : 'Competitor'}
-                                </th>
-                                {activities.map((activity) => (
-                                  <th
-                                    key={activity.id}
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
-                                  >
-                                    {activity.name}
+                        {displayMode === 'table' ? (
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-600">
+                              <thead className="bg-gray-700">
+                                <tr>
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Rank
                                   </th>
-                                ))}
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                                  Total
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="bg-gray-800 divide-y divide-gray-600">
-                              {viewMode === 'team'
-                                ? (() => {
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    {viewMode === 'team' ? 'Team' : 'Competitor'}
+                                  </th>
+                                  {activities.map((activity) => (
+                                    <th
+                                      key={activity.id}
+                                      className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+                                    >
+                                      {activity.name}
+                                    </th>
+                                  ))}
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Total
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-gray-800 divide-y divide-gray-600">
+                                {viewMode === 'team'
+                                  ? (() => {
                                     // Get all team members for each team to show individual scores
                                     const teamMembers =
                                       leaderboardData.overallLeaderboard?.filter(
@@ -932,35 +953,37 @@ export default function PublicEventLeaderboard() {
                                                     {bestScore.score.toFixed(1)}
                                                   </div>
                                                   <div className="space-y-1 mt-1">
-                                                    {memberScores.slice(0, 3).map((score, idx) => {
-                                                      // Find the team member who achieved this score
-                                                      const member = team.members.find(
-                                                        (m) =>
-                                                          m.workoutScores[activity.id]?.score ===
-                                                            score.score &&
-                                                          m.workoutScores[activity.id]?.rawValue ===
-                                                            score.rawValue,
-                                                      );
-                                                      return (
-                                                        <div
-                                                          key={idx}
-                                                          className="text-xs text-gray-400"
-                                                        >
-                                                          <span className="font-medium">
-                                                            {member?.name || 'Unknown'}
-                                                          </span>
-                                                          {' - '}
-                                                          {score.rawValue
-                                                            ? formatRawValue(
+                                                    {memberScores
+                                                      .slice(0, 3)
+                                                      .map((score, idx) => {
+                                                        // Find the team member who achieved this score
+                                                        const member = team.members.find(
+                                                          (m) =>
+                                                            m.workoutScores[activity.id]
+                                                              ?.score === score.score &&
+                                                            m.workoutScores[activity.id]
+                                                              ?.rawValue === score.rawValue,
+                                                        );
+                                                        return (
+                                                          <div
+                                                            key={idx}
+                                                            className="text-xs text-gray-400"
+                                                          >
+                                                            <span className="font-medium">
+                                                              {member?.name || 'Unknown'}
+                                                            </span>
+                                                            {' - '}
+                                                            {score.rawValue
+                                                              ? formatRawValue(
                                                                 score.rawValue,
                                                                 activity.id,
                                                                 score.reps,
                                                                 score.scoringSystemId,
                                                               )
-                                                            : ''}
-                                                        </div>
-                                                      );
-                                                    })}
+                                                              : ''}
+                                                          </div>
+                                                        );
+                                                      })}
                                                     {memberScores.length > 3 && (
                                                       <div className="text-xs text-gray-500">
                                                         +{memberScores.length - 3} more
@@ -979,7 +1002,7 @@ export default function PublicEventLeaderboard() {
                                         </tr>
                                       ));
                                   })()
-                                : leaderboardData.overallLeaderboard?.map((entry) => (
+                                  : leaderboardData.overallLeaderboard?.map((entry) => (
                                     <tr key={entry.userId} className="hover:bg-gray-700">
                                       <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
@@ -997,7 +1020,7 @@ export default function PublicEventLeaderboard() {
 
                                             {entry.teamId && entry.teamName && (
                                               <div className="text-xs text-gray-400">
-                                                Team: {entry.teamName}
+                                                {entry.teamName}
                                               </div>
                                             )}
                                           </div>
@@ -1019,23 +1042,26 @@ export default function PublicEventLeaderboard() {
                                                 </div>
                                                 <div className="text-xs text-gray-400">
                                                   {workoutScore.rawValue
-                                                    ? (workoutScore as { scoringSystemId?: string })
-                                                        .scoringSystemId
+                                                    ? (
+                                                      workoutScore as {
+                                                        scoringSystemId?: string;
+                                                      }
+                                                    ).scoringSystemId
                                                       ? formatRawValue(
-                                                          workoutScore.rawValue,
-                                                          activity.id,
-                                                          workoutScore.reps,
-                                                          (
-                                                            workoutScore as {
-                                                              scoringSystemId?: string;
-                                                            }
-                                                          ).scoringSystemId,
-                                                        )
+                                                        workoutScore.rawValue,
+                                                        activity.id,
+                                                        workoutScore.reps,
+                                                        (
+                                                          workoutScore as {
+                                                            scoringSystemId?: string;
+                                                          }
+                                                        ).scoringSystemId,
+                                                      )
                                                       : formatRawValue(
-                                                          workoutScore.rawValue,
-                                                          activity.id,
-                                                          workoutScore.reps,
-                                                        )
+                                                        workoutScore.rawValue,
+                                                        activity.id,
+                                                        workoutScore.reps,
+                                                      )
                                                     : ''}
                                                 </div>
                                               </div>
@@ -1052,9 +1078,184 @@ export default function PublicEventLeaderboard() {
                                       </td>
                                     </tr>
                                   ))}
-                            </tbody>
-                          </table>
-                        </div>
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : (
+                          <LeaderboardBarChart
+                            entries={
+                              viewMode === 'team'
+                                ? (() => {
+                                  // Group by team for team view
+                                  const teamMembers = new Map<
+                                    string,
+                                    Array<{
+                                      userId: string;
+                                      name: string;
+                                      workoutScores: {
+                                        [activityId: string]: {
+                                          score: number;
+                                          rawValue: number;
+                                          reps?: number;
+                                          rank: number;
+                                          activityName: string;
+                                          scoringSystemId?: string;
+                                        };
+                                      };
+                                      totalScore: number;
+                                    }>
+                                  >();
+
+                                  const teamEntries = new Map<
+                                    string,
+                                    {
+                                      teamId: string;
+                                      teamName: string;
+                                      totalScore: number;
+                                      workoutScores: {
+                                        [activityId: string]: {
+                                          score: number;
+                                          rawValue: number;
+                                          rank: number;
+                                          activityName: string;
+                                        };
+                                      };
+                                      rank: number;
+                                    }
+                                  >();
+
+                                  leaderboardData.overallLeaderboard.forEach((member) => {
+                                    if (!member.teamId || !member.teamName) return;
+
+                                    // Add member to team
+                                    if (!teamMembers.has(member.teamId)) {
+                                      teamMembers.set(member.teamId, []);
+                                    }
+                                    teamMembers.get(member.teamId)!.push({
+                                      userId: member.userId,
+                                      name: member.name,
+                                      workoutScores: member.workoutScores,
+                                      totalScore: member.totalScore,
+                                    });
+
+                                    // Update team entry
+                                    if (!teamEntries.has(member.teamId)) {
+                                      teamEntries.set(member.teamId, {
+                                        teamId: member.teamId,
+                                        teamName: member.teamName,
+                                        totalScore: 0,
+                                        workoutScores: {},
+                                        rank: member.rank,
+                                      });
+                                    }
+
+                                    const team = teamEntries.get(member.teamId)!;
+                                    team.totalScore += member.totalScore;
+
+                                    // Aggregate workout scores (sum for team)
+                                    activities.forEach((activity) => {
+                                      const memberScore = member.workoutScores[activity.id];
+                                      if (memberScore) {
+                                        if (!team.workoutScores[activity.id]) {
+                                          team.workoutScores[activity.id] = {
+                                            score: 0,
+                                            rawValue: 0,
+                                            rank: memberScore.rank,
+                                            activityName: memberScore.activityName,
+                                          };
+                                        }
+                                        team.workoutScores[activity.id].score +=
+                                          memberScore.score;
+                                      }
+                                    });
+                                  });
+
+                                  // Convert to array and sort by total score, then assign ranks
+                                  const sortedTeams = Array.from(teamEntries.values())
+                                    .sort((a, b) => b.totalScore - a.totalScore)
+                                    .map((team, index) => ({
+                                      ...team,
+                                      name: team.teamName,
+                                      email: '',
+                                      userId: team.teamId,
+                                      rank: index + 1,
+                                    }));
+
+                                  // Store team members in a way the component can access
+                                  sortedTeams.forEach((team) => {
+                                    (team as unknown as { teamMembers: unknown }).teamMembers =
+                                      teamMembers;
+                                  });
+
+                                  return sortedTeams;
+                                })()
+                                : leaderboardData.overallLeaderboard
+                            }
+                            activities={activities}
+                            maxScore={
+                              Math.max(
+                                ...(viewMode === 'team'
+                                  ? (() => {
+                                    // Calculate max team total score
+                                    const teamTotals = new Map<string, number>();
+                                    leaderboardData.overallLeaderboard.forEach((member) => {
+                                      if (member.teamId) {
+                                        teamTotals.set(
+                                          member.teamId,
+                                          (teamTotals.get(member.teamId) || 0) +
+                                          member.totalScore,
+                                        );
+                                      }
+                                    });
+                                    return Array.from(teamTotals.values());
+                                  })()
+                                  : leaderboardData.overallLeaderboard.map((e) => e.totalScore)),
+                              ) || 1
+                            }
+                            isTeamView={viewMode === 'team'}
+                            formatRawValue={formatRawValue}
+                            teamMembers={
+                              viewMode === 'team'
+                                ? (() => {
+                                  const teamMembersMap = new Map<
+                                    string,
+                                    Array<{
+                                      userId: string;
+                                      name: string;
+                                      workoutScores: {
+                                        [activityId: string]: {
+                                          score: number;
+                                          rawValue: number;
+                                          reps?: number;
+                                          rank: number;
+                                          activityName: string;
+                                          scoringSystemId?: string;
+                                        };
+                                      };
+                                      totalScore: number;
+                                    }>
+                                  >();
+
+                                  leaderboardData.overallLeaderboard.forEach((member) => {
+                                    if (!member.teamId) return;
+
+                                    if (!teamMembersMap.has(member.teamId)) {
+                                      teamMembersMap.set(member.teamId, []);
+                                    }
+                                    teamMembersMap.get(member.teamId)!.push({
+                                      userId: member.userId,
+                                      name: member.name,
+                                      workoutScores: member.workoutScores,
+                                      totalScore: member.totalScore,
+                                    });
+                                  });
+
+                                  return teamMembersMap;
+                                })()
+                                : undefined
+                            }
+                          />
+                        )}
                       </div>
                     )}
                 </div>
@@ -1062,31 +1263,387 @@ export default function PublicEventLeaderboard() {
 
               {/* Individual Activity Leaderboards */}
               {activeTab !== 'overall' && (
-                <div className="space-y-4">
+                <div className="space-y-4 transition-opacity duration-300">
                   <h3 className="text-lg font-semibold text-white mb-4">
                     {activities.find((a) => a.id === activeTab)?.name} Leaderboard
                   </h3>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-600">
-                      <thead className="bg-gray-700">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Rank
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            {viewMode === 'team' ? 'Team' : 'Competitor'}
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Score
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Performance
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-gray-800 divide-y divide-gray-600">
-                        {viewMode === 'team'
-                          ? (() => {
+
+                  {/* Top 3 Podium Cards for Individual Activity */}
+                  {(() => {
+                    const workoutLeaderboard = leaderboardData.workoutLeaderboards?.find(
+                      (workout) => workout.activityId === activeTab,
+                    );
+
+                    if (!workoutLeaderboard || workoutLeaderboard.entries.length === 0) {
+                      return null;
+                    }
+
+                    const sortedEntries = [...workoutLeaderboard.entries].sort(
+                      (a, b) => a.rank - b.rank,
+                    );
+
+                    if (viewMode === 'team') {
+                      // Group by team for team view
+                      const teamGroups = new Map<
+                        string,
+                        {
+                          teamId?: string;
+                          teamName?: string;
+                          members: typeof sortedEntries;
+                          bestScore: number;
+                          totalScore: number;
+                        }
+                      >();
+
+                      sortedEntries.forEach((entry) => {
+                        if (!entry.teamId || !entry.teamName) return;
+                        const teamKey = entry.teamId;
+
+                        if (!teamGroups.has(teamKey)) {
+                          teamGroups.set(teamKey, {
+                            teamId: entry.teamId,
+                            teamName: entry.teamName,
+                            members: [],
+                            bestScore: entry.score,
+                            totalScore: 0,
+                          });
+                        }
+
+                        const team = teamGroups.get(teamKey)!;
+                        team.members.push(entry);
+                        team.bestScore = Math.max(team.bestScore, entry.score);
+                        team.totalScore += entry.score;
+                      });
+
+                      const teamEntries = Array.from(teamGroups.values())
+                        .sort((a, b) => b.totalScore - a.totalScore)
+                        .slice(0, 3);
+
+                      if (teamEntries.length === 0) return null;
+
+                      return (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                          {/* 2nd Place Team (Silver) */}
+                          {teamEntries[1] && (
+                            <div className="order-2 md:order-1 relative z-10">
+                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
+                                <div className="absolute -top-3 -left-3 w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center">
+                                  <span className="text-white font-bold text-lg">#2</span>
+                                </div>
+                                <div className="flex justify-center mb-4">
+                                  <div className="w-20 h-20 bg-gray-400 rounded-full flex items-center justify-center border-2 border-gray-400 overflow-hidden">
+                                    <Image
+                                      src="/challenger-logo-no-text.png"
+                                      alt={teamEntries[1].teamName || 'Team'}
+                                      width={80}
+                                      height={80}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="text-center mb-4">
+                                  <h3 className="text-white font-semibold text-lg">
+                                    {teamEntries[1].teamName}
+                                  </h3>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-white font-bold text-2xl">
+                                    {teamEntries[1].totalScore.toFixed(1)}
+                                  </div>
+                                  <div className="mt-2 space-y-1">
+                                    {teamEntries[1].members
+                                      .sort((a, b) => b.score - a.score)
+                                      .map((member, idx) => (
+                                        <div
+                                          key={member.userId || idx}
+                                          className="text-xs text-gray-300 text-center"
+                                        >
+                                          <span className="font-medium">{member.name}</span>
+                                          {' - '}
+                                          {formatRawValue(
+                                            member.rawValue,
+                                            activeTab,
+                                            member.reps,
+                                            member.scoringSystemId,
+                                          )}
+                                        </div>
+                                      ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 1st Place Team (Gold) */}
+                          {teamEntries[0] && (
+                            <div className="order-1 md:order-2 relative z-30">
+                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
+                                <div className="absolute -top-3 -left-3 w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
+                                  <span className="text-gray-900 font-bold text-lg">#1</span>
+                                </div>
+                                <div className="flex justify-center mb-4">
+                                  <div className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-yellow-400 overflow-hidden">
+                                    <Image
+                                      src="/challenger-logo-no-text.png"
+                                      alt={teamEntries[0].teamName || 'Team'}
+                                      width={96}
+                                      height={96}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="text-center mb-4">
+                                  <h3 className="text-white font-semibold text-xl">
+                                    {teamEntries[0].teamName}
+                                  </h3>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-white font-bold text-3xl">
+                                    {teamEntries[0].totalScore.toFixed(1)}
+                                  </div>
+                                  <div className="mt-2 space-y-1">
+                                    {teamEntries[0].members
+                                      .sort((a, b) => b.score - a.score)
+                                      .map((member, idx) => (
+                                        <div
+                                          key={member.userId || idx}
+                                          className="text-xs text-gray-300 text-center"
+                                        >
+                                          <span className="font-medium">{member.name}</span>
+                                          {' - '}
+                                          {formatRawValue(
+                                            member.rawValue,
+                                            activeTab,
+                                            member.reps,
+                                            member.scoringSystemId,
+                                          )}
+                                        </div>
+                                      ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 3rd Place Team (Bronze) */}
+                          {teamEntries[2] && (
+                            <div className="order-3 relative z-20">
+                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
+                                <div className="absolute -top-3 -left-3 w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center">
+                                  <span className="text-white font-bold text-lg">#3</span>
+                                </div>
+                                <div className="flex justify-center mb-4">
+                                  <div className="w-20 h-20 bg-amber-600 rounded-full flex items-center justify-center border-2 border-amber-600 overflow-hidden">
+                                    <Image
+                                      src="/challenger-logo-no-text.png"
+                                      alt={teamEntries[2].teamName || 'Team'}
+                                      width={80}
+                                      height={80}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="text-center mb-4">
+                                  <h3 className="text-white font-semibold text-lg">
+                                    {teamEntries[2].teamName}
+                                  </h3>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-white font-bold text-2xl">
+                                    {teamEntries[2].totalScore.toFixed(1)}
+                                  </div>
+                                  <div className="mt-2 space-y-1">
+                                    {teamEntries[2].members
+                                      .sort((a, b) => b.score - a.score)
+                                      .map((member, idx) => (
+                                        <div
+                                          key={member.userId || idx}
+                                          className="text-xs text-gray-300 text-center"
+                                        >
+                                          <span className="font-medium">{member.name}</span>
+                                          {' - '}
+                                          {formatRawValue(
+                                            member.rawValue,
+                                            activeTab,
+                                            member.reps,
+                                            member.scoringSystemId,
+                                          )}
+                                        </div>
+                                      ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    } else {
+                      // Individual view podium
+                      if (sortedEntries.length === 0) return null;
+
+                      return (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                          {/* 2nd Place (Silver) */}
+                          {sortedEntries[1] && (
+                            <div className="order-2 md:order-1 relative z-10">
+                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
+                                <div className="absolute -top-3 -left-3 w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center">
+                                  <span className="text-white font-bold text-lg">#2</span>
+                                </div>
+                                <div className="flex justify-center mb-4">
+                                  <div className="w-20 h-20 bg-gray-400 rounded-full flex items-center justify-center border-2 border-gray-400 overflow-hidden">
+                                    <Image
+                                      src="/challenger-logo-no-text.png"
+                                      alt={sortedEntries[1].name}
+                                      width={80}
+                                      height={80}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="text-center mb-4">
+                                  <h3 className="text-white font-semibold text-lg">
+                                    {sortedEntries[1].name}
+                                  </h3>
+                                  {sortedEntries[1].teamName && (
+                                    <p className="text-gray-400 text-sm">
+                                      {sortedEntries[1].teamName}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-white font-bold text-2xl">
+                                    {sortedEntries[1].score.toFixed(1)}
+                                  </div>
+                                  <div className="text-gray-400 text-sm mt-1">
+                                    {formatRawValue(
+                                      sortedEntries[1].rawValue,
+                                      activeTab,
+                                      sortedEntries[1].reps,
+                                      sortedEntries[1].scoringSystemId,
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 1st Place (Gold) */}
+                          {sortedEntries[0] && (
+                            <div className="order-1 md:order-2 relative z-30">
+                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
+                                <div className="absolute -top-3 -left-3 w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
+                                  <span className="text-gray-900 font-bold text-lg">#1</span>
+                                </div>
+                                <div className="flex justify-center mb-4">
+                                  <div className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-yellow-400 overflow-hidden">
+                                    <Image
+                                      src="/challenger-logo-no-text.png"
+                                      alt={sortedEntries[0].name}
+                                      width={96}
+                                      height={96}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="text-center mb-4">
+                                  <h3 className="text-white font-semibold text-xl">
+                                    {sortedEntries[0].name}
+                                  </h3>
+                                  {sortedEntries[0].teamName && (
+                                    <p className="text-gray-400 text-sm">
+                                      {sortedEntries[0].teamName}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-white font-bold text-3xl">
+                                    {sortedEntries[0].score.toFixed(1)}
+                                  </div>
+                                  <div className="text-gray-400 text-sm mt-1">
+                                    {formatRawValue(
+                                      sortedEntries[0].rawValue,
+                                      activeTab,
+                                      sortedEntries[0].reps,
+                                      sortedEntries[0].scoringSystemId,
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 3rd Place (Bronze) */}
+                          {sortedEntries[2] && (
+                            <div className="order-3 relative z-20">
+                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
+                                <div className="absolute -top-3 -left-3 w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center">
+                                  <span className="text-white font-bold text-lg">#3</span>
+                                </div>
+                                <div className="flex justify-center mb-4">
+                                  <div className="w-20 h-20 bg-amber-600 rounded-full flex items-center justify-center border-2 border-amber-600 overflow-hidden">
+                                    <Image
+                                      src="/challenger-logo-no-text.png"
+                                      alt={sortedEntries[2].name}
+                                      width={80}
+                                      height={80}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="text-center mb-4">
+                                  <h3 className="text-white font-semibold text-lg">
+                                    {sortedEntries[2].name}
+                                  </h3>
+                                  {sortedEntries[2].teamName && (
+                                    <p className="text-gray-400 text-sm">
+                                      {sortedEntries[2].teamName}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-white font-bold text-2xl">
+                                    {sortedEntries[2].score.toFixed(1)}
+                                  </div>
+                                  <div className="text-gray-400 text-sm mt-1">
+                                    {formatRawValue(
+                                      sortedEntries[2].rawValue,
+                                      activeTab,
+                                      sortedEntries[2].reps,
+                                      sortedEntries[2].scoringSystemId,
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                  })()}
+
+                  {displayMode === 'table' ? (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-600">
+                        <thead className="bg-gray-700">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                              Rank
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                              {viewMode === 'team' ? 'Team' : 'Competitor'}
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                              Score
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                              Performance
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-gray-800 divide-y divide-gray-600">
+                          {viewMode === 'team'
+                            ? (() => {
                               const workoutEntries =
                                 leaderboardData.workoutLeaderboards
                                   ?.find((workout) => workout.activityId === activeTab)
@@ -1220,18 +1777,18 @@ export default function PublicEventLeaderboard() {
                                                     >
                                                       {performance.rawValue
                                                         ? (() => {
-                                                            const activity = activities.find(
-                                                              (a) => a.id === activeTab,
-                                                            );
-                                                            const scoringSystemId =
-                                                              activity?.scoringSystemId;
-                                                            return formatRawValue(
-                                                              performance.rawValue,
-                                                              activeTab,
-                                                              performance.reps,
-                                                              scoringSystemId,
-                                                            );
-                                                          })()
+                                                          const activity = activities.find(
+                                                            (a) => a.id === activeTab,
+                                                          );
+                                                          const scoringSystemId =
+                                                            activity?.scoringSystemId;
+                                                          return formatRawValue(
+                                                            performance.rawValue,
+                                                            activeTab,
+                                                            performance.reps,
+                                                            scoringSystemId,
+                                                          );
+                                                        })()
                                                         : 'No data'}
                                                     </div>
                                                   ))}
@@ -1243,7 +1800,7 @@ export default function PublicEventLeaderboard() {
                                   </tr>
                                 ));
                             })()
-                          : leaderboardData.workoutLeaderboards
+                            : leaderboardData.workoutLeaderboards
                               ?.find((workout) => workout.activityId === activeTab)
                               ?.entries.sort((a, b) => a.rank - b.rank) // Sort by rank
                               .map((entry) => (
@@ -1262,9 +1819,11 @@ export default function PublicEventLeaderboard() {
                                           {entry.name}
                                         </div>
 
-                                        <div className="text-xs text-gray-400">
-                                          Team: {entry.teamName}
-                                        </div>
+                                        {entry.teamName && (
+                                          <div className="text-xs text-gray-400">
+                                            {entry.teamName}
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
                                   </td>
@@ -1277,112 +1836,315 @@ export default function PublicEventLeaderboard() {
                                     <div className="text-sm text-gray-400">
                                       {entry.rawValue
                                         ? (() => {
-                                            const activity = activities.find(
-                                              (a) => a.id === activeTab,
-                                            );
-                                            const scoringSystemId = activity?.scoringSystemId;
-                                            return formatRawValue(
-                                              entry.rawValue,
-                                              activeTab,
-                                              entry.reps,
-                                              scoringSystemId,
-                                            );
-                                          })()
+                                          const activity = activities.find(
+                                            (a) => a.id === activeTab,
+                                          );
+                                          const scoringSystemId = activity?.scoringSystemId;
+                                          return formatRawValue(
+                                            entry.rawValue,
+                                            activeTab,
+                                            entry.reps,
+                                            scoringSystemId,
+                                          );
+                                        })()
                                         : ''}
                                     </div>
                                   </td>
                                 </tr>
                               ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <LeaderboardBarChart
+                      entries={
+                        viewMode === 'team'
+                          ? (() => {
+                            const workoutEntries =
+                              leaderboardData.workoutLeaderboards
+                                ?.find((workout) => workout.activityId === activeTab)
+                                ?.entries.filter((entry) => entry.teamId) || [];
+
+                            // Group by team
+                            const groupedByTeam = workoutEntries.reduce(
+                              (acc, entry) => {
+                                const teamKey = entry.teamId || 'unknown';
+                                if (!acc[teamKey]) {
+                                  acc[teamKey] = {
+                                    teamId: entry.teamId,
+                                    teamName: entry.teamName,
+                                    members: [],
+                                  };
+                                }
+                                acc[teamKey].members.push(entry);
+                                return acc;
+                              },
+                              {} as Record<
+                                string,
+                                {
+                                  teamId?: string;
+                                  teamName?: string;
+                                  members: typeof workoutEntries;
+                                }
+                              >,
+                            );
+
+                            // Convert to team entries with aggregated scores
+                            const teamEntries = Object.values(groupedByTeam)
+                              .map((team) => {
+                                const teamTotalScore = team.members.reduce(
+                                  (total, member) => total + member.score,
+                                  0,
+                                );
+                                const bestScore = Math.max(...team.members.map((m) => m.score));
+                                const bestMember = team.members.find(
+                                  (m) => m.score === bestScore,
+                                );
+
+                                return {
+                                  teamId: team.teamId,
+                                  userId: team.teamId || '',
+                                  name: team.teamName || 'Unknown Team',
+                                  email: '',
+                                  totalScore: teamTotalScore,
+                                  workoutScores: {
+                                    [activeTab]: {
+                                      score: bestScore,
+                                      rawValue: bestMember?.rawValue || 0,
+                                      reps: bestMember?.reps,
+                                      rank: bestMember?.rank || 1,
+                                      activityName:
+                                        leaderboardData.workoutLeaderboards?.find(
+                                          (w) => w.activityId === activeTab,
+                                        )?.activityName || '',
+                                      scoringSystemId: bestMember?.scoringSystemId,
+                                    },
+                                  },
+                                  rank: bestMember?.rank || 1,
+                                };
+                              })
+                              .sort((a, b) => b.totalScore - a.totalScore)
+                              .map((team, index) => ({
+                                ...team,
+                                rank: index + 1,
+                              }));
+
+                            return teamEntries;
+                          })()
+                          : leaderboardData.workoutLeaderboards
+                            ?.find((workout) => workout.activityId === activeTab)
+                            ?.entries.map((entry) => ({
+                              userId: entry.userId,
+                              name: entry.name,
+                              teamName: entry.teamName,
+                              totalScore: entry.score,
+                              workoutScores: {
+                                [activeTab]: {
+                                  score: entry.score,
+                                  rawValue: entry.rawValue,
+                                  reps: entry.reps,
+                                  rank: entry.rank,
+                                  activityName:
+                                    leaderboardData.workoutLeaderboards?.find(
+                                      (w) => w.activityId === activeTab,
+                                    )?.activityName || '',
+                                  scoringSystemId: entry.scoringSystemId,
+                                },
+                              },
+                              rank: entry.rank,
+                            })) || []
+                      }
+                      activities={[activities.find((a) => a.id === activeTab)!].filter(Boolean)}
+                      maxScore={
+                        viewMode === 'team'
+                          ? (() => {
+                            const workoutEntries =
+                              leaderboardData.workoutLeaderboards
+                                ?.find((workout) => workout.activityId === activeTab)
+                                ?.entries.filter((entry) => entry.teamId) || [];
+
+                            const teamTotals = new Map<string, number>();
+                            workoutEntries.forEach((entry) => {
+                              if (entry.teamId) {
+                                teamTotals.set(
+                                  entry.teamId,
+                                  (teamTotals.get(entry.teamId) || 0) + entry.score,
+                                );
+                              }
+                            });
+                            return Math.max(...Array.from(teamTotals.values()), 0) || 1;
+                          })()
+                          : Math.max(
+                            ...(leaderboardData.workoutLeaderboards
+                              ?.find((workout) => workout.activityId === activeTab)
+                              ?.entries.map((e) => e.score) || [0]),
+                          ) || 1
+                      }
+                      isTeamView={viewMode === 'team'}
+                      formatRawValue={formatRawValue}
+                      teamMembers={
+                        viewMode === 'team'
+                          ? (() => {
+                            const workoutEntries =
+                              leaderboardData.workoutLeaderboards
+                                ?.find((workout) => workout.activityId === activeTab)
+                                ?.entries.filter((entry) => entry.teamId) || [];
+
+                            const teamMembersMap = new Map<
+                              string,
+                              Array<{
+                                userId: string;
+                                name: string;
+                                workoutScores: {
+                                  [activityId: string]: {
+                                    score: number;
+                                    rawValue: number;
+                                    reps?: number;
+                                    rank: number;
+                                    activityName: string;
+                                    scoringSystemId?: string;
+                                  };
+                                };
+                                totalScore: number;
+                              }>
+                            >();
+
+                            workoutEntries.forEach((entry) => {
+                              if (!entry.teamId) return;
+
+                              if (!teamMembersMap.has(entry.teamId)) {
+                                teamMembersMap.set(entry.teamId, []);
+                              }
+                              teamMembersMap.get(entry.teamId)!.push({
+                                userId: entry.userId,
+                                name: entry.name,
+                                workoutScores: {
+                                  [activeTab]: {
+                                    score: entry.score,
+                                    rawValue: entry.rawValue,
+                                    reps: entry.reps,
+                                    rank: entry.rank,
+                                    activityName:
+                                      leaderboardData.workoutLeaderboards?.find(
+                                        (w) => w.activityId === activeTab,
+                                      )?.activityName || '',
+                                    scoringSystemId: entry.scoringSystemId,
+                                  },
+                                },
+                                totalScore: entry.score,
+                              });
+                            });
+
+                            return teamMembersMap;
+                          })()
+                          : undefined
+                      }
+                    />
+                  )}
                 </div>
               )}
             </div>
           </div>
 
           {/* Latest Results Section */}
-          {latestResults.length > 0 && (
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg mb-6 border border-gray-700/50">
-              <div className="p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-white">Latest Results</h2>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-gray-400">Live Updates</span>
-                  </div>
-                </div>
+          {(() => {
+            // Filter latest results based on active tab
+            const filteredResults =
+              activeTab === 'overall'
+                ? latestResults.slice(0, 5) // Limit to 5 most recent on overall tab
+                : latestResults.filter((result) => {
+                  const matches = result.activityId === activeTab;
+                  return matches;
+                });
 
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-600">
-                    <thead className="bg-gray-700">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Competitor
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Activity
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Score
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Performance
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Time
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-gray-800 divide-y divide-gray-600">
-                      {latestResults.map((result) => (
-                        <tr key={result.id} className="hover:bg-gray-700">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div>
-                                <div className="text-sm font-medium text-white">{result.name}</div>
-                                {result.teamName && (
-                                  <div className="text-xs text-gray-400">{result.teamName}</div>
-                                )}
+            if (filteredResults.length === 0) return null;
+
+            return (
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg mb-6 border border-gray-700/50">
+                <div className="p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-white">Latest Results</h2>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm text-gray-400">Live Updates</span>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-600">
+                      <thead className="bg-gray-700">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            Competitor
+                          </th>
+                          {activeTab === 'overall' && (
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                              Activity
+                            </th>
+                          )}
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            Score
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            Performance
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            Time
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-gray-800 divide-y divide-gray-600">
+                        {filteredResults.map((result) => (
+                          <tr key={result.id} className="hover:bg-gray-700">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div>
+                                  <div className="text-sm font-medium text-white">{result.name}</div>
+                                  {result.teamName && (
+                                    <div className="text-xs text-gray-400">{result.teamName}</div>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-300">{result.activityName}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-bold text-white">
-                              {result.score.toFixed(1)}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-400">
-                              {result.rawValue
-                                ? formatRawValue(
+                            </td>
+                            {activeTab === 'overall' && (
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-300">{result.activityName}</div>
+                              </td>
+                            )}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-bold text-white">
+                                {result.score.toFixed(1)}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-400">
+                                {result.rawValue
+                                  ? formatRawValue(
                                     result.rawValue,
                                     result.activityId,
                                     result.reps,
                                     result.scoringSystemId,
                                   )
-                                : 'No data'}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-500">
-                              {new Date(result.submittedAt).toLocaleTimeString('en-US', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                                  : 'No data'}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-500">
+                                {new Date(result.submittedAt).toLocaleTimeString('en-US', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </div>
 

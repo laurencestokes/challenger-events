@@ -280,18 +280,24 @@ export async function GET(_request: NextRequest, { params }: { params: { eventId
       entry.rank = index + 1;
     });
 
-    // Create latest results (most recent 5 scores)
-    const latestResults: LatestResult[] = scores
-      .sort((a, b) => {
-        // Handle Firebase timestamp format properly
-        const aTime = convertTimestamp(a.submittedAt);
-        const bTime = convertTimestamp(b.submittedAt);
-        return bTime.getTime() - aTime.getTime();
-      })
-      .slice(0, 5)
-      .map((score) => {
+    // Create latest results (most recent 5 scores per activity)
+    const latestResults: LatestResult[] = [];
+
+    // Get latest results for each activity
+    activities.forEach((activity) => {
+      const activityScores = scores
+        .filter((score) => score.activityId === activity.id)
+        .sort((a, b) => {
+          // Handle Firebase timestamp format properly
+          const aTime = convertTimestamp(a.submittedAt);
+          const bTime = convertTimestamp(b.submittedAt);
+          return bTime.getTime() - aTime.getTime();
+        })
+        .slice(0, 5); // Get latest 5 per activity
+
+      // Map scores to LatestResult format
+      const mappedResults = activityScores.map((score) => {
         const participant = participants.find((p) => p.id === score.userId);
-        const activity = activities.find((a) => a.id === score.activityId);
 
         // Get team info from the participant data (already populated with team names)
         const teamName = participant?.teamName;
@@ -304,17 +310,37 @@ export async function GET(_request: NextRequest, { params }: { params: { eventId
           userId: score.userId,
           name: participant?.name || 'Unknown User',
           teamName,
-          activityId: score.activityId,
-          activityName: activity?.name || 'Unknown Activity',
+          activityId: activity.id, // Use activity.id to ensure it matches
+          activityName: activity.name,
           score: score.calculatedScore || 0,
           rawValue: score.rawValue || 0,
           reps: score.reps,
           submittedAt,
-          scoringSystemId: activity?.scoringSystemId,
+          scoringSystemId: activity.scoringSystemId,
         };
       });
 
-    console.log('latestResults', latestResults);
+      if (mappedResults.length > 0) {
+        latestResults.push(...mappedResults);
+      }
+    });
+
+    // Sort all latest results by submission time (most recent first)
+    latestResults.sort((a, b) => {
+      const aTime = a.submittedAt instanceof Date ? a.submittedAt : new Date(a.submittedAt);
+      const bTime = b.submittedAt instanceof Date ? b.submittedAt : new Date(b.submittedAt);
+      return bTime.getTime() - aTime.getTime();
+    });
+
+    // Debug logging
+    console.log('Latest results per activity:', {
+      totalResults: latestResults.length,
+      resultsByActivity: activities.reduce((acc, activity) => {
+        acc[activity.id] = latestResults.filter((r) => r.activityId === activity.id).length;
+        return acc;
+      }, {} as Record<string, number>),
+      activityIds: activities.map((a) => a.id),
+    });
 
     // Calculate team leaderboards if this is a team event
     let teamOverallLeaderboard: TeamLeaderboardEntry[] | undefined;
