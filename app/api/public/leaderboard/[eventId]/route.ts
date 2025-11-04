@@ -335,10 +335,13 @@ export async function GET(_request: NextRequest, { params }: { params: { eventId
     // Debug logging
     console.log('Latest results per activity:', {
       totalResults: latestResults.length,
-      resultsByActivity: activities.reduce((acc, activity) => {
-        acc[activity.id] = latestResults.filter((r) => r.activityId === activity.id).length;
-        return acc;
-      }, {} as Record<string, number>),
+      resultsByActivity: activities.reduce(
+        (acc, activity) => {
+          acc[activity.id] = latestResults.filter((r) => r.activityId === activity.id).length;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
       activityIds: activities.map((a) => a.id),
     });
 

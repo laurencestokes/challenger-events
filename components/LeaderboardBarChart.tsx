@@ -234,21 +234,21 @@ export default function LeaderboardBarChart({
                                 minWidth: segmentWidth < 5 ? '5%' : undefined,
                               }}
                             >
-                               {/* Rectangular segment */}
-                               <div
-                                 className="h-full relative overflow-hidden"
-                                 style={{
-                                   background: color.gradient,
-                                   boxShadow: color.shadow,
-                                   borderRight: '1px solid rgba(0, 0, 0, 0.2)',
-                                 }}
-                               >
-                              {/* Activity name label - only show if multiple activities */}
-                              {activities.length > 1 && segmentWidth > 15 && (
-                                <div className="absolute top-1 left-1 text-white text-[10px] font-bold opacity-90 z-10 px-1">
-                                  {activity.name}
-                                </div>
-                              )}
+                              {/* Rectangular segment */}
+                              <div
+                                className="h-full relative overflow-hidden"
+                                style={{
+                                  background: color.gradient,
+                                  boxShadow: color.shadow,
+                                  borderRight: '1px solid rgba(0, 0, 0, 0.2)',
+                                }}
+                              >
+                                {/* Activity name label - only show if multiple activities */}
+                                {activities.length > 1 && segmentWidth > 15 && (
+                                  <div className="absolute top-1 left-1 text-white text-[10px] font-bold opacity-90 z-10 px-1">
+                                    {activity.name}
+                                  </div>
+                                )}
 
                                 {/* Member sub-segments */}
                                 {memberScores.length > 1 && (
@@ -260,16 +260,16 @@ export default function LeaderboardBarChart({
                                           (activityIndex * 3 + idx) % ACTIVITY_COLORS.length
                                         ];
                                       return (
-                                         <div
-                                           key={ms.member.userId}
-                                           className="h-full border-r border-black/30 last:border-r-0 relative"
-                                           style={{
-                                             width: `${memberWidth}%`,
-                                             background: memberColor.gradient,
-                                             boxShadow: memberColor.shadow,
-                                           }}
-                                           title={`${ms.member.name}: ${ms.score.toFixed(1)}`}
-                                         >
+                                        <div
+                                          key={ms.member.userId}
+                                          className="h-full border-r border-black/30 last:border-r-0 relative"
+                                          style={{
+                                            width: `${memberWidth}%`,
+                                            background: memberColor.gradient,
+                                            boxShadow: memberColor.shadow,
+                                          }}
+                                          title={`${ms.member.name}: ${ms.score.toFixed(1)}`}
+                                        >
                                           {/* Member name for larger segments */}
                                           {memberWidth > 20 && (
                                             <div className="h-full flex flex-col items-center justify-center text-white px-1">
@@ -356,21 +356,23 @@ export default function LeaderboardBarChart({
                                 minWidth: widthPercent < 5 ? '5%' : undefined,
                               }}
                             >
-                               {/* Rectangular segment */}
-                               <div
-                                 className="h-full flex items-center justify-center relative overflow-hidden"
-                                 style={{
-                                   background: color.gradient,
-                                   boxShadow: color.shadow,
-                                   borderRight: '1px solid rgba(0, 0, 0, 0.2)',
-                                 }}
-                               >
+                              {/* Rectangular segment */}
+                              <div
+                                className="h-full flex items-center justify-center relative overflow-hidden"
+                                style={{
+                                  background: color.gradient,
+                                  boxShadow: color.shadow,
+                                  borderRight: '1px solid rgba(0, 0, 0, 0.2)',
+                                }}
+                              >
                                 {/* Activity name label - only show if multiple activities and segment is not large enough to show it in center */}
-                                {activities.length > 1 && widthPercent > 15 && widthPercent <= 20 && (
-                                  <div className="absolute top-1 left-1 text-white text-[10px] font-bold opacity-90 z-10 px-1">
-                                    {activity.name}
-                                  </div>
-                                )}
+                                {activities.length > 1 &&
+                                  widthPercent > 15 &&
+                                  widthPercent <= 20 && (
+                                    <div className="absolute top-1 left-1 text-white text-[10px] font-bold opacity-90 z-10 px-1">
+                                      {activity.name}
+                                    </div>
+                                  )}
 
                                 {/* Score display for medium segments */}
                                 {widthPercent > 12 && widthPercent <= 20 && (
