@@ -7,6 +7,7 @@ import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import WelcomeSection from '@/components/WelcomeSection';
 import { EventListSkeleton } from '@/components/SkeletonLoaders';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface User {
   id: string;
@@ -58,6 +59,8 @@ export default function ManageUsers() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'ADMIN' | 'COMPETITOR' | 'VIEWER'>('COMPETITOR');
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -199,6 +202,28 @@ export default function ManageUsers() {
     } catch (error: unknown) {
       console.error('Error inviting user:', error);
       setError('Failed to invite user');
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    try {
+      await api.delete(`/api/admin/users/${userToDelete.id}`);
+      setShowDeleteModal(false);
+      setUserToDelete(null);
+      // Refresh users
+      const usersData = await api.get('/api/admin/users');
+      setUsers(usersData.users || []);
+      setStats(usersData.stats || null);
+      // Remove from selected users if it was selected
+      setSelectedUsers(selectedUsers.filter((id) => id !== userToDelete.id));
+    } catch (error: unknown) {
+      console.error('Error deleting user:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete user';
+      setError(errorMessage);
+      setShowDeleteModal(false);
+      setUserToDelete(null);
     }
   };
 
@@ -561,7 +586,7 @@ export default function ManageUsers() {
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           <input
                             type="checkbox"
                             checked={selectedUsers.length === filteredUsers.length}
@@ -575,33 +600,33 @@ export default function ManageUsers() {
                             className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                           />
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           User
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           Role
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Account Status
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Weight Verification
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Verification
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           Events
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           Joined
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="sticky right-0 bg-gray-50 dark:bg-gray-700 px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider z-10 border-l border-gray-200 dark:border-gray-600">
                           Actions
                         </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {filteredUsers.map((user) => (
-                        <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                          <td className="px-6 py-4 whitespace-nowrap">
+                        <tr key={user.id} className="group hover:bg-gray-50 dark:hover:bg-gray-700">
+                          <td className="px-3 py-4 whitespace-nowrap">
                             <input
                               type="checkbox"
                               checked={selectedUsers.includes(user.id)}
@@ -615,17 +640,17 @@ export default function ManageUsers() {
                               className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                             />
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 py-4 whitespace-nowrap">
                             <div>
                               <div className="text-sm font-medium text-gray-900 dark:text-white">
                                 {user.name || 'No name'}
                               </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-400">
+                              <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[200px]">
                                 {user.email}
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 py-4 whitespace-nowrap">
                             <select
                               value={user.role}
                               onChange={(e) => handleRoleChange(user.id, e.target.value)}
@@ -636,15 +661,15 @@ export default function ManageUsers() {
                               <option value="VIEWER">Viewer</option>
                             </select>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 py-4 whitespace-nowrap">
                             <span
                               className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}
                             >
                               {user.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center space-x-2">
+                          <td className="px-3 py-4 whitespace-nowrap">
+                            <div className="flex items-center space-x-1">
                               <div className="relative group">
                                 <span
                                   className={`px-2 py-1 text-xs font-medium rounded-full cursor-help ${getVerificationColor(user.verificationStatus || 'PENDING')}`}
@@ -688,7 +713,7 @@ export default function ManageUsers() {
                               </select>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                             {user.eventsJoined || 0} events
                             {user.totalScore !== undefined && (
                               <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -696,11 +721,11 @@ export default function ManageUsers() {
                               </div>
                             )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                             {formatDate(user.createdAt)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex space-x-2">
+                          <td className="sticky right-0 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-700 px-4 py-4 whitespace-nowrap text-sm font-medium z-10 border-l border-gray-200 dark:border-gray-700">
+                            <div className="flex flex-col space-y-1">
                               <button
                                 onClick={() =>
                                   handleStatusChange(
@@ -708,7 +733,7 @@ export default function ManageUsers() {
                                     user.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE',
                                   )
                                 }
-                                className={`text-sm ${
+                                className={`text-xs text-left ${
                                   user.status === 'ACTIVE'
                                     ? 'text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300'
                                     : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
@@ -720,9 +745,18 @@ export default function ManageUsers() {
                                 onClick={() => {
                                   // TODO: Implement password reset
                                 }}
-                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
+                                className="text-xs text-left text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                               >
                                 Reset Password
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setUserToDelete(user);
+                                  setShowDeleteModal(true);
+                                }}
+                                className="text-xs text-left text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                              >
+                                Delete
                               </button>
                             </div>
                           </td>
@@ -802,6 +836,25 @@ export default function ManageUsers() {
             </div>
           </div>
         )}
+
+        {/* Delete User Confirmation Modal */}
+        <ConfirmModal
+          isOpen={showDeleteModal}
+          title="Delete User"
+          message={
+            userToDelete
+              ? `Are you sure you want to delete ${userToDelete.name || userToDelete.email}? This action cannot be undone and will permanently delete all associated data including participations, team memberships, and scores.`
+              : ''
+          }
+          confirmText="Delete"
+          cancelText="Cancel"
+          onConfirm={handleDeleteUser}
+          onCancel={() => {
+            setShowDeleteModal(false);
+            setUserToDelete(null);
+          }}
+          isDestructive={true}
+        />
       </div>
     </ProtectedRoute>
   );
