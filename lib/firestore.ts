@@ -65,6 +65,7 @@ export interface Event {
   // Location fields
   country?: string; // Country code (e.g., 'GB' for UK)
   postcode?: string; // Postal code for location
+  imageUrl?: string; // URL for event image/logo
   createdAt: Date;
   updatedAt: Date;
 }

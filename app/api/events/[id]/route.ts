@@ -109,6 +109,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       gymId,
       country,
       postcode,
+      imageUrl,
     } = body;
 
     const updates: Partial<Event> = {};
@@ -126,6 +127,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (gymId !== undefined) updates.gymId = gymId;
     if (country !== undefined) updates.country = country;
     if (postcode !== undefined) updates.postcode = postcode;
+    if (imageUrl !== undefined) updates.imageUrl = imageUrl;
 
     const updatedEvent = await updateEvent(params.id, updates);
 

@@ -243,6 +243,86 @@ export async function uploadTeamLogo(
   }
 }
 
+// Event image upload function - simple client-side Firebase Storage
+export async function uploadEventImage(
+  eventId: string,
+  file: File,
+  onProgress?: (progress: number) => void,
+): Promise<string> {
+  try {
+    // Check authentication BEFORE starting upload
+    const user = getCurrentUser();
+    if (!user) {
+      throw new Error('User must be authenticated to upload event images');
+    }
+
+    // Generate unique filename
+    const ext = file.name.split('.').pop() || 'jpg';
+    const filename = `event-${eventId}-${Date.now()}.${ext}`;
+
+    // Create storage reference
+    const storageRef = ref(storage, `event-images/${filename}`);
+
+    // Upload file with progress monitoring (following Firebase docs)
+    const uploadTask = uploadBytesResumable(storageRef, file, {
+      contentType: file.type,
+    });
+
+    return new Promise((resolve, reject) => {
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          // Monitor upload progress
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          if (onProgress) {
+            onProgress(progress);
+          }
+        },
+        (error) => {
+          // Handle unsuccessful uploads
+          console.error('Upload error:', error);
+          reject(error);
+        },
+        async () => {
+          // Handle successful uploads
+          try {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+            // Update event with the image URL via our API
+            const user = getCurrentUser();
+            if (!user) {
+              throw new Error('User not authenticated');
+            }
+
+            const response = await fetch(`/api/events/${eventId}/upload-image`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${user.uid}`,
+              },
+              body: JSON.stringify({ imageUrl: downloadURL }),
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`Failed to update event image: ${errorText}`);
+            }
+
+            await response.json();
+            resolve(downloadURL);
+          } catch (error) {
+            console.error('Error updating event image:', error);
+            reject(error);
+          }
+        },
+      );
+    });
+  } catch (error) {
+    console.error('Error uploading event image:', error);
+    throw error;
+  }
+}
+
 // Remove the old complex server-side functions - no longer needed
 // The simple client-side approach above handles everything
 

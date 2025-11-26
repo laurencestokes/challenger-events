@@ -28,6 +28,7 @@ interface Event {
   description?: string;
   isTeamEvent: boolean;
   maxTeamSize?: number;
+  imageUrl?: string;
 }
 
 interface EventWithScores extends Event {
@@ -502,7 +503,7 @@ export default function EventsPage() {
                     {/* Event Image */}
                     <div className="relative h-48">
                       <Image
-                        src="/upcoming_events_placeholder.png"
+                        src={event.imageUrl || '/upcoming_events_placeholder.png'}
                         alt={event.name}
                         fill
                         className="object-cover"

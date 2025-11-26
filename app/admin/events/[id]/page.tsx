@@ -12,6 +12,7 @@ import EditWorkoutModal from '@/components/EditWorkoutModal';
 import ConfirmModal from '@/components/ConfirmModal';
 import ScoreSubmissionModal from '@/components/ScoreSubmissionModal';
 import WelcomeSection from '@/components/WelcomeSection';
+import EventImageUpload from '@/components/EventImageUpload';
 import {
   LargeEventCardSkeleton,
   QuickActionsSkeleton,
@@ -81,6 +82,7 @@ export default function EventDetails() {
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [showScoreSubmissionModal, setShowScoreSubmissionModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [imageUploadError, setImageUploadError] = useState('');
 
   const eventId = params.id as string;
 
@@ -212,6 +214,24 @@ export default function EventDetails() {
       console.error('Error revealing workout:', error);
       setError('Failed to reveal workout');
     }
+  };
+
+  const handleImageUploadComplete = async (imageUrl: string) => {
+    // Update event state with new image URL
+    setEvent((prev) => (prev ? { ...prev, imageUrl } : null));
+    setImageUploadError('');
+
+    // Also refresh event details from server to ensure consistency
+    try {
+      const eventData = await api.get(`/api/events/${eventId}`);
+      setEvent(eventData);
+    } catch (error) {
+      console.error('Error refreshing event data:', error);
+    }
+  };
+
+  const handleImageUploadError = (error: string) => {
+    setImageUploadError(error);
   };
 
   if (isLoading) {
@@ -504,6 +524,20 @@ export default function EventDetails() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Event Image Upload */}
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+                <EventImageUpload
+                  eventId={eventId}
+                  onUploadComplete={handleImageUploadComplete}
+                  onUploadError={handleImageUploadError}
+                />
+                {imageUploadError && (
+                  <div className="mt-4 bg-red-500/20 border border-red-500/50 rounded-lg p-4">
+                    <p className="text-red-400 text-sm">{imageUploadError}</p>
+                  </div>
+                )}
               </div>
 
               {/* Participants */}
