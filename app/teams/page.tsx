@@ -84,6 +84,15 @@ interface TeamInvitation {
   };
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  isGuest: boolean;
+  guestEventId?: string | null;
+  verificationStatus?: string;
+}
+
 export default function TeamsPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -99,6 +108,18 @@ export default function TeamsPage() {
   const [pendingInvitations, setPendingInvitations] = useState<TeamInvitation[]>([]);
   const [isLoadingInvitations, setIsLoadingInvitations] = useState(true);
 
+  // Admin add member modal state
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [isAddingMembers, setIsAddingMembers] = useState(false);
+  const [includeGuests, setIncludeGuests] = useState(true);
+  const [memberRole, setMemberRole] = useState<'MEMBER' | 'CAPTAIN'>('MEMBER');
+  const [teamSearchTerm, setTeamSearchTerm] = useState('');
+
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
   useEffect(() => {
@@ -108,7 +129,7 @@ export default function TeamsPage() {
       fetchPendingInvitations();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, isAdmin]);
 
   // Fetch public teams after user teams are loaded
   useEffect(() => {
@@ -116,12 +137,129 @@ export default function TeamsPage() {
       fetchPublicTeams();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teams]);
+  }, [teams, isAdmin]);
+
+  // Admin: Search users for adding to teams
+  const handleSearchUsers = async () => {
+    if (!searchTerm.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const response = await api.get(
+        `/api/admin/users/search?q=${encodeURIComponent(searchTerm)}&includeGuests=${includeGuests}&limit=20`,
+      );
+      setSearchResults(response.users || []);
+    } catch (error: unknown) {
+      console.error('Error searching users:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAddMemberModalOpen) {
+      const debounceTimer = setTimeout(() => {
+        if (searchTerm.trim()) {
+          handleSearchUsers();
+        } else {
+          setSearchResults([]);
+        }
+      }, 300);
+
+      return () => clearTimeout(debounceTimer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, includeGuests, isAddMemberModalOpen]);
+
+  const handleAddMembers = async () => {
+    if (!selectedTeam || selectedUserIds.length === 0) {
+      return;
+    }
+
+    setIsAddingMembers(true);
+    try {
+      const response = await api.post(`/api/admin/teams/${selectedTeam.id}/members`, {
+        userIds: selectedUserIds,
+        role: memberRole,
+      });
+
+      if (response.added && response.added.length > 0) {
+        alert(`Successfully added ${response.added.length} member(s) to ${selectedTeam.name}`);
+        // Reset state
+        setSelectedUserIds([]);
+        setSearchTerm('');
+        setSearchResults([]);
+        setIsAddMemberModalOpen(false);
+        setSelectedTeam(null);
+        // Refresh teams to update member counts
+        fetchTeams();
+      }
+
+      if (response.errors && response.errors.length > 0) {
+        const errorMessages = response.errors
+          .map((e: { userId: string; error: string }) => e.error)
+          .join(', ');
+        alert(`Some errors occurred: ${errorMessages}`);
+      }
+    } catch (error: unknown) {
+      console.error('Error adding members:', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : (error as { message?: string })?.message || 'Failed to add members';
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      setIsAddingMembers(false);
+    }
+  };
+
+  const handleOpenAddMemberModal = (team?: Team) => {
+    setSelectedTeam(team || null);
+    setSelectedUserIds([]);
+    setSearchTerm('');
+    setSearchResults([]);
+    setTeamSearchTerm('');
+    setIsAddMemberModalOpen(true);
+  };
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUserIds((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId],
+    );
+  };
 
   const fetchTeams = async () => {
     try {
-      const response = await api.get('/api/teams/user');
-      setTeams(response.teams || []);
+      const adminCheck = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+      if (adminCheck) {
+        // For admins, fetch all teams
+        const response = await api.get('/api/teams/all');
+        const allTeams = [...(response.userTeams || []), ...(response.availableTeams || [])];
+
+        // Get member counts for each team
+        const teamsWithCounts = await Promise.all(
+          allTeams.map(async (team: Team) => {
+            try {
+              const teamResponse = await api.get(`/api/teams/${team.id}`);
+              return {
+                ...team,
+                memberCount: teamResponse.members?.length || 0,
+              };
+            } catch {
+              return { ...team, memberCount: 0 };
+            }
+          }),
+        );
+
+        setTeams(teamsWithCounts);
+      } else {
+        // For regular users, fetch only their teams
+        const response = await api.get('/api/teams/user');
+        setTeams(response.teams || []);
+      }
     } catch (error) {
       console.error('Error fetching teams:', error);
     } finally {
@@ -327,14 +465,47 @@ export default function TeamsPage() {
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-white mb-2">Team Management</h1>
               <p className="text-gray-400">
-                Create teams, join existing ones, and manage your team memberships
+                {isAdmin
+                  ? 'Create teams, join existing ones, and manage team memberships. As an admin, you can manually add users to any team.'
+                  : 'Create teams, join existing ones, and manage your team memberships'}
               </p>
             </div>
 
-            {/* My Teams Section */}
+            {/* Admin Quick Add Members Section */}
+            {isAdmin && (
+              <div className="mb-8">
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h2 className="text-xl font-semibold text-white mb-1">Quick Add Members</h2>
+                      <p className="text-sm text-gray-400">
+                        Quickly add users (including guests) to any team
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        // Open modal with team selection first
+                        setSelectedTeam(null);
+                        setSelectedUserIds([]);
+                        setSearchTerm('');
+                        setSearchResults([]);
+                        setIsAddMemberModalOpen(true);
+                      }}
+                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-sm font-medium transition-colors"
+                    >
+                      Add Members to Team
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* My Teams Section / All Teams (for admins) */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-white text-2xl font-bold">My Teams</h2>
+                <h2 className="text-white text-2xl font-bold">
+                  {isAdmin ? 'All Teams' : 'My Teams'}
+                </h2>
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
                   className="text-gray-400 hover:text-white text-sm border border-gray-600 px-3 py-1 rounded-lg transition-colors"
@@ -354,56 +525,90 @@ export default function TeamsPage() {
               ) : teams.length > 0 ? (
                 <div className="flex space-x-4 pb-4 overflow-x-auto">
                   {teams.map((team, index) => (
-                    <Link
+                    <div
                       key={team.id}
-                      href={`/teams/${team.id}`}
                       className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 relative overflow-hidden hover:scale-105 transition-transform duration-200"
                     >
-                      {/* Team Background/Logo */}
-                      <div className="absolute inset-0">
-                        {team.logoUrl ? (
-                          <Image src={team.logoUrl} alt={team.name} fill className="object-cover" />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Image
-                              src="/challenger-logo-no-text.png"
-                              alt="Challenger logo"
-                              width={80}
-                              height={80}
-                              className="opacity-80"
-                            />
-                          </div>
-                        )}
-                        {/* Dark overlay for text readability */}
-                        <div className="absolute inset-0 bg-black/30" />
-                      </div>
-
-                      {/* Team Title Overlay */}
-                      <div className="absolute top-4 left-4 right-4 z-10">
-                        <h3 className="text-white font-bold text-lg leading-tight">{team.name}</h3>
-                        {team.description && (
-                          <p className="text-white/80 text-sm mt-1 line-clamp-2">
-                            {team.description}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Team Info Footer */}
-                      <div
-                        className={`absolute bottom-0 left-0 right-0 ${getTeamFooterColor(index)} p-3`}
+                      <Link
+                        href={`/teams/${team.id}`}
+                        className="absolute inset-0 z-0"
+                        onClick={(e) => {
+                          // Allow clicking through to team page unless clicking the admin button
+                          if (!isAdmin) return;
+                          const target = e.target as HTMLElement;
+                          if (target.closest('.admin-add-member-btn')) {
+                            e.preventDefault();
+                          }
+                        }}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2 text-white text-sm">
-                            <FiUsers className="w-4 h-4" />
-                            <span>{formatMemberCount(team.memberCount || 0)}</span>
-                          </div>
-                          <div className="text-white text-sm">
-                            {team.userRole === 'CAPTAIN' ? 'Captain' : 'Member'}
-                          </div>
+                        {/* Team Background/Logo */}
+                        <div className="absolute inset-0">
+                          {team.logoUrl ? (
+                            <Image
+                              src={team.logoUrl}
+                              alt={team.name}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Image
+                                src="/challenger-logo-no-text.png"
+                                alt="Challenger logo"
+                                width={80}
+                                height={80}
+                                className="opacity-80"
+                              />
+                            </div>
+                          )}
+                          {/* Dark overlay for text readability */}
+                          <div className="absolute inset-0 bg-black/30" />
                         </div>
-                        <div className="text-white text-sm mt-1 opacity-90">View Team</div>
-                      </div>
-                    </Link>
+
+                        {/* Team Title Overlay */}
+                        <div className="absolute top-4 left-4 right-4 z-10">
+                          <h3 className="text-white font-bold text-lg leading-tight">
+                            {team.name}
+                          </h3>
+                          {team.description && (
+                            <p className="text-white/80 text-sm mt-1 line-clamp-2">
+                              {team.description}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Team Info Footer */}
+                        <div
+                          className={`absolute bottom-0 left-0 right-0 ${getTeamFooterColor(index)} p-3`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2 text-white text-sm">
+                              <FiUsers className="w-4 h-4" />
+                              <span>{formatMemberCount(team.memberCount || 0)}</span>
+                            </div>
+                            <div className="text-white text-sm">
+                              {team.userRole === 'CAPTAIN'
+                                ? 'Captain'
+                                : team.userRole === 'MEMBER'
+                                  ? 'Member'
+                                  : isAdmin
+                                    ? 'Admin View'
+                                    : ''}
+                            </div>
+                          </div>
+                          <div className="text-white text-sm mt-1 opacity-90">View Team</div>
+                        </div>
+                      </Link>
+                      {/* Admin Add Member Button */}
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleOpenAddMemberModal(team)}
+                          className="admin-add-member-btn absolute top-2 right-2 z-20 px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-xs font-medium transition-colors shadow-lg"
+                        >
+                          Add Members
+                        </button>
+                      )}
+                    </div>
                   ))}
 
                   {/* Create Team Box */}
@@ -681,6 +886,238 @@ export default function TeamsPage() {
         onClose={() => setIsJoinModalOpen(false)}
         onSuccess={handleTeamSuccess}
       />
+
+      {/* Admin: Add Member Modal */}
+      {isAdmin && isAddMemberModalOpen && (
+        <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-6 border w-full max-w-2xl shadow-lg rounded-lg bg-gray-800 border-gray-700">
+            <div className="mb-4">
+              <h3 className="text-xl font-bold text-white mb-2">
+                {selectedTeam ? `Add Members to ${selectedTeam.name}` : 'Add Members to Team'}
+              </h3>
+              <p className="text-sm text-gray-400">
+                {selectedTeam
+                  ? 'Search for users (including guest users) and add them to this team'
+                  : 'Select a team and search for users (including guest users) to add'}
+              </p>
+            </div>
+
+            {/* Team Selection (if no team selected yet) */}
+            {!selectedTeam && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">Select Team</label>
+                {/* Team Search Input */}
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    placeholder="Search teams by name or description..."
+                    value={teamSearchTerm}
+                    onChange={(e) => setTeamSearchTerm(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+                <div className="max-h-64 overflow-y-auto border border-gray-700 rounded-md bg-gray-700">
+                  {teams.length === 0 ? (
+                    <div className="p-4 text-center text-gray-400 text-sm">No teams available</div>
+                  ) : (
+                    (() => {
+                      // Filter teams based on search term
+                      const filteredTeams = teams.filter((team) => {
+                        if (!teamSearchTerm.trim()) return true;
+                        const searchLower = teamSearchTerm.toLowerCase();
+                        return (
+                          team.name.toLowerCase().includes(searchLower) ||
+                          team.description?.toLowerCase().includes(searchLower) ||
+                          team.scope?.toLowerCase().includes(searchLower)
+                        );
+                      });
+
+                      if (filteredTeams.length === 0) {
+                        return (
+                          <div className="p-4 text-center text-gray-400 text-sm">
+                            No teams found matching "{teamSearchTerm}"
+                          </div>
+                        );
+                      }
+
+                      return filteredTeams.map((team) => (
+                        <button
+                          key={team.id}
+                          onClick={() => setSelectedTeam(team)}
+                          className="w-full text-left p-3 border-b border-gray-600 hover:bg-gray-600 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-white font-medium">{team.name}</p>
+                              {team.description && (
+                                <p className="text-sm text-gray-400 mt-1 line-clamp-1">
+                                  {team.description}
+                                </p>
+                              )}
+                              <p className="text-xs text-gray-500 mt-1">
+                                {team.memberCount || 0} members • {team.scope || 'N/A'}
+                              </p>
+                            </div>
+                            <svg
+                              className="w-5 h-5 text-gray-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
+                            </svg>
+                          </div>
+                        </button>
+                      ));
+                    })()
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Role Selection (only show when team is selected) */}
+            {selectedTeam && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">Member Role</label>
+                <select
+                  value={memberRole}
+                  onChange={(e) => setMemberRole(e.target.value as 'MEMBER' | 'CAPTAIN')}
+                  className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option value="MEMBER">Member</option>
+                  <option value="CAPTAIN">Captain</option>
+                </select>
+              </div>
+            )}
+
+            {/* Search (only show when team is selected) */}
+            {selectedTeam && (
+              <div className="mb-4">
+                <div className="flex space-x-2 mb-2">
+                  <input
+                    type="text"
+                    placeholder="Search by name, email, or user ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <label className="flex items-center text-sm text-gray-300">
+                    <input
+                      type="checkbox"
+                      checked={includeGuests}
+                      onChange={(e) => setIncludeGuests(e.target.checked)}
+                      className="mr-2 rounded border-gray-600 bg-gray-700 text-primary-600 focus:ring-primary-500"
+                    />
+                    Include guest users
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* Selected Users */}
+            {selectedTeam && selectedUserIds.length > 0 && (
+              <div className="mb-4 p-3 bg-primary-900/20 border border-primary-700/50 rounded-md">
+                <p className="text-sm text-primary-300 mb-2">
+                  {selectedUserIds.length} user(s) selected
+                </p>
+              </div>
+            )}
+
+            {/* Search Results */}
+            {selectedTeam && isSearching ? (
+              <div className="text-center py-4">
+                <p className="text-gray-400">Searching...</p>
+              </div>
+            ) : selectedTeam && searchResults.length > 0 ? (
+              <div className="max-h-96 overflow-y-auto border border-gray-700 rounded-md mb-4">
+                {searchResults.map((user) => {
+                  const isSelected = selectedUserIds.includes(user.id);
+                  return (
+                    <div
+                      key={user.id}
+                      onClick={() => toggleUserSelection(user.id)}
+                      className={`p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-700/50 transition-colors ${
+                        isSelected ? 'bg-primary-900/20 border-primary-700/50' : ''
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-white font-medium">
+                            {user.name || 'No name'}
+                            {user.isGuest && (
+                              <span className="ml-2 text-xs px-2 py-0.5 bg-orange-900/50 text-orange-300 rounded">
+                                Guest
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-sm text-gray-400">{user.email}</p>
+                          <p className="text-xs text-gray-500 mt-1">ID: {user.id}</p>
+                        </div>
+                        {isSelected && (
+                          <svg
+                            className="w-5 h-5 text-primary-400"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : selectedTeam && searchTerm.trim() ? (
+              <div className="text-center py-4">
+                <p className="text-gray-400">No users found</p>
+              </div>
+            ) : null}
+
+            {/* Actions */}
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  if (selectedTeam) {
+                    // If team is selected, go back to team selection
+                    setSelectedTeam(null);
+                    setSelectedUserIds([]);
+                    setSearchTerm('');
+                    setSearchResults([]);
+                    setTeamSearchTerm('');
+                  } else {
+                    // If no team selected, close modal
+                    setIsAddMemberModalOpen(false);
+                    setTeamSearchTerm('');
+                  }
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors"
+              >
+                {selectedTeam ? 'Back' : 'Cancel'}
+              </button>
+              {selectedTeam && (
+                <button
+                  onClick={handleAddMembers}
+                  disabled={selectedUserIds.length === 0 || isAddingMembers}
+                  className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isAddingMembers ? 'Adding...' : `Add ${selectedUserIds.length} Member(s)`}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   );
 }
