@@ -445,6 +445,11 @@ export const updateScore = async (scoreId: string, updates: Partial<Score>) => {
   return null;
 };
 
+export const deleteScore = async (scoreId: string) => {
+  const scoreRef = doc(db, 'scores', scoreId);
+  await deleteDoc(scoreRef);
+};
+
 export const getScoresByEvent = async (eventId: string) => {
   const scoresRef = collection(db, 'scores');
   const q = query(scoresRef, where('eventId', '==', eventId));
