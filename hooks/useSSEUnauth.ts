@@ -29,6 +29,7 @@ export function useSSEUnauth(eventId: string) {
         eventSource.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
+            console.log('SSE (Unauth): Received message:', data);
             setLastEvent(data);
           } catch (err) {
             console.error('Error parsing SSE message:', err);

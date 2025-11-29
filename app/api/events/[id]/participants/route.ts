@@ -5,6 +5,7 @@ import {
   isAdmin,
   getParticipationsByEvent,
   getUser,
+  getTeam,
 } from '@/lib/firestore';
 import { convertFirestoreTimestamp } from '@/lib/utils';
 import { db } from '@/lib/firebase';
@@ -57,6 +58,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           }
         }
 
+        // Get team information if participant has a team
+        let teamName: string | undefined;
+        if (participation.teamId) {
+          const team = await getTeam(participation.teamId);
+          teamName = team?.name;
+        }
+
         return {
           id: participation.userId,
           name: user?.name || 'Unknown User',
@@ -67,6 +75,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           age: calculatedAge,
           joinedAt: participation.joinedAt,
           isGuest: false,
+          teamId: participation.teamId,
+          teamName: teamName,
         };
       }),
     );
@@ -101,6 +111,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           }
         }
 
+        // Get participation and team information for guest
+        const guestParticipation = participations.find((p) => p.userId === docSnapshot.id);
+        let teamName: string | undefined;
+        if (guestParticipation?.teamId) {
+          const team = await getTeam(guestParticipation.teamId);
+          teamName = team?.name;
+        }
+
         return {
           id: docSnapshot.id,
           name: userData.name || 'Unknown',
@@ -110,6 +128,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           sex: userData.sex,
           age: calculatedAge,
           isGuest: true,
+          teamId: guestParticipation?.teamId,
+          teamName: teamName,
         };
       }),
     );

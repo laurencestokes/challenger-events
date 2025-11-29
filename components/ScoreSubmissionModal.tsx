@@ -38,6 +38,12 @@ interface CompetitionVerification {
   status: 'PENDING' | 'VERIFIED' | 'REJECTED';
 }
 
+interface Team {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 interface ScoreSubmissionModalProps {
   eventId: string;
   isOpen: boolean;
@@ -65,6 +71,13 @@ export default function ScoreSubmissionModal({
   const [competitionVerification, setCompetitionVerification] =
     useState<CompetitionVerification | null>(null);
 
+  // Team selection state
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState('');
+  const [isTeamEvent, setIsTeamEvent] = useState(false);
+  const [competitorHasTeam, setCompetitorHasTeam] = useState(false);
+  const [competitorTeamId, setCompetitorTeamId] = useState<string | null>(null);
+
   const fetchEventData = useCallback(async () => {
     try {
       const [eventData, activitiesData] = await Promise.all([
@@ -74,6 +87,19 @@ export default function ScoreSubmissionModal({
 
       setParticipants(eventData.participants || []);
       setActivities(activitiesData);
+      setIsTeamEvent(eventData.isTeamEvent || false);
+
+      // Fetch teams if event supports teams
+      if (eventData.isTeamEvent) {
+        try {
+          const teamsData = await api.get('/api/teams/all');
+          const allTeams = [...(teamsData.userTeams || []), ...(teamsData.availableTeams || [])];
+          setTeams(allTeams);
+        } catch (error) {
+          console.error('Error fetching teams:', error);
+          // Don't show error, just log it - teams are optional
+        }
+      }
     } catch (error: unknown) {
       console.error('Error fetching event data:', error);
       setError('Failed to fetch event data');
@@ -83,6 +109,18 @@ export default function ScoreSubmissionModal({
   useEffect(() => {
     if (isOpen) {
       fetchEventData();
+    } else {
+      // Reset form state when modal closes
+      setSelectedCompetitor('');
+      setSelectedActivity('');
+      setScoreValue('');
+      setNotes('');
+      setSelectedTeamId('');
+      setCompetitorDetails(null);
+      setCompetitionVerification(null);
+      setCompetitorHasTeam(false);
+      setCompetitorTeamId(null);
+      setError('');
     }
   }, [isOpen, eventId, fetchEventData]);
 
@@ -112,6 +150,7 @@ export default function ScoreSubmissionModal({
         activityId: selectedActivity,
         rawValue,
         notes,
+        teamId: selectedTeamId || undefined, // Only include if a team is selected
       });
 
       // Reset form
@@ -119,6 +158,9 @@ export default function ScoreSubmissionModal({
       setSelectedActivity('');
       setScoreValue('');
       setNotes('');
+      setSelectedTeamId('');
+      setCompetitorHasTeam(false);
+      setCompetitorTeamId(null);
 
       onScoreSubmitted();
       onClose();
@@ -170,6 +212,7 @@ export default function ScoreSubmissionModal({
     setSelectedCompetitor(competitorId);
     const competitor = participants.find((p) => p.id === competitorId);
     setCompetitorDetails(competitor || null);
+    setSelectedTeamId(''); // Reset team selection when competitor changes
 
     // Fetch competition verification data if competitor is selected
     if (competitorId) {
@@ -183,8 +226,35 @@ export default function ScoreSubmissionModal({
         console.error('Error fetching competition verification:', error);
         setCompetitionVerification(null);
       }
+
+      // Check if competitor already has a team for this event
+      if (isTeamEvent) {
+        try {
+          // Use a custom endpoint or check participation
+          // For now, we'll check via the participants data or create an endpoint
+          // Since we don't have direct access, we'll assume they might have a team
+          // and let the API handle it, but we can try to fetch participation info
+          const participationResponse = await api
+            .get(`/api/events/${eventId}/participants/${competitorId}/participation`)
+            .catch(() => null);
+
+          if (participationResponse?.participation?.teamId) {
+            setCompetitorHasTeam(true);
+            setCompetitorTeamId(participationResponse.participation.teamId);
+          } else {
+            setCompetitorHasTeam(false);
+            setCompetitorTeamId(null);
+          }
+        } catch (_error) {
+          // If endpoint doesn't exist or fails, assume no team
+          setCompetitorHasTeam(false);
+          setCompetitorTeamId(null);
+        }
+      }
     } else {
       setCompetitionVerification(null);
+      setCompetitorHasTeam(false);
+      setCompetitorTeamId(null);
     }
   };
 
@@ -402,6 +472,54 @@ export default function ScoreSubmissionModal({
               placeholder="Add any notes about this score..."
             />
           </div>
+
+          {/* Team Selection - Only show if event supports teams and competitor doesn't have a team */}
+          {isTeamEvent && selectedCompetitor && !competitorHasTeam && teams.length > 0 && (
+            <div>
+              <label htmlFor="team" className="block text-gray-300 text-sm font-medium mb-2">
+                Assign Team (Optional)
+                <span className="text-xs text-gray-400 ml-1">- Admin only</span>
+              </label>
+              <select
+                id="team"
+                value={selectedTeamId}
+                onChange={(e) => setSelectedTeamId(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              >
+                <option value="">No team (leave unassigned)</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-400">
+                Select a team for this competitor. This will apply to all future scores for this
+                event.
+              </p>
+            </div>
+          )}
+
+          {/* Show current team if competitor already has one */}
+          {isTeamEvent && selectedCompetitor && competitorHasTeam && competitorTeamId && (
+            <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-3">
+              <div className="flex items-center space-x-2">
+                <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="text-sm text-blue-200">
+                  Competitor is already assigned to:{' '}
+                  <span className="font-semibold">
+                    {teams.find((t) => t.id === competitorTeamId)?.name || 'Unknown Team'}
+                  </span>
+                </span>
+              </div>
+            </div>
+          )}
 
           <div className="flex space-x-3 pt-4">
             <button

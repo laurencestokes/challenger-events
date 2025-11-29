@@ -19,6 +19,14 @@ interface Participant {
   bodyweight?: number;
   isGuest?: boolean;
   joinedAt?: unknown;
+  teamId?: string;
+  teamName?: string;
+}
+
+interface Team {
+  id: string;
+  name: string;
+  description?: string;
 }
 
 interface Score {
@@ -46,7 +54,9 @@ export default function EventParticipantsPage() {
   const router = useRouter();
   const eventId = params.id as string;
 
-  const [event, setEvent] = useState<{ name: string; code: string } | null>(null);
+  const [event, setEvent] = useState<{ name: string; code: string; isTeamEvent?: boolean } | null>(
+    null,
+  );
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -59,6 +69,8 @@ export default function EventParticipantsPage() {
   const [isLoadingScores, setIsLoadingScores] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [scoreToDelete, setScoreToDelete] = useState<Score | null>(null);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [assigningTeam, setAssigningTeam] = useState<string | null>(null);
 
   // Form state for adding/editing guest
   const [name, setName] = useState('');
@@ -77,6 +89,18 @@ export default function EventParticipantsPage() {
 
       setEvent(eventData);
       setParticipants(participantsData.participants || []);
+
+      // Fetch teams if event supports teams
+      if (eventData.isTeamEvent) {
+        try {
+          const teamsData = await api.get('/api/teams/all');
+          const allTeams = [...(teamsData.userTeams || []), ...(teamsData.availableTeams || [])];
+          setTeams(allTeams);
+        } catch (error) {
+          console.error('Error fetching teams:', error);
+          // Don't show error, just log it
+        }
+      }
     } catch (error: unknown) {
       console.error('Error fetching data:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
@@ -269,6 +293,33 @@ export default function EventParticipantsPage() {
     }
   };
 
+  const handleAssignTeam = async (participantId: string, teamId: string) => {
+    setAssigningTeam(participantId);
+    try {
+      // If teamId is empty, we're removing the team assignment
+      if (!teamId) {
+        await api.post(`/api/events/${eventId}/assign-team`, {
+          competitorId: participantId,
+          teamId: null,
+        });
+      } else {
+        await api.post(`/api/events/${eventId}/assign-team`, {
+          competitorId: participantId,
+          teamId: teamId,
+        });
+      }
+
+      // Refresh data to show updated team assignment
+      fetchData();
+    } catch (error: unknown) {
+      console.error('Error assigning team:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to assign team';
+      setError(errorMessage);
+    } finally {
+      setAssigningTeam(null);
+    }
+  };
+
   const regularParticipants = participants.filter((p) => !p.isGuest);
   const guestParticipants = participants.filter((p) => p.isGuest);
 
@@ -363,6 +414,11 @@ export default function EventParticipantsPage() {
                         <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
                           Bodyweight
                         </th>
+                        {event?.isTeamEvent && (
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                            Team
+                          </th>
+                        )}
                         <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
                           Actions
                         </th>
@@ -381,6 +437,35 @@ export default function EventParticipantsPage() {
                           <td className="py-3 px-4 text-gray-400">
                             {participant.bodyweight ? `${participant.bodyweight} kg` : 'N/A'}
                           </td>
+                          {event?.isTeamEvent && (
+                            <td className="py-3 px-4">
+                              <select
+                                value={participant.teamId || ''}
+                                onChange={(e) => {
+                                  const newTeamId = e.target.value;
+                                  if (newTeamId !== participant.teamId) {
+                                    if (newTeamId) {
+                                      handleAssignTeam(participant.id, newTeamId);
+                                    } else {
+                                      // Handle removing team assignment (optional - you may want to prevent this)
+                                      handleAssignTeam(participant.id, '');
+                                    }
+                                  }
+                                }}
+                                disabled={assigningTeam === participant.id}
+                                className="text-sm bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 min-w-[150px]"
+                              >
+                                <option value="">
+                                  {assigningTeam === participant.id ? 'Updating...' : 'No team'}
+                                </option>
+                                {teams.map((team) => (
+                                  <option key={team.id} value={team.id}>
+                                    {team.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                          )}
                           <td className="py-3 px-4">
                             <div className="flex gap-2">
                               <button
@@ -433,6 +518,11 @@ export default function EventParticipantsPage() {
                         <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
                           Bodyweight
                         </th>
+                        {event?.isTeamEvent && (
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                            Team
+                          </th>
+                        )}
                         <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
                           Actions
                         </th>
@@ -450,6 +540,35 @@ export default function EventParticipantsPage() {
                           <td className="py-3 px-4 text-gray-400">
                             {participant.bodyweight ? `${participant.bodyweight} kg` : 'N/A'}
                           </td>
+                          {event?.isTeamEvent && (
+                            <td className="py-3 px-4">
+                              <select
+                                value={participant.teamId || ''}
+                                onChange={(e) => {
+                                  const newTeamId = e.target.value;
+                                  if (newTeamId !== participant.teamId) {
+                                    if (newTeamId) {
+                                      handleAssignTeam(participant.id, newTeamId);
+                                    } else {
+                                      // Handle removing team assignment (optional - you may want to prevent this)
+                                      handleAssignTeam(participant.id, '');
+                                    }
+                                  }
+                                }}
+                                disabled={assigningTeam === participant.id}
+                                className="text-sm bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 min-w-[150px]"
+                              >
+                                <option value="">
+                                  {assigningTeam === participant.id ? 'Updating...' : 'No team'}
+                                </option>
+                                {teams.map((team) => (
+                                  <option key={team.id} value={team.id}>
+                                    {team.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                          )}
                           <td className="py-3 px-4">
                             <div className="flex gap-2">
                               <button

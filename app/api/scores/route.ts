@@ -11,7 +11,13 @@ import {
   checkCompetitionVerificationRequired,
   getCompetitionVerification,
   getUserParticipation,
+  getTeam,
+  addTeamMember,
+  getTeamMembers,
+  createParticipation,
+  updateParticipation,
 } from '@/lib/firestore';
+import { broadcastToEvent } from '@/lib/sse-manager';
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,7 +39,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const { eventId, competitorId, activityId, rawValue, notes } = await request.json();
+    const { eventId, competitorId, activityId, rawValue, notes, teamId } = await request.json();
 
     if (!eventId || !competitorId || !activityId || rawValue === undefined) {
       return NextResponse.json(
@@ -128,12 +134,47 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Handle team assignment if teamId is provided
+    let finalTeamId: string | null = null;
+    if (teamId && event.isTeamEvent) {
+      // Verify team exists
+      const team = await getTeam(teamId);
+      if (!team) {
+        return NextResponse.json({ error: 'Team not found' }, { status: 404 });
+      }
+
+      // Check if competitor is already a team member
+      const existingMembers = await getTeamMembers(teamId);
+      const isAlreadyMember = existingMembers.some((member) => member.userId === competitorId);
+
+      if (!isAlreadyMember) {
+        // Add competitor to team (works for both regular users and guest users)
+        await addTeamMember(teamId, competitorId, 'MEMBER');
+      }
+
+      // Get or create participation record
+      const participation = await getUserParticipation(competitorId, eventId);
+      if (!participation) {
+        // Create participation record if it doesn't exist
+        await createParticipation({
+          userId: competitorId,
+          eventId: eventId,
+          teamId: teamId,
+        });
+      } else {
+        // Update existing participation with teamId
+        await updateParticipation(participation.id, { teamId: teamId });
+      }
+
+      finalTeamId = teamId;
+    } else {
+      // Get the user's current team participation for this event (if no teamId provided)
+      const participation = await getUserParticipation(competitorId, eventId);
+      finalTeamId = participation?.teamId || null; // Convert undefined to null for Firestore
+    }
+
     // Check if a score already exists for this user, activity, and event
     const existingScore = await getScoreByUserActivityAndEvent(competitorId, activityId, eventId);
-
-    // Get the user's current team participation for this event
-    const participation = await getUserParticipation(competitorId, eventId);
-    const teamId = participation?.teamId || null; // Convert undefined to null for Firestore
 
     let score;
     if (existingScore) {
@@ -144,7 +185,7 @@ export async function POST(request: NextRequest) {
         reps: reps, // Include reps in the update
         notes: notes || '',
         verified: true,
-        teamId: teamId, // Preserve team association
+        teamId: finalTeamId, // Use final team ID (from participation or newly assigned)
       });
       score = updatedScore || {
         id: existingScore.id,
@@ -156,7 +197,7 @@ export async function POST(request: NextRequest) {
         reps: reps, // Include reps in the response
         notes: notes || '',
         verified: true,
-        teamId: teamId, // Preserve team association
+        teamId: finalTeamId, // Use final team ID
       };
     } else {
       // Create a new score
@@ -169,7 +210,7 @@ export async function POST(request: NextRequest) {
         reps: reps, // Include reps in the creation
         notes: notes || '',
         verified: true,
-        teamId: teamId, // Store team association at time of submission
+        teamId: finalTeamId, // Store team association at time of submission
       });
     }
     // Trigger on-demand revalidation for the competitor's public profile page
@@ -183,6 +224,18 @@ export async function POST(request: NextRequest) {
       });
     } catch (err) {
       console.error('Failed to revalidate public profile page:', err);
+    }
+
+    // Broadcast score submission event to update public leaderboard
+    try {
+      const broadcastMessage = JSON.stringify({
+        type: 'score_submitted',
+        eventId: eventId,
+        timestamp: new Date().toISOString(),
+      });
+      broadcastToEvent(eventId, broadcastMessage);
+    } catch (err) {
+      console.error('Failed to broadcast score submission event:', err);
     }
 
     return NextResponse.json({

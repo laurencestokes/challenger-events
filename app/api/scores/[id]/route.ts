@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserByUid, isAdmin, deleteScore, getUser } from '@/lib/firestore';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { broadcastToEvent } from '@/lib/sse-manager';
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -43,6 +44,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       );
     }
 
+    // Extract eventId before deletion for broadcasting
+    const eventId = scoreData.eventId as string;
+
     // Get the user who owns this score for revalidation
     const scoreOwner = await getUser(scoreData.userId);
     if (!scoreOwner) {
@@ -63,6 +67,18 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       });
     } catch (err) {
       console.error('Failed to revalidate public profile page:', err);
+    }
+
+    // Broadcast score submission event to update public leaderboard
+    try {
+      const broadcastMessage = JSON.stringify({
+        type: 'score_submitted',
+        eventId: eventId,
+        timestamp: new Date().toISOString(),
+      });
+      broadcastToEvent(eventId, broadcastMessage);
+    } catch (err) {
+      console.error('Failed to broadcast score deletion event:', err);
     }
 
     return NextResponse.json({ message: 'Score deleted successfully' });

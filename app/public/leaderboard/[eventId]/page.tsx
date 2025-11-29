@@ -142,7 +142,7 @@ export default function PublicEventLeaderboard() {
   const [displayMode, setDisplayMode] = useState<'table' | 'barchart'>('table');
 
   // SSE and notification state
-  const { isConnected, lastEvent } = useSSEUnauth(eventId);
+  const { isConnected, lastEvent, error: _sseError } = useSSEUnauth(eventId);
   const [notification, setNotification] = useState<{
     show: boolean;
     message: string;
@@ -155,20 +155,28 @@ export default function PublicEventLeaderboard() {
 
   const fetchData = useCallback(async () => {
     try {
+      // Add cache-busting timestamp to ensure fresh data
+      const timestamp = Date.now();
       const [leaderboardData, activitiesData, eventData] = await Promise.all([
-        fetch(`/api/public/leaderboard/${eventId}`).then((res) => {
+        fetch(`/api/public/leaderboard/${eventId}?t=${timestamp}`, {
+          cache: 'no-store',
+        }).then((res) => {
           if (!res.ok) {
             throw new Error('Failed to fetch leaderboard data');
           }
           return res.json();
         }),
-        fetch(`/api/public/events/${eventId}/activities`).then((res) => {
+        fetch(`/api/public/events/${eventId}/activities?t=${timestamp}`, {
+          cache: 'no-store',
+        }).then((res) => {
           if (!res.ok) {
             throw new Error('Failed to fetch activities data');
           }
           return res.json();
         }),
-        fetch(`/api/public/events/${eventId}`).then((res) => {
+        fetch(`/api/public/events/${eventId}?t=${timestamp}`, {
+          cache: 'no-store',
+        }).then((res) => {
           if (!res.ok) {
             return null;
           }
@@ -207,14 +215,31 @@ export default function PublicEventLeaderboard() {
       // Refresh activities to show the newly revealed workout
       fetchData();
     } else if (lastEvent?.type === 'score_submitted') {
+      console.log(
+        'Public Leaderboard: Received score_submitted event, refreshing data...',
+        lastEvent,
+      );
       // Refresh all data when a new score is submitted to get updated latest results
       fetchData();
     }
-  }, [lastEvent, fetchData, eventId]);
+  }, [lastEvent, fetchData]);
 
   useEffect(() => {
     fetchData();
   }, [eventId, fetchData]);
+
+  // TODO: Replace polling with proper invalidation/react-query
+  // Poll for leaderboard updates every 30 seconds as a fallback
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      console.log('Public Leaderboard: Polling for updates...');
+      fetchData();
+    }, 30000); // 30 seconds
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [fetchData]);
 
   const formatRawValue = (
     rawValue: number,
