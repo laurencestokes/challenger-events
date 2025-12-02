@@ -71,6 +71,8 @@ export default function EventParticipantsPage() {
   const [scoreToDelete, setScoreToDelete] = useState<Score | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [assigningTeam, setAssigningTeam] = useState<string | null>(null);
+  const [orphanedScores, setOrphanedScores] = useState<Score[]>([]);
+  const [isLoadingOrphanedScores, setIsLoadingOrphanedScores] = useState(false);
 
   // Form state for adding/editing guest
   const [name, setName] = useState('');
@@ -112,7 +114,21 @@ export default function EventParticipantsPage() {
 
   useEffect(() => {
     fetchData();
+    fetchOrphanedScores();
   }, [fetchData]);
+
+  const fetchOrphanedScores = useCallback(async () => {
+    try {
+      setIsLoadingOrphanedScores(true);
+      const orphanedScoresData = await api.get(`/api/events/${eventId}/orphaned-scores`);
+      setOrphanedScores(orphanedScoresData.scores || []);
+    } catch (error: unknown) {
+      console.error('Error fetching orphaned scores:', error);
+      // Don't show error to user, just log it
+    } finally {
+      setIsLoadingOrphanedScores(false);
+    }
+  }, [eventId]);
 
   const handleAddGuest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -257,6 +273,8 @@ export default function EventParticipantsPage() {
         );
         setParticipantScores(scoresData.scores || []);
       }
+      // Refresh orphaned scores if this was an orphaned score
+      await fetchOrphanedScores();
       setShowDeleteConfirmModal(false);
       setScoreToDelete(null);
     } catch (error: unknown) {
@@ -604,6 +622,79 @@ export default function EventParticipantsPage() {
                 </div>
               )}
             </div>
+
+            {/* Orphaned Scores (from deleted users) */}
+            {orphanedScores.length > 0 && (
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-xl font-semibold text-white">
+                      Orphaned Scores ({orphanedScores.length})
+                    </h2>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Scores from deleted users. These appear as "Unknown User" on the leaderboard.
+                    </p>
+                  </div>
+                  <button
+                    onClick={fetchOrphanedScores}
+                    disabled={isLoadingOrphanedScores}
+                    className="px-3 py-1 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50"
+                  >
+                    {isLoadingOrphanedScores ? 'Loading...' : 'Refresh'}
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-700">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                          Activity
+                        </th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                          Raw Value
+                        </th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                          Calculated Score
+                        </th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                          Submitted
+                        </th>
+                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orphanedScores.map((score) => (
+                        <tr
+                          key={score.id}
+                          className="border-b border-gray-700/50 hover:bg-gray-700/30"
+                        >
+                          <td className="py-3 px-4 text-white">{score.activityName}</td>
+                          <td className="py-3 px-4 text-gray-400">
+                            {score.rawValue}
+                            {score.activityUnit && ` ${score.activityUnit}`}
+                            {score.reps && ` (${score.reps} reps)`}
+                          </td>
+                          <td className="py-3 px-4 text-gray-400">{score.calculatedScore}</td>
+                          <td className="py-3 px-4 text-gray-400">
+                            {formatDate(score.submittedAt)}
+                          </td>
+                          <td className="py-3 px-4">
+                            <button
+                              onClick={() => handleDeleteScore(score)}
+                              className="text-red-400 hover:text-red-300 text-sm"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Add/Edit Guest Modal */}

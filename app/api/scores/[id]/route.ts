@@ -47,26 +47,26 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     // Extract eventId before deletion for broadcasting
     const eventId = scoreData.eventId as string;
 
-    // Get the user who owns this score for revalidation
+    // Get the user who owns this score for revalidation (if user still exists)
+    // Note: We allow deletion even if the user has been deleted
     const scoreOwner = await getUser(scoreData.userId);
-    if (!scoreOwner) {
-      return NextResponse.json({ error: 'Score owner not found' }, { status: 404 });
-    }
 
     // Delete the score
     await deleteScore(scoreId);
 
-    // Trigger on-demand revalidation for the competitor's public profile page
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-      await fetch(`${baseUrl}/api/revalidate/profile/${scoreOwner.uid}`, {
-        method: 'POST',
-        headers: {
-          'x-revalidate-secret': process.env.REVALIDATE_SECRET || '',
-        },
-      });
-    } catch (err) {
-      console.error('Failed to revalidate public profile page:', err);
+    // Trigger on-demand revalidation for the competitor's public profile page (only if user exists)
+    if (scoreOwner) {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        await fetch(`${baseUrl}/api/revalidate/profile/${scoreOwner.uid}`, {
+          method: 'POST',
+          headers: {
+            'x-revalidate-secret': process.env.REVALIDATE_SECRET || '',
+          },
+        });
+      } catch (err) {
+        console.error('Failed to revalidate public profile page:', err);
+      }
     }
 
     // Broadcast score submission event to update public leaderboard

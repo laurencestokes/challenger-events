@@ -405,17 +405,9 @@ export default function CompetitorDashboard() {
                       {/* Event Image */}
                       <div className="absolute inset-0">
                         {event.imageUrl ? (
-                          <Image
-                            src={event.imageUrl}
-                            alt={event.name}
-                            fill
-                          />
+                          <Image src={event.imageUrl} alt={event.name} fill />
                         ) : (
-                          <Image
-                            src="/upcoming_events_placeholder.png"
-                            alt={event.name}
-                            fill
-                          />
+                          <Image src="/upcoming_events_placeholder.png" alt={event.name} fill />
                         )}
                         {/* Dark overlay for text readability */}
                         <div className="absolute inset-0 bg-black/30" />
@@ -629,17 +621,9 @@ export default function CompetitorDashboard() {
                       {/* Event Image */}
                       <div className="absolute inset-0">
                         {event.imageUrl ? (
-                          <Image
-                            src={event.imageUrl}
-                            alt={event.name}
-                            fill
-                          />
+                          <Image src={event.imageUrl} alt={event.name} fill />
                         ) : (
-                          <Image
-                            src="/event_placeholder.png"
-                            alt={event.name}
-                            fill
-                          />
+                          <Image src="/event_placeholder.png" alt={event.name} fill />
                         )}
                         {/* Dark overlay for text readability */}
                         <div className="absolute inset-0 bg-black/30" />
@@ -734,8 +718,9 @@ export default function CompetitorDashboard() {
             >
               <h2 className="text-white text-2xl font-bold">Performance Over Time</h2>
               <FiChevronDown
-                className={`w-6 h-6 text-white transition-transform duration-200 ${isPerformanceGraphExpanded ? 'rotate-180' : ''
-                  }`}
+                className={`w-6 h-6 text-white transition-transform duration-200 ${
+                  isPerformanceGraphExpanded ? 'rotate-180' : ''
+                }`}
               />
             </button>
             {isPerformanceGraphExpanded && (
@@ -764,8 +749,9 @@ export default function CompetitorDashboard() {
             >
               <h2 className="text-white text-2xl font-bold">Score History</h2>
               <FiChevronDown
-                className={`w-6 h-6 text-white transition-transform duration-200 ${isScoreHistoryExpanded ? 'rotate-180' : ''
-                  }`}
+                className={`w-6 h-6 text-white transition-transform duration-200 ${
+                  isScoreHistoryExpanded ? 'rotate-180' : ''
+                }`}
               />
             </button>
             {isScoreHistoryExpanded && (
@@ -806,10 +792,11 @@ export default function CompetitorDashboard() {
                                   )}
                                   {/* Verification Status Badge */}
                                   <span
-                                    className={`px-2 py-1 text-xs rounded font-medium flex items-center space-x-1 ${isVerified
-                                      ? 'bg-green-500/20 text-green-400'
-                                      : 'bg-gray-500/20 text-gray-400'
-                                      }`}
+                                    className={`px-2 py-1 text-xs rounded font-medium flex items-center space-x-1 ${
+                                      isVerified
+                                        ? 'bg-green-500/20 text-green-400'
+                                        : 'bg-gray-500/20 text-gray-400'
+                                    }`}
                                   >
                                     {isVerified ? (
                                       <>
