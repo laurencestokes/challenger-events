@@ -192,6 +192,30 @@ export const SCORING_SYSTEMS: ScoringSystem[] = [
     requiresSex: true,
     calculationFunction: 'bike500mScore',
   },
+  {
+    id: 'running_5km',
+    name: '5km Run',
+    description: '5km running scoring based on time, age, and sex',
+    category: 'ENDURANCE',
+    inputType: 'TIME',
+    unit: 'seconds',
+    requiresBodyweight: false,
+    requiresAge: true,
+    requiresSex: true,
+    calculationFunction: 'running5kmScore',
+  },
+  {
+    id: 'running_1mile',
+    name: '1 Mile Run',
+    description: '1 mile running scoring based on time, age, and sex',
+    category: 'ENDURANCE',
+    inputType: 'TIME',
+    unit: 'seconds',
+    requiresBodyweight: false,
+    requiresAge: true,
+    requiresSex: true,
+    calculationFunction: 'running1MileScore',
+  },
 ];
 
 export const getScoringSystemById = (id: string): ScoringSystem | undefined => {

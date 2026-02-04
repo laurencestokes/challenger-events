@@ -102,6 +102,26 @@ export const EVENT_TYPES: EventType[] = [
     unit: 'seconds',
     supportsReps: false,
   },
+  {
+    id: 'running_5km',
+    name: '5km Run',
+    description: '5km running with scoring based on time, age, and sex',
+    category: 'ENDURANCE',
+    scoringSystemId: 'running_5km',
+    inputType: 'TIME',
+    unit: 'seconds',
+    supportsReps: false,
+  },
+  {
+    id: 'running_1mile',
+    name: '1 Mile Run',
+    description: '1 mile running with scoring based on time, age, and sex',
+    category: 'ENDURANCE',
+    scoringSystemId: 'running_1mile',
+    inputType: 'TIME',
+    unit: 'seconds',
+    supportsReps: false,
+  },
 ];
 
 export const getEventTypeById = (id: string): EventType | undefined => {

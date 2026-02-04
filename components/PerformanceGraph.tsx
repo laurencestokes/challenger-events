@@ -109,6 +109,8 @@ export default function PerformanceGraph({ scores }: PerformanceGraphProps) {
       rowing_4min: '4min Row',
       bike_4km: '4km Bike',
       ski_500m: '500m Ski',
+      running_5km: '5km Run',
+      running_1mile: '1 Mile Run',
     };
     return activityMap[activityId] || activityId;
   }
@@ -274,7 +276,9 @@ export default function PerformanceGraph({ scores }: PerformanceGraphProps) {
       const repsToShow = reps || 1;
       return `${rawValue}kg × ${repsToShow}`;
     }
-    if (['rowing_500m', 'bike_4km', 'ski_500m'].includes(activityId)) {
+    if (
+      ['rowing_500m', 'bike_4km', 'ski_500m', 'running_5km', 'running_1mile'].includes(activityId)
+    ) {
       const minutes = Math.floor(rawValue / 60);
       const remainingSeconds = rawValue % 60;
       const milliseconds = Math.round((remainingSeconds % 1) * 10);

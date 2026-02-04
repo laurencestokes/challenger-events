@@ -152,6 +152,14 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
       return 45; // Default 500m bike time: 45 seconds
     }
 
+    if (activity.scoringSystemId === 'running_1mile') {
+      return 360; // Default 1 mile time: 6 minutes
+    }
+
+    if (activity.scoringSystemId === 'running_5km') {
+      return 1200; // Default 5km time: 20 minutes
+    }
+
     // Generic defaults based on unit
     switch (activity.unit) {
       case 'kg':
@@ -179,6 +187,15 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
     // Check for bike500m specific ranges
     if (activity.scoringSystemId === 'bike_500m') {
       return { min: 20, max: 80 }; // 500m bike: 20 seconds to 1 minute 20 seconds
+    }
+
+    // Check for running events
+    if (activity.scoringSystemId === 'running_1mile') {
+      return { min: 180, max: 600 }; // 1 mile: 3 minutes to 10 minutes
+    }
+
+    if (activity.scoringSystemId === 'running_5km') {
+      return { min: 720, max: 1800 }; // 5km: 12 minutes to 30 minutes
     }
 
     // Generic ranges based on unit
@@ -489,6 +506,14 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
         case 'bike500mScore':
           requiredRawInput = challengerData.getBike500mTimeForScore(targetScore, sex, age);
           actualScore = challengerData.bike500mScore(requiredRawInput, sex, age).score;
+          break;
+        case 'running5kmScore':
+          requiredRawInput = challengerData.getRunningTimeForScore(targetScore, '5km', sex, age);
+          actualScore = challengerData.running5kmScore(requiredRawInput, sex, age).score;
+          break;
+        case 'running1MileScore':
+          requiredRawInput = challengerData.getRunningTimeForScore(targetScore, '1mile', sex, age);
+          actualScore = challengerData.running1MileScore(requiredRawInput, sex, age).score;
           break;
         default:
           throw new Error(`Unsupported calculation function: ${scoringSystem.calculationFunction}`);

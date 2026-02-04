@@ -137,8 +137,10 @@ export default function AdminScoreToolPage() {
         parsedReps,
       );
       setResult({ score: Math.round(res.score), system: res.scoringSystem.name });
-    } catch (_err) {
-      setError('Failed to calculate score.');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to calculate score.';
+      setError(`Failed to calculate score: ${errorMessage}`);
+      console.error('Score calculation error:', err);
     } finally {
       setLoading(false);
     }
@@ -160,7 +162,7 @@ export default function AdminScoreToolPage() {
             <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-4">
               <h3 className="text-sm font-semibold text-white mb-1">Input tips</h3>
               <p className="text-xs text-gray-300">
-                Rowing/Bike times accept mm:ss (e.g., 1:35) or seconds (e.g., 95).
+                Rowing/Bike/Run times accept mm:ss (e.g., 1:35) or seconds (e.g., 95).
               </p>
             </div>
             <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-4">
