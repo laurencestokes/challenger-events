@@ -31,10 +31,10 @@ describe('LoadingSpinner', () => {
     expect(spinner).toHaveClass(
       'animate-spin',
       'rounded-full',
-      'h-32',
-      'w-32',
+      'h-16',
+      'w-16',
       'border-b-2',
-      'border-indigo-600',
+      'border-primary-500',
     );
   });
 });

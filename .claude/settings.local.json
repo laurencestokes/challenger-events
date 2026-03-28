@@ -10,7 +10,11 @@
       "Bash(npm test:*)",
       "Bash(grep -rh \"from ['''']@/\" /c/Users/laure/Repos/challenger-events --include=*.ts --include=*.tsx --include=*.js --include=*.jsx)",
       "Bash(sed \"s/[''''\"\"].*//\")",
-      "Bash(xargs sed:*)"
+      "Bash(xargs sed:*)",
+      "Bash(npx jest:*)",
+      "Bash(npm install:*)",
+      "Bash(cd:*)",
+      "Bash(grep -v \"^$\")"
     ]
   }
 }
