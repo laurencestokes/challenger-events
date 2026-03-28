@@ -6,7 +6,7 @@ import {
   getUserByUid,
   generateEventCode,
   isAdmin,
-} from '@/lib/firestore';
+} from '@lib/firestore';
 
 export async function POST(request: NextRequest) {
   try {

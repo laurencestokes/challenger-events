@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { TeamErgSession, Competitor } from '@/hooks/useErgSocket';
+import { TeamErgSession, Competitor } from '@hooks/useErgSocket';
 
 // Team session management API
 // Creates and manages team-based erg sessions

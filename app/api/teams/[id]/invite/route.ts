@@ -6,9 +6,9 @@ import {
   createTeamInvitation,
   generateInvitationCode,
   getTeamInvitationsByTeamId,
-} from '@/lib/firestore';
-import { sendTeamInvitation } from '@/lib/email';
-import { convertFirestoreTimestamp } from '@/lib/utils';
+} from '@lib/firestore';
+import { sendTeamInvitation } from '@lib/email';
+import { convertFirestoreTimestamp } from '@lib/utils';
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { api } from '@/lib/api-client';
-import { beautifyRawScore } from '@/utils/scoring';
+import { api } from '@lib/api-client';
+import { beautifyRawScore } from '@utils/scoring';
 
 interface LeaderboardEntry {
   userId: string;

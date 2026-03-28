@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { getSocket } from '@/lib/socket-client';
-import { Competitor } from '@/hooks/useErgSocket';
+import { getSocket } from '@lib/socket-client';
+import { Competitor } from '@hooks/useErgSocket';
 
 interface MockErgConfig {
   sessionId: string;

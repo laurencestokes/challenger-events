@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, createScore, Score } from '@/lib/firestore';
-import { EVENT_TYPES } from '@/constants/eventTypes';
-import { calculateScore } from '@/utils/scoreCalculation';
+import { getUserByUid, createScore, Score } from '@lib/firestore';
+import { EVENT_TYPES } from '@constants/eventTypes';
+import { calculateScore } from '@utils/scoreCalculation';
 
 // GET: Fetch all personal (non-event) scores for the authenticated user
 export async function GET(request: NextRequest) {
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
     // Fetch all scores for this user and filter for personal scores (eventId is null/undefined)
     const { collection, query, where, getDocs } = await import('firebase/firestore');
-    const db = (await import('@/lib/firebase')).db;
+    const db = (await import('@lib/firebase')).db;
     const scoresRef = collection(db, 'scores');
     const q = query(scoresRef, where('userId', '==', user.id));
     const querySnapshot = await getDocs(q);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getUser, updateUser, isAdmin, serverTimestamp } from '@/lib/firestore';
+import { getUserByUid, getUser, updateUser, isAdmin, serverTimestamp } from '@lib/firestore';
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {

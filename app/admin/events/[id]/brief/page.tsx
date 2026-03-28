@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
-import { api } from '@/lib/api-client';
-import { queryKeys } from '@/lib/queryKeys';
+import { api } from '@lib/api-client';
+import { queryKeys } from '@lib/queryKeys';
 import Link from 'next/link';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import WelcomeSection from '@/components/WelcomeSection';
+import ProtectedRoute from '@components/ProtectedRoute';
+import WelcomeSection from '@components/WelcomeSection';
 
 interface Event {
   id: string;

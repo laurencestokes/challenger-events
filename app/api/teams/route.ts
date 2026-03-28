@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, createTeam, addTeamMember, isAdmin } from '@/lib/firestore';
+import { getUserByUid, createTeam, addTeamMember, isAdmin } from '@lib/firestore';
 
 export async function POST(request: NextRequest) {
   try {
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get teams that the user is a member of
-    const { getUserTeams } = await import('@/lib/firestore');
+    const { getUserTeams } = await import('@lib/firestore');
     const userTeams = await getUserTeams(user.id);
 
     return NextResponse.json({ teams: userTeams });

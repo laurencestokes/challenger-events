@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getEvent, revealHiddenWorkout, isAdmin, getActivity } from '@/lib/firestore';
-import { broadcastToEvent } from '@/lib/sse-manager';
+import { getUserByUid, getEvent, revealHiddenWorkout, isAdmin, getActivity } from '@lib/firestore';
+import { broadcastToEvent } from '@lib/sse-manager';
 
 export async function POST(
   request: NextRequest,

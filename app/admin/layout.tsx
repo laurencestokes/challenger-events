@@ -1,9 +1,9 @@
 'use client';
 
 import { useAuth } from '../../contexts/AuthContext';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import ProtectedRoute from '@components/ProtectedRoute';
+import Header from '@components/Header';
+import Footer from '@components/Footer';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();

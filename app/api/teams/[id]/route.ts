@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getTeam, getTeamMembers, getUser, deleteTeam } from '@/lib/firestore';
-import { convertFirestoreTimestamp } from '@/lib/utils';
+import { getUserByUid, getTeam, getTeamMembers, getUser, deleteTeam } from '@lib/firestore';
+import { convertFirestoreTimestamp } from '@lib/utils';
 
 // Helper function to obfuscate email
 function obfuscateEmail(email: string): string {

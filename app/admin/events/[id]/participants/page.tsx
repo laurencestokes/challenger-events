@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api, apiRequest } from '@/lib/api-client';
-import { queryKeys } from '@/lib/queryKeys';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import WelcomeSection from '@/components/WelcomeSection';
-import ScoreSubmissionModal from '@/components/ScoreSubmissionModal';
-import ConfirmModal from '@/components/ConfirmModal';
+import { api, apiRequest } from '@lib/api-client';
+import { queryKeys } from '@lib/queryKeys';
+import ProtectedRoute from '@components/ProtectedRoute';
+import WelcomeSection from '@components/WelcomeSection';
+import ScoreSubmissionModal from '@components/ScoreSubmissionModal';
+import ConfirmModal from '@components/ConfirmModal';
 import Link from 'next/link';
 import { FiX } from 'react-icons/fi';
 

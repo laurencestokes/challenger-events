@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getPublicTeams, getTeamMembers } from '@/lib/firestore';
+import { getPublicTeams, getTeamMembers } from '@lib/firestore';
 
 export async function GET(_request: NextRequest) {
   try {

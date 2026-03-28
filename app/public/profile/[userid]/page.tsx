@@ -1,14 +1,14 @@
 'use client';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
-import { CANONICAL_EVENTS } from '@/constants/achievements';
-import type { Score } from '@/lib/firestore';
+import { queryKeys } from '@lib/queryKeys';
+import { CANONICAL_EVENTS } from '@constants/achievements';
+import type { Score } from '@lib/firestore';
 import Link from 'next/link';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import SocialMediaImageGenerator from '@/components/SocialMediaImageGenerator';
-import { beautifyRawScore } from '@/utils/scoring';
-import { formatFullTimestamp, generateQRCode } from '@/lib/utils';
+import LoadingSpinner from '@components/LoadingSpinner';
+import SocialMediaImageGenerator from '@components/SocialMediaImageGenerator';
+import { beautifyRawScore } from '@utils/scoring';
+import { formatFullTimestamp, generateQRCode } from '@lib/utils';
 import {
   RadarChart,
   PolarGrid,
@@ -25,8 +25,8 @@ import {
   calculateOverallScore,
   calculateCategoryAverage,
   type Score as AchievementScore,
-} from '@/utils/achievementCalculation';
-import { getCanonicalEventsByCategory } from '@/constants/achievements';
+} from '@utils/achievementCalculation';
+import { getCanonicalEventsByCategory } from '@constants/achievements';
 
 interface User {
   id: string;

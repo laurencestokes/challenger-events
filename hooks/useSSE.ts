@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@contexts/AuthContext';
 
 interface SSEEvent {
   type: 'connected' | 'heartbeat' | 'workout_revealed' | 'workout_updated';

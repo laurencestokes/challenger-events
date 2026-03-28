@@ -2,9 +2,9 @@
 
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { TeamErgSession, useTeamErgSocket } from '@/hooks/useTeamErgSocket';
-import { Competitor } from '@/hooks/useErgSocket';
-import ErgSpeedometer from '@/components/ErgSpeedometer';
+import { TeamErgSession, useTeamErgSocket } from '@hooks/useTeamErgSocket';
+import { Competitor } from '@hooks/useErgSocket';
+import ErgSpeedometer from '@components/ErgSpeedometer';
 import Image from 'next/image';
 
 export default function TeamErgLiveDisplayPage() {

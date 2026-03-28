@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { EVENT_TYPES } from '@/constants/eventTypes';
+import { EVENT_TYPES } from '@constants/eventTypes';
 
 // Filter to only erg-related events for team competitions
 const ergEventTypes = EVENT_TYPES.filter(

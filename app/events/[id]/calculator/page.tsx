@@ -1,17 +1,17 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { api } from '@/lib/api-client';
+import { useAuth } from '@contexts/AuthContext';
+import { api } from '@lib/api-client';
 import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
+import { queryKeys } from '@lib/queryKeys';
 import Link from 'next/link';
 import Image from 'next/image';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import ScoreCalculator from '@/components/ScoreCalculator';
-import { LargeEventCardSkeleton } from '@/components/SkeletonLoaders';
+import ProtectedRoute from '@components/ProtectedRoute';
+import Header from '@components/Header';
+import Footer from '@components/Footer';
+import ScoreCalculator from '@components/ScoreCalculator';
+import { LargeEventCardSkeleton } from '@components/SkeletonLoaders';
 
 interface Event {
   id: string;

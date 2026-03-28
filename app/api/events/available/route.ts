@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getEventsByParticipant } from '@/lib/firestore';
+import { getUserByUid, getEventsByParticipant } from '@lib/firestore';
 
 // GET: Fetch all available events that users can join
 export async function GET(request: NextRequest) {
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     // Get all events that are ACTIVE (available to join)
     const { collection, query, where, getDocs } = await import('firebase/firestore');
-    const db = (await import('@/lib/firebase')).db;
+    const db = (await import('@lib/firebase')).db;
     const eventsRef = collection(db, 'events');
     const q = query(eventsRef, where('status', '==', 'ACTIVE'));
     const querySnapshot = await getDocs(q);

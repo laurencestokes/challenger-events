@@ -5,7 +5,7 @@ import {
   SCORING_SYSTEMS,
   getScoringSystemsByCategory,
   getScoringSystemsByInputType,
-} from '@/constants/scoringSystems';
+} from '@constants/scoringSystems';
 
 export async function GET(request: Request) {
   try {

@@ -6,8 +6,8 @@ import {
   getEvent,
   createParticipation,
   getUser,
-} from '@/lib/firestore';
-import { db } from '@/lib/firebase';
+} from '@lib/firestore';
+import { db } from '@lib/firebase';
 import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     });
 
     // Auto-create competition verification for guest participants
-    const { createCompetitionVerification } = await import('@/lib/firestore');
+    const { createCompetitionVerification } = await import('@lib/firestore');
     await createCompetitionVerification({
       userId: guestUser.id,
       eventId: eventId,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firebase';
+import { db } from '@lib/firebase';
 import { collection, getDocs, query, where, addDoc } from 'firebase/firestore';
-import { getUserByUid, isAdmin } from '@/lib/firestore';
+import { getUserByUid, isAdmin } from '@lib/firestore';
 
 export async function POST(request: NextRequest) {
   try {

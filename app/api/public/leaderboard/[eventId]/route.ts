@@ -7,8 +7,8 @@ import {
   getParticipationsByEvent,
   getTeamsByEvent,
   getTeamMembers,
-} from '@/lib/firestore';
-import { calculateTeamScore, calculateTeamOverallScore } from '@/utils/teamScoring';
+} from '@lib/firestore';
+import { calculateTeamScore, calculateTeamOverallScore } from '@utils/teamScoring';
 import { Timestamp } from '@google-cloud/firestore';
 
 // Helper function to convert Firebase timestamp to Date
@@ -129,7 +129,7 @@ export async function GET(_request: NextRequest, { params }: { params: { eventId
     const scoreUserIds = Array.from(new Set(scores.map((score) => score.userId)));
 
     // Get guest participants for this specific event (who may not have scored yet)
-    const { db } = await import('@/lib/firebase');
+    const { db } = await import('@lib/firebase');
     const { collection, query, where, getDocs } = await import('firebase/firestore');
     const usersRef = collection(db, 'users');
     const guestQuery = query(
@@ -159,7 +159,7 @@ export async function GET(_request: NextRequest, { params }: { params: { eventId
           const participation = participations.find((p) => p.userId === userId);
           if (participation?.teamId) {
             // Get team details directly
-            const { getTeam } = await import('@/lib/firestore');
+            const { getTeam } = await import('@lib/firestore');
             const team = await getTeam(participation.teamId);
             if (team) {
               teamId = team.id;

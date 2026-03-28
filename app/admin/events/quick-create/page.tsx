@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api-client';
+import { api } from '@lib/api-client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import WelcomeSection from '@/components/WelcomeSection';
-import { EVENT_TYPES, getEventTypesByCategory } from '@/constants/eventTypes';
+import { queryKeys } from '@lib/queryKeys';
+import ProtectedRoute from '@components/ProtectedRoute';
+import WelcomeSection from '@components/WelcomeSection';
+import { EVENT_TYPES, getEventTypesByCategory } from '@constants/eventTypes';
 
 export default function QuickCreateEvent() {
   const router = useRouter();

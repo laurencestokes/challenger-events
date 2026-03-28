@@ -6,7 +6,7 @@ import {
   getTeamMembers,
   addTeamMember,
   updateTeamInvitation,
-} from '@/lib/firestore';
+} from '@lib/firestore';
 
 export async function POST(request: NextRequest) {
   try {

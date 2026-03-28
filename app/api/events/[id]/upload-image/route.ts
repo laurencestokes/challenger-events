@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, isAdmin, updateEvent, getEvent } from '@/lib/firestore';
+import { getUserByUid, isAdmin, updateEvent, getEvent } from '@lib/firestore';
 
 // Simple endpoint to handle image URL updates after client-side upload
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {

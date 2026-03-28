@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, getUser } from '@/lib/firestore';
+import { db, getUser } from '@lib/firestore';
 import { collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
-import { getUserByUid, isAdmin } from '@/lib/firestore';
+import { getUserByUid, isAdmin } from '@lib/firestore';
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {

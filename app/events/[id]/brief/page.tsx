@@ -2,18 +2,18 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
-import { api } from '@/lib/api-client';
-import { queryKeys } from '@/lib/queryKeys';
+import { api } from '@lib/api-client';
+import { queryKeys } from '@lib/queryKeys';
 import Link from 'next/link';
 import Image from 'next/image';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import WelcomeSection from '@/components/WelcomeSection';
+import ProtectedRoute from '@components/ProtectedRoute';
+import Header from '@components/Header';
+import Footer from '@components/Footer';
+import WelcomeSection from '@components/WelcomeSection';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import { LargeEventCardSkeleton } from '@/components/SkeletonLoaders';
+import { LargeEventCardSkeleton } from '@components/SkeletonLoaders';
 
 interface Event {
   id: string;

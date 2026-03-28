@@ -2,7 +2,7 @@ import {
   calculateOverallScore,
   calculateVerifiedOverallScore,
   type Score as AchievementScore,
-} from '@/utils/achievementCalculation';
+} from '@utils/achievementCalculation';
 
 // Accept minimal score shape required for totals computation
 type MinimalScore = {

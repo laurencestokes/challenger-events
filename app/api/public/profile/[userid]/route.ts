@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getUserByProfileName } from '@/lib/firestore';
-import { db } from '@/lib/firebase';
+import { getUserByUid, getUserByProfileName } from '@lib/firestore';
+import { db } from '@lib/firebase';
 
 export async function GET(_request: NextRequest, { params }: { params: { userid: string } }) {
   const { userid } = params;

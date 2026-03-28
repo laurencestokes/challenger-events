@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, isAdmin } from '@/lib/firestore';
+import { getUserByUid, isAdmin } from '@lib/firestore';
 import path from 'path';
 import { promises as fs } from 'fs';
 

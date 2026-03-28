@@ -6,9 +6,9 @@ import {
   getParticipationsByEvent,
   getUser,
   getTeam,
-} from '@/lib/firestore';
-import { convertFirestoreTimestamp } from '@/lib/utils';
-import { db } from '@/lib/firebase';
+} from '@lib/firestore';
+import { convertFirestoreTimestamp } from '@lib/utils';
+import { db } from '@lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { EVENT_TYPES } from '@/constants/eventTypes';
-import { api } from '@/lib/api-client';
-import { parseTimeWithMilliseconds } from '@/utils/scoring';
+import { EVENT_TYPES } from '@constants/eventTypes';
+import { api } from '@lib/api-client';
+import { parseTimeWithMilliseconds } from '@utils/scoring';
 
 interface AddScoreModalProps {
   isOpen: boolean;

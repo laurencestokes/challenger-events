@@ -2,21 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { api } from '@/lib/api-client';
+import { useAuth } from '@contexts/AuthContext';
+import { api } from '@lib/api-client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import WelcomeSection from '@/components/WelcomeSection';
+import { queryKeys } from '@lib/queryKeys';
+import ProtectedRoute from '@components/ProtectedRoute';
+import Header from '@components/Header';
+import Footer from '@components/Footer';
+import WelcomeSection from '@components/WelcomeSection';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiPlus, FiUsers } from 'react-icons/fi';
-import { TeamCardSkeleton } from '@/components/SkeletonLoaders';
-import CreateTeamModal from '@/components/CreateTeamModal';
-import JoinTeamModal from '@/components/JoinTeamModal';
-import { EVENT_TYPES } from '@/constants/eventTypes';
+import { TeamCardSkeleton } from '@components/SkeletonLoaders';
+import CreateTeamModal from '@components/CreateTeamModal';
+import JoinTeamModal from '@components/JoinTeamModal';
+import { EVENT_TYPES } from '@constants/eventTypes';
 
 interface Team {
   id: string;

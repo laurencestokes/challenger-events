@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { getSocket, connectSocket, disconnectSocket } from '@/lib/socket-client';
+import { getSocket, connectSocket, disconnectSocket } from '@lib/socket-client';
 
 export interface ErgMetrics {
   average_power_W: number; // watts

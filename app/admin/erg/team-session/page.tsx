@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import WelcomeSection from '@/components/WelcomeSection';
-import Button from '@/components/ui/Button';
-import { TeamErgSession } from '@/hooks/useErgSocket';
+import ProtectedRoute from '@components/ProtectedRoute';
+import WelcomeSection from '@components/WelcomeSection';
+import Button from '@components/ui/Button';
+import { TeamErgSession } from '@hooks/useErgSocket';
 import { queryKeys } from '../../../../lib/queryKeys';
 
 interface User {

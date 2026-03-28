@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
-import { api } from '@/lib/api-client';
-import { queryKeys } from '@/lib/queryKeys';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import WelcomeSection from '@/components/WelcomeSection';
-import { EventCardSkeleton } from '@/components/SkeletonLoaders';
-import { isEventWithinDistance } from '@/utils/postcodeUtils';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import { computeTotalsFromScores } from '@/lib/score-totals';
+import { useAuth } from '@contexts/AuthContext';
+import { api } from '@lib/api-client';
+import { queryKeys } from '@lib/queryKeys';
+import ProtectedRoute from '@components/ProtectedRoute';
+import WelcomeSection from '@components/WelcomeSection';
+import { EventCardSkeleton } from '@components/SkeletonLoaders';
+import { isEventWithinDistance } from '@utils/postcodeUtils';
+import Header from '@components/Header';
+import Footer from '@components/Footer';
+import { computeTotalsFromScores } from '@lib/score-totals';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiMapPin, FiCalendar, FiUsers, FiFilter, FiSearch, FiChevronDown } from 'react-icons/fi';

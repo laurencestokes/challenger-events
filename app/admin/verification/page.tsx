@@ -6,7 +6,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../lib/api-client';
 import { queryKeys } from '../../../lib/queryKeys';
 import Link from 'next/link';
-import ProtectedRoute from '@/components/ProtectedRoute';
+import ProtectedRoute from '@components/ProtectedRoute';
 
 interface User {
   id: string;

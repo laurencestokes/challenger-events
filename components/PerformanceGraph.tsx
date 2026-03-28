@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { EVENT_TYPES } from '@/constants/eventTypes';
+import { EVENT_TYPES } from '@constants/eventTypes';
 import { useTheme } from 'next-themes';
 import {
   ResponsiveContainer,

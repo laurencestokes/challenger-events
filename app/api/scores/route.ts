@@ -16,8 +16,8 @@ import {
   getTeamMembers,
   createParticipation,
   updateParticipation,
-} from '@/lib/firestore';
-import { broadcastToEvent } from '@/lib/sse-manager';
+} from '@lib/firestore';
+import { broadcastToEvent } from '@lib/sse-manager';
 
 export async function POST(request: NextRequest) {
   try {
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
         if (competitionVerification && competitionVerification.status === 'VERIFIED') {
           bodyweightForScoring = competitionVerification.bodyweight;
         }
-        const { calculateScore } = await import('@/utils/scoreCalculation');
+        const { calculateScore } = await import('@utils/scoreCalculation');
         try {
           const scoringResult = await calculateScore(
             activity.scoringSystemId,

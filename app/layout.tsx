@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Providers } from '@/components/Providers';
+import { Providers } from '@components/Providers';
 import { Montserrat, Orbitron, Ropa_Sans } from 'next/font/google';
 
 import 'styles/globals.css';

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../contexts/AuthContext';
 import { api } from '../../../../../lib/api-client';
 import { queryKeys } from '../../../../../lib/queryKeys';
-import ProtectedRoute from '@/components/ProtectedRoute';
+import ProtectedRoute from '@components/ProtectedRoute';
 
 interface Event {
   id: string;

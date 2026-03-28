@@ -5,23 +5,23 @@ import { useParams } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../lib/api-client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
-import NotificationToast from '@/components/NotificationToast';
-import { useSSE } from '@/hooks/useSSE';
+import { queryKeys } from '@lib/queryKeys';
+import NotificationToast from '@components/NotificationToast';
+import { useSSE } from '@hooks/useSSE';
 import Link from 'next/link';
 import Image from 'next/image';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import WelcomeSection from '@/components/WelcomeSection';
-import { computeTotalsFromScores } from '@/lib/score-totals';
-import TeamManagement from '@/components/TeamManagement';
+import ProtectedRoute from '@components/ProtectedRoute';
+import Header from '@components/Header';
+import Footer from '@components/Footer';
+import WelcomeSection from '@components/WelcomeSection';
+import { computeTotalsFromScores } from '@lib/score-totals';
+import TeamManagement from '@components/TeamManagement';
 import {
   LargeEventCardSkeleton,
   TeamManagementSkeleton,
   QuickActionsSkeleton,
   EventStatsSkeleton,
-} from '@/components/SkeletonLoaders';
+} from '@components/SkeletonLoaders';
 
 interface Event {
   id: string;

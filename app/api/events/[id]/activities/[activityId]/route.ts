@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getEvent, updateActivity, deleteActivity, isAdmin } from '@/lib/firestore';
+import { getUserByUid, getEvent, updateActivity, deleteActivity, isAdmin } from '@lib/firestore';
 
 export async function PUT(
   request: NextRequest,

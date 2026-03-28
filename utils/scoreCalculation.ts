@@ -1,7 +1,7 @@
-import { getScoringSystemById } from '@/constants/scoringSystems';
-import { convertSex, parseTimeWithMilliseconds } from '@/utils/scoring';
+import { getScoringSystemById } from '@constants/scoringSystems';
+import { convertSex, parseTimeWithMilliseconds } from '@utils/scoring';
 import { ChallengerData } from '@challengerco/challenger-data';
-import { convertFirestoreTimestamp } from '@/lib/utils';
+import { convertFirestoreTimestamp } from '@lib/utils';
 
 const challengerData = new ChallengerData();
 

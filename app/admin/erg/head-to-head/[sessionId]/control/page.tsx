@@ -4,12 +4,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import WelcomeSection from '@/components/WelcomeSection';
-import Button from '@/components/ui/Button';
-import { useErgSocket, HeadToHeadSession } from '@/hooks/useErgSocket';
-import { useMockErgData } from '@/hooks/useMockErgData';
+import { useAuth } from '@contexts/AuthContext';
+import ProtectedRoute from '@components/ProtectedRoute';
+import WelcomeSection from '@components/WelcomeSection';
+import Button from '@components/ui/Button';
+import { useErgSocket, HeadToHeadSession } from '@hooks/useErgSocket';
+import { useMockErgData } from '@hooks/useMockErgData';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function SessionControlPage() {

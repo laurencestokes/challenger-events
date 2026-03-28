@@ -9,8 +9,8 @@ import {
   getParticipationsByEvent,
   getUser,
   getScoresByUserAndEvent,
-} from '@/lib/firestore';
-import { convertFirestoreTimestamp } from '@/lib/utils';
+} from '@lib/firestore';
+import { convertFirestoreTimestamp } from '@lib/utils';
 
 export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
   try {

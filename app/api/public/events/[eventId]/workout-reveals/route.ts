@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getEvent } from '@/lib/firestore';
-import { addSSEClient, removeSSEClient } from '@/lib/sse-manager';
+import { getEvent } from '@lib/firestore';
+import { addSSEClient, removeSSEClient } from '@lib/sse-manager';
 
 export async function GET(request: NextRequest, { params }: { params: { eventId: string } }) {
   try {

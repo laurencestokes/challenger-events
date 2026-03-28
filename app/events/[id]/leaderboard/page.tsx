@@ -2,19 +2,19 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { api } from '@/lib/api-client';
+import { api } from '@lib/api-client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
-import { beautifyRawScore } from '@/utils/scoring';
-import NotificationToast from '@/components/NotificationToast';
-import { useSSE } from '@/hooks/useSSE';
+import { queryKeys } from '@lib/queryKeys';
+import { beautifyRawScore } from '@utils/scoring';
+import NotificationToast from '@components/NotificationToast';
+import { useSSE } from '@hooks/useSSE';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth } from '@/contexts/AuthContext';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import { LargeEventCardSkeleton } from '@/components/SkeletonLoaders';
+import { useAuth } from '@contexts/AuthContext';
+import ProtectedRoute from '@components/ProtectedRoute';
+import Header from '@components/Header';
+import Footer from '@components/Footer';
+import { LargeEventCardSkeleton } from '@components/SkeletonLoaders';
 
 interface Event {
   id: string;

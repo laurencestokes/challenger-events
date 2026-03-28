@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getUserTeams, cleanupDuplicateTeamMemberships } from '@/lib/firestore';
+import { getUserByUid, getUserTeams, cleanupDuplicateTeamMemberships } from '@lib/firestore';
 
 export async function POST(request: NextRequest) {
   try {

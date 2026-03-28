@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { uploadTeamLogo } from '@/lib/api-client';
+import { uploadTeamLogo } from '@lib/api-client';
 
 interface TeamLogoUploadProps {
   teamId: string;

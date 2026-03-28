@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { api } from '@/lib/api-client';
-import { SCORING_SYSTEMS } from '@/constants/scoringSystems';
+import { useAuth } from '@contexts/AuthContext';
+import { api } from '@lib/api-client';
+import { SCORING_SYSTEMS } from '@constants/scoringSystems';
 import { ChallengerData } from '@challengerco/challenger-data';
 
 interface Activity {

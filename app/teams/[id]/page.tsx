@@ -2,15 +2,15 @@
 
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import { api } from '@/lib/api-client';
-import { useAuth } from '@/contexts/AuthContext';
+import ProtectedRoute from '@components/ProtectedRoute';
+import Header from '@components/Header';
+import Footer from '@components/Footer';
+import { api } from '@lib/api-client';
+import { useAuth } from '@contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
-import { TeamHeaderSkeleton, TeamMembersListSkeleton } from '@/components/SkeletonLoaders';
-import { TeamInvitation } from '@/lib/firestore';
+import { queryKeys } from '@lib/queryKeys';
+import { TeamHeaderSkeleton, TeamMembersListSkeleton } from '@components/SkeletonLoaders';
+import { TeamInvitation } from '@lib/firestore';
 import Image from 'next/image';
 
 interface TeamMember {
@@ -347,7 +347,7 @@ export default function TeamDetailPage() {
 
     try {
       // Import the upload function dynamically to avoid SSR issues
-      const { uploadTeamLogo } = await import('@/lib/api-client');
+      const { uploadTeamLogo } = await import('@lib/api-client');
 
       const logoUrl = await uploadTeamLogo(params.id as string, file);
 

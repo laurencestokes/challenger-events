@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firestore';
+import { db } from '@lib/firestore';
 import { doc, writeBatch } from 'firebase/firestore';
-import { getUserByUid, isAdmin } from '@/lib/firestore';
+import { getUserByUid, isAdmin } from '@lib/firestore';
 
 export async function PUT(request: NextRequest) {
   try {

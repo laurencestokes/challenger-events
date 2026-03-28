@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import { api } from '@/lib/api-client';
+import ProtectedRoute from '@components/ProtectedRoute';
+import { api } from '@lib/api-client';
 
 export default function JoinEvent() {
   const [eventCode, setEventCode] = useState('');

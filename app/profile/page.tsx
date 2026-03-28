@@ -4,19 +4,19 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { api, getUserScores } from '../../lib/api-client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
-import WelcomeSection from '@/components/WelcomeSection';
-import { computeTotalsFromScores } from '@/lib/score-totals';
+import { queryKeys } from '@lib/queryKeys';
+import WelcomeSection from '@components/WelcomeSection';
+import { computeTotalsFromScores } from '@lib/score-totals';
 import { convertFirestoreTimestamp, calculateAgeFromDateOfBirth } from '../../lib/utils';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import ProtectedRoute from '@components/ProtectedRoute';
+import Header from '@components/Header';
+import Footer from '@components/Footer';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { EVENT_TYPES } from '@/constants/eventTypes';
-import type { Score, Team as BaseTeam } from '@/lib/firestore';
-import { beautifyRawScore } from '@/utils/scoring';
+import { EVENT_TYPES } from '@constants/eventTypes';
+import type { Score, Team as BaseTeam } from '@lib/firestore';
+import { beautifyRawScore } from '@utils/scoring';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiPlus, FiUsers, FiClock } from 'react-icons/fi';
@@ -31,7 +31,7 @@ import {
   ProfileInfoSkeleton,
   VerificationStatusSkeleton,
   ScoresListSkeleton,
-} from '@/components/SkeletonLoaders';
+} from '@components/SkeletonLoaders';
 
 interface User {
   id: string;
@@ -183,7 +183,7 @@ function QuickScoreSubmissionForm({ onScoreAdded }: { onScoreAdded: () => void }
     // Parse the score value based on input type
     let parsedRawValue: number;
     if (isTimeInput()) {
-      const { parseTimeWithMilliseconds } = await import('@/utils/scoring');
+      const { parseTimeWithMilliseconds } = await import('@utils/scoring');
       parsedRawValue = parseTimeWithMilliseconds(rawValue);
     } else {
       parsedRawValue = Number(rawValue);

@@ -1,17 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { getUserScores } from '@/lib/api-client';
+import { useAuth } from '@contexts/AuthContext';
+import { getUserScores } from '@lib/api-client';
 import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
-import { beautifyRawScore } from '@/utils/scoring';
-import { EVENT_TYPES } from '@/constants/eventTypes';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { queryKeys } from '@lib/queryKeys';
+import { beautifyRawScore } from '@utils/scoring';
+import { EVENT_TYPES } from '@constants/eventTypes';
+import Header from '@components/Header';
+import Footer from '@components/Footer';
 import Link from 'next/link';
 import { FiClock } from 'react-icons/fi';
-import { ScoresListSkeleton } from '@/components/SkeletonLoaders';
+import { ScoresListSkeleton } from '@components/SkeletonLoaders';
 
 interface Score {
   id: string;

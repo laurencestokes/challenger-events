@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getTeam, getTeamMembers, getTeamInvitationsByTeamId } from '@/lib/firestore';
-import { convertFirestoreTimestamp } from '@/lib/utils';
+import { getUserByUid, getTeam, getTeamMembers, getTeamInvitationsByTeamId } from '@lib/firestore';
+import { convertFirestoreTimestamp } from '@lib/utils';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {

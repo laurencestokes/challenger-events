@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { uploadEventImage } from '@/lib/api-client';
+import { uploadEventImage } from '@lib/api-client';
 
 interface EventImageUploadProps {
   eventId: string;

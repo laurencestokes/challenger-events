@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api-client';
+import { api } from '@lib/api-client';
 
 interface Team {
   id: string;

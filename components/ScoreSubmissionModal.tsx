@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '@/lib/api-client';
-import { calculateAgeFromDateOfBirth, convertFirestoreTimestamp } from '@/lib/utils';
-import { SCORING_SYSTEMS } from '@/constants/scoringSystems';
-import { parseTimeWithMilliseconds } from '@/utils/scoring';
+import { api } from '@lib/api-client';
+import { calculateAgeFromDateOfBirth, convertFirestoreTimestamp } from '@lib/utils';
+import { SCORING_SYSTEMS } from '@constants/scoringSystems';
+import { parseTimeWithMilliseconds } from '@utils/scoring';
 import { FiX, FiCheckCircle } from 'react-icons/fi';
 
 interface Activity {

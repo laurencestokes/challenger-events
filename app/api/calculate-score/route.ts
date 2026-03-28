@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { calculateScore } from '@/utils/scoreCalculation';
+import { calculateScore } from '@utils/scoreCalculation';
 
 export async function POST(request: NextRequest) {
   try {

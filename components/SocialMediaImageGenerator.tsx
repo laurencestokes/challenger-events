@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
-import { AchievementResult } from '@/utils/achievementCalculation';
+import { AchievementResult } from '@utils/achievementCalculation';
 
 interface SocialMediaImageGeneratorProps {
   user: {

@@ -21,7 +21,7 @@ import JoinEventModal from './JoinEventModal';
 import { EventCardSkeleton, TeamCardSkeleton, PerformanceGraphSkeleton } from './SkeletonLoaders';
 import { beautifyRawScore } from '../utils/scoring';
 import { EVENT_TYPES } from '../constants/eventTypes';
-import { computeTotalsFromScores } from '@/lib/score-totals';
+import { computeTotalsFromScores } from '@lib/score-totals';
 
 interface Event {
   id: string;

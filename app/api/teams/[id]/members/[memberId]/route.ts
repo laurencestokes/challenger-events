@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, getTeam, getTeamMembers, deleteTeam } from '@/lib/firestore';
-import { db } from '@/lib/firestore';
+import { getUserByUid, getTeam, getTeamMembers, deleteTeam } from '@lib/firestore';
+import { db } from '@lib/firestore';
 import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 
 export async function DELETE(

@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
-import { beautifyRawScore } from '@/utils/scoring';
-import NotificationToast from '@/components/NotificationToast';
-import { useSSEUnauth } from '@/hooks/useSSEUnauth';
+import { queryKeys } from '@lib/queryKeys';
+import { beautifyRawScore } from '@utils/scoring';
+import NotificationToast from '@components/NotificationToast';
+import { useSSEUnauth } from '@hooks/useSSEUnauth';
 import { QRCodeSVG } from 'qrcode.react';
 import Image from 'next/image';
-import Footer from '@/components/Footer';
-import LeaderboardBarChart from '@/components/LeaderboardBarChart';
+import Footer from '@components/Footer';
+import LeaderboardBarChart from '@components/LeaderboardBarChart';
 
 interface Activity {
   id: string;

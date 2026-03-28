@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getEvent, getActivitiesByEvent } from '@/lib/firestore';
+import { getEvent, getActivitiesByEvent } from '@lib/firestore';
 
 export async function GET(_request: NextRequest, { params }: { params: { eventId: string } }) {
   try {

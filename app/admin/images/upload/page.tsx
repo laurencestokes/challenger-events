@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import { useAuth } from '@/contexts/AuthContext';
+import ProtectedRoute from '@components/ProtectedRoute';
+import { useAuth } from '@contexts/AuthContext';
 import { queryKeys } from '../../../../lib/queryKeys';
 import Image from 'next/image';
-import WelcomeSection from '@/components/WelcomeSection';
+import WelcomeSection from '@components/WelcomeSection';
 
 export default function AdminImageUpload() {
   const { user } = useAuth();

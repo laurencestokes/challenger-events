@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { getSocket } from '@/lib/socket-client';
+import { getSocket } from '@lib/socket-client';
 
 interface MockTeamErgConfig {
   sessionId: string;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, isAdmin, updateTeamLogo, getTeam, getTeamMembers } from '@/lib/firestore';
+import { getUserByUid, isAdmin, updateTeamLogo, getTeam, getTeamMembers } from '@lib/firestore';
 
 // Simple endpoint to handle logo URL updates after client-side upload
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {

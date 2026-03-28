@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
-import { HeadToHeadSession, useErgSocket, Competitor } from '@/hooks/useErgSocket';
-import { getEventTypeById } from '@/constants/eventTypes';
-import ErgSpeedometer from '@/components/ErgSpeedometer';
+import { HeadToHeadSession, useErgSocket, Competitor } from '@hooks/useErgSocket';
+import { getEventTypeById } from '@constants/eventTypes';
+import ErgSpeedometer from '@components/ErgSpeedometer';
 import Image from 'next/image';
 import { animate, createScope, Scope } from 'animejs';
 
@@ -58,7 +58,7 @@ export default function LiveErgDisplayPage() {
 
     // Listen for competitor updates and session ended via socket
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getSocket } = require('@/lib/socket-client');
+    const { getSocket } = require('@lib/socket-client');
     const socket = getSocket();
 
     // Join the session room to receive events

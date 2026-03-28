@@ -1,4 +1,4 @@
-import { Score, Team, TeamMember } from '@/lib/firestore';
+import { Score, Team, TeamMember } from '@lib/firestore';
 
 export interface TeamScore {
   teamId: string;

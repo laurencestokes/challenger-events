@@ -8,18 +8,18 @@ import { api } from '../../../../lib/api-client';
 import { queryKeys } from '../../../../lib/queryKeys';
 import Link from 'next/link';
 import Image from 'next/image';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import AddWorkoutModal from '@/components/AddWorkoutModal';
-import EditWorkoutModal from '@/components/EditWorkoutModal';
-import ConfirmModal from '@/components/ConfirmModal';
-import ScoreSubmissionModal from '@/components/ScoreSubmissionModal';
-import WelcomeSection from '@/components/WelcomeSection';
-import EventImageUpload from '@/components/EventImageUpload';
+import ProtectedRoute from '@components/ProtectedRoute';
+import AddWorkoutModal from '@components/AddWorkoutModal';
+import EditWorkoutModal from '@components/EditWorkoutModal';
+import ConfirmModal from '@components/ConfirmModal';
+import ScoreSubmissionModal from '@components/ScoreSubmissionModal';
+import WelcomeSection from '@components/WelcomeSection';
+import EventImageUpload from '@components/EventImageUpload';
 import {
   LargeEventCardSkeleton,
   QuickActionsSkeleton,
   EventStatsSkeleton,
-} from '@/components/SkeletonLoaders';
+} from '@components/SkeletonLoaders';
 
 interface Event {
   id: string;

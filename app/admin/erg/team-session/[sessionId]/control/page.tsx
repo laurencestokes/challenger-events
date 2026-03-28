@@ -3,13 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import WelcomeSection from '@/components/WelcomeSection';
-import Button from '@/components/ui/Button';
-import { TeamErgSession, Competitor } from '@/hooks/useErgSocket';
-import { useTeamErgSocket } from '@/hooks/useTeamErgSocket';
-import { useMockTeamErgData } from '@/hooks/useMockTeamErgData';
+import { useAuth } from '@contexts/AuthContext';
+import ProtectedRoute from '@components/ProtectedRoute';
+import WelcomeSection from '@components/WelcomeSection';
+import Button from '@components/ui/Button';
+import { TeamErgSession, Competitor } from '@hooks/useErgSocket';
+import { useTeamErgSocket } from '@hooks/useTeamErgSocket';
+import { useMockTeamErgData } from '@hooks/useMockTeamErgData';
 import { Socket } from 'socket.io-client';
 
 interface ErgSlot {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '@/lib/api-client';
+import { api } from '@lib/api-client';
 
 interface Team {
   id: string;

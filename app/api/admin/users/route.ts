@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firestore';
+import { db } from '@lib/firestore';
 import { collection, getDocs, query, where, orderBy, addDoc } from 'firebase/firestore';
-import { getUserByUid, getUser, isAdmin } from '@/lib/firestore';
+import { getUserByUid, getUser, isAdmin } from '@lib/firestore';
 
 export async function GET(request: NextRequest) {
   try {

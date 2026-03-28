@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getEvent } from '@/lib/firestore';
-import { convertFirestoreTimestamp } from '@/lib/utils';
+import { getEvent } from '@lib/firestore';
+import { convertFirestoreTimestamp } from '@lib/utils';
 
 export async function GET(_request: NextRequest, { params }: { params: { eventId: string } }) {
   try {

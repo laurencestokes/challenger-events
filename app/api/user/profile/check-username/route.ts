@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isProfileNameAvailable } from '@/lib/firestore';
+import { isProfileNameAvailable } from '@lib/firestore';
 
 export async function POST(request: NextRequest) {
   try {

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByUid, isAdmin, deleteScore, getUser } from '@/lib/firestore';
-import { db } from '@/lib/firebase';
+import { getUserByUid, isAdmin, deleteScore, getUser } from '@lib/firestore';
+import { db } from '@lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { broadcastToEvent } from '@/lib/sse-manager';
+import { broadcastToEvent } from '@lib/sse-manager';
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {

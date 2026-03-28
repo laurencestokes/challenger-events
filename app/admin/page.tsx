@@ -1,10 +1,10 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import WelcomeSection from '@/components/WelcomeSection';
+import ProtectedRoute from '@components/ProtectedRoute';
+import WelcomeSection from '@components/WelcomeSection';
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useAuth();

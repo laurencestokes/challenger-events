@@ -7,7 +7,7 @@ import {
   updateTeamInvitation,
   addTeamMember,
   getTeamMembers,
-} from '@/lib/firestore';
+} from '@lib/firestore';
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {

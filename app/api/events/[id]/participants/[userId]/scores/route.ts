@@ -5,7 +5,7 @@ import {
   getScoresByUserAndEvent,
   getActivitiesByEvent,
   getEvent,
-} from '@/lib/firestore';
+} from '@lib/firestore';
 
 export async function GET(
   request: NextRequest,

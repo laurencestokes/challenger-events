@@ -7,8 +7,8 @@ import {
   getParticipationsByEvent,
   getTeamsByEvent,
   getTeamMembers,
-} from '@/lib/firestore';
-import { calculateTeamScore, calculateTeamOverallScore } from '@/utils/teamScoring';
+} from '@lib/firestore';
+import { calculateTeamScore, calculateTeamOverallScore } from '@utils/teamScoring';
 
 interface LeaderboardEntry {
   userId: string;
@@ -127,7 +127,7 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
           const participation = participations.find((p) => p.userId === userId);
           if (participation?.teamId) {
             // Get team details directly
-            const { getTeam } = await import('@/lib/firestore');
+            const { getTeam } = await import('@lib/firestore');
             const team = await getTeam(participation.teamId);
             if (team) {
               teamId = team.id;

@@ -6,10 +6,10 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../lib/api-client';
 import { queryKeys } from '../../../lib/queryKeys';
 import Link from 'next/link';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import WelcomeSection from '@/components/WelcomeSection';
-import { EventListSkeleton } from '@/components/SkeletonLoaders';
-import ConfirmModal from '@/components/ConfirmModal';
+import ProtectedRoute from '@components/ProtectedRoute';
+import WelcomeSection from '@components/WelcomeSection';
+import { EventListSkeleton } from '@components/SkeletonLoaders';
+import ConfirmModal from '@components/ConfirmModal';
 
 interface User {
   id: string;

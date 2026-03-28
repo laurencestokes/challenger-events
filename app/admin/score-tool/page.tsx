@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
-import { EVENT_TYPES, type EventType } from '@/constants/eventTypes';
-import { calculateScore } from '@/utils/scoreCalculation';
-import WelcomeSection from '@/components/WelcomeSection';
+import ProtectedRoute from '@components/ProtectedRoute';
+import Input from '@components/ui/Input';
+import Button from '@components/ui/Button';
+import { EVENT_TYPES, type EventType } from '@constants/eventTypes';
+import { calculateScore } from '@utils/scoreCalculation';
+import WelcomeSection from '@components/WelcomeSection';
 
 type Sex = 'M' | 'F';
 
