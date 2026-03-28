@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { api } from '@/lib/api-client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api, apiRequest } from '@/lib/api-client';
+import { queryKeys } from '@/lib/queryKeys';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import WelcomeSection from '@/components/WelcomeSection';
 import ScoreSubmissionModal from '@/components/ScoreSubmissionModal';
@@ -52,13 +54,10 @@ interface Score {
 export default function EventParticipantsPage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const eventId = params.id as string;
 
-  const [event, setEvent] = useState<{ name: string; code: string; isTeamEvent?: boolean } | null>(
-    null,
-  );
-  const [participants, setParticipants] = useState<Participant[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Local UI state
   const [error, setError] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showScoreModal, setShowScoreModal] = useState(false);
@@ -69,75 +68,156 @@ export default function EventParticipantsPage() {
   const [isLoadingScores, setIsLoadingScores] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [scoreToDelete, setScoreToDelete] = useState<Score | null>(null);
-  const [teams, setTeams] = useState<Team[]>([]);
   const [assigningTeam, setAssigningTeam] = useState<string | null>(null);
-  const [orphanedScores, setOrphanedScores] = useState<Score[]>([]);
-  const [isLoadingOrphanedScores, setIsLoadingOrphanedScores] = useState(false);
 
   // Form state for adding/editing guest
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [sex, setSex] = useState<'M' | 'F'>('M');
   const [bodyweight, setBodyweight] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const [eventData, participantsData] = await Promise.all([
-        api.get(`/api/events/${eventId}`),
-        api.get(`/api/events/${eventId}/participants`),
-      ]);
+  // --- Queries ---
 
-      setEvent(eventData);
-      setParticipants(participantsData.participants || []);
+  const eventQuery = useQuery({
+    queryKey: queryKeys.events.detail(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}`),
+    enabled: !!eventId,
+  });
 
-      // Fetch teams if event supports teams
-      if (eventData.isTeamEvent) {
-        try {
-          const teamsData = await api.get('/api/teams/all');
-          const allTeams = [...(teamsData.userTeams || []), ...(teamsData.availableTeams || [])];
-          setTeams(allTeams);
-        } catch (error) {
-          console.error('Error fetching teams:', error);
-          // Don't show error, just log it
-        }
+  const participantsQuery = useQuery({
+    queryKey: queryKeys.events.participants(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}/participants`),
+    enabled: !!eventId,
+  });
+
+  const teamsQuery = useQuery({
+    queryKey: queryKeys.teams.all(),
+    queryFn: () => api.get('/api/teams/all'),
+    enabled: !!eventId && !!eventQuery.data?.isTeamEvent,
+  });
+
+  const orphanedScoresQuery = useQuery({
+    queryKey: ['events', eventId, 'orphaned-scores'],
+    queryFn: () => api.get(`/api/events/${eventId}/orphaned-scores`),
+    enabled: !!eventId,
+  });
+
+  // Derived data
+  const event = eventQuery.data ?? null;
+  const participants: Participant[] = participantsQuery.data?.participants || [];
+  const teams: Team[] = [
+    ...(teamsQuery.data?.userTeams || []),
+    ...(teamsQuery.data?.availableTeams || []),
+  ];
+  const orphanedScores: Score[] = orphanedScoresQuery.data?.scores || [];
+  const isLoading = eventQuery.isLoading || participantsQuery.isLoading;
+  const isLoadingOrphanedScores = orphanedScoresQuery.isFetching;
+
+  // --- Mutations ---
+
+  const guestMutation = useMutation({
+    mutationFn: async (payload: {
+      editingParticipant: Participant | null;
+      name: string;
+      ageNum: number;
+      sex: 'M' | 'F';
+      bodyweightNum: number;
+    }) => {
+      if (payload.editingParticipant) {
+        const currentYear = new Date().getFullYear();
+        const birthYear = currentYear - payload.ageNum;
+        const dateOfBirth = new Date(birthYear, 0, 1);
+        return api.put(`/api/admin/users/${payload.editingParticipant.id}`, {
+          name: payload.name,
+          bodyweight: payload.bodyweightNum,
+          dateOfBirth: dateOfBirth.toISOString(),
+          sex: payload.sex,
+        });
+      } else {
+        return api.post(`/api/admin/events/${eventId}/guest-participants`, {
+          name: payload.name,
+          age: payload.ageNum,
+          sex: payload.sex,
+          bodyweight: payload.bodyweightNum,
+        });
       }
-    } catch (error: unknown) {
-      console.error('Error fetching data:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [eventId]);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.participants(eventId) });
+      setName('');
+      setAge('');
+      setSex('M');
+      setBodyweight('');
+      setEditingParticipant(null);
+      setShowAddModal(false);
+    },
+    onError: (err: Error) => {
+      setError(err.message || 'Failed to save participant');
+    },
+  });
 
-  useEffect(() => {
-    fetchData();
-    fetchOrphanedScores();
-  }, [fetchData]);
+  const deleteGuestMutation = useMutation({
+    mutationFn: (participantId: string) =>
+      apiRequest(`/api/admin/events/${eventId}/guest-participants`, {
+        method: 'DELETE',
+        body: JSON.stringify({ participantId }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.participants(eventId) });
+    },
+    onError: (err: Error) => {
+      setError(err.message || 'Failed to delete participant');
+    },
+  });
 
-  const fetchOrphanedScores = useCallback(async () => {
-    try {
-      setIsLoadingOrphanedScores(true);
-      const orphanedScoresData = await api.get(`/api/events/${eventId}/orphaned-scores`);
-      setOrphanedScores(orphanedScoresData.scores || []);
-    } catch (error: unknown) {
-      console.error('Error fetching orphaned scores:', error);
-      // Don't show error to user, just log it
-    } finally {
-      setIsLoadingOrphanedScores(false);
-    }
-  }, [eventId]);
+  const deleteScoreMutation = useMutation({
+    mutationFn: (scoreId: string) => api.delete(`/api/scores/${scoreId}`),
+    onSuccess: async () => {
+      // Re-fetch participant scores manually (on-demand, no caching)
+      if (selectedParticipant) {
+        const scoresData = await api.get(
+          `/api/events/${eventId}/participants/${selectedParticipant.id}/scores`,
+        );
+        setParticipantScores(scoresData.scores || []);
+      }
+      queryClient.invalidateQueries({ queryKey: ['events', eventId, 'orphaned-scores'] });
+      setShowDeleteConfirmModal(false);
+      setScoreToDelete(null);
+    },
+    onError: (err: Error) => {
+      console.error('Error deleting score:', err);
+      setError(err.message || 'Failed to delete score');
+      setShowDeleteConfirmModal(false);
+      setScoreToDelete(null);
+    },
+  });
+
+  const assignTeamMutation = useMutation({
+    mutationFn: ({ participantId, teamId }: { participantId: string; teamId: string }) =>
+      api.post(`/api/events/${eventId}/assign-team`, {
+        competitorId: participantId,
+        teamId: teamId || null,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.participants(eventId) });
+    },
+    onError: (err: Error) => {
+      console.error('Error assigning team:', err);
+      setError(err.message || 'Failed to assign team');
+    },
+    onSettled: () => {
+      setAssigningTeam(null);
+    },
+  });
+
+  // --- Handlers ---
 
   const handleAddGuest = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setError('');
 
     if (!name || !age || !sex || !bodyweight) {
       setError('All fields are required');
-      setIsSubmitting(false);
       return;
     }
 
@@ -146,54 +226,15 @@ export default function EventParticipantsPage() {
 
     if (isNaN(ageNum) || ageNum < 1 || ageNum > 100) {
       setError('Age must be between 1 and 100');
-      setIsSubmitting(false);
       return;
     }
 
     if (isNaN(bodyweightNum) || bodyweightNum <= 40 || bodyweightNum > 250) {
       setError('Bodyweight must be between 40 and 500 kg');
-      setIsSubmitting(false);
       return;
     }
 
-    try {
-      if (editingParticipant) {
-        // Calculate new dateOfBirth from age
-        const currentYear = new Date().getFullYear();
-        const birthYear = currentYear - ageNum;
-        const dateOfBirth = new Date(birthYear, 0, 1);
-
-        // Use API to update via user update endpoint
-        await api.put(`/api/admin/users/${editingParticipant.id}`, {
-          name,
-          bodyweight: bodyweightNum,
-          dateOfBirth: dateOfBirth.toISOString(),
-          sex,
-        });
-      } else {
-        // Create new guest participant
-        await api.post(`/api/admin/events/${eventId}/guest-participants`, {
-          name,
-          age: ageNum,
-          sex,
-          bodyweight: bodyweightNum,
-        });
-      }
-
-      // Reset form and refresh
-      setName('');
-      setAge('');
-      setSex('M');
-      setBodyweight('');
-      setEditingParticipant(null);
-      setShowAddModal(false);
-      fetchData();
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to add participant';
-      setError(errorMessage);
-    } finally {
-      setIsSubmitting(false);
-    }
+    guestMutation.mutate({ editingParticipant, name, ageNum, sex, bodyweightNum });
   };
 
   const handleEditGuest = (participant: Participant) => {
@@ -207,23 +248,11 @@ export default function EventParticipantsPage() {
     setShowAddModal(true);
   };
 
-  const handleDeleteGuest = async (participantId: string) => {
+  const handleDeleteGuest = (participantId: string) => {
     if (!confirm('Are you sure you want to delete this guest participant?')) {
       return;
     }
-
-    try {
-      // Use apiRequest directly for DELETE with body
-      const { apiRequest } = await import('@/lib/api-client');
-      await apiRequest(`/api/admin/events/${eventId}/guest-participants`, {
-        method: 'DELETE',
-        body: JSON.stringify({ participantId }),
-      });
-      fetchData();
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete participant';
-      setError(errorMessage);
-    }
+    deleteGuestMutation.mutate(participantId);
   };
 
   const handleCloseModal = () => {
@@ -246,9 +275,9 @@ export default function EventParticipantsPage() {
         `/api/events/${eventId}/participants/${participant.id}/scores`,
       );
       setParticipantScores(scoresData.scores || []);
-    } catch (error: unknown) {
-      console.error('Error fetching scores:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch scores';
+    } catch (err: unknown) {
+      console.error('Error fetching scores:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch scores';
       setError(errorMessage);
       setParticipantScores([]);
     } finally {
@@ -261,29 +290,9 @@ export default function EventParticipantsPage() {
     setShowDeleteConfirmModal(true);
   };
 
-  const confirmDeleteScore = async () => {
+  const confirmDeleteScore = () => {
     if (!scoreToDelete) return;
-
-    try {
-      await api.delete(`/api/scores/${scoreToDelete.id}`);
-      // Refresh scores list
-      if (selectedParticipant) {
-        const scoresData = await api.get(
-          `/api/events/${eventId}/participants/${selectedParticipant.id}/scores`,
-        );
-        setParticipantScores(scoresData.scores || []);
-      }
-      // Refresh orphaned scores if this was an orphaned score
-      await fetchOrphanedScores();
-      setShowDeleteConfirmModal(false);
-      setScoreToDelete(null);
-    } catch (error: unknown) {
-      console.error('Error deleting score:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete score';
-      setError(errorMessage);
-      setShowDeleteConfirmModal(false);
-      setScoreToDelete(null);
-    }
+    deleteScoreMutation.mutate(scoreToDelete.id);
   };
 
   const formatDate = (date: unknown): string => {
@@ -294,7 +303,7 @@ export default function EventParticipantsPage() {
         if ('seconds' in date && typeof date.seconds === 'number') {
           dateObj = new Date(date.seconds * 1000);
         } else if ('toDate' in date && typeof date.toDate === 'function') {
-          dateObj = date.toDate();
+          dateObj = (date as { toDate: () => Date }).toDate();
         } else {
           return 'N/A';
         }
@@ -311,31 +320,9 @@ export default function EventParticipantsPage() {
     }
   };
 
-  const handleAssignTeam = async (participantId: string, teamId: string) => {
+  const handleAssignTeam = (participantId: string, teamId: string) => {
     setAssigningTeam(participantId);
-    try {
-      // If teamId is empty, we're removing the team assignment
-      if (!teamId) {
-        await api.post(`/api/events/${eventId}/assign-team`, {
-          competitorId: participantId,
-          teamId: null,
-        });
-      } else {
-        await api.post(`/api/events/${eventId}/assign-team`, {
-          competitorId: participantId,
-          teamId: teamId,
-        });
-      }
-
-      // Refresh data to show updated team assignment
-      fetchData();
-    } catch (error: unknown) {
-      console.error('Error assigning team:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to assign team';
-      setError(errorMessage);
-    } finally {
-      setAssigningTeam(null);
-    }
+    assignTeamMutation.mutate({ participantId, teamId });
   };
 
   const regularParticipants = participants.filter((p) => !p.isGuest);
@@ -462,12 +449,7 @@ export default function EventParticipantsPage() {
                                 onChange={(e) => {
                                   const newTeamId = e.target.value;
                                   if (newTeamId !== participant.teamId) {
-                                    if (newTeamId) {
-                                      handleAssignTeam(participant.id, newTeamId);
-                                    } else {
-                                      // Handle removing team assignment (optional - you may want to prevent this)
-                                      handleAssignTeam(participant.id, '');
-                                    }
+                                    handleAssignTeam(participant.id, newTeamId);
                                   }
                                 }}
                                 disabled={assigningTeam === participant.id}
@@ -565,12 +547,7 @@ export default function EventParticipantsPage() {
                                 onChange={(e) => {
                                   const newTeamId = e.target.value;
                                   if (newTeamId !== participant.teamId) {
-                                    if (newTeamId) {
-                                      handleAssignTeam(participant.id, newTeamId);
-                                    } else {
-                                      // Handle removing team assignment (optional - you may want to prevent this)
-                                      handleAssignTeam(participant.id, '');
-                                    }
+                                    handleAssignTeam(participant.id, newTeamId);
                                   }
                                 }}
                                 disabled={assigningTeam === participant.id}
@@ -636,7 +613,11 @@ export default function EventParticipantsPage() {
                     </p>
                   </div>
                   <button
-                    onClick={fetchOrphanedScores}
+                    onClick={() =>
+                      queryClient.invalidateQueries({
+                        queryKey: ['events', eventId, 'orphaned-scores'],
+                      })
+                    }
                     disabled={isLoadingOrphanedScores}
                     className="px-3 py-1 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50"
                   >
@@ -782,10 +763,14 @@ export default function EventParticipantsPage() {
                     </button>
                     <button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={guestMutation.isPending}
                       className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
                     >
-                      {isSubmitting ? 'Saving...' : editingParticipant ? 'Update' : 'Add'}
+                      {guestMutation.isPending
+                        ? 'Saving...'
+                        : editingParticipant
+                          ? 'Update'
+                          : 'Add'}
                     </button>
                   </div>
                 </form>
@@ -799,7 +784,7 @@ export default function EventParticipantsPage() {
             isOpen={showScoreModal}
             onClose={() => setShowScoreModal(false)}
             onScoreSubmitted={() => {
-              fetchData();
+              queryClient.invalidateQueries({ queryKey: queryKeys.events.participants(eventId) });
             }}
           />
 

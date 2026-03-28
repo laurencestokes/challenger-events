@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../contexts/AuthContext';
 import { api } from '../../../../../lib/api-client';
+import { queryKeys } from '../../../../../lib/queryKeys';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 interface Event {
@@ -28,10 +30,7 @@ interface Event {
 export default function EditEvent({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { user } = useAuth();
-  const [event, setEvent] = useState<Event | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState('');
+  const queryClient = useQueryClient();
   const [success, setSuccess] = useState('');
 
   // Form state
@@ -51,131 +50,116 @@ export default function EditEvent({ params }: { params: { id: string } }) {
   const [organizationId, setOrganizationId] = useState('');
   const [gymId, setGymId] = useState('');
 
+  const {
+    data: event,
+    isLoading,
+    error: fetchError,
+  } = useQuery<Event>({
+    queryKey: queryKeys.events.detail(params.id),
+    queryFn: () => api.get(`/api/events/${params.id}`),
+    enabled: !!user,
+  });
+
   useEffect(() => {
-    const fetchEvent = async () => {
-      try {
-        const eventData = await api.get(`/api/events/${params.id}`);
-        setEvent(eventData);
-
-        // Populate form fields
-        setName(eventData.name);
-        setDescription(eventData.description || '');
-        setStatus(eventData.status);
-        setIsTeamEvent(eventData.isTeamEvent ?? true);
-        setTeamScoringMethod(eventData.teamScoringMethod || 'SUM');
-        setMaxTeamSize(eventData.maxTeamSize || 4);
-        setCountry(eventData.country || 'GB');
-        setPostcode(eventData.postcode || '');
-        setScope(eventData.scope || 'INVITE_ONLY');
-        setOrganizationId(eventData.organizationId || '');
-        setGymId(eventData.gymId || '');
-
-        // Format dates for input fields
-        if (eventData.startDate) {
-          const startDate =
-            'seconds' in eventData.startDate
-              ? new Date((eventData.startDate as { seconds: number }).seconds * 1000)
-              : new Date(eventData.startDate as string);
-          setStartDate(startDate.toISOString().slice(0, 16));
-        }
-
-        if (eventData.endDate) {
-          const endDate =
-            'seconds' in eventData.endDate
-              ? new Date((eventData.endDate as { seconds: number }).seconds * 1000)
-              : new Date(eventData.endDate as string);
-          setEndDate(endDate.toISOString().slice(0, 16));
-        }
-      } catch (error: unknown) {
-        console.error('Error fetching event:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch event';
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (user) {
-      fetchEvent();
+    if (!event) return;
+    setName(event.name);
+    setDescription(event.description || '');
+    setStatus(event.status);
+    setIsTeamEvent(event.isTeamEvent ?? true);
+    setTeamScoringMethod(event.teamScoringMethod || 'SUM');
+    setMaxTeamSize(event.maxTeamSize || 4);
+    setCountry(event.country || 'GB');
+    setPostcode(event.postcode || '');
+    setScope(event.scope || 'INVITE_ONLY');
+    setOrganizationId(event.organizationId || '');
+    setGymId(event.gymId || '');
+    if (event.startDate && typeof event.startDate === 'object') {
+      const d =
+        'seconds' in (event.startDate as object)
+          ? new Date((event.startDate as { seconds: number }).seconds * 1000)
+          : new Date((event.startDate as { toDate: () => Date }).toDate());
+      setStartDate(d.toISOString().slice(0, 16));
+    } else if (event.startDate && typeof event.startDate === 'string') {
+      setStartDate(new Date(event.startDate).toISOString().slice(0, 16));
     }
-  }, [user, params.id]);
+    if (event.endDate && typeof event.endDate === 'object') {
+      const d =
+        'seconds' in (event.endDate as object)
+          ? new Date((event.endDate as { seconds: number }).seconds * 1000)
+          : new Date((event.endDate as { toDate: () => Date }).toDate());
+      setEndDate(d.toISOString().slice(0, 16));
+    } else if (event.endDate && typeof event.endDate === 'string') {
+      setEndDate(new Date(event.endDate).toISOString().slice(0, 16));
+    }
+  }, [event]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    setError('');
-    setSuccess('');
+  const invalidateEvents = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.events.detail(params.id) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.events.all() });
+  };
 
-    try {
-      const updates = {
-        name,
-        description: description || undefined,
-        startDate: startDate ? new Date(startDate).toISOString() : null,
-        endDate: endDate ? new Date(endDate).toISOString() : null,
-        status,
-        isTeamEvent,
-        teamScoringMethod: isTeamEvent ? teamScoringMethod : undefined,
-        maxTeamSize: isTeamEvent ? maxTeamSize : undefined,
-        country,
-        postcode: postcode || undefined,
-        scope,
-        organizationId: scope === 'ORGANIZATION' ? organizationId : undefined,
-        gymId: scope === 'GYM' ? gymId : undefined,
-      };
-
-      await api.put(`/api/events/${params.id}`, updates);
+  const updateMutation = useMutation({
+    mutationFn: (updates: object) => api.put(`/api/events/${params.id}`, updates),
+    onSuccess: () => {
+      invalidateEvents();
       setSuccess('Event updated successfully!');
+      setTimeout(() => router.push('/admin/events'), 1500);
+    },
+  });
 
-      // Redirect after a short delay
-      setTimeout(() => {
-        router.push('/admin/events');
-      }, 1500);
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update event';
-      setError(errorMessage);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-      return;
-    }
-
-    setIsSaving(true);
-    setError('');
-
-    try {
-      await api.delete(`/api/events/${params.id}`);
+  const deleteMutation = useMutation({
+    mutationFn: () => api.delete(`/api/events/${params.id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.all() });
       setSuccess('Event deleted successfully!');
+      setTimeout(() => router.push('/admin/events'), 1500);
+    },
+  });
 
-      setTimeout(() => {
-        router.push('/admin/events');
-      }, 1500);
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete event';
-      setError(errorMessage);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handlePublish = async () => {
-    setIsSaving(true);
-    setError('');
-
-    try {
-      await api.put(`/api/events/${params.id}`, { status: 'ACTIVE' });
+  const publishMutation = useMutation({
+    mutationFn: () => api.put(`/api/events/${params.id}`, { status: 'ACTIVE' }),
+    onSuccess: () => {
+      invalidateEvents();
       setStatus('ACTIVE');
       setSuccess('Event published successfully!');
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to publish event';
-      setError(errorMessage);
-    } finally {
-      setIsSaving(false);
-    }
+    },
+  });
+
+  const isSaving =
+    updateMutation.isPending || deleteMutation.isPending || publishMutation.isPending;
+  const mutationError = updateMutation.error || deleteMutation.error || publishMutation.error;
+  const error = fetchError
+    ? fetchError instanceof Error
+      ? fetchError.message
+      : 'Failed to fetch event'
+    : null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateMutation.mutate({
+      name,
+      description: description || undefined,
+      startDate: startDate ? new Date(startDate).toISOString() : null,
+      endDate: endDate ? new Date(endDate).toISOString() : null,
+      status,
+      isTeamEvent,
+      teamScoringMethod: isTeamEvent ? teamScoringMethod : undefined,
+      maxTeamSize: isTeamEvent ? maxTeamSize : undefined,
+      country,
+      postcode: postcode || undefined,
+      scope,
+      organizationId: scope === 'ORGANIZATION' ? organizationId : undefined,
+      gymId: scope === 'GYM' ? gymId : undefined,
+    });
   };
+
+  const handleDelete = () => {
+    if (!confirm('Are you sure you want to delete this event? This action cannot be undone.'))
+      return;
+    deleteMutation.mutate();
+  };
+
+  const handlePublish = () => publishMutation.mutate();
 
   if (isLoading) {
     return (
@@ -246,9 +230,12 @@ export default function EditEvent({ params }: { params: { id: string } }) {
             </div>
           )}
 
-          {error && (
+          {(error || mutationError) && (
             <div className="mb-6 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-md p-4">
-              <p className="text-red-800 dark:text-red-200">{error}</p>
+              <p className="text-red-800 dark:text-red-200">
+                {error ??
+                  (mutationError instanceof Error ? mutationError.message : 'An error occurred')}
+              </p>
             </div>
           )}
 

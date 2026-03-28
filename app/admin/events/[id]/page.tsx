@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { api } from '../../../../lib/api-client';
+import { queryKeys } from '../../../../lib/queryKeys';
 import Link from 'next/link';
 import Image from 'next/image';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -72,11 +74,7 @@ interface Participant {
 export default function EventDetails() {
   const params = useParams();
   const { user } = useAuth();
-  const [event, setEvent] = useState<Event | null>(null);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [scoringSystems, setScoringSystems] = useState<ScoringSystem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const queryClient = useQueryClient();
   const [showAddWorkoutModal, setShowAddWorkoutModal] = useState(false);
   const [showEditWorkoutModal, setShowEditWorkoutModal] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
@@ -86,32 +84,63 @@ export default function EventDetails() {
 
   const eventId = params.id as string;
 
-  useEffect(() => {
-    const fetchEventDetails = async () => {
-      try {
-        const [eventData, activitiesData, scoringSystemsData] = await Promise.all([
-          api.get(`/api/events/${eventId}`),
-          api.get(`/api/events/${eventId}/activities`),
-          api.get('/api/scoring-systems'),
-        ]);
+  const {
+    data: event,
+    isLoading: isLoadingEvent,
+    error: eventError,
+  } = useQuery<Event>({
+    queryKey: queryKeys.events.detail(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}`),
+    enabled: !!user && !!eventId,
+  });
 
-        setEvent(eventData);
-        setActivities(activitiesData);
-        setScoringSystems(scoringSystemsData);
-      } catch (error: unknown) {
-        console.error('Error fetching event details:', error);
-        const errorMessage =
-          error instanceof Error ? error.message : 'Failed to fetch event details';
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { data: activities = [], isLoading: isLoadingActivities } = useQuery<Activity[]>({
+    queryKey: queryKeys.events.activities(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}/activities`),
+    enabled: !!user && !!eventId,
+  });
 
-    if (user && eventId) {
-      fetchEventDetails();
-    }
-  }, [user, eventId]);
+  const { data: scoringSystems = [] } = useQuery<ScoringSystem[]>({
+    queryKey: queryKeys.scoringSystems(),
+    queryFn: () => api.get('/api/scoring-systems'),
+    enabled: !!user,
+  });
+
+  const isLoading = isLoadingEvent || isLoadingActivities;
+  const error = eventError
+    ? eventError instanceof Error
+      ? eventError.message
+      : 'Failed to fetch event details'
+    : null;
+
+  const invalidateEvent = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.events.detail(eventId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.events.all() });
+  };
+
+  const publishMutation = useMutation({
+    mutationFn: () => api.put(`/api/events/${eventId}`, { status: 'ACTIVE' }),
+    onSuccess: invalidateEvent,
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: () => api.put(`/api/events/${eventId}`, { status: 'CANCELLED' }),
+    onSuccess: invalidateEvent,
+  });
+
+  const revealWorkoutMutation = useMutation({
+    mutationFn: (activityId: string) =>
+      api.post(`/api/events/${eventId}/activities/${activityId}/reveal`, {}),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.activities(eventId) }),
+  });
+
+  const deleteActivityMutation = useMutation({
+    mutationFn: (activityId: string) =>
+      api.delete(`/api/events/${eventId}/activities/${activityId}`),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.activities(eventId) }),
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -173,65 +202,17 @@ export default function EventDetails() {
     return 'Invalid date';
   };
 
-  const handlePublishEvent = async () => {
-    if (!event) return;
+  const handlePublishEvent = () => publishMutation.mutate();
+  const handleCancelEvent = () => cancelMutation.mutate();
+  const handleRevealWorkout = (activityId: string) => revealWorkoutMutation.mutate(activityId);
 
-    try {
-      await api.put(`/api/events/${event.id}`, { status: 'ACTIVE' });
-      // Refresh the page to show updated status
-      window.location.reload();
-    } catch (error: unknown) {
-      console.error('Error publishing event:', error);
-      setError('Failed to publish event');
-    }
-  };
-
-  const handleCancelEvent = async () => {
-    if (!event) return;
-
-    try {
-      await api.put(`/api/events/${event.id}`, { status: 'CANCELLED' });
-      // Refresh the page to show updated status
-      window.location.reload();
-    } catch (error: unknown) {
-      console.error('Error cancelling event:', error);
-      setError('Failed to cancel event');
-    }
-  };
-
-  const handleRevealWorkout = async (activityId: string) => {
-    try {
-      await api.post(`/api/events/${eventId}/activities/${activityId}/reveal`, {});
-      // Update the activity in the local state
-      setActivities(
-        activities.map((activity) =>
-          activity.id === activityId
-            ? { ...activity, isHidden: false, revealedAt: new Date() }
-            : activity,
-        ),
-      );
-    } catch (error: unknown) {
-      console.error('Error revealing workout:', error);
-      setError('Failed to reveal workout');
-    }
-  };
-
-  const handleImageUploadComplete = async (imageUrl: string) => {
-    // Update event state with new image URL
-    setEvent((prev) => (prev ? { ...prev, imageUrl } : null));
+  const handleImageUploadComplete = (_imageUrl: string) => {
     setImageUploadError('');
-
-    // Also refresh event details from server to ensure consistency
-    try {
-      const eventData = await api.get(`/api/events/${eventId}`);
-      setEvent(eventData);
-    } catch (error) {
-      console.error('Error refreshing event data:', error);
-    }
+    queryClient.invalidateQueries({ queryKey: queryKeys.events.detail(eventId) });
   };
 
-  const handleImageUploadError = (error: string) => {
-    setImageUploadError(error);
+  const handleImageUploadError = (err: string) => {
+    setImageUploadError(err);
   };
 
   if (isLoading) {
@@ -327,7 +308,7 @@ export default function EventDetails() {
     );
   }
 
-  if (error) {
+  if (error && !event) {
     return (
       <ProtectedRoute>
         <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
@@ -814,8 +795,8 @@ export default function EventDetails() {
           <AddWorkoutModal
             eventId={eventId}
             onClose={() => setShowAddWorkoutModal(false)}
-            onWorkoutAdded={(newActivity) => {
-              setActivities([...activities, newActivity]);
+            onWorkoutAdded={() => {
+              queryClient.invalidateQueries({ queryKey: queryKeys.events.activities(eventId) });
               setShowAddWorkoutModal(false);
             }}
           />
@@ -830,10 +811,8 @@ export default function EventDetails() {
               setShowEditWorkoutModal(false);
               setSelectedActivity(null);
             }}
-            onWorkoutUpdated={(updatedActivity) => {
-              setActivities(
-                activities.map((a) => (a.id === updatedActivity.id ? updatedActivity : a)),
-              );
+            onWorkoutUpdated={() => {
+              queryClient.invalidateQueries({ queryKey: queryKeys.events.activities(eventId) });
               setShowEditWorkoutModal(false);
               setSelectedActivity(null);
             }}
@@ -848,19 +827,11 @@ export default function EventDetails() {
           confirmText="Delete"
           cancelText="Cancel"
           isDestructive={true}
-          onConfirm={async () => {
+          onConfirm={() => {
             if (selectedActivity) {
-              try {
-                await api.delete(`/api/events/${eventId}/activities/${selectedActivity.id}`);
-                setActivities(activities.filter((a) => a.id !== selectedActivity.id));
-                setShowDeleteConfirmModal(false);
-                setSelectedActivity(null);
-              } catch (error) {
-                console.error('Error deleting activity:', error);
-                setError('Failed to delete workout');
-                setShowDeleteConfirmModal(false);
-                setSelectedActivity(null);
-              }
+              deleteActivityMutation.mutate(selectedActivity.id);
+              setShowDeleteConfirmModal(false);
+              setSelectedActivity(null);
             }
           }}
           onCancel={() => {

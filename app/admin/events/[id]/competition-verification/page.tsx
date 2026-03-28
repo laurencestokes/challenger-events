@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../../../../../contexts/AuthContext';
 import { api } from '../../../../../lib/api-client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import WelcomeSection from '@/components/WelcomeSection';
@@ -38,11 +40,8 @@ interface Event {
 
 export default function CompetitionVerificationPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
-  const [event, setEvent] = useState<Event | null>(null);
-  const [participants, setParticipants] = useState<User[]>([]);
-  const [verifications, setVerifications] = useState<CompetitionVerification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const queryClient = useQueryClient();
+  const eventId = params.id;
 
   // Modal state
   const [selectedCompetitor, setSelectedCompetitor] = useState<User | null>(null);
@@ -50,55 +49,56 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
   const [bodyweight, setBodyweight] = useState('');
   const [verificationNotes, setVerificationNotes] = useState('');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [eventData, participantsData, verificationsData] = await Promise.all([
-          api.get(`/api/events/${params.id}`),
-          api.get(`/api/events/${params.id}`),
-          api.get(`/api/events/${params.id}/competition-verification`),
-        ]);
+  const {
+    data: eventData,
+    isLoading: isLoadingEvent,
+    error: eventError,
+  } = useQuery({
+    queryKey: queryKeys.events.detail(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}`),
+    enabled: !!user && !!eventId,
+  });
 
-        setEvent(eventData);
-        setParticipants(participantsData.participants || []);
-        setVerifications(verificationsData.verifications || []);
-      } catch (error: unknown) {
-        console.error('Error fetching data:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { data: verificationData, isLoading: isLoadingVerification } = useQuery({
+    queryKey: queryKeys.events.competitionVerification(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}/competition-verification`),
+    enabled: !!user && !!eventId,
+  });
 
-    if (user) {
-      fetchData();
-    }
-  }, [user, params.id]);
+  const isLoading = isLoadingEvent || isLoadingVerification;
+  const error =
+    eventError instanceof Error ? eventError.message : eventError ? 'Failed to fetch data' : '';
 
-  const handleWeighIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedCompetitor || !bodyweight) return;
+  const event: Event | null = eventData || null;
+  const participants: User[] = eventData?.participants || [];
+  const verifications: CompetitionVerification[] = verificationData?.verifications || [];
 
-    try {
-      await api.post(`/api/events/${params.id}/competition-verification`, {
-        competitorId: selectedCompetitor.id,
-        bodyweight: Number(bodyweight),
-        verificationNotes,
+  const weighInMutation = useMutation({
+    mutationFn: (data: { competitorId: string; bodyweight: number; verificationNotes: string }) =>
+      api.post(`/api/events/${eventId}/competition-verification`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.events.competitionVerification(eventId),
       });
-
-      // Refresh verifications
-      const verificationsData = await api.get(`/api/events/${params.id}/competition-verification`);
-      setVerifications(verificationsData.verifications || []);
-
       setShowWeighInModal(false);
       setSelectedCompetitor(null);
       setBodyweight('');
       setVerificationNotes('');
-    } catch (error: unknown) {
-      console.error('Error weighing in competitor:', error);
-      setError('Failed to weigh in competitor');
-    }
+    },
+    onError: (err: unknown) => {
+      console.error('Error weighing in competitor:', err);
+    },
+  });
+
+  const handleWeighIn = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCompetitor || !bodyweight) return;
+
+    weighInMutation.mutate({
+      competitorId: selectedCompetitor.id,
+      bodyweight: Number(bodyweight),
+      verificationNotes,
+    });
   };
 
   const openWeighInModal = (competitor: User) => {

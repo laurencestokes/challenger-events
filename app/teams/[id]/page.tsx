@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { TeamHeaderSkeleton, TeamMembersListSkeleton } from '@/components/SkeletonLoaders';
 import { TeamInvitation } from '@/lib/firestore';
 import Image from 'next/image';
@@ -37,13 +39,10 @@ export default function TeamDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const [team, setTeam] = useState<Team | null>(null);
-  const [members, setMembers] = useState<TeamMember[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [error, setError] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [isInviting, setIsInviting] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState('');
   const [inviteError, setInviteError] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -57,102 +56,121 @@ export default function TeamDetailPage() {
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [pendingInvitations, setPendingInvitations] = useState<TeamInvitation[]>([]);
-  const [isLoadingInvitations, setIsLoadingInvitations] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [logoUploadError, setLogoUploadError] = useState('');
 
-  const fetchTeamDetails = useCallback(async () => {
-    try {
-      setIsLoading(true);
+  // TanStack Query: team details
+  const {
+    data: teamData,
+    isLoading,
+    error: teamQueryError,
+  } = useQuery({
+    queryKey: queryKeys.teams.detail(params.id as string),
+    queryFn: async () => {
       const response = await api.get(`/api/teams/${params.id}`);
-      setTeam(response.team);
-      setMembers(response.members);
-    } catch (error: unknown) {
-      console.error('Error fetching team details:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch team details';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [params.id]);
+      return response as { team: Team; members: TeamMember[] };
+    },
+    enabled: !!params.id,
+  });
+
+  const team = teamData?.team ?? null;
+  const members = teamData?.members ?? [];
+
+  // Determine if current user is captain (needed for pending invitations query)
+  const currentUserMember =
+    user && !authLoading
+      ? members.find((member) => member.userId === user.id || member.user?.email === user.email)
+      : null;
+  const isCaptain = currentUserMember?.role === 'CAPTAIN';
+
+  // TanStack Query: pending invitations (captains only)
+  const { data: pendingInvitationsData, isLoading: isLoadingInvitations } = useQuery({
+    queryKey: queryKeys.teams.pendingInvitations(params.id as string),
+    queryFn: async () => {
+      const response = await api.get(`/api/teams/${params.id}/invitations/pending`);
+      return (response.invitations || []) as TeamInvitation[];
+    },
+    enabled: !!params.id && isCaptain,
+  });
+  const pendingInvitations: TeamInvitation[] = pendingInvitationsData ?? [];
 
   // Check if current user is a member (to show member details properly)
   const _isMember = members.some((member) => member.userId === user?.id);
 
-  const handleJoinPublicTeam = async () => {
-    try {
-      setIsProcessing(true);
-      await api.post(`/api/teams/${params.id}/join`, { params });
-      // Refresh team details to show updated membership
-      fetchTeamDetails();
-    } catch (error: unknown) {
-      console.error('Error joining team:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to join team';
+  // Mutations
+  const joinTeamMutation = useMutation({
+    mutationFn: async () => {
+      return api.post(`/api/teams/${params.id}/join`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.detail(params.id as string) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.all() });
+    },
+    onError: (err: unknown) => {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to join team';
       setError(errorMessage);
+    },
+  });
+
+  const handleJoinPublicTeam = async () => {
+    setIsProcessing(true);
+    try {
+      await joinTeamMutation.mutateAsync();
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const fetchPendingInvitations = useCallback(async () => {
-    // Check if current user is captain
-    const currentUserMember =
-      user && !authLoading
-        ? members.find((member) => member.userId === user.id || member.user?.email === user.email)
-        : null;
-    const userIsCaptain = currentUserMember?.role === 'CAPTAIN';
+  const inviteUserMutation = useMutation({
+    mutationFn: async (email: string) => {
+      return api.post(`/api/teams/${params.id}/invite`, { email });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.teams.pendingInvitations(params.id as string),
+      });
+    },
+  });
 
-    if (!userIsCaptain) return; // Only captains can see pending invitations
+  const removeMemberMutation = useMutation({
+    mutationFn: async (memberId: string) => {
+      return api.delete(`/api/teams/${params.id}/members/${memberId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.detail(params.id as string) });
+    },
+    onError: (err: unknown) => {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to remove member';
+      setError(errorMessage);
+    },
+  });
 
-    try {
-      setIsLoadingInvitations(true);
-      const response = await api.get(`/api/teams/${params.id}/invitations/pending`);
-      setPendingInvitations(response.invitations || []);
-    } catch (error: unknown) {
-      console.error('Error fetching pending invitations:', error);
-    } finally {
-      setIsLoadingInvitations(false);
-    }
-  }, [params.id, user, authLoading, members]);
-
-  useEffect(() => {
-    if (params.id) {
-      fetchTeamDetails();
-    }
-  }, [params.id, fetchTeamDetails]);
-
-  useEffect(() => {
-    if (params.id && user && !authLoading && members.length > 0) {
-      const currentUserMember = members.find(
-        (member) => member.userId === user.id || member.user?.email === user.email,
-      );
-      const userIsCaptain = currentUserMember?.role === 'CAPTAIN';
-
-      if (userIsCaptain) {
-        fetchPendingInvitations();
-      }
-    }
-  }, [params.id, user, authLoading, members, fetchPendingInvitations]);
+  const updateTeamMutation = useMutation({
+    mutationFn: async (payload: { name: string; description: string | null }) => {
+      return api.patch(`/api/teams/${params.id}`, payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.detail(params.id as string) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.all() });
+    },
+    onError: (err: unknown) => {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update team';
+      setError(errorMessage);
+    },
+  });
 
   const handleInviteUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
 
     try {
-      setIsInviting(true);
       setInviteError(''); // Clear any previous errors
-      const response = await api.post(`/api/teams/${params.id}/invite`, {
-        email: inviteEmail.trim(),
-      });
+      const response = await inviteUserMutation.mutateAsync(inviteEmail.trim());
 
       setInviteSuccess(
         `Invitation email sent to ${inviteEmail}! The recipient can also use code: ${response.invitation.code}`,
       );
       setInviteEmail('');
-
-      // Refresh pending invitations
-      fetchPendingInvitations();
 
       // Clear success message and close modal after 3 seconds
       setTimeout(() => {
@@ -192,8 +210,6 @@ export default function TeamDetailPage() {
         const errorMessage = error instanceof Error ? error.message : 'Failed to send invitation';
         setInviteError(errorMessage);
       }
-    } finally {
-      setIsInviting(false);
     }
   };
 
@@ -202,15 +218,11 @@ export default function TeamDetailPage() {
 
     try {
       setIsProcessing(true);
-      await api.delete(`/api/teams/${params.id}/members/${confirmAction.memberId}`);
-
+      await removeMemberMutation.mutateAsync(confirmAction.memberId);
       setShowConfirmModal(false);
       setConfirmAction(null);
-      fetchTeamDetails(); // Refresh the team data
-    } catch (error: unknown) {
-      console.error('Error removing member:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to remove member';
-      setError(errorMessage);
+    } catch {
+      // error handled by mutation onError
     } finally {
       setIsProcessing(false);
     }
@@ -228,16 +240,8 @@ export default function TeamDetailPage() {
         return;
       }
 
-      const response = await api.delete(`/api/teams/${params.id}/members/${currentMember.id}`);
-
-      // Check if team was deleted (last member left)
-      if (response.teamDeleted) {
-        // Redirect to teams page since team no longer exists
-        router.push('/teams');
-      } else {
-        // Redirect to teams page after leaving
-        router.push('/teams');
-      }
+      await removeMemberMutation.mutateAsync(currentMember.id);
+      router.push('/teams');
     } catch (error: unknown) {
       console.error('Error leaving team:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to leave team';
@@ -276,7 +280,7 @@ export default function TeamDetailPage() {
 
       setShowConfirmModal(false);
       setConfirmAction(null);
-      fetchTeamDetails(); // Refresh the team data
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.detail(params.id as string) });
     } catch (error: unknown) {
       console.error('Error promoting member:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to promote member';
@@ -292,15 +296,13 @@ export default function TeamDetailPage() {
 
     try {
       setIsEditing(true);
-      await api.patch(`/api/teams/${params.id}`, {
+      await updateTeamMutation.mutateAsync({
         name: editName.trim(),
         description: editDescription.trim() || null,
       });
-
       setShowEditModal(false);
       setEditName('');
       setEditDescription('');
-      fetchTeamDetails(); // Refresh the team data
     } catch (error: unknown) {
       console.error('Error updating team:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to update team';
@@ -350,11 +352,10 @@ export default function TeamDetailPage() {
       const logoUrl = await uploadTeamLogo(params.id as string, file);
 
       if (logoUrl) {
-        // Update team state with new logo URL
-        setTeam((prev) => (prev ? { ...prev, logoUrl } : null));
-
-        // Also refresh team details from server to ensure consistency
-        await fetchTeamDetails();
+        // Refresh team details from server to ensure consistency
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.teams.detail(params.id as string),
+        });
       }
     } catch (error: unknown) {
       console.error('Error uploading logo:', error);
@@ -417,12 +418,13 @@ export default function TeamDetailPage() {
     return count === 1 ? '1 member' : `${count} members`;
   };
 
-  // Check if current user is the captain
-  const currentUserMember =
-    user && !authLoading
-      ? members.find((member) => member.userId === user.id || member.user?.email === user.email)
-      : null;
-  const isCaptain = currentUserMember?.role === 'CAPTAIN';
+  const displayError =
+    error ||
+    (teamQueryError instanceof Error
+      ? teamQueryError.message
+      : teamQueryError
+        ? 'Failed to fetch team details'
+        : '');
 
   if (isLoading || authLoading) {
     return (
@@ -444,7 +446,7 @@ export default function TeamDetailPage() {
     );
   }
 
-  if (error) {
+  if (displayError) {
     return (
       <ProtectedRoute>
         <div
@@ -455,7 +457,7 @@ export default function TeamDetailPage() {
           <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
               <div className="bg-red-900/20 border border-red-700/50 text-red-400 px-4 py-3 rounded-lg">
-                {error}
+                {displayError}
               </div>
               <button
                 onClick={() => router.push('/teams')}
@@ -934,10 +936,10 @@ export default function TeamDetailPage() {
                         </button>
                         <button
                           type="submit"
-                          disabled={isInviting}
+                          disabled={inviteUserMutation.isPending}
                           className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
                         >
-                          {isInviting ? 'Sending...' : 'Send Invitation'}
+                          {inviteUserMutation.isPending ? 'Sending...' : 'Send Invitation'}
                         </button>
                       </div>
                     </form>

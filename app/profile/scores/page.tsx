@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserScores } from '@/lib/api-client';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { beautifyRawScore } from '@/utils/scoring';
 import { EVENT_TYPES } from '@/constants/eventTypes';
 import Header from '@/components/Header';
@@ -26,30 +28,19 @@ interface Score {
 
 export default function UserScoresPage() {
   const { user } = useAuth();
-  const [scores, setScores] = useState<Score[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activityFilter, setActivityFilter] = useState('');
 
-  useEffect(() => {
-    if (user) {
-      fetchScores();
-    }
-  }, [user]);
-
-  const fetchScores = async () => {
-    try {
-      setLoading(true);
+  const { data: scoresData, isLoading: loading } = useQuery({
+    queryKey: queryKeys.users.scores(),
+    queryFn: async () => {
       const response = await getUserScores();
-      if (response.success) {
-        setScores(response.data || []);
-      }
-    } catch (error) {
-      console.error('Error fetching scores:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.success ? response.data || [] : [];
+    },
+    enabled: !!user,
+  });
+
+  const scores: Score[] = scoresData ?? [];
 
   // Map activityId to canonical type (e.g., 'squat', 'bench', etc.)
   const getCanonicalActivity = (score: Score) => {

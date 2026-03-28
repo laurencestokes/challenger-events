@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -8,6 +9,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import WelcomeSection from '@/components/WelcomeSection';
 import Button from '@/components/ui/Button';
 import { TeamErgSession } from '@/hooks/useErgSocket';
+import { queryKeys } from '../../../../lib/queryKeys';
 
 interface User {
   id: string;
@@ -16,12 +18,6 @@ interface User {
   bodyweight?: number;
   dateOfBirth?: Date | string;
   sex?: 'M' | 'F';
-}
-
-interface Team {
-  id: string;
-  name: string;
-  members: User[];
 }
 
 interface Event {
@@ -34,178 +30,118 @@ interface Event {
 export default function TeamErgSessionSetupPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [_users, setUsers] = useState<User[]>([]);
-  const [_teams, setTeams] = useState<Team[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
-  const [_teamAId, _setTeamAId] = useState('');
-  const [_teamBId, _setTeamBId] = useState('');
+  const queryClient = useQueryClient();
   const [teamAName, setTeamAName] = useState('');
   const [teamBName, setTeamBName] = useState('');
-  const [events, setEvents] = useState<Event[]>([]);
   const [selectedEventId, setSelectedEventId] = useState('');
-  const [eventCompetitors, setEventCompetitors] = useState<User[]>([]);
-  const [eventTypes, setEventTypes] = useState<{ id: string; name: string }[]>([]);
   const [selectedEventType, setSelectedEventType] = useState('');
   const [error, setError] = useState('');
 
-  const fetchUsers = useCallback(async () => {
-    try {
-      if (!user) {
-        console.log('No user available yet, skipping fetch');
-        return;
-      }
+  const enabled = !!user && !authLoading;
 
+  const { isLoading: usersLoading } = useQuery({
+    queryKey: queryKeys.users.all(),
+    queryFn: async () => {
       const response = await fetch('/api/admin/users', {
-        headers: {
-          Authorization: `Bearer ${user.uid || user.id}`,
-        },
+        headers: { Authorization: `Bearer ${user?.uid || user?.id}` },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch users');
       }
+      return response.json();
+    },
+    enabled,
+  });
 
-      const data = await response.json();
-      setUsers(data.users || []);
-    } catch (err) {
-      console.error('Error fetching users:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load users');
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  const fetchTeams = useCallback(async () => {
-    try {
-      if (!user) {
-        return;
-      }
-
+  const { isLoading: teamsLoading } = useQuery({
+    queryKey: queryKeys.teams.all(),
+    queryFn: async () => {
       const response = await fetch('/api/teams', {
-        headers: {
-          Authorization: `Bearer ${user.uid || user.id}`,
-        },
+        headers: { Authorization: `Bearer ${user?.uid || user?.id}` },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch teams');
       }
+      return response.json();
+    },
+    enabled,
+  });
 
-      const data = await response.json();
-      setTeams(data.teams || []);
-    } catch (err) {
-      console.error('Error fetching teams:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load teams');
-    }
-  }, [user]);
-
-  const fetchEvents = useCallback(async () => {
-    try {
-      if (!user) {
-        return;
-      }
-
+  const { data: eventsData, isLoading: eventsLoading } = useQuery({
+    queryKey: queryKeys.events.all(),
+    queryFn: async () => {
       const response = await fetch('/api/events', {
-        headers: {
-          Authorization: `Bearer ${user.uid || user.id}`,
-        },
+        headers: { Authorization: `Bearer ${user?.uid || user?.id}` },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch events');
       }
+      return response.json();
+    },
+    enabled,
+  });
 
-      const data = await response.json();
-      setEvents(data || []);
-    } catch (err) {
-      console.error('Error fetching events:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load events');
-    }
-  }, [user]);
-
-  const fetchEventTypes = useCallback(async () => {
-    try {
+  const { data: eventTypesData } = useQuery({
+    queryKey: ['eventTypes'],
+    queryFn: async () => {
       const response = await fetch('/api/events/types');
       if (response.ok) {
         const data = await response.json();
-        setEventTypes(data.eventTypes || []);
+        return data.eventTypes || [];
       }
-    } catch (err) {
-      console.error('Error fetching event types:', err);
-    }
-  }, []);
-
-  const fetchEventCompetitors = useCallback(
-    async (eventId: string) => {
-      try {
-        if (!user || !eventId) {
-          return;
-        }
-
-        const response = await fetch(`/api/events/${eventId}/participants`, {
-          headers: {
-            Authorization: `Bearer ${user.uid || user.id}`,
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch event participants');
-        }
-
-        const data = await response.json();
-        setEventCompetitors(data.participants || []);
-      } catch (err) {
-        console.error('Error fetching event competitors:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load event competitors');
-      }
+      return [];
     },
-    [user],
-  );
+    enabled,
+  });
 
-  useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'ADMIN')) {
-      router.push('/');
-    }
-  }, [user, authLoading, router]);
+  const { data: participantsData } = useQuery({
+    queryKey: queryKeys.events.participants(selectedEventId),
+    queryFn: async () => {
+      const response = await fetch(`/api/events/${selectedEventId}/participants`, {
+        headers: { Authorization: `Bearer ${user?.uid || user?.id}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch event participants');
+      }
+      return response.json();
+    },
+    enabled: !!selectedEventId,
+  });
 
-  useEffect(() => {
-    if (user && !authLoading) {
-      fetchUsers();
-      fetchTeams();
-      fetchEvents();
-      fetchEventTypes();
-    }
-  }, [user, authLoading, fetchUsers, fetchTeams, fetchEvents, fetchEventTypes]);
+  const events: Event[] = eventsData || [];
+  const eventTypes: { id: string; name: string }[] = eventTypesData || [];
+  const eventCompetitors: User[] = participantsData?.participants || [];
+  const loading = usersLoading || teamsLoading || eventsLoading;
 
-  const _calculateAge = (dateOfBirth: Date | string | { seconds: number }): number => {
-    let dob: Date;
+  const createSessionMutation = useMutation({
+    mutationFn: async (sessionData: Omit<TeamErgSession, 'id'>) => {
+      const response = await fetch('/api/erg/team-sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sessionData),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to create team session');
+      }
+      return response.json();
+    },
+    onSuccess: ({ session }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.erg.sessions() });
+      router.push(`/admin/erg/team-session/${session.id}/control`);
+    },
+    onError: (err: unknown) => {
+      setError(err instanceof Error ? err.message : 'Failed to create team session');
+    },
+  });
 
-    // Handle Firestore Timestamp format
-    if (dateOfBirth && typeof dateOfBirth === 'object' && 'seconds' in dateOfBirth) {
-      // Firestore Timestamp: convert seconds to milliseconds
-      dob = new Date(dateOfBirth.seconds * 1000);
-    } else if (dateOfBirth) {
-      // Regular date string or Date object
-      dob = new Date(dateOfBirth);
-    } else {
-      return 0;
-    }
+  const creating = createSessionMutation.isPending;
 
-    const today = new Date();
-    let age = today.getFullYear() - dob.getFullYear();
-    const monthDiff = today.getMonth() - dob.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-      age--;
-    }
-    return age;
-  };
-
-  const createSession = async () => {
+  const createSession = () => {
     if (!teamAName.trim() || !teamBName.trim()) {
       setError('Please enter both team names');
       return;
@@ -223,48 +159,26 @@ export default function TeamErgSessionSetupPage() {
       return;
     }
 
-    setCreating(true);
     setError('');
 
-    try {
-      // Create temporary teams with empty member lists
-      const sessionData: Omit<TeamErgSession, 'id'> = {
-        teamA: {
-          id: `temp_team_a_${Date.now()}`,
-          name: teamAName.trim(),
-          members: [], // Will be populated as people join
-        },
-        teamB: {
-          id: `temp_team_b_${Date.now()}`,
-          name: teamBName.trim(),
-          members: [], // Will be populated as people join
-        },
-        eventId: selectedEventId,
-        eventType: selectedEventType,
-        sessionType: 'team',
-      };
+    // Create temporary teams with empty member lists
+    const sessionData: Omit<TeamErgSession, 'id'> = {
+      teamA: {
+        id: `temp_team_a_${Date.now()}`,
+        name: teamAName.trim(),
+        members: [], // Will be populated as people join
+      },
+      teamB: {
+        id: `temp_team_b_${Date.now()}`,
+        name: teamBName.trim(),
+        members: [], // Will be populated as people join
+      },
+      eventId: selectedEventId,
+      eventType: selectedEventType,
+      sessionType: 'team',
+    };
 
-      const response = await fetch('/api/erg/team-sessions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sessionData),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to create team session');
-      }
-
-      const { session } = await response.json();
-
-      // Redirect to the control page for this session
-      router.push(`/admin/erg/team-session/${session.id}/control`);
-    } catch (err) {
-      console.error('Error creating team session:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create team session');
-    } finally {
-      setCreating(false);
-    }
+    createSessionMutation.mutate(sessionData);
   };
 
   if (authLoading || loading) {
@@ -329,11 +243,6 @@ export default function TeamErgSessionSetupPage() {
                   value={selectedEventId}
                   onChange={(e) => {
                     setSelectedEventId(e.target.value);
-                    if (e.target.value) {
-                      fetchEventCompetitors(e.target.value);
-                    } else {
-                      setEventCompetitors([]);
-                    }
                   }}
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 >

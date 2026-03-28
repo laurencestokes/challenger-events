@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { TeamErgSession, useTeamErgSocket } from '@/hooks/useTeamErgSocket';
 import { Competitor } from '@/hooks/useErgSocket';
 import ErgSpeedometer from '@/components/ErgSpeedometer';
@@ -10,8 +10,16 @@ import Image from 'next/image';
 export default function TeamErgLiveDisplayPage() {
   const params = useParams();
   const sessionId = params.sessionId as string;
-  const [session, setSession] = useState<null | undefined | TeamErgSession>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: session, isLoading: loading } = useQuery<TeamErgSession | null>({
+    queryKey: ['erg', 'team-sessions', sessionId],
+    queryFn: async () => {
+      const response = await fetch(`/api/erg/team-sessions?sessionId=${sessionId}`);
+      if (!response.ok) throw new Error('Session not found');
+      const data = await response.json();
+      return data.session ?? null;
+    },
+    enabled: !!sessionId,
+  });
 
   const {
     isConnected,
@@ -22,23 +30,6 @@ export default function TeamErgLiveDisplayPage() {
     sessionStatus,
     error,
   } = useTeamErgSocket(sessionId);
-
-  const fetchSession = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/erg/team-sessions?sessionId=${sessionId}`);
-      if (!response.ok) throw new Error('Session not found');
-      const data = await response.json();
-      setSession(data.session);
-    } catch (err) {
-      console.error('Error fetching team session:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [sessionId]);
-
-  useEffect(() => {
-    fetchSession();
-  }, [sessionId, fetchSession]);
 
   if (loading) {
     return (

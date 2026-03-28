@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -38,18 +39,53 @@ export default function TeamErgControlPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const sessionId = params.sessionId as string;
-  const [session, setSession] = useState<null | undefined | TeamErgSession>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedTeam, setSelectedTeam] = useState('');
   const [_addingCompetitor, setAddingCompetitor] = useState(false);
-  const [eventCompetitors, setEventCompetitors] = useState<Competitor[]>([]);
   const [selectedCompetitorId, setSelectedCompetitorId] = useState('');
   const [ergSlots, setErgSlots] = useState<ErgSlot[]>([]);
   const [maxErgSlots, setMaxErgSlots] = useState(4);
   const [assigningCompetitor, setAssigningCompetitor] = useState(false);
-  const [eventTypes, setEventTypes] = useState<{ id: string; name: string }[]>([]);
   const [selectedEventType, setSelectedEventType] = useState('');
+
+  const { data: sessionData, isLoading: loading } = useQuery<TeamErgSession | null>({
+    queryKey: ['erg', 'team-sessions', sessionId],
+    queryFn: async () => {
+      const response = await fetch(`/api/erg/team-sessions?sessionId=${sessionId}`);
+      if (!response.ok) throw new Error('Session not found');
+      const data = await response.json();
+      return data.session ?? null;
+    },
+    enabled: !!sessionId,
+  });
+  const session = sessionData ?? null;
+
+  const { data: participantsData } = useQuery<{ participants: Competitor[] }>({
+    queryKey: ['events', session?.eventId || '', 'participants'],
+    queryFn: async () => {
+      const response = await fetch(`/api/events/${session!.eventId}/participants`, {
+        headers: { Authorization: `Bearer ${user?.uid || user?.id}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch event participants');
+      }
+      return response.json();
+    },
+    enabled: !!session?.eventId && !!user,
+  });
+  const eventCompetitors: Competitor[] = participantsData?.participants || [];
+
+  const { data: eventTypesData } = useQuery<{ id: string; name: string }[]>({
+    queryKey: ['eventTypes'],
+    queryFn: async () => {
+      const response = await fetch('/api/events/types');
+      if (!response.ok) throw new Error('Failed to fetch event types');
+      const data = await response.json();
+      return data.eventTypes || [];
+    },
+  });
+  const eventTypes = eventTypesData || [];
 
   const {
     isConnected,
@@ -87,65 +123,11 @@ export default function TeamErgControlPage() {
       : null,
   );
 
-  const fetchSession = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/erg/team-sessions?sessionId=${sessionId}`);
-      if (!response.ok) throw new Error('Session not found');
-      const data = await response.json();
-      setSession(data.session);
-    } catch (err) {
-      console.error('Error fetching team session:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load session');
-    } finally {
-      setLoading(false);
-    }
-  }, [sessionId]);
-
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'ADMIN')) {
       router.push('/');
     }
   }, [user, authLoading, router]);
-
-  const fetchEventCompetitors = useCallback(
-    async (eventId: string) => {
-      try {
-        if (!user || !eventId) {
-          return;
-        }
-
-        const response = await fetch(`/api/events/${eventId}/participants`, {
-          headers: {
-            Authorization: `Bearer ${user.uid || user.id}`,
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch event participants');
-        }
-
-        const data = await response.json();
-        setEventCompetitors(data.participants || []);
-      } catch (err) {
-        console.error('Error fetching event competitors:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load event competitors');
-      }
-    },
-    [user],
-  );
-
-  const fetchEventTypes = useCallback(async () => {
-    try {
-      const response = await fetch('/api/events/types');
-      if (response.ok) {
-        const data = await response.json();
-        setEventTypes(data.eventTypes || []);
-      }
-    } catch (err) {
-      console.error('Error fetching event types:', err);
-    }
-  }, []);
 
   const initializeErgSlots = useCallback(() => {
     const slots: ErgSlot[] = [];
@@ -256,19 +238,6 @@ export default function TeamErgControlPage() {
       setError(err instanceof Error ? err.message : 'Failed to complete session');
     }
   };
-
-  useEffect(() => {
-    if (user && !authLoading) {
-      fetchSession();
-      fetchEventTypes();
-    }
-  }, [user, authLoading, fetchSession, fetchEventTypes]);
-
-  useEffect(() => {
-    if (session && session.eventId) {
-      fetchEventCompetitors(session.eventId);
-    }
-  }, [session, fetchEventCompetitors]);
 
   useEffect(() => {
     initializeErgSlots();

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api-client';
+import { queryKeys } from '@/lib/queryKeys';
 import Link from 'next/link';
 import Image from 'next/image';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -47,31 +48,17 @@ interface Participant {
 
 export default function EventBrief() {
   const params = useParams();
-  const [event, setEvent] = useState<Event | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-
   const eventId = params.id as string;
 
-  useEffect(() => {
-    const fetchEventDetails = async () => {
-      try {
-        const eventData = await api.get(`/api/events/${eventId}`);
-        setEvent(eventData);
-      } catch (error: unknown) {
-        console.error('Error fetching event details:', error);
-        const errorMessage =
-          error instanceof Error ? error.message : 'Failed to fetch event details';
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (eventId) {
-      fetchEventDetails();
-    }
-  }, [eventId]);
+  const {
+    data: event,
+    isLoading,
+    error,
+  } = useQuery<Event>({
+    queryKey: queryKeys.events.detail(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}`),
+    enabled: !!eventId,
+  });
 
   const formatDate = (dateString: unknown) => {
     if (!dateString) return 'Not set';
@@ -222,7 +209,9 @@ export default function EventBrief() {
           <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
             <div className="container mx-auto px-4 py-8">
               <div className="text-center py-8">
-                <p className="text-red-400">{error}</p>
+                <p className="text-red-400">
+                  {error instanceof Error ? error.message : 'Failed to load event'}
+                </p>
                 <Link
                   href="/dashboard"
                   className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"

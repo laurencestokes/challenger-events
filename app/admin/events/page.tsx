@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../lib/api-client';
+import { queryKeys } from '../../../lib/queryKeys';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import WelcomeSection from '@/components/WelcomeSection';
@@ -22,28 +23,24 @@ interface Event {
 
 export default function ManageEvents() {
   const { user } = useAuth();
-  const [events, setEvents] = useState<Event[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const eventsData = await api.get('/api/events');
-        setEvents(eventsData);
-      } catch (error: unknown) {
-        console.error('Error fetching events:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch events';
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const {
+    data: events = [],
+    isLoading,
+    error,
+  } = useQuery<Event[]>({
+    queryKey: queryKeys.events.all(),
+    queryFn: () => api.get('/api/events'),
+    enabled: !!user,
+  });
 
-    if (user) {
-      fetchEvents();
-    }
-  }, [user]);
+  const publishMutation = useMutation({
+    mutationFn: (eventId: string) => api.put(`/api/events/${eventId}`, { status: 'ACTIVE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.all() });
+    },
+  });
 
   const formatDate = (dateString: unknown) => {
     if (!dateString) return 'Not set';
@@ -155,7 +152,9 @@ export default function ManageEvents() {
                 <EventListSkeleton />
               ) : error ? (
                 <div className="text-center py-8">
-                  <p className="text-red-400">{error}</p>
+                  <p className="text-red-400">
+                    {error instanceof Error ? error.message : 'Failed to fetch events'}
+                  </p>
                 </div>
               ) : events.length === 0 ? (
                 <div className="text-center py-12">
@@ -237,16 +236,9 @@ export default function ManageEvents() {
                       <div className="flex items-center space-x-3">
                         {event.status === 'DRAFT' && (
                           <button
-                            onClick={async () => {
-                              try {
-                                await api.put(`/api/events/${event.id}`, { status: 'ACTIVE' });
-                                // Refresh the page to show updated status
-                                window.location.reload();
-                              } catch (error: unknown) {
-                                console.error('Error publishing event:', error);
-                              }
-                            }}
-                            className="px-3 py-1 text-sm font-medium text-green-400 hover:text-green-300 transition-colors"
+                            onClick={() => publishMutation.mutate(event.id)}
+                            disabled={publishMutation.isPending}
+                            className="px-3 py-1 text-sm font-medium text-green-400 hover:text-green-300 transition-colors disabled:opacity-50"
                           >
                             Publish
                           </button>

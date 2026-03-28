@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { beautifyRawScore } from '@/utils/scoring';
 import NotificationToast from '@/components/NotificationToast';
 import { useSSEUnauth } from '@/hooks/useSSEUnauth';
@@ -129,14 +131,8 @@ interface LatestResult {
 export default function PublicEventLeaderboard() {
   const params = useParams();
   const eventId = params.eventId as string;
+  const queryClient = useQueryClient();
 
-  const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [eventInfo, setEventInfo] = useState<string | null>(null);
-  const [eventDetails, setEventDetails] = useState<EventDetails | null>(null);
-  const [latestResults, setLatestResults] = useState<LatestResult[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overall' | 'team-overall' | string>('overall');
   const [viewMode, setViewMode] = useState<'individual' | 'team'>('individual');
   const [displayMode, setDisplayMode] = useState<'table' | 'barchart'>('table');
@@ -153,57 +149,57 @@ export default function PublicEventLeaderboard() {
     type: 'success',
   });
 
-  const fetchData = useCallback(async () => {
-    try {
-      // Add cache-busting timestamp to ensure fresh data
-      const timestamp = Date.now();
-      const [leaderboardData, activitiesData, eventData] = await Promise.all([
-        fetch(`/api/public/leaderboard/${eventId}?t=${timestamp}`, {
-          cache: 'no-store',
-        }).then((res) => {
-          if (!res.ok) {
-            throw new Error('Failed to fetch leaderboard data');
-          }
-          return res.json();
-        }),
-        fetch(`/api/public/events/${eventId}/activities?t=${timestamp}`, {
-          cache: 'no-store',
-        }).then((res) => {
-          if (!res.ok) {
-            throw new Error('Failed to fetch activities data');
-          }
-          return res.json();
-        }),
-        fetch(`/api/public/events/${eventId}?t=${timestamp}`, {
-          cache: 'no-store',
-        }).then((res) => {
-          if (!res.ok) {
-            return null;
-          }
-          return res.json();
-        }),
-      ]);
-      setLeaderboardData(leaderboardData);
-      setActivities(activitiesData);
-      setLatestResults(leaderboardData.latestResults || []);
+  // TanStack Query: leaderboard data (with 30s refetch interval replacing manual polling)
+  const {
+    data: leaderboardData,
+    isLoading: isLoadingLeaderboard,
+    error: leaderboardError,
+  } = useQuery({
+    queryKey: queryKeys.public.leaderboard(eventId),
+    queryFn: async (): Promise<LeaderboardData> => {
+      const res = await fetch(`/api/public/leaderboard/${eventId}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error('Failed to fetch leaderboard data');
+      return res.json();
+    },
+    enabled: !!eventId,
+    refetchInterval: 30_000,
+  });
 
-      // Set event details and info if available
-      if (eventData) {
-        setEventDetails(eventData);
-        if (eventData.description) {
-          setEventInfo(eventData.description);
-        }
-      }
-    } catch (error: unknown) {
-      console.error('Error fetching data:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [eventId]);
+  // TanStack Query: activities
+  const { data: activitiesData, isLoading: isLoadingActivities } = useQuery({
+    queryKey: queryKeys.public.activities(eventId),
+    queryFn: async (): Promise<Activity[]> => {
+      const res = await fetch(`/api/public/events/${eventId}/activities`, { cache: 'no-store' });
+      if (!res.ok) throw new Error('Failed to fetch activities data');
+      return res.json();
+    },
+    enabled: !!eventId,
+  });
 
-  // Handle SSE events
+  // TanStack Query: event details
+  const { data: eventDetailsData, isLoading: isLoadingEvent } = useQuery({
+    queryKey: queryKeys.public.event(eventId),
+    queryFn: async (): Promise<EventDetails | null> => {
+      const res = await fetch(`/api/public/events/${eventId}`, { cache: 'no-store' });
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!eventId,
+  });
+
+  const isLoading = isLoadingLeaderboard || isLoadingActivities || isLoadingEvent;
+  const error =
+    leaderboardError instanceof Error
+      ? leaderboardError.message
+      : leaderboardError
+        ? 'Failed to fetch data'
+        : '';
+  const activities: Activity[] = activitiesData ?? [];
+  const eventDetails = eventDetailsData ?? null;
+  const eventInfo = eventDetailsData?.description ?? null;
+  const latestResults: LatestResult[] = leaderboardData?.latestResults ?? [];
+
+  // Handle SSE events - invalidate queries on leaderboard events
   useEffect(() => {
     if (lastEvent?.type === 'workout_revealed' && lastEvent.workoutName) {
       setNotification({
@@ -211,35 +207,16 @@ export default function PublicEventLeaderboard() {
         message: `🎉 New workout revealed: ${lastEvent.workoutName}!`,
         type: 'success',
       });
-
-      // Refresh activities to show the newly revealed workout
-      fetchData();
+      queryClient.invalidateQueries({ queryKey: queryKeys.public.leaderboard(eventId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.public.activities(eventId) });
     } else if (lastEvent?.type === 'score_submitted') {
       console.log(
         'Public Leaderboard: Received score_submitted event, refreshing data...',
         lastEvent,
       );
-      // Refresh all data when a new score is submitted to get updated latest results
-      fetchData();
+      queryClient.invalidateQueries({ queryKey: queryKeys.public.leaderboard(eventId) });
     }
-  }, [lastEvent, fetchData]);
-
-  useEffect(() => {
-    fetchData();
-  }, [eventId, fetchData]);
-
-  // TODO: Replace polling with proper invalidation/react-query
-  // Poll for leaderboard updates every 30 seconds as a fallback
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      console.log('Public Leaderboard: Polling for updates...');
-      fetchData();
-    }, 30000); // 30 seconds
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [fetchData]);
+  }, [lastEvent, eventId, queryClient]);
 
   const formatRawValue = (
     rawValue: number,
@@ -266,7 +243,7 @@ export default function PublicEventLeaderboard() {
     }
   };
 
-  const getAvailableTabs = useCallback(() => {
+  const getAvailableTabs = () => {
     const tabs = [
       { id: 'overall', name: 'Overall' },
       ...(leaderboardData?.workoutLeaderboards?.map((workout) => ({
@@ -276,7 +253,7 @@ export default function PublicEventLeaderboard() {
     ];
 
     return tabs;
-  }, [leaderboardData?.workoutLeaderboards]);
+  };
 
   const formatDate = (date: unknown) => {
     if (!date) return 'TBD';
@@ -328,7 +305,9 @@ export default function PublicEventLeaderboard() {
             <h1 className="text-3xl font-bold text-white mb-4">Error Loading Leaderboard</h1>
             <p className="text-gray-400 text-lg mb-6 max-w-md mx-auto">{error}</p>
             <button
-              onClick={fetchData}
+              onClick={() =>
+                queryClient.invalidateQueries({ queryKey: queryKeys.public.leaderboard(eventId) })
+              }
               className="px-6 py-3 text-white font-semibold rounded-lg transition-colors hover:opacity-90"
               style={{ backgroundColor: '#4682B4' }}
             >

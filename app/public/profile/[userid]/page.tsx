@@ -1,5 +1,7 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { CANONICAL_EVENTS } from '@/constants/achievements';
 import type { Score } from '@/lib/firestore';
 import Link from 'next/link';
@@ -71,10 +73,6 @@ function getReps(score: unknown): number | undefined {
 }
 
 export default function PublicProfilePage({ params }: { params: { userid: string } }) {
-  const [data, setData] = useState<PublicProfileData | null>(null);
-  const [eventScores, setEventScores] = useState<EventWithScores[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
   const [performanceProfileOpen, setPerformanceProfileOpen] = useState(false);
   const [detailedScoresOpen, setDetailedScoresOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -196,38 +194,31 @@ export default function PublicProfilePage({ params }: { params: { userid: string
     return Math.round(totalScore / categoryEvents.length);
   };
 
-  useEffect(() => {
-    let cancelled = false;
-    async function fetchProfile() {
-      setLoading(true);
-      setNotFound(false);
+  const { data: profileQueryData, isLoading: profileLoading } = useQuery({
+    queryKey: queryKeys.public.profile(params.userid),
+    queryFn: async (): Promise<PublicProfileData | null> => {
       const res = await fetch(`/api/public/profile/${params.userid}`);
-      let userData: PublicProfileData | null = null;
-      if (res.ok) {
-        userData = await res.json();
-      }
-      if (cancelled) return;
-      // If user not found or not public, show not found immediately
-      if (!userData?.user || !userData.user.publicProfileEnabled) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-      setData(userData);
-      // Now fetch event scores
-      const eventRes = await fetch(`/api/public/user/events/${params.userid}`);
-      if (eventRes.ok) {
-        setEventScores(await eventRes.json());
-      } else {
-        setEventScores(null);
-      }
-      setLoading(false);
-    }
-    fetchProfile();
-    return () => {
-      cancelled = true;
-    };
-  }, [params.userid]);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!params.userid,
+  });
+
+  const { data: eventScoresQueryData, isLoading: eventScoresLoading } = useQuery({
+    queryKey: queryKeys.public.userEvents(params.userid),
+    queryFn: async (): Promise<EventWithScores[] | null> => {
+      const res = await fetch(`/api/public/user/events/${params.userid}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!params.userid && !!profileQueryData?.user?.publicProfileEnabled,
+  });
+
+  const data = profileQueryData ?? null;
+  const eventScores = eventScoresQueryData ?? null;
+  const loading =
+    profileLoading || (!!profileQueryData?.user?.publicProfileEnabled && eventScoresLoading);
+  const notFound = !loading && (!data?.user || !data.user.publicProfileEnabled);
 
   const handleShareClick = async () => {
     const profileUrl = `${window.location.origin}/public/profile/${params.userid}`;

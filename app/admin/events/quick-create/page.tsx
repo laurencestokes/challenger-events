@@ -3,13 +3,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api-client';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import WelcomeSection from '@/components/WelcomeSection';
 import { EVENT_TYPES, getEventTypesByCategory } from '@/constants/eventTypes';
 
 export default function QuickCreateEvent() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
   const [error, setError] = useState('');
 
   // Form state
@@ -33,6 +35,52 @@ export default function QuickCreateEvent() {
 
   const strengthActivities = getEventTypesByCategory('STRENGTH');
   const enduranceActivities = getEventTypesByCategory('ENDURANCE');
+
+  const createEventMutation = useMutation({
+    mutationFn: async (eventData: object) => {
+      const createdEvent = await api.post('/api/events', eventData);
+
+      // Create activities for the event
+      const activityPromises = selectedActivities.map((activityId, index) => {
+        const eventType = EVENT_TYPES.find((et) => et.id === activityId);
+        if (!eventType) return null;
+
+        const reps = eventType.supportsReps
+          ? activityReps[activityId] || eventType.defaultReps || 1
+          : undefined;
+
+        return api.post(`/api/events/${createdEvent.id}/activities`, {
+          name: eventType.name,
+          description: eventType.description,
+          type:
+            eventType.inputType === 'WEIGHT'
+              ? 'WEIGHT'
+              : eventType.inputType === 'TIME'
+                ? 'TIME'
+                : 'DISTANCE',
+          scoringSystemId: eventType.scoringSystemId,
+          unit: eventType.unit,
+          reps: reps,
+          order: index,
+          isHidden: false,
+        });
+      });
+
+      await Promise.all(activityPromises.filter(Boolean));
+      return createdEvent;
+    },
+    onSuccess: (createdEvent) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.available() });
+      router.push(`/admin/events/${createdEvent.id}/participants`);
+    },
+    onError: (err: unknown) => {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create event';
+      setError(errorMessage);
+    },
+  });
+
+  const isLoading = createEventMutation.isPending;
 
   const handleActivityToggle = (activityId: string) => {
     setSelectedActivities((prev) => {
@@ -61,80 +109,37 @@ export default function QuickCreateEvent() {
     setActivityReps({ ...activityReps, [activityId]: reps });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
 
     if (!name) {
       setError('Event name is required');
-      setIsLoading(false);
       return;
     }
 
     if (selectedActivities.length === 0) {
       setError('Please select at least one activity');
-      setIsLoading(false);
       return;
     }
 
-    try {
-      // Create the event
-      const eventData = {
-        name,
-        description: description || undefined,
-        isTeamEvent,
-        teamScoringMethod: isTeamEvent ? teamScoringMethod : undefined,
-        maxTeamSize: isTeamEvent ? maxTeamSize : undefined,
-        scope,
-        organizationId: scope === 'ORGANIZATION' ? organizationId : undefined,
-        gymId: scope === 'GYM' ? gymId : undefined,
-        country,
-        postcode: postcode || undefined,
-        status,
-        startDate: startDate ? new Date(startDate).toISOString() : undefined,
-        endDate: endDate ? new Date(endDate).toISOString() : undefined,
-      };
+    const eventData = {
+      name,
+      description: description || undefined,
+      isTeamEvent,
+      teamScoringMethod: isTeamEvent ? teamScoringMethod : undefined,
+      maxTeamSize: isTeamEvent ? maxTeamSize : undefined,
+      scope,
+      organizationId: scope === 'ORGANIZATION' ? organizationId : undefined,
+      gymId: scope === 'GYM' ? gymId : undefined,
+      country,
+      postcode: postcode || undefined,
+      status,
+      startDate: startDate ? new Date(startDate).toISOString() : undefined,
+      endDate: endDate ? new Date(endDate).toISOString() : undefined,
+    };
 
-      const createdEvent = await api.post('/api/events', eventData);
-
-      // Create activities for the event
-      const activityPromises = selectedActivities.map((activityId, index) => {
-        const eventType = EVENT_TYPES.find((et) => et.id === activityId);
-        if (!eventType) return null;
-
-        // Use selected reps or default
-        const reps = eventType.supportsReps
-          ? activityReps[activityId] || eventType.defaultReps || 1
-          : undefined;
-
-        return api.post(`/api/events/${createdEvent.id}/activities`, {
-          name: eventType.name,
-          description: eventType.description,
-          type:
-            eventType.inputType === 'WEIGHT'
-              ? 'WEIGHT'
-              : eventType.inputType === 'TIME'
-                ? 'TIME'
-                : 'DISTANCE',
-          scoringSystemId: eventType.scoringSystemId,
-          unit: eventType.unit,
-          reps: reps,
-          order: index,
-          isHidden: false,
-        });
-      });
-
-      await Promise.all(activityPromises.filter(Boolean));
-
-      // Redirect to participant management page
-      router.push(`/admin/events/${createdEvent.id}/participants`);
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create event';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
+    createEventMutation.mutate(eventData);
   };
 
   return (

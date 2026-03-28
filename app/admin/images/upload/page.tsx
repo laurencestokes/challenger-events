@@ -1,20 +1,78 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
+import { queryKeys } from '../../../../lib/queryKeys';
 import Image from 'next/image';
 import WelcomeSection from '@/components/WelcomeSection';
 
 export default function AdminImageUpload() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [gallery, setGallery] = useState<string[]>([]);
-  const [galleryLoading, setGalleryLoading] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+
+  const { data: galleryData, isLoading: galleryLoading } = useQuery({
+    queryKey: queryKeys.admin.images(),
+    queryFn: async () => {
+      const res = await fetch('/api/admin/upload-image', {
+        headers: { Authorization: `Bearer ${user?.uid || user?.id}` },
+      });
+      const data = await res.json();
+      return res.ok && Array.isArray(data.images) ? data.images : [];
+    },
+    enabled: !!user,
+  });
+
+  const gallery: string[] = galleryData || [];
+
+  const uploadMutation = useMutation({
+    mutationFn: async (uploadFile: File) => {
+      const formData = new FormData();
+      formData.append('file', uploadFile);
+      const res = await fetch('/api/admin/upload-image', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${user?.uid || user?.id}`,
+        },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      return data.url as string;
+    },
+    onSuccess: (url) => {
+      setImageUrl(url);
+      setFile(null);
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.images() });
+    },
+    onError: (err: unknown) => {
+      setError(err instanceof Error ? err.message : 'Upload failed');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (imgUrl: string) => {
+      const filename = imgUrl.split('/').pop();
+      if (!filename) throw new Error('Invalid image URL');
+      const res = await fetch(`/api/admin/upload-image?filename=${encodeURIComponent(filename)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${user?.uid || user?.id}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Delete failed');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.images() });
+    },
+    onError: (err: unknown) => {
+      setDeleteError(err instanceof Error ? err.message : 'Delete failed');
+    },
+  });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -24,80 +82,19 @@ export default function AdminImageUpload() {
     }
   };
 
-  const handleUpload = async () => {
+  const handleUpload = () => {
     if (!file) {
       setError('Please select an image file.');
       return;
     }
-    setUploading(true);
     setError('');
     setImageUrl('');
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/api/admin/upload-image', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${user?.uid || user?.id}`,
-        },
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || 'Upload failed');
-      } else {
-        setImageUrl(data.url);
-      }
-    } catch {
-      setError('Upload failed');
-    } finally {
-      setUploading(false);
-    }
+    uploadMutation.mutate(file);
   };
 
-  const fetchGallery = async () => {
-    setGalleryLoading(true);
+  const handleDelete = (imgUrl: string) => {
     setDeleteError('');
-    try {
-      const res = await fetch('/api/admin/upload-image', {
-        headers: { Authorization: `Bearer ${user?.uid || user?.id}` },
-      });
-      const data = await res.json();
-      if (res.ok && Array.isArray(data.images)) {
-        setGallery(data.images);
-      } else {
-        setGallery([]);
-      }
-    } catch {
-      setGallery([]);
-    } finally {
-      setGalleryLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (user) fetchGallery();
-    // eslint-disable-next-line
-  }, [user]);
-
-  const handleDelete = async (imgUrl: string) => {
-    setDeleteError('');
-    const filename = imgUrl.split('/').pop();
-    if (!filename) return;
-    try {
-      const res = await fetch(`/api/admin/upload-image?filename=${encodeURIComponent(filename)}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${user?.uid || user?.id}` },
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setDeleteError(data.error || 'Delete failed');
-      } else {
-        setGallery((g) => g.filter((url) => url !== imgUrl));
-      }
-    } catch {
-      setDeleteError('Delete failed');
-    }
+    deleteMutation.mutate(imgUrl);
   };
 
   return (
@@ -137,10 +134,10 @@ export default function AdminImageUpload() {
             </div>
             <button
               onClick={handleUpload}
-              disabled={uploading || !file}
+              disabled={uploadMutation.isPending || !file}
               className="px-6 py-3 bg-orange-500 text-white rounded-lg font-medium disabled:opacity-50 hover:bg-orange-600 transition-colors"
             >
-              {uploading ? 'Uploading...' : 'Upload Image'}
+              {uploadMutation.isPending ? 'Uploading...' : 'Upload Image'}
             </button>
             {error && (
               <div className="mt-4 bg-red-900/30 border border-red-700/50 rounded-lg p-3">

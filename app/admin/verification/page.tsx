@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../lib/api-client';
+import { queryKeys } from '../../../lib/queryKeys';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -29,11 +31,7 @@ interface VerificationStats {
 
 export default function VerificationPage() {
   const { user } = useAuth();
-  const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [stats, setStats] = useState<VerificationStats | null>(null);
+  const queryClient = useQueryClient();
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<
@@ -45,79 +43,66 @@ export default function VerificationPage() {
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationNotes, setVerificationNotes] = useState('');
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const usersData = await api.get('/api/admin/users');
-        setUsers(usersData.users || []);
+  const {
+    data,
+    isLoading,
+    error: queryError,
+  } = useQuery({
+    queryKey: queryKeys.users.all(),
+    queryFn: () => api.get('/api/admin/users'),
+    enabled: !!user,
+  });
 
-        // Calculate verification stats
-        const stats = {
-          totalPending:
-            usersData.users?.filter((u: User) => u.verificationStatus === 'PENDING').length || 0,
-          totalVerified:
-            usersData.users?.filter((u: User) => u.verificationStatus === 'VERIFIED').length || 0,
-          totalRejected:
-            usersData.users?.filter((u: User) => u.verificationStatus === 'REJECTED').length || 0,
-        };
-        setStats(stats);
-      } catch (error: unknown) {
-        console.error('Error fetching users:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch users';
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
+  const users: User[] = data?.users || [];
+  const error =
+    queryError instanceof Error ? queryError.message : queryError ? 'Failed to fetch users' : '';
+
+  const stats: VerificationStats | null = useMemo(() => {
+    if (!users.length) return null;
+    return {
+      totalPending: users.filter((u) => u.verificationStatus === 'PENDING').length,
+      totalVerified: users.filter((u) => u.verificationStatus === 'VERIFIED').length,
+      totalRejected: users.filter((u) => u.verificationStatus === 'REJECTED').length,
     };
+  }, [users]);
 
-    if (user) {
-      fetchUsers();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    // Filter users based on verification status
-    let filtered = users;
-
-    if (statusFilter !== 'ALL') {
-      filtered = filtered.filter((user) => user.verificationStatus === statusFilter);
-    }
-
-    setFilteredUsers(filtered);
+  const filteredUsers = useMemo(() => {
+    if (statusFilter === 'ALL') return users;
+    return users.filter((user) => user.verificationStatus === statusFilter);
   }, [users, statusFilter]);
 
-  const handleVerification = async (
+  const verifyMutation = useMutation({
+    mutationFn: ({
+      userId,
+      verificationStatus,
+      verificationNotes,
+    }: {
+      userId: string;
+      verificationStatus: 'VERIFIED' | 'REJECTED' | 'NEEDS_REVERIFICATION';
+      verificationNotes: string;
+    }) =>
+      api.put(`/api/admin/users/${userId}/verify`, {
+        verificationStatus,
+        verificationNotes,
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.users.all() }),
+  });
+
+  const handleVerification = (
     verificationStatus: 'VERIFIED' | 'REJECTED' | 'NEEDS_REVERIFICATION',
   ) => {
     if (!selectedUser) return;
 
-    try {
-      await api.put(`/api/admin/users/${selectedUser.id}/verify`, {
-        verificationStatus,
-        verificationNotes,
-      });
-
-      // Update local state
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.id === selectedUser.id
-            ? {
-                ...user,
-                verificationStatus,
-                verificationNotes,
-                verifiedAt: new Date(),
-              }
-            : user,
-        ),
-      );
-
-      setShowVerificationModal(false);
-      setSelectedUser(null);
-      setVerificationNotes('');
-    } catch (error: unknown) {
-      console.error('Error updating verification status:', error);
-      setError('Failed to update verification status');
-    }
+    verifyMutation.mutate(
+      { userId: selectedUser.id, verificationStatus, verificationNotes },
+      {
+        onSuccess: () => {
+          setShowVerificationModal(false);
+          setSelectedUser(null);
+          setVerificationNotes('');
+        },
+      },
+    );
   };
 
   const openVerificationModal = (user: User) => {

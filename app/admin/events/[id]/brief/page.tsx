@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api-client';
+import { queryKeys } from '@/lib/queryKeys';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import WelcomeSection from '@/components/WelcomeSection';
@@ -37,59 +39,36 @@ interface Participant {
 
 export default function EditEventBrief() {
   const params = useParams();
-  const [event, setEvent] = useState<Event | null>(null);
+  const queryClient = useQueryClient();
   const [brief, setBrief] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   const eventId = params.id as string;
 
+  const {
+    data: event,
+    isLoading,
+    error,
+  } = useQuery<Event>({
+    queryKey: queryKeys.events.detail(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}`),
+    enabled: !!eventId,
+  });
+
   useEffect(() => {
-    const fetchEventDetails = async () => {
-      try {
-        const eventData = await api.get(`/api/events/${eventId}`);
-        setEvent(eventData);
-        setBrief(eventData.brief || '');
-      } catch (error: unknown) {
-        console.error('Error fetching event details:', error);
-        const errorMessage =
-          error instanceof Error ? error.message : 'Failed to fetch event details';
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (event) setBrief(event.brief || '');
+  }, [event]);
 
-    if (eventId) {
-      fetchEventDetails();
-    }
-  }, [eventId]);
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      await api.put(`/api/events/${eventId}`, {
-        brief: brief,
-      });
+  const saveMutation = useMutation({
+    mutationFn: () => api.put(`/api/events/${eventId}`, { brief }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.detail(eventId) });
       setSuccess('Brief updated successfully!');
+      setTimeout(() => setSuccess(''), 3000);
+    },
+  });
 
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setSuccess('');
-      }, 3000);
-    } catch (error: unknown) {
-      console.error('Error updating brief:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update brief';
-      setError(errorMessage);
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  const handleSave = () => saveMutation.mutate();
 
   const handlePreview = () => {
     // Open the brief page in a new tab for preview
@@ -112,6 +91,7 @@ export default function EditEventBrief() {
   }
 
   if (error && !event) {
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch event details';
     return (
       <ProtectedRoute requireAdmin>
         <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
@@ -133,7 +113,7 @@ export default function EditEventBrief() {
                 </svg>
               </div>
               <h1 className="text-3xl font-bold text-white mb-4">Error Loading Event</h1>
-              <p className="text-gray-400 text-lg mb-6 max-w-md mx-auto">{error}</p>
+              <p className="text-gray-400 text-lg mb-6 max-w-md mx-auto">{errorMessage}</p>
               <Link
                 href="/admin/events"
                 className="px-6 py-3 text-white font-semibold rounded-lg transition-colors hover:opacity-90"
@@ -224,9 +204,13 @@ export default function EditEventBrief() {
             </div>
           )}
 
-          {error && (
+          {saveMutation.error && (
             <div className="mb-6 bg-red-900/30 border border-red-700/50 rounded-lg p-4">
-              <p className="text-red-400">{error}</p>
+              <p className="text-red-400">
+                {saveMutation.error instanceof Error
+                  ? saveMutation.error.message
+                  : 'Failed to update brief'}
+              </p>
             </div>
           )}
 
@@ -364,10 +348,10 @@ Contact the event organizers if you have any questions about the event format, r
           <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={handleSave}
-              disabled={isSaving}
+              disabled={saveMutation.isPending}
               className="px-6 py-3 bg-orange-500 text-white rounded-lg font-medium disabled:opacity-50 hover:bg-orange-600 transition-colors"
             >
-              {isSaving ? 'Saving...' : 'Save Brief'}
+              {saveMutation.isPending ? 'Saving...' : 'Save Brief'}
             </button>
             <Link
               href={`/admin/events/${eventId}`}

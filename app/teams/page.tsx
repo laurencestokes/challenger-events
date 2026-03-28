@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api-client';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -96,13 +98,7 @@ interface User {
 export default function TeamsPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [publicTeams, setPublicTeams] = useState<Team[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingPublicTeams, setIsLoadingPublicTeams] = useState(true);
-  const [totalScore, setTotalScore] = useState(0);
-  const [verifiedScore, setVerifiedScore] = useState(0);
-  const [isLoadingScores, setIsLoadingScores] = useState(true);
+  const queryClient = useQueryClient();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [pendingInvitations, setPendingInvitations] = useState<TeamInvitation[]>([]);
@@ -122,22 +118,115 @@ export default function TeamsPage() {
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
+  // TanStack Query: user/all teams
+  const { data: teamsData, isLoading } = useQuery({
+    queryKey: queryKeys.teams.all(),
+    queryFn: async () => {
+      if (isAdmin) {
+        const response = await api.get('/api/teams/all');
+        const allTeams = [...(response.userTeams || []), ...(response.availableTeams || [])];
+        const teamsWithCounts = await Promise.all(
+          allTeams.map(async (team: Team) => {
+            try {
+              const teamResponse = await api.get(`/api/teams/${team.id}`);
+              return { ...team, memberCount: teamResponse.members?.length || 0 };
+            } catch {
+              return { ...team, memberCount: 0 };
+            }
+          }),
+        );
+        return teamsWithCounts;
+      } else {
+        const response = await api.get('/api/teams/user');
+        return response.teams || [];
+      }
+    },
+    enabled: !!user,
+  });
+  const teams: Team[] = teamsData ?? [];
+
+  // TanStack Query: public teams (non-admin only)
+  const { data: publicTeamsData, isLoading: isLoadingPublicTeams } = useQuery({
+    queryKey: queryKeys.teams.public(),
+    queryFn: async () => {
+      const response = await api.get('/api/teams/public');
+      const allPublicTeams: Team[] = response.teams || [];
+      const userTeamIds = teams.map((t) => t.id);
+      return allPublicTeams.filter((t) => !userTeamIds.includes(t.id));
+    },
+    enabled: !!user && !isAdmin,
+  });
+  const publicTeams: Team[] = publicTeamsData ?? [];
+
+  // TanStack Query: user scores for WelcomeSection metrics
+  const { data: allScoresData, isLoading: isLoadingScores } = useQuery({
+    queryKey: queryKeys.users.scores(),
+    queryFn: async () => {
+      const allScoresResponse = await api
+        .get('/api/user/all-scores')
+        .catch(() => ({ success: false, data: [] }));
+      const personalScores: Score[] = allScoresResponse.success ? allScoresResponse.data : [];
+
+      const userEventsResponse = await api.get('/api/user/events').catch(() => []);
+      const userEvents: EventWithScores[] = userEventsResponse || [];
+
+      type ScoreWithEvent = Score & { event?: EventWithScores; testId?: string };
+      const eventActivityScores: ScoreWithEvent[] = [];
+      userEvents.forEach((event: EventWithScores) => {
+        (event.scores || []).forEach((score: ScoreWithEvent) => {
+          eventActivityScores.push({ ...score, event });
+        });
+      });
+
+      const allScores: ScoreWithEvent[] = [...eventActivityScores, ...personalScores];
+
+      const canonicalEventIds = EVENT_TYPES.map((type) => type.id);
+      const canonicalScores = allScores.filter((score) => {
+        const eventId = score.testId ?? score.activityId;
+        return canonicalEventIds.includes(eventId);
+      });
+
+      const bestScoresByType: Record<string, number> = {};
+      const bestVerifiedScoresByType: Record<string, number> = {};
+
+      EVENT_TYPES.forEach((type) => {
+        const scoresForType = canonicalScores.filter((s) => (s.testId ?? s.activityId) === type.id);
+        const verifiedScores = scoresForType.filter((s) => s.event || s.verified);
+        const unverifiedScores = scoresForType.filter((s) => !s.event && !s.verified);
+
+        let bestVerified = verifiedScores[0];
+        if (verifiedScores.length > 0) {
+          bestVerified = verifiedScores.reduce((prev, curr) =>
+            curr.calculatedScore > prev.calculatedScore ? curr : prev,
+          );
+        }
+        let bestUnverified = unverifiedScores[0];
+        if (unverifiedScores.length > 0) {
+          bestUnverified = unverifiedScores.reduce((prev, curr) =>
+            curr.calculatedScore > prev.calculatedScore ? curr : prev,
+          );
+        }
+        const best = bestVerified || bestUnverified;
+        if (best) bestScoresByType[type.id] = best.calculatedScore;
+        if (bestVerified) bestVerifiedScoresByType[type.id] = bestVerified.calculatedScore;
+      });
+
+      const total = Object.values(bestScoresByType).reduce((sum, s) => sum + s, 0);
+      const verified = Object.values(bestVerifiedScoresByType).reduce((sum, s) => sum + s, 0);
+      return { total, verified };
+    },
+    enabled: !!user,
+  });
+  const totalScore = allScoresData?.total ?? 0;
+  const verifiedScore = allScoresData?.verified ?? 0;
+
+  // Pending invitations (user-level, kept as local fetch - no matching queryKey)
   useEffect(() => {
     if (user) {
-      fetchTeams();
-      fetchUserScores();
       fetchPendingInvitations();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, isAdmin]);
-
-  // Fetch public teams after user teams are loaded
-  useEffect(() => {
-    if (user && !isAdmin && teams.length >= 0) {
-      fetchPublicTeams();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teams, isAdmin]);
+  }, [user]);
 
   // Admin: Search users for adding to teams
   const handleSearchUsers = async () => {
@@ -194,8 +283,8 @@ export default function TeamsPage() {
         setSearchResults([]);
         setIsAddMemberModalOpen(false);
         setSelectedTeam(null);
-        // Refresh teams to update member counts
-        fetchTeams();
+        // Invalidate teams query to update member counts
+        queryClient.invalidateQueries({ queryKey: queryKeys.teams.all() });
       }
 
       if (response.errors && response.errors.length > 0) {
@@ -229,146 +318,6 @@ export default function TeamsPage() {
     setSelectedUserIds((prev) =>
       prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId],
     );
-  };
-
-  const fetchTeams = async () => {
-    try {
-      const adminCheck = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
-      if (adminCheck) {
-        // For admins, fetch all teams
-        const response = await api.get('/api/teams/all');
-        const allTeams = [...(response.userTeams || []), ...(response.availableTeams || [])];
-
-        // Get member counts for each team
-        const teamsWithCounts = await Promise.all(
-          allTeams.map(async (team: Team) => {
-            try {
-              const teamResponse = await api.get(`/api/teams/${team.id}`);
-              return {
-                ...team,
-                memberCount: teamResponse.members?.length || 0,
-              };
-            } catch {
-              return { ...team, memberCount: 0 };
-            }
-          }),
-        );
-
-        setTeams(teamsWithCounts);
-      } else {
-        // For regular users, fetch only their teams
-        const response = await api.get('/api/teams/user');
-        setTeams(response.teams || []);
-      }
-    } catch (error) {
-      console.error('Error fetching teams:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchPublicTeams = async () => {
-    try {
-      const response = await api.get('/api/teams/public');
-      const allPublicTeams = response.teams || [];
-
-      // Filter out teams that the user is already a member of
-      const userTeamIds = teams.map((team) => team.id);
-      const availablePublicTeams = allPublicTeams.filter(
-        (team: Team) => !userTeamIds.includes(team.id),
-      );
-
-      setPublicTeams(availablePublicTeams);
-    } catch (error) {
-      console.error('Error fetching public teams:', error);
-    } finally {
-      setIsLoadingPublicTeams(false);
-    }
-  };
-
-  const fetchUserScores = async () => {
-    try {
-      // Fetch all scores (both personal and event scores)
-      const allScoresResponse = await api
-        .get('/api/user/all-scores')
-        .catch(() => ({ success: false, data: [] }));
-      const personalScores: Score[] = allScoresResponse.success ? allScoresResponse.data : [];
-
-      // Fetch user's events with scores (like public profile does)
-      const userEventsResponse = await api.get('/api/user/events').catch(() => []);
-      const userEvents: EventWithScores[] = userEventsResponse || [];
-
-      // Flatten event scores into activity scores, attaching event info (like public profile)
-      type ScoreWithEvent = Score & { event?: EventWithScores; testId?: string };
-      const eventActivityScores: ScoreWithEvent[] = [];
-      userEvents.forEach((event: EventWithScores) => {
-        (event.scores || []).forEach((score: ScoreWithEvent) => {
-          eventActivityScores.push({ ...score, event });
-        });
-      });
-
-      // Combine with personal scores
-      const allScores: ScoreWithEvent[] = [...eventActivityScores, ...personalScores];
-
-      // Calculate verified and total scores using the same logic as public profile
-      // Only include canonical event types (all EVENT_TYPES) for overall scoring
-      const canonicalEventIds = EVENT_TYPES.map((type) => type.id);
-      const canonicalScores = allScores.filter((score) => {
-        const eventId = score.testId ?? score.activityId;
-        return canonicalEventIds.includes(eventId);
-      });
-
-      // Calculate best scores for each canonical event type
-      const bestScoresByType: Record<string, number> = {};
-      const bestVerifiedScoresByType: Record<string, number> = {};
-
-      EVENT_TYPES.forEach((type) => {
-        const scoresForType = canonicalScores.filter((s) => (s.testId ?? s.activityId) === type.id);
-
-        // All scores: best of verified or unverified
-        // A score is verified if it's from an event (has event property) OR has verified flag set to true
-        const verifiedScores = scoresForType.filter((s) => s.event || s.verified);
-        const unverifiedScores = scoresForType.filter((s) => !s.event && !s.verified);
-
-        let bestVerified = verifiedScores[0];
-        if (verifiedScores.length > 0) {
-          bestVerified = verifiedScores.reduce((prev, curr) =>
-            curr.calculatedScore > prev.calculatedScore ? curr : prev,
-          );
-        }
-
-        let bestUnverified = unverifiedScores[0];
-        if (unverifiedScores.length > 0) {
-          bestUnverified = unverifiedScores.reduce((prev, curr) =>
-            curr.calculatedScore > prev.calculatedScore ? curr : prev,
-          );
-        }
-
-        const best = bestVerified || bestUnverified;
-        if (best) {
-          bestScoresByType[type.id] = best.calculatedScore;
-        }
-
-        // Only verified scores
-        if (bestVerified) {
-          bestVerifiedScoresByType[type.id] = bestVerified.calculatedScore;
-        }
-      });
-
-      // Calculate totals
-      const total = Object.values(bestScoresByType).reduce((sum, score) => sum + score, 0);
-      const verified = Object.values(bestVerifiedScoresByType).reduce(
-        (sum, score) => sum + score,
-        0,
-      );
-
-      setTotalScore(total);
-      setVerifiedScore(verified);
-    } catch (error) {
-      console.error('Error fetching user scores:', error);
-    } finally {
-      setIsLoadingScores(false);
-    }
   };
 
   // Colors for team card footers (cycling through)
@@ -406,11 +355,11 @@ export default function TeamsPage() {
 
   const respondToInvitation = async (invitationId: string, action: 'accept' | 'decline') => {
     try {
-      const _response = await api.post(`/api/teams/invitations/${invitationId}/respond`, {
+      await api.post(`/api/teams/invitations/${invitationId}/respond`, {
         action,
       });
-      // Refresh both teams and invitations
-      fetchTeams();
+      // Invalidate teams and refresh invitations
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.all() });
       fetchPendingInvitations();
     } catch (error) {
       console.error(`Error ${action}ing invitation:`, error);
@@ -419,17 +368,18 @@ export default function TeamsPage() {
   };
 
   const handleTeamSuccess = () => {
-    // Refresh the data to show the newly created/joined team
-    fetchTeams();
+    // Invalidate queries to show the newly created/joined team
+    queryClient.invalidateQueries({ queryKey: queryKeys.teams.all() });
     if (!isAdmin) {
-      fetchPublicTeams();
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.public() });
     }
   };
 
   const handleJoinPublicTeam = async (teamId: string) => {
     try {
       await api.post(`/api/teams/${teamId}/join`, {});
-      handleTeamSuccess();
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.public() });
     } catch (error) {
       console.error('Error joining team:', error);
       // TODO: Add toast notification for error

@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../lib/api-client';
+import { queryKeys } from '../../../lib/queryKeys';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import WelcomeSection from '@/components/WelcomeSection';
@@ -42,11 +44,7 @@ interface UserStats {
 
 export default function ManageUsers() {
   const { user } = useAuth();
-  const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [stats, setStats] = useState<UserStats | null>(null);
+  const queryClient = useQueryClient();
 
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,29 +60,22 @@ export default function ManageUsers() {
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        // TODO: Replace with actual API endpoint
-        const usersData = await api.get('/api/admin/users');
-        setUsers(usersData.users || []);
-        setStats(usersData.stats || null);
-      } catch (error: unknown) {
-        console.error('Error fetching users:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch users';
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const {
+    data,
+    isLoading,
+    error: queryError,
+  } = useQuery({
+    queryKey: queryKeys.users.all(),
+    queryFn: () => api.get('/api/admin/users'),
+    enabled: !!user,
+  });
 
-    if (user) {
-      fetchUsers();
-    }
-  }, [user]);
+  const users: User[] = data?.users || [];
+  const stats: UserStats | null = data?.stats || null;
+  const error =
+    queryError instanceof Error ? queryError.message : queryError ? 'Failed to fetch users' : '';
 
-  useEffect(() => {
-    // Filter users based on search and filters
+  const filteredUsers = useMemo(() => {
     let filtered = users;
 
     if (searchTerm) {
@@ -107,124 +98,108 @@ export default function ManageUsers() {
       filtered = filtered.filter((user) => user.verificationStatus === verificationFilter);
     }
 
-    setFilteredUsers(filtered);
+    return filtered;
   }, [users, searchTerm, roleFilter, statusFilter, verificationFilter]);
 
-  const handleRoleChange = async (userId: string, newRole: string) => {
-    try {
-      await api.put(`/api/admin/users/${userId}`, { role: newRole });
-      // Update local state
-      setUsers((prev) =>
-        prev.map((user) => (user.id === userId ? { ...user, role: newRole } : user)),
-      );
-    } catch (error: unknown) {
-      console.error('Error updating user role:', error);
-      setError('Failed to update user role');
-    }
+  const verifyMutation = useMutation({
+    mutationFn: ({
+      userId,
+      verificationStatus,
+      verificationNotes,
+    }: {
+      userId: string;
+      verificationStatus: string;
+      verificationNotes?: string;
+    }) => api.put(`/api/admin/users/${userId}/verify`, { verificationStatus, verificationNotes }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.users.all() }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (userId: string) => api.delete(`/api/admin/users/${userId}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.users.all() }),
+  });
+
+  const handleRoleChange = (userId: string, newRole: string) => {
+    api
+      .put(`/api/admin/users/${userId}`, { role: newRole })
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
+      })
+      .catch((err: unknown) => {
+        console.error('Error updating user role:', err);
+      });
   };
 
-  const handleStatusChange = async (userId: string, newStatus: string) => {
-    try {
-      await api.put(`/api/admin/users/${userId}`, { status: newStatus });
-      // Update local state
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.id === userId ? { ...user, status: newStatus as 'ACTIVE' | 'SUSPENDED' } : user,
-        ),
-      );
-    } catch (error: unknown) {
-      console.error('Error updating user status:', error);
-      setError('Failed to update user status');
-    }
+  const handleStatusChange = (userId: string, newStatus: string) => {
+    api
+      .put(`/api/admin/users/${userId}`, { status: newStatus })
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
+      })
+      .catch((err: unknown) => {
+        console.error('Error updating user status:', err);
+      });
   };
 
-  const handleVerificationChange = async (
+  const handleVerificationChange = (
     userId: string,
     verificationStatus: string,
     verificationNotes?: string,
   ) => {
-    try {
-      await api.put(`/api/admin/users/${userId}/verify`, {
-        verificationStatus,
-        verificationNotes,
-      });
-      // Update local state
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.id === userId
-            ? {
-                ...user,
-                verificationStatus: verificationStatus as 'PENDING' | 'VERIFIED' | 'REJECTED',
-                verificationNotes,
-                verifiedAt: new Date(),
-              }
-            : user,
-        ),
-      );
-    } catch (error: unknown) {
-      console.error('Error updating verification status:', error);
-      setError('Failed to update verification status');
-    }
+    verifyMutation.mutate({ userId, verificationStatus, verificationNotes });
   };
 
-  const handleBulkAction = async (action: string) => {
+  const handleBulkAction = (action: string) => {
     if (selectedUsers.length === 0) return;
 
-    try {
-      await api.put('/api/admin/users/bulk', {
+    api
+      .put('/api/admin/users/bulk', {
         userIds: selectedUsers,
         action: action,
+      })
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
+        setSelectedUsers([]);
+      })
+      .catch((err: unknown) => {
+        console.error('Error performing bulk action:', err);
       });
-
-      // Refresh users
-      const usersData = await api.get('/api/admin/users');
-      setUsers(usersData.users || []);
-      setSelectedUsers([]);
-    } catch (error: unknown) {
-      console.error('Error performing bulk action:', error);
-      setError('Failed to perform bulk action');
-    }
   };
 
-  const handleInviteUser = async (e: React.FormEvent) => {
+  const handleInviteUser = (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await api.post('/api/admin/users/invite', {
+    api
+      .post('/api/admin/users/invite', {
         email: inviteEmail,
         role: inviteRole,
+      })
+      .then(() => {
+        setShowInviteModal(false);
+        setInviteEmail('');
+        setInviteRole('COMPETITOR');
+        queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
+      })
+      .catch((err: unknown) => {
+        console.error('Error inviting user:', err);
       });
-      setShowInviteModal(false);
-      setInviteEmail('');
-      setInviteRole('COMPETITOR');
-      // Refresh users
-      const usersData = await api.get('/api/admin/users');
-      setUsers(usersData.users || []);
-    } catch (error: unknown) {
-      console.error('Error inviting user:', error);
-      setError('Failed to invite user');
-    }
   };
 
-  const handleDeleteUser = async () => {
+  const handleDeleteUser = () => {
     if (!userToDelete) return;
 
-    try {
-      await api.delete(`/api/admin/users/${userToDelete.id}`);
-      setShowDeleteModal(false);
-      setUserToDelete(null);
-      // Refresh users
-      const usersData = await api.get('/api/admin/users');
-      setUsers(usersData.users || []);
-      setStats(usersData.stats || null);
-      // Remove from selected users if it was selected
-      setSelectedUsers(selectedUsers.filter((id) => id !== userToDelete.id));
-    } catch (error: unknown) {
-      console.error('Error deleting user:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete user';
-      setError(errorMessage);
-      setShowDeleteModal(false);
-      setUserToDelete(null);
-    }
+    const deletedId = userToDelete.id;
+    deleteMutation.mutate(deletedId, {
+      onSuccess: () => {
+        setShowDeleteModal(false);
+        setUserToDelete(null);
+        setSelectedUsers((prev) => prev.filter((id) => id !== deletedId));
+      },
+      onError: (err: unknown) => {
+        console.error('Error deleting user:', err);
+        setShowDeleteModal(false);
+        setUserToDelete(null);
+      },
+    });
   };
 
   const formatDate = (dateString: unknown) => {

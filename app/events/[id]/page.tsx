@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../lib/api-client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import NotificationToast from '@/components/NotificationToast';
 import { useSSE } from '@/hooks/useSSE';
 import Link from 'next/link';
@@ -50,13 +52,7 @@ interface Participant {
 export default function EventPage() {
   const params = useParams();
   const { user } = useAuth();
-  const [event, setEvent] = useState<Event | null>(null);
-  const [totalScore, setTotalScore] = useState(0);
-  const [verifiedScore, setVerifiedScore] = useState(0);
-  const [isLoadingScores, setIsLoadingScores] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [isJoined, setIsJoined] = useState(false);
+  const queryClient = useQueryClient();
 
   const eventId = params.id as string;
 
@@ -72,6 +68,54 @@ export default function EventPage() {
     type: 'success',
   });
 
+  const {
+    data: event,
+    isLoading,
+    error: eventError,
+  } = useQuery<Event>({
+    queryKey: queryKeys.events.detail(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}`),
+    enabled: !!user && !!eventId,
+  });
+
+  const { data: scoresData, isLoading: isLoadingScores } = useQuery({
+    queryKey: queryKeys.users.scores(),
+    queryFn: () => api.get('/api/user/all-scores'),
+    enabled: !!user,
+  });
+
+  const { data: userEventsData } = useQuery({
+    queryKey: queryKeys.users.events(),
+    queryFn: () => api.get('/api/user/events'),
+    enabled: !!user,
+  });
+
+  const error =
+    eventError instanceof Error
+      ? eventError.message
+      : eventError
+        ? 'Failed to fetch event details'
+        : '';
+
+  const personalScores = scoresData?.success ? scoresData.data : [];
+  const userEvents = userEventsData || [];
+  const { total: totalScore, verifiedTotal: verifiedScore } = computeTotalsFromScores(
+    personalScores,
+    userEvents,
+  );
+
+  const isJoined = !!(
+    user && event?.participants?.some((participant: Participant) => participant.id === user.id)
+  );
+
+  const joinMutation = useMutation({
+    mutationFn: (eventCode: string) => api.post('/api/events/join', { eventCode }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.events() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.detail(eventId) });
+    },
+  });
+
   // Handle SSE events
   useEffect(() => {
     if (lastEvent?.type === 'workout_revealed' && lastEvent.workoutName) {
@@ -81,67 +125,14 @@ export default function EventPage() {
         type: 'success',
       });
     }
-  }, [lastEvent]);
-
-  useEffect(() => {
-    const fetchEventDetails = async () => {
-      try {
-        const eventData = await api.get(`/api/events/${eventId}`);
-        setEvent(eventData);
-
-        // Check if user is already joined
-        if (user && eventData.participants) {
-          const isUserJoined = eventData.participants.some(
-            (participant: Participant) => participant.id === user.id,
-          );
-          setIsJoined(isUserJoined);
-        }
-
-        // Compute verified/total for WelcomeSection (consistent with public profile)
-        try {
-          setIsLoadingScores(true);
-          const allScoresResponse = await api
-            .get('/api/user/all-scores')
-            .catch(() => ({ success: false, data: [] }));
-          const personalScores = allScoresResponse.success ? allScoresResponse.data : [];
-
-          const userEventsResponse = await api.get('/api/user/events').catch(() => []);
-          const userEvents = userEventsResponse || [];
-
-          const { total, verifiedTotal } = computeTotalsFromScores(personalScores, userEvents);
-          setTotalScore(total);
-          setVerifiedScore(verifiedTotal);
-        } finally {
-          setIsLoadingScores(false);
-        }
-      } catch (error: unknown) {
-        console.error('Error fetching event details:', error);
-        const errorMessage =
-          error instanceof Error ? error.message : 'Failed to fetch event details';
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (eventId) {
-      fetchEventDetails();
+    if (lastEvent) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.activities(eventId) });
     }
-  }, [user, eventId]);
+  }, [lastEvent, queryClient, eventId]);
 
   const handleJoinEvent = async () => {
     if (!event || !user) return;
-
-    try {
-      await api.post('/api/events/join', { eventCode: event.code });
-      setIsJoined(true);
-      // Refresh event data to show updated participants
-      const eventData = await api.get(`/api/events/${eventId}`);
-      setEvent(eventData);
-    } catch (error: unknown) {
-      console.error('Error joining event:', error);
-      setError('Failed to join event');
-    }
+    joinMutation.mutate(event.code);
   };
 
   const handleCopyEventCode = async () => {

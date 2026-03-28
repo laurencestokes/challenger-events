@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api-client';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import Link from 'next/link';
 import Image from 'next/image';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -69,56 +70,52 @@ interface UserProfile {
 export default function EventCalculator() {
   const params = useParams();
   const { user } = useAuth();
-  const [event, setEvent] = useState<Event | null>(null);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [competitionVerification, setCompetitionVerification] =
-    useState<CompetitionVerification | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const eventId = params.id as string;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [eventData, activitiesData] = await Promise.all([
-          api.get(`/api/events/${eventId}`),
-          api.get(`/api/events/${eventId}/activities`),
-        ]);
-        setEvent(eventData);
-        setActivities(activitiesData);
+  const {
+    data: event,
+    isLoading: isLoadingEvent,
+    error: eventError,
+  } = useQuery<Event>({
+    queryKey: queryKeys.events.detail(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}`),
+    enabled: !!user && !!eventId,
+  });
 
-        // Fetch user profile and competition verification if user is logged in
-        if (user) {
-          const [profile, verification] = await Promise.all([
-            api.get('/api/user/profile'),
-            api.get(`/api/events/${eventId}/competition-verification`),
-          ]);
-          setUserProfile(profile);
-          // Find this user's verification
-          if (verification && Array.isArray(verification.verifications)) {
-            const myVerification = verification.verifications.find(
-              (v: CompetitionVerification) => v.userId === user.id && v.status === 'VERIFIED',
-            );
-            setCompetitionVerification(myVerification || null);
-          } else {
-            setCompetitionVerification(null);
-          }
-        }
-      } catch (error: unknown) {
-        console.error('Error fetching data:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { data: activitiesData, isLoading: isLoadingActivities } = useQuery<Activity[]>({
+    queryKey: queryKeys.events.activities(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}/activities`),
+    enabled: !!user && !!eventId,
+  });
 
-    if (eventId) {
-      fetchData();
-    }
-  }, [eventId, user]);
+  const { data: userProfile, isLoading: isLoadingProfile } = useQuery<UserProfile>({
+    queryKey: queryKeys.users.profile(),
+    queryFn: () => api.get('/api/user/profile'),
+    enabled: !!user && !!eventId,
+  });
+
+  const { data: verificationData, isLoading: isLoadingVerification } = useQuery<{
+    verifications: CompetitionVerification[];
+  }>({
+    queryKey: queryKeys.events.competitionVerification(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}/competition-verification`),
+    enabled: !!user && !!eventId,
+  });
+
+  const isLoading =
+    isLoadingEvent || isLoadingActivities || isLoadingProfile || isLoadingVerification;
+  const error =
+    eventError instanceof Error ? eventError.message : eventError ? 'Failed to fetch data' : '';
+
+  const activities: Activity[] = Array.isArray(activitiesData) ? activitiesData : [];
+
+  const competitionVerification: CompetitionVerification | null =
+    user && verificationData && Array.isArray(verificationData.verifications)
+      ? verificationData.verifications.find(
+          (v: CompetitionVerification) => v.userId === user.id && v.status === 'VERIFIED',
+        ) || null
+      : null;
 
   const formatDate = (dateString: unknown) => {
     if (!dateString) return 'Not set';

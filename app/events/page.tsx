@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api-client';
+import { queryKeys } from '@/lib/queryKeys';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import WelcomeSection from '@/components/WelcomeSection';
 import { EventCardSkeleton } from '@/components/SkeletonLoaders';
@@ -13,7 +15,6 @@ import { computeTotalsFromScores } from '@/lib/score-totals';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FiMapPin, FiCalendar, FiUsers, FiFilter, FiSearch, FiChevronDown } from 'react-icons/fi';
-import { Score } from '@/lib/firestore';
 
 interface Event {
   id: string;
@@ -31,10 +32,6 @@ interface Event {
   imageUrl?: string;
 }
 
-interface EventWithScores extends Event {
-  scores?: Score[];
-}
-
 interface FilterState {
   scope: string;
   dateRange: string;
@@ -46,12 +43,6 @@ interface FilterState {
 
 export default function EventsPage() {
   const { user } = useAuth();
-  const [events, setEvents] = useState<Event[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [totalScore, setTotalScore] = useState(0);
-  const [verifiedScore, setVerifiedScore] = useState(0);
-  const [isLoadingScores, setIsLoadingScores] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     scope: 'ALL',
@@ -62,60 +53,42 @@ export default function EventsPage() {
     distanceUnit: 'miles',
   });
 
-  useEffect(() => {
-    fetchEvents();
-    if (user?.role === 'COMPETITOR') {
-      fetchScores();
-    }
-  }, [user]);
+  const {
+    data: eventsData,
+    isLoading,
+    error: eventsError,
+  } = useQuery({
+    queryKey: queryKeys.events.available(),
+    queryFn: () => api.get('/api/events/available'),
+    enabled: !!user,
+  });
 
-  const fetchEvents = async () => {
-    try {
-      setIsLoading(true);
-      const response = await api.get('/api/events/available');
-      setEvents(Array.isArray(response) ? response : []);
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch events';
-      setError(errorMessage);
-      setEvents([]); // Set empty array on error
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: scoresData, isLoading: isLoadingScores } = useQuery({
+    queryKey: queryKeys.users.scores(),
+    queryFn: () => api.get('/api/user/all-scores'),
+    enabled: !!user && user.role === 'COMPETITOR',
+  });
 
-  const fetchScores = async () => {
-    try {
-      setIsLoadingScores(true);
+  const { data: userEventsData } = useQuery({
+    queryKey: queryKeys.users.events(),
+    queryFn: () => api.get('/api/user/events'),
+    enabled: !!user && user.role === 'COMPETITOR',
+  });
 
-      // Fetch all scores
-      const allScoresResponse = await api
-        .get('/api/user/all-scores')
-        .catch(() => ({ success: false, data: [] }));
-      const personalScores = allScoresResponse.success ? allScoresResponse.data : [];
+  const events: Event[] = Array.isArray(eventsData) ? eventsData : [];
+  const error =
+    eventsError instanceof Error
+      ? eventsError.message
+      : eventsError
+        ? 'Failed to fetch events'
+        : '';
 
-      // Fetch user's events with scores
-      const userEventsResponse = await api.get('/api/user/events').catch(() => []);
-      const userEvents = userEventsResponse || [];
-
-      // Flatten event scores into activity scores, attaching event info
-      type ScoreWithEvent = Score & { event?: Event; testId?: string };
-      const eventActivityScores: ScoreWithEvent[] = [];
-      (userEvents as EventWithScores[]).forEach((event: EventWithScores) => {
-        (event.scores || []).forEach((score: Score) => {
-          eventActivityScores.push({ ...score, event });
-        });
-      });
-
-      // Use shared helper to compute totals consistently with public profile
-      const { total, verifiedTotal } = computeTotalsFromScores(personalScores, userEvents);
-      setTotalScore(total);
-      setVerifiedScore(verifiedTotal);
-    } catch (error: unknown) {
-      console.error('Error fetching scores:', error);
-    } finally {
-      setIsLoadingScores(false);
-    }
-  };
+  const personalScores = scoresData?.success ? scoresData.data : [];
+  const userEvents = userEventsData || [];
+  const { total: totalScore, verifiedTotal: verifiedScore } = computeTotalsFromScores(
+    personalScores,
+    userEvents,
+  );
 
   const parseFirebaseDate = (date: unknown): Date | null => {
     if (!date) return null;

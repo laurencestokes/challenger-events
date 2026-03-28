@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { HeadToHeadSession, useErgSocket, Competitor } from '@/hooks/useErgSocket';
 import { getEventTypeById } from '@/constants/eventTypes';
@@ -11,8 +12,7 @@ import { animate, createScope, Scope } from 'animejs';
 export default function LiveErgDisplayPage() {
   const params = useParams();
   const sessionId = params.sessionId as string;
-  const [session, setSession] = useState<null | undefined | HeadToHeadSession>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [animationInitialized, setAnimationInitialized] = useState(false);
   const [_competitorsUpdating, setCompetitorsUpdating] = useState(false);
   const [viewMode, setViewMode] = useState<'full' | 'focused'>('full');
@@ -28,45 +28,27 @@ export default function LiveErgDisplayPage() {
   const { isConnected, isReconnecting, reconnectAttempt, competitorData, sessionStatus, error } =
     useErgSocket(sessionId);
 
-  const fetchSession = useCallback(async () => {
-    try {
-      console.log('Fetching session for ID:', sessionId);
+  const { data: session, isLoading: loading } = useQuery<HeadToHeadSession | null>({
+    queryKey: ['erg', 'sessions', sessionId],
+    queryFn: async () => {
       const response = await fetch(`/api/erg/sessions?sessionId=${sessionId}`);
       if (!response.ok) throw new Error('Session not found');
       const data = await response.json();
-      console.log('Session data received:', data);
-      console.log('Updated competitors:', {
-        competitors:
-          data.session?.competitors?.map((c: Competitor) => c.name) ||
-          (data.session?.competitor1 && data.session?.competitor2
-            ? [data.session.competitor1.name, data.session.competitor2.name]
-            : []),
-      });
-      setSession(data.session);
-    } catch (err) {
-      console.error('Error fetching session:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [sessionId]);
-
-  // Initial fetch
-  useEffect(() => {
-    fetchSession();
-  }, [fetchSession]);
+      return data.session ?? null;
+    },
+    enabled: !!sessionId,
+  });
 
   // Handle competitor updates - refetch session when competitors are updated
   useEffect(() => {
-    const handleCompetitorsUpdated = async (data: {
+    const handleCompetitorsUpdated = (data: {
       sessionId: string;
       competitor1: Competitor;
       competitor2: Competitor;
     }) => {
       console.log('Competitors updated, refetching session...', data);
       setCompetitorsUpdating(true);
-      // Refetch session to get updated competitor data
-      await fetchSession();
-      // Clear the updating state after a short delay
+      queryClient.invalidateQueries({ queryKey: ['erg', 'sessions', sessionId] });
       setTimeout(() => setCompetitorsUpdating(false), 2000);
     };
 
@@ -100,7 +82,7 @@ export default function LiveErgDisplayPage() {
       socket.off('connect');
       socket.off('disconnect');
     };
-  }, [fetchSession]);
+  }, [queryClient, sessionId]);
 
   // Initialize animations when session data is loaded
   useEffect(() => {

@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api-client';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { beautifyRawScore } from '@/utils/scoring';
 import NotificationToast from '@/components/NotificationToast';
 import { useSSE } from '@/hooks/useSSE';
@@ -128,12 +130,8 @@ export default function EventLeaderboard() {
   const params = useParams();
   const eventId = params.id as string;
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const [event, setEvent] = useState<Event | null>(null);
-  const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overall' | 'team-overall' | string>('overall');
   const [viewMode, setViewMode] = useState<'individual' | 'team'>('individual');
 
@@ -149,26 +147,38 @@ export default function EventLeaderboard() {
     type: 'success',
   });
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [eventData, leaderboardData, activitiesData] = await Promise.all([
-        api.get(`/api/events/${eventId}`),
-        api.get(`/api/events/${eventId}/leaderboard`),
-        api.get(`/api/events/${eventId}/activities`),
-      ]);
-      setEvent(eventData);
-      setLeaderboardData(leaderboardData);
-      setActivities(activitiesData);
-    } catch (error: unknown) {
-      console.error('Error fetching data:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [eventId]);
+  const {
+    data: event,
+    isLoading: isLoadingEvent,
+    error: eventError,
+  } = useQuery<Event>({
+    queryKey: queryKeys.events.detail(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}`),
+    enabled: !!eventId,
+  });
 
-  // Handle SSE events
+  const {
+    data: leaderboardData,
+    isLoading: isLoadingLeaderboard,
+    error: leaderboardError,
+  } = useQuery<LeaderboardData>({
+    queryKey: queryKeys.events.leaderboard(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}/leaderboard`),
+    enabled: !!eventId,
+  });
+
+  const { data: activities = [], isLoading: isLoadingActivities } = useQuery<Activity[]>({
+    queryKey: queryKeys.events.activities(eventId),
+    queryFn: () => api.get(`/api/events/${eventId}/activities`),
+    enabled: !!eventId,
+  });
+
+  const isLoading = isLoadingEvent || isLoadingLeaderboard || isLoadingActivities;
+  const errorObj = eventError || leaderboardError;
+  const error =
+    errorObj instanceof Error ? errorObj.message : errorObj ? 'Failed to fetch data' : '';
+
+  // Handle SSE events - invalidate leaderboard on any SSE event
   useEffect(() => {
     if (lastEvent?.type === 'workout_revealed' && lastEvent.workoutName) {
       setNotification({
@@ -176,15 +186,11 @@ export default function EventLeaderboard() {
         message: `🎉 New workout revealed: ${lastEvent.workoutName}!`,
         type: 'success',
       });
-
-      // Refresh activities to show the newly revealed workout
-      fetchData();
     }
-  }, [lastEvent, fetchData]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (lastEvent) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.leaderboard(eventId) });
+    }
+  }, [lastEvent, queryClient, eventId]);
 
   const formatRawValue = (
     rawValue: number,

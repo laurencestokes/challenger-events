@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -9,6 +10,7 @@ import WelcomeSection from '@/components/WelcomeSection';
 import Button from '@/components/ui/Button';
 import { HeadToHeadSession } from '@/hooks/useErgSocket';
 import { EVENT_TYPES } from '@/constants/eventTypes';
+import { queryKeys } from '../../../../lib/queryKeys';
 
 interface Event {
   id: string;
@@ -23,56 +25,54 @@ interface Event {
 export default function HeadToHeadSetupPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
+  const queryClient = useQueryClient();
   const [selectedEventId, setSelectedEventId] = useState('');
   const [selectedEventType, setSelectedEventType] = useState('');
   const [error, setError] = useState('');
   const [showDevNotice, setShowDevNotice] = useState(true);
 
-  const fetchEvents = useCallback(async () => {
-    try {
-      if (!user) {
-        console.log('No user available yet, skipping fetch');
-        setLoading(false);
-        return;
-      }
-
+  const { data: eventsData, isLoading: loading } = useQuery({
+    queryKey: queryKeys.events.all(),
+    queryFn: async () => {
       const response = await fetch('/api/events', {
-        headers: {
-          Authorization: `Bearer ${user.uid || user.id}`,
-        },
+        headers: { Authorization: `Bearer ${user?.uid || user?.id}` },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch events');
       }
+      return response.json();
+    },
+    enabled: !!user && !authLoading,
+  });
 
-      const data = await response.json();
-      setEvents(data || []);
-    } catch (err) {
-      console.error('Error fetching events:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load events');
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+  const events: Event[] = eventsData || [];
 
-  useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'ADMIN')) {
-      router.push('/');
-    }
-  }, [user, authLoading, router]);
+  const createSessionMutation = useMutation({
+    mutationFn: async (sessionData: Omit<HeadToHeadSession, 'id'>) => {
+      const response = await fetch('/api/erg/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sessionData),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to create session');
+      }
+      return response.json();
+    },
+    onSuccess: ({ session }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.erg.sessions() });
+      router.push(`/admin/erg/head-to-head/${session.id}/control`);
+    },
+    onError: (err: unknown) => {
+      setError(err instanceof Error ? err.message : 'Failed to create session');
+    },
+  });
 
-  useEffect(() => {
-    if (user && !authLoading) {
-      fetchEvents();
-    }
-  }, [user, authLoading, fetchEvents]);
+  const creating = createSessionMutation.isPending;
 
-  const createSession = async () => {
+  const createSession = () => {
     if (!selectedEventId) {
       setError('Please select an event');
       return;
@@ -83,37 +83,15 @@ export default function HeadToHeadSetupPage() {
       return;
     }
 
-    setCreating(true);
     setError('');
 
-    try {
-      const sessionData: Omit<HeadToHeadSession, 'id'> = {
-        competitors: [], // Empty competitors array - will be managed in control panel
-        eventId: selectedEventId,
-        eventType: selectedEventType,
-      };
+    const sessionData: Omit<HeadToHeadSession, 'id'> = {
+      competitors: [], // Empty competitors array - will be managed in control panel
+      eventId: selectedEventId,
+      eventType: selectedEventType,
+    };
 
-      const response = await fetch('/api/erg/sessions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sessionData),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to create session');
-      }
-
-      const { session } = await response.json();
-
-      // Redirect to the control page for this session
-      router.push(`/admin/erg/head-to-head/${session.id}/control`);
-    } catch (err) {
-      console.error('Error creating session:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create session');
-    } finally {
-      setCreating(false);
-    }
+    createSessionMutation.mutate(sessionData);
   };
 
   if (authLoading || loading) {

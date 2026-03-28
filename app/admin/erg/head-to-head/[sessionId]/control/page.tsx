@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,8 +17,7 @@ export default function SessionControlPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const sessionId = params.sessionId as string;
-  const [session, setSession] = useState<HeadToHeadSession | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [error, setError] = useState('');
   const [showDevNotice, setShowDevNotice] = useState(true);
 
@@ -33,20 +33,17 @@ export default function SessionControlPage() {
     error: socketError,
   } = useErgSocket(sessionId);
 
-  // State for updating competitors
-  const [users, setUsers] = useState<
-    Array<{
-      id: string;
-      name: string;
-      email: string;
-      bodyweight?: number;
-      dateOfBirth?: Date | string | { seconds: number };
-      sex?: string;
-      status?: string;
-      role?: string;
-    }>
-  >([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
+  type UserEntry = {
+    id: string;
+    name: string;
+    email: string;
+    bodyweight?: number;
+    dateOfBirth?: Date | string | { seconds: number };
+    sex?: string;
+    status?: string;
+    role?: string;
+  };
+
   type ManualCompetitor = {
     name: string;
     age: number;
@@ -64,13 +61,57 @@ export default function SessionControlPage() {
   const [manualWeight, setManualWeight] = useState<number | ''>('');
   const [updatingCompetitors, setUpdatingCompetitors] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState('');
-  const [events, setEvents] = useState<
-    Array<{
-      id: string;
-      name: string;
-      status: string;
-    }>
-  >([]);
+
+  const { data: sessionData, isLoading: loading } = useQuery<HeadToHeadSession | null>({
+    queryKey: ['erg', 'sessions', sessionId],
+    queryFn: async () => {
+      const response = await fetch(`/api/erg/sessions?sessionId=${sessionId}`);
+      if (!response.ok) throw new Error('Session not found');
+      const data = await response.json();
+      return data.session ?? null;
+    },
+    enabled: !!sessionId,
+  });
+  const session = sessionData ?? null;
+
+  const { data: eventsData } = useQuery<Array<{ id: string; name: string; status: string }>>({
+    queryKey: ['events'],
+    queryFn: async () => {
+      const response = await fetch('/api/events', {
+        headers: { Authorization: `Bearer ${user?.uid || user?.id}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch events');
+      return response.json();
+    },
+    enabled: !!user,
+  });
+  const events = eventsData || [];
+
+  const { data: usersData, isLoading: loadingUsers } = useQuery<UserEntry[]>({
+    queryKey: selectedEventId ? ['events', selectedEventId, 'participants'] : ['admin', 'users'],
+    queryFn: async () => {
+      if (selectedEventId) {
+        const response = await fetch(`/api/events/${selectedEventId}/participants`, {
+          headers: { Authorization: `Bearer ${user?.uid || user?.id}` },
+        });
+        if (!response.ok) throw new Error('Failed to fetch participants');
+        const data = await response.json();
+        return data.participants || [];
+      } else {
+        const response = await fetch('/api/admin/users', {
+          headers: { Authorization: `Bearer ${user?.uid || user?.id}` },
+        });
+        if (!response.ok) throw new Error('Failed to fetch users');
+        const data = await response.json();
+        return (data.users || []).filter(
+          (u: UserEntry) =>
+            u.status === 'ACTIVE' && (u.role === 'COMPETITOR' || u.role === 'ADMIN'),
+        );
+      }
+    },
+    enabled: !!user,
+  });
+  const users = usersData || [];
 
   const {
     isRunning: isMockRunning,
@@ -92,42 +133,26 @@ export default function SessionControlPage() {
   const sessionStartedRef = useRef(false);
   const [_sessionManuallyStopped, setSessionManuallyStopped] = useState(false);
 
-  const fetchSession = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/erg/sessions?sessionId=${sessionId}`);
-      if (!response.ok) throw new Error('Session not found');
-      const data = await response.json();
-      console.log('Fetched session data:', data.session);
-      console.log('Session eventId:', data.session?.eventId);
-      console.log('Session competitors:', data.session?.competitors);
-      console.log('Session competitor1:', data.session?.competitor1);
-      console.log('Session competitor2:', data.session?.competitor2);
-      setSession(data.session);
-
-      // Start the session (notify Python client) only once
-      if (data.session && !sessionStartedRef.current) {
-        sessionStartedRef.current = true;
-        console.log('About to start session with data:', data.session);
-        console.log('Session competitors before start:', data.session.competitors);
-        startSession(data.session);
-      }
-    } catch (err) {
-      console.error('Error fetching session:', err);
-      setError('Failed to load session');
-    } finally {
-      setLoading(false);
-    }
-  }, [sessionId, startSession]);
-
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'ADMIN')) {
       router.push('/');
     }
   }, [user, authLoading, router]);
 
+  // Start the session (notify Python client) only once when session data loads
   useEffect(() => {
-    fetchSession();
-  }, [sessionId, fetchSession]);
+    if (session && !sessionStartedRef.current) {
+      sessionStartedRef.current = true;
+      startSession(session);
+    }
+  }, [session, startSession]);
+
+  // Set selectedEventId from session when it loads
+  useEffect(() => {
+    if (session?.eventId && !selectedEventId) {
+      setSelectedEventId(session.eventId);
+    }
+  }, [session?.eventId]);
 
   // Auto-stop mock data when session ends
   useEffect(() => {
@@ -146,83 +171,6 @@ export default function SessionControlPage() {
       }
     };
   }, [isMockRunning, stopMockData]);
-
-  // Fetch events list
-  useEffect(() => {
-    const fetchEvents = async () => {
-      if (!user) return;
-
-      try {
-        const response = await fetch('/api/events', {
-          headers: {
-            Authorization: `Bearer ${user.uid || user.id}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setEvents(data || []);
-          // If session has an eventId, set it as selected
-          if (session?.eventId) {
-            setSelectedEventId(session.eventId);
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching events:', err);
-      }
-    };
-
-    fetchEvents();
-  }, [user, session?.eventId]);
-
-  // Fetch participants - either from selected event or all users
-  useEffect(() => {
-    const fetchParticipants = async () => {
-      if (!user) return;
-
-      setLoadingUsers(true);
-      try {
-        let response;
-
-        if (selectedEventId) {
-          // Fetch participants from selected event
-          response = await fetch(`/api/events/${selectedEventId}/participants`, {
-            headers: {
-              Authorization: `Bearer ${user.uid || user.id}`,
-            },
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            setUsers(data.participants || []);
-          }
-        } else {
-          // Fetch all users (admin only)
-          response = await fetch('/api/admin/users', {
-            headers: {
-              Authorization: `Bearer ${user.uid || user.id}`,
-            },
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            // Filter to only active competitors
-            const activeCompetitors = (data.users || []).filter(
-              (u: { status?: string; role?: string }) =>
-                u.status === 'ACTIVE' && (u.role === 'COMPETITOR' || u.role === 'ADMIN'),
-            );
-            setUsers(activeCompetitors);
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching participants:', err);
-      } finally {
-        setLoadingUsers(false);
-      }
-    };
-
-    fetchParticipants();
-  }, [selectedEventId, user]);
 
   const calculateAge = (dateOfBirth: Date | string | { seconds: number }): number => {
     let dob: Date;
@@ -325,15 +273,8 @@ export default function SessionControlPage() {
       console.log('Calling updateCompetitors with:', { competitors });
       updateCompetitors(competitors);
 
-      // Update local session state
-      if (session) {
-        const updatedSession = {
-          ...session,
-          competitors,
-        };
-        console.log('Updated session with new competitors:', updatedSession);
-        setSession(updatedSession);
-      }
+      // Invalidate session query to reflect new competitors
+      queryClient.invalidateQueries({ queryKey: ['erg', 'sessions', sessionId] });
 
       // Reset selections
       setNewCompetitors([]);

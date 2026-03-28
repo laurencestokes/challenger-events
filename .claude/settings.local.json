@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"^/c/Users/laure/Repos/challenger-events/[^/]+$\")",
+      "Bash(ls -la /c/Users/laure/Repos/challenger-events/*.js)",
+      "Bash(npx tsc:*)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Bash(npm run:*)",
+      "Bash(npm test:*)"
+    ]
+  }
+}

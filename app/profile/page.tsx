@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { api, getUserScores } from '../../lib/api-client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import WelcomeSection from '@/components/WelcomeSection';
 import { computeTotalsFromScores } from '@/lib/score-totals';
 import { convertFirestoreTimestamp, calculateAgeFromDateOfBirth } from '../../lib/utils';
@@ -113,12 +115,27 @@ type ProfileFormType = z.infer<typeof ProfileSchema>;
 
 // Quick Score Submission Form Component
 function QuickScoreSubmissionForm({ onScoreAdded }: { onScoreAdded: () => void }) {
+  const queryClient = useQueryClient();
   const [activityId, setActivityId] = useState('');
   const [rawValue, setRawValue] = useState('');
   const [reps, setReps] = useState('');
   const [notes, setNotes] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
+
+  const submitScoreMutation = useMutation({
+    mutationFn: async (payload: {
+      activityId: string;
+      rawValue: number;
+      reps?: number;
+      notes: string;
+    }) => {
+      return api.post('/api/user/scores', payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.scores() });
+      onScoreAdded();
+    },
+  });
 
   const selectedActivity = EVENT_TYPES.find((a) => a.id === activityId);
 
@@ -141,42 +158,39 @@ function QuickScoreSubmissionForm({ onScoreAdded }: { onScoreAdded: () => void }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsSubmitting(true);
+    setFormError('');
 
-    try {
-      if (!activityId || !rawValue) {
-        setError('Please select a test and enter a value.');
-        setIsSubmitting(false);
+    if (!activityId || !rawValue) {
+      setFormError('Please select a test and enter a value.');
+      return;
+    }
+
+    // Validate reps if the activity supports them
+    if (selectedActivity?.supportsReps && reps) {
+      const repsNum = Number(reps);
+      if (
+        isNaN(repsNum) ||
+        repsNum < (selectedActivity.minReps || 1) ||
+        repsNum > (selectedActivity.maxReps || 10)
+      ) {
+        setFormError(
+          `Reps must be between ${selectedActivity.minReps || 1} and ${selectedActivity.maxReps || 10}`,
+        );
         return;
       }
+    }
 
-      // Validate reps if the activity supports them
-      if (selectedActivity?.supportsReps && reps) {
-        const repsNum = Number(reps);
-        if (
-          isNaN(repsNum) ||
-          repsNum < (selectedActivity.minReps || 1) ||
-          repsNum > (selectedActivity.maxReps || 10)
-        ) {
-          setError(
-            `Reps must be between ${selectedActivity.minReps || 1} and ${selectedActivity.maxReps || 10}`,
-          );
-          setIsSubmitting(false);
-          return;
-        }
-      }
+    // Parse the score value based on input type
+    let parsedRawValue: number;
+    if (isTimeInput()) {
+      const { parseTimeWithMilliseconds } = await import('@/utils/scoring');
+      parsedRawValue = parseTimeWithMilliseconds(rawValue);
+    } else {
+      parsedRawValue = Number(rawValue);
+    }
 
-      // Parse the score value based on input type
-      let parsedRawValue: number;
-      if (isTimeInput()) {
-        const { parseTimeWithMilliseconds } = await import('@/utils/scoring');
-        parsedRawValue = parseTimeWithMilliseconds(rawValue);
-      } else {
-        parsedRawValue = Number(rawValue);
-      }
-
-      await api.post('/api/user/scores', {
+    try {
+      await submitScoreMutation.mutateAsync({
         activityId,
         rawValue: parsedRawValue,
         reps: selectedActivity?.supportsReps && reps ? Number(reps) : undefined,
@@ -188,20 +202,12 @@ function QuickScoreSubmissionForm({ onScoreAdded }: { onScoreAdded: () => void }
       setRawValue('');
       setReps('');
       setNotes('');
-
-      // Call the callback to refresh scores
-      onScoreAdded();
-
-      // Show success message (you could add a toast notification here)
-      setError(''); // Clear any previous errors
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(err.message || 'Failed to add score');
+        setFormError(err.message || 'Failed to add score');
       } else {
-        setError('Failed to add score');
+        setFormError('Failed to add score');
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -275,19 +281,19 @@ function QuickScoreSubmissionForm({ onScoreAdded }: { onScoreAdded: () => void }
         />
       </div>
 
-      {error && (
+      {formError && (
         <div className="text-red-400 text-sm bg-red-900/20 border border-red-700/50 rounded p-3">
-          {error}
+          {formError}
         </div>
       )}
 
       <div className="flex justify-end">
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={submitScoreMutation.isPending}
           className="px-6 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50 flex items-center"
         >
-          {isSubmitting ? (
+          {submitScoreMutation.isPending ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
               Submitting...
@@ -324,13 +330,32 @@ export default function Profile() {
 
   const [eventScores, setEventScores] = useState<EventWithScores[]>([]); // event objects with .scores
   const [personalScores, setPersonalScores] = useState<Score[]>([]);
-  const [allScores, setAllScores] = useState<EnrichedScore[]>([]); // All scores from getUserScores
-  const [teams, setTeams] = useState<Team[]>([]);
 
   // Loading states for different sections
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isLoadingScores, setIsLoadingScores] = useState(true);
-  const [isLoadingTeams, setIsLoadingTeams] = useState(true);
+
+  // TanStack Query for all scores (getUserScores)
+  const { data: allScoresData } = useQuery({
+    queryKey: queryKeys.users.scores(),
+    queryFn: async () => {
+      const response = await getUserScores();
+      return response.success ? response.data || [] : [];
+    },
+    enabled: !!user,
+  });
+  const allScores: EnrichedScore[] = allScoresData ?? [];
+
+  // TanStack Query for teams
+  const { data: teamsData, isLoading: isLoadingTeams } = useQuery({
+    queryKey: queryKeys.teams.all(),
+    queryFn: async () => {
+      const response = await api.get('/api/teams/user');
+      return response.teams || [];
+    },
+    enabled: !!user,
+  });
+  const teams: Team[] = teamsData ?? [];
 
   // State for public profile stat toggles
   const [showAge, setShowAge] = useState<boolean>(false);
@@ -368,12 +393,6 @@ export default function Profile() {
         // Fetch personal scores
         const personalScoresData = await api.get('/api/user/scores');
         setPersonalScores(personalScoresData);
-
-        // Fetch all scores for the latest scores section
-        const allScoresResponse = await getUserScores();
-        if (allScoresResponse.success) {
-          setAllScores(allScoresResponse.data || []);
-        }
       } catch (error: unknown) {
         console.error('Error fetching scores:', error);
       } finally {
@@ -381,21 +400,9 @@ export default function Profile() {
       }
     };
 
-    const fetchTeams = async () => {
-      try {
-        const teamsResponse = await api.get('/api/teams/user');
-        setTeams(teamsResponse.teams || []);
-      } catch (error: unknown) {
-        console.error('Error fetching teams:', error);
-      } finally {
-        setIsLoadingTeams(false);
-      }
-    };
-
     if (user) {
       fetchProfile();
       fetchScores();
-      fetchTeams();
     }
   }, [user]);
 
@@ -1160,17 +1167,13 @@ export default function Profile() {
                   <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
                     <QuickScoreSubmissionForm
                       onScoreAdded={() => {
-                        // Refresh all score data when a new score is added
+                        // Refresh event/personal score data when a new score is added
+                        // (allScores via queryKeys.users.scores() is invalidated by the mutation)
                         // Add a small delay to ensure Firestore write has propagated
                         setTimeout(() => {
                           Promise.all([
                             api.get('/api/user/scores').then(setPersonalScores),
                             api.get('/api/user/events').then(setEventScores),
-                            getUserScores().then((response) => {
-                              if (response.success) {
-                                setAllScores(response.data || []);
-                              }
-                            }),
                           ]).catch(() => {});
                         }, 500);
                       }}

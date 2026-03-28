@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api-client';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import WelcomeSection from '@/components/WelcomeSection';
 
 export default function CreateEvent() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
   const [error, setError] = useState('');
 
   // Form state
@@ -32,36 +34,42 @@ export default function CreateEvent() {
   // Event status
   const [status, setStatus] = useState<'DRAFT' | 'ACTIVE'>('ACTIVE');
 
+  const createEventMutation = useMutation({
+    mutationFn: (eventData: object) => api.post('/api/events', eventData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.available() });
+      router.push('/admin/events');
+    },
+    onError: (err: unknown) => {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create event';
+      setError(errorMessage);
+    },
+  });
+
+  const isLoading = createEventMutation.isPending;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
 
-    try {
-      const eventData = {
-        name,
-        description: description || undefined,
-        startDate: startDate ? new Date(startDate).toISOString() : undefined,
-        endDate: endDate ? new Date(endDate).toISOString() : undefined,
-        isTeamEvent,
-        teamScoringMethod: isTeamEvent ? teamScoringMethod : undefined,
-        maxTeamSize: isTeamEvent ? maxTeamSize : undefined,
-        scope,
-        organizationId: scope === 'ORGANIZATION' ? organizationId : undefined,
-        gymId: scope === 'GYM' ? gymId : undefined,
-        country,
-        postcode: postcode || undefined,
-        status,
-      };
+    const eventData = {
+      name,
+      description: description || undefined,
+      startDate: startDate ? new Date(startDate).toISOString() : undefined,
+      endDate: endDate ? new Date(endDate).toISOString() : undefined,
+      isTeamEvent,
+      teamScoringMethod: isTeamEvent ? teamScoringMethod : undefined,
+      maxTeamSize: isTeamEvent ? maxTeamSize : undefined,
+      scope,
+      organizationId: scope === 'ORGANIZATION' ? organizationId : undefined,
+      gymId: scope === 'GYM' ? gymId : undefined,
+      country,
+      postcode: postcode || undefined,
+      status,
+    };
 
-      await api.post('/api/events', eventData);
-      router.push('/admin/events');
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create event';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
+    createEventMutation.mutate(eventData);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
