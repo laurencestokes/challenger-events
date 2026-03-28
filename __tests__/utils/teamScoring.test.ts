@@ -11,6 +11,8 @@ const makeScore = (
   verified: true,
   notes: '',
   teamId: overrides.teamId ?? null,
+  submittedAt: new Date(),
+  updatedAt: new Date(),
   ...overrides,
 });
 

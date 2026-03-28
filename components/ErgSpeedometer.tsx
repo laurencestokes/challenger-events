@@ -173,13 +173,14 @@ export default function ErgSpeedometer({
     return `${minutes}:${secondsStr}`;
   };
 
-  // Initialize progress bar width on mount
+  // Initialize progress bar width on mount (intentionally only runs once)
   useEffect(() => {
     if (progressBarRef.current) {
       const initialWidth = (score / 1000) * 100;
       progressBarRef.current.style.width = `${initialWidth}%`;
       previousScore.current = score;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Animate progress bar width when score changes

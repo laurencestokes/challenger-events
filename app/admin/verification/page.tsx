@@ -53,7 +53,7 @@ export default function VerificationPage() {
     enabled: !!user,
   });
 
-  const users: User[] = data?.users || [];
+  const users: User[] = useMemo(() => data?.users || [], [data?.users]);
   const error =
     queryError instanceof Error ? queryError.message : queryError ? 'Failed to fetch users' : '';
 

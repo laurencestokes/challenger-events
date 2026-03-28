@@ -70,7 +70,7 @@ export default function ManageUsers() {
     enabled: !!user,
   });
 
-  const users: User[] = data?.users || [];
+  const users: User[] = useMemo(() => data?.users || [], [data?.users]);
   const stats: UserStats | null = data?.stats || null;
   const error =
     queryError instanceof Error ? queryError.message : queryError ? 'Failed to fetch users' : '';

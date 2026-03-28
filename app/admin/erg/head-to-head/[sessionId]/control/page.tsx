@@ -152,7 +152,7 @@ export default function SessionControlPage() {
     if (session?.eventId && !selectedEventId) {
       setSelectedEventId(session.eventId);
     }
-  }, [session?.eventId]);
+  }, [session?.eventId, selectedEventId]);
 
   // Auto-stop mock data when session ends
   useEffect(() => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@contexts/AuthContext';
 import { api } from '@lib/api-client';
@@ -75,7 +75,10 @@ export default function EventsPage() {
     enabled: !!user && user.role === 'COMPETITOR',
   });
 
-  const events: Event[] = Array.isArray(eventsData) ? eventsData : [];
+  const events: Event[] = useMemo(
+    () => (Array.isArray(eventsData) ? eventsData : []),
+    [eventsData],
+  );
   const error =
     eventsError instanceof Error
       ? eventsError.message
