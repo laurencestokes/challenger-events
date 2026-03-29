@@ -1,521 +1,252 @@
-# 🏆 Challenger Events
+# Challenger Events
 
-A real-time fitness event management system that allows admins to create events and input scores for competitors, while competitors can view live leaderboards.
+A real-time fitness competition platform where admins create events with scored activities, competitors join via event codes and submit scores, and leaderboards update live.
 
 [![CI](https://github.com/challengerco/challenger-events/actions/workflows/ci.yml/badge.svg)](https://github.com/challengerco/challenger-events/actions/workflows/ci.yml)
 
 ![Challenger Logo](./challenger-logo.png)
 
+## Table of Contents
 
-# Table of Contents
+- [Quick Start](#quick-start)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Scripts](#scripts)
+- [Environment Variables](#environment-variables)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
 
-1. [Quick start guide](#-quick-start-guide)
-   1. [Prerequisites](#prerequisites)
-   2. [Installing](#installing)
-   3. [Environment Setup](#environment-setup)
-   4. [Firebase Setup](#firebase-setup)
-   5. [Running the Application](#running-the-application)
-2. [Features](#-features)
-3. [Architecture](#-architecture)
-4. [API Reference](#-api-reference)
-5. [Usage Examples](#-usage-examples)
-6. [Development](#-development)
-7. [Deployment](#-deployment)
-8. [Testing](#-testing)
-9. [Contributing](#-contributing)
-
-## Challenger Events Management System
-
-This is a comprehensive, real-time fitness event management system built with Next.js and Firebase. It provides a complete solution for creating, managing, and scoring fitness competitions with live leaderboards and role-based access control.
-
-The system supports:
-
-- **Firebase Authentication**: Email/password with email verification
-- **Role-based Access Control**: Super Admin, Admin, Competitor, and Viewer roles
-- **Event Management**: Create events with unique codes and QR codes
-- **Real-time Leaderboards**: Live score updates using WebSockets
-- **Mobile Responsive**: Works seamlessly on all devices
-- **Dark Mode Support**: Built-in theme switching
-
-## Quick Example:
-
-```typescript
-// Create a new event
-const event = {
-  name: "Powerlifting Championship",
-  code: "PL2024",
-  activities: ["Squat", "Bench Press", "Deadlift"],
-  startDate: new Date(),
-  endDate: new Date()
-};
-
-// Join an event
-const joinEvent = async (eventCode: string) => {
-  const response = await fetch('/api/events/join', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ eventCode })
-  });
-  return response.json();
-};
-
-// Submit a score (admin only)
-const submitScore = async (eventId: string, competitorId: string, activity: string, score: number) => {
-  const response = await fetch('/api/scores', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ eventId, competitorId, activity, score })
-  });
-  return response.json();
-};
-```
-
-## 🚀 Quick start guide
+## Quick Start
 
 ### Prerequisites
 
 - Node.js 18+
-- Firebase project
-- Email provider (Resend, Gmail, etc.)
+- A Firebase project with Firestore, Authentication (Email/Password), and Storage enabled
+- A [Resend](https://resend.com) API key for transactional email
 
-### Installing
+### Setup
 
 ```bash
 git clone <your-repo-url>
 cd challenger-events
 npm install
+cp ENV_TEMPLATE.txt .env.local
+# Fill in your Firebase and Resend credentials in .env.local
 ```
 
-### Environment Setup
-
-1. **Copy the environment template**
-   ```bash
-   cp ENV_TEMPLATE.txt .env
-   ```
-
-2. **Edit the `.env` file** with your configuration:
-   ```env
-   # Firebase Configuration (Client)
-   NEXT_PUBLIC_FIREBASE_API_KEY="your-firebase-api-key"
-   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="your-project.firebaseapp.com"
-   NEXT_PUBLIC_FIREBASE_PROJECT_ID="your-project-id"
-   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="your-project.appspot.com"
-   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="123456789"
-   NEXT_PUBLIC_FIREBASE_APP_ID="your-app-id"
-   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="G-XXXXXXXXXX"
-
-   # Firebase Admin (Server)
-   FIREBASE_PROJECT_ID="your-project-id"
-   FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com"
-   FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour private key here\n-----END PRIVATE KEY-----\n"
-
-   # Email Provider (Resend)
-   RESEND_API_KEY="your-resend-api-key"
-
-   # Socket.io (for real-time features)
-   SOCKET_SECRET="your-socket-secret"
-   ```
-
-### Firebase Setup
-
-1. **Create a Firebase project** at [Firebase Console](https://console.firebase.google.com/)
-2. **Enable Authentication** (Email/Password)
-3. **Enable Firestore Database**
-4. **Get your Firebase config**:
-   - Go to Project Settings → Your Apps
-   - Add a web app if you haven't already
-   - Copy the config object to your `.env` file
-5. **Create a service account**:
-   - Go to Project Settings → Service Accounts
-   - Generate new private key
-   - Download the JSON file and copy values to `.env`
-
-### Running the Application
+### Run
 
 ```bash
-npm run dev
+npm run dev          # Custom server with Socket.io (recommended)
+npm run dev:next     # Next.js dev mode only (no real-time)
 ```
 
-Navigate to [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000).
 
-## ✨ Features
+## Features
 
----
+### Roles & Auth
 
-### Authentication & Authorization
+- Firebase email/password authentication with email verification
+- Four roles: **Super Admin**, **Admin**, **Competitor**, **Viewer**
+- Protected routes with role-based access control
 
-- **Firebase Authentication**: Email/password with email verification
-- **Role-based Access**: Super Admin, Admin, Competitor, Viewer roles
-- **Email Verification**: Required for first-time users
-- **Protected Routes**: Automatic redirection based on user role
+### Events & Scoring
 
-### Event Management
+- Admins create events with a unique 6-character join code and optional QR code
+- Events contain **activities** (e.g. Back Squat, 500m Row, 4km Bike)
+- Each activity uses a **scoring system** (powered by `@challengerco/challenger-data`) that normalises raw values (kg, seconds, metres) into comparable scores
+- Competitors join events by code and submit personal scores via their profile
+- Admins can submit scores on behalf of competitors, manage weigh-ins, and verify competition data
 
-- **Create Events**: Admins can create events with unique codes
-- **QR Code Generation**: Automatic QR codes for easy event joining
-- **Activity Management**: Add multiple activities to events
-- **Event Codes**: Unique codes for event identification
+### Teams
 
-### Real-time Features
+- Create teams, invite members by code, assign teams to events
+- Team scoring supports SUM, AVERAGE, and BEST aggregation methods
+- Team leaderboards alongside individual leaderboards
 
-- **Live Leaderboards**: Real-time score updates using Socket.io
-- **Live Notifications**: Instant updates for score changes
-- **WebSocket Integration**: Efficient real-time communication
+### Real-time
 
-### User Experience
+- Live leaderboard updates via Socket.io (custom `server.js` runs alongside Next.js)
+- Server-Sent Events (SSE) as an alternative transport for workout reveals and score updates
+- Live erg (rowing machine) competitions: head-to-head and team modes with real-time metrics
 
-- **Mobile Responsive**: Works seamlessly on all devices
-- **Dark Mode**: Built-in theme switching
-- **Loading States**: Smooth loading experiences
-- **Error Handling**: Comprehensive error handling and user feedback
+### UI
 
-## 🏗️ Architecture
+- Mobile-responsive with Tailwind CSS
+- Dark mode via `next-themes`
+- Orbitron display font for headings
+- Score calculator, performance graphs, achievement badges, social media image generator
 
----
+## Architecture
 
 ### Tech Stack
 
-- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes
-- **Database**: Firebase Firestore (NoSQL)
-- **Authentication**: Firebase Authentication
-- **Real-time**: Socket.io
-- **Email**: Resend (or any SMTP provider)
-- **State Management**: React Context API
-- **Form Handling**: React Hook Form with Zod validation
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 14 (App Router) |
+| Language | TypeScript |
+| Database | Firebase Firestore (NoSQL) |
+| Auth | Firebase Authentication |
+| Storage | Firebase Storage |
+| Real-time | Socket.io + SSE |
+| Styling | Tailwind CSS |
+| Data Fetching | TanStack Query v5 |
+| Forms | React Hook Form + Zod validation (profile page) |
+| Email | Resend |
+| Scoring | `@challengerco/challenger-data` |
 
-### Database Schema (Firestore Collections)
+### Data Flow
 
-- **users**: User profiles and role management
-- **events**: Competition events with unique codes
-- **activities**: Individual exercises/workouts within events
-- **scores**: Competitor performance data
-- **teams**: Group management (optional)
+1. API routes (`app/api/`) authenticate via `Authorization: Bearer <firebase-uid>` header
+2. Routes call Firestore operations in `lib/firestore.ts`
+3. Client pages use TanStack Query (`useQuery`/`useMutation`) with centralised query keys (`lib/queryKeys.ts`)
+4. Mutations invalidate relevant query caches for instant UI updates
+5. Socket.io pushes real-time events for leaderboards and erg sessions
 
-### Project Structure
+## Project Structure
 
 ```
 challenger-events/
-├── app/                    # Next.js 14 app directory
-│   ├── api/               # API routes
-│   ├── auth/              # Authentication pages
-│   ├── dashboard/         # User dashboard
-│   └── events/            # Event management
-├── components/            # Reusable React components
-├── contexts/             # React context providers
-├── lib/                  # Utility libraries
-├── styles/               # Global styles
-└── utils/                # Helper functions
+├── app/
+│   ├── api/                 # API routes (events, scores, teams, users, erg, auth)
+│   ├── admin/               # Admin pages (event/user/team management, erg control)
+│   ├── events/              # Public event browsing, joining, leaderboards, calculators
+│   ├── dashboard/           # Competitor/admin dashboard
+│   ├── erg/                 # Live erg display pages
+│   ├── profile/             # User profile and score history
+│   ├── teams/               # Team browsing and management
+│   ├── auth/                # Sign in, email verification
+│   └── public/              # Public profiles and leaderboards (no auth required)
+├── components/              # React components (modals, UI primitives, dashboards)
+│   └── ui/                  # Reusable UI primitives (Button, Card, Input, Accordion)
+├── constants/               # Scoring systems, event types, achievements
+├── contexts/                # AuthContext (provides useAuth hook)
+├── hooks/                   # Custom hooks (useSSE, useErgSocket, useMockErgData)
+├── lib/                     # Core libraries
+│   ├── firestore.ts         # All Firestore CRUD operations
+│   ├── api-client.ts        # Authenticated fetch wrapper
+│   ├── queryKeys.ts         # TanStack Query key factory
+│   ├── utils.ts             # Shared utilities (roles, dates, QR codes)
+│   └── score-totals.ts      # Score aggregation logic
+├── utils/                   # Domain utilities
+│   ├── scoring.ts           # Score calculation with ChallengerData
+│   ├── scoreCalculation.ts  # Score calculation orchestration
+│   ├── achievementCalculation.ts  # Achievement badge logic
+│   ├── teamScoring.ts       # Team score aggregation and ranking
+│   └── postcodeUtils.ts     # Postcode lookup and distance calculation
+├── __tests__/               # Jest test suites (mirrors source structure)
+├── server.js                # Custom Node.js server (Next.js + Socket.io)
+└── CLAUDE.md                # AI assistant instructions
 ```
 
-## 📚 API Reference
-
----
-
-### Authentication Endpoints
-
-#### `POST /api/auth/signin`
-
-Sign in with email and password.
-
-**Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-#### `POST /api/auth/signup`
-
-Create a new user account.
-
-**Request Body:**
-```json
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "name": "John Doe"
-}
-```
-
-### Event Management
-
-#### `POST /api/events`
-
-Create a new event (admin only).
-
-**Request Body:**
-```json
-{
-  "name": "Powerlifting Championship",
-  "code": "PL2024",
-  "activities": ["Squat", "Bench Press", "Deadlift"],
-  "startDate": "2024-01-01T00:00:00Z",
-  "endDate": "2024-01-31T23:59:59Z"
-}
-```
-
-#### `GET /api/events`
-
-Get all events for the current user.
-
-#### `POST /api/events/join`
-
-Join an event using event code.
-
-**Request Body:**
-```json
-{
-  "eventCode": "PL2024"
-}
-```
-
-#### `GET /api/events/[id]`
-
-Get specific event details.
-
-#### `PUT /api/events/[id]`
-
-Update event details (admin only).
-
-### Score Management
-
-#### `POST /api/scores`
-
-Submit a score for a competitor (admin only).
-
-**Request Body:**
-```json
-{
-  "eventId": "event123",
-  "competitorId": "user456",
-  "activity": "Squat",
-  "score": 150
-}
-```
-
-#### `GET /api/events/[id]/leaderboard`
-
-Get real-time leaderboard for an event.
-
-### User Management
-
-#### `GET /api/user`
-
-Get current user data.
-
-#### `PUT /api/user`
-
-Update user profile.
-
-### Utility Endpoints
-
-#### `GET /api/test-env`
-
-Test environment variables configuration.
-
-## 💡 Usage Examples
-
----
-
-### For Admins
-
-```typescript
-// Create a new event
-const createEvent = async (eventData) => {
-  const response = await fetch('/api/events', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(eventData)
-  });
-  return response.json();
-};
-
-// Submit a score
-const submitScore = async (scoreData) => {
-  const response = await fetch('/api/scores', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(scoreData)
-  });
-  return response.json();
-};
-
-// Get leaderboard
-const getLeaderboard = async (eventId) => {
-  const response = await fetch(`/api/events/${eventId}/leaderboard`);
-  return response.json();
-};
-```
-
-### For Competitors
-
-```typescript
-// Join an event
-const joinEvent = async (eventCode) => {
-  const response = await fetch('/api/events/join', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ eventCode })
-  });
-  return response.json();
-};
-
-// Get user's events
-const getUserEvents = async () => {
-  const response = await fetch('/api/events');
-  return response.json();
-};
-
-## 🛠️ Development
-
----
-
-### Setup
+## Scripts
 
 ```bash
-git clone <repository-url>
-cd challenger-events
-npm install
+# Development
+npm run dev              # Custom server with Socket.io
+npm run dev:next         # Next.js only (no Socket.io)
+
+# Build & Production
+npm run build            # Production build
+npm start                # Production server
+
+# Quality
+npm run check-types      # TypeScript type checking
+npm run lint             # ESLint
+npm run format           # Prettier auto-format
+npm run check-format     # Verify formatting
+npm run validate         # All checks sequentially
+npm run validate-parallel # All checks in parallel
+
+# Testing
+npm test                 # Run all tests
+npm run test:watch       # Watch mode
+npm run test:coverage    # Coverage report
 ```
 
-### Available Scripts
+## Environment Variables
+
+Copy `ENV_TEMPLATE.txt` to `.env.local` and fill in all values. Key variables:
+
+| Variable | Purpose |
+|----------|---------|
+| `NEXT_PUBLIC_FIREBASE_*` (7 vars) | Firebase client SDK config |
+| `FIREBASE_PROJECT_ID` | Firebase Admin SDK |
+| `FIREBASE_CLIENT_EMAIL` | Firebase Admin SDK |
+| `FIREBASE_PRIVATE_KEY` | Firebase Admin SDK |
+| `RESEND_API_KEY` | Transactional email |
+| `SOCKET_SECRET` | Socket.io authentication |
+| `NEXT_PUBLIC_APP_URL` | Base URL for email links |
+
+### Firebase Setup
+
+1. Create a project at [Firebase Console](https://console.firebase.google.com/)
+2. Enable **Authentication** (Email/Password provider)
+3. Enable **Firestore Database**
+4. Enable **Storage**
+5. Copy the web app config to `NEXT_PUBLIC_FIREBASE_*` variables
+6. Generate a service account key (Project Settings > Service Accounts) and copy to `FIREBASE_*` variables
+
+## Testing
+
+The project uses **Jest** with **React Testing Library**. Tests cover utilities, constants, and all components.
 
 ```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-npm run format       # Format code with Prettier
-npm run check-types  # TypeScript type checking
-npm run validate     # Run all checks
+npm test                 # Run all 49 suites (~600 tests)
+npm run test:coverage    # Generate coverage report
 ```
 
-### Code Quality
+Coverage is collected for `components/`, `lib/` (utils, api-client, score-totals), `utils/`, and `constants/`. Coverage thresholds are enforced in CI.
 
-- **ESLint**: Code linting
-- **Prettier**: Code formatting
-- **TypeScript**: Type safety
-- **Husky**: Git hooks for pre-commit checks
-- **Commitizen**: Conventional commit messages
+### Test Structure
 
-### Development Mode
-
-```bash
-npm run dev
+```
+__tests__/
+├── components/          # Component tests (rendering, interactions, mocked API)
+│   └── ui/              # UI primitive tests
+├── constants/           # Data integrity and lookup function tests
+├── lib/                 # Utility and API client tests
+└── utils/               # Scoring, achievements, team scoring, postcodes
 ```
 
-This will start the development server with hot reloading.
-
-## 🚀 Deployment
-
----
+## Deployment
 
 ### Vercel (Recommended)
 
-1. **Push to GitHub**
-2. **Connect to Vercel**
-3. **Set environment variables** in Vercel dashboard
-4. **Deploy**
+1. Push to GitHub
+2. Connect repo in Vercel dashboard
+3. Set all environment variables from `.env.local`
+4. Deploy
 
-### Other Platforms
+> **Note:** The custom `server.js` (Socket.io) requires a Node.js runtime. Vercel's serverless functions don't support persistent WebSocket connections. For full real-time support, deploy to a platform that supports custom servers (Railway, Render, DigitalOcean App Platform).
 
-- **Railway**: Easy deployment with environment variables
-- **Render**: Free tier available
-- **DigitalOcean**: App Platform
-- **Firebase Hosting**: Direct integration with Firebase services
+## Contributing
 
-### Environment Variables for Production
-
-Make sure to set all required environment variables in your deployment platform:
-
-- `NEXT_PUBLIC_FIREBASE_API_KEY`
-- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
-- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
-- `NEXT_PUBLIC_FIREBASE_APP_ID`
-- `FIREBASE_PROJECT_ID`
-- `FIREBASE_CLIENT_EMAIL`
-- `FIREBASE_PRIVATE_KEY`
-- `RESEND_API_KEY`
-- `SOCKET_SECRET`
-
-## ✅ Testing
-
----
-
-1. **Clone the repository**
-2. **Install dependencies**: `npm ci`
-3. **Set up environment variables**
-4. **Run tests**: `npm test`
-
-### Testing Checklist
-
-- [ ] Environment variables are properly configured
-- [ ] Firebase project is set up correctly
-- [ ] Authentication flow works
-- [ ] Event creation and management
-- [ ] Score submission and leaderboards
-- [ ] Real-time updates via WebSocket
-- [ ] Mobile responsiveness
-- [ ] Dark mode functionality
-
-## 📝 Contributing
-
----
-
-### How to contribute summary
-
-- Create a branch from the `main` branch and submit a Pull Request (PR)
-- Explain what the PR fixes or improves
-- Use sensible commit messages which follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) specification
-- Use a sensible number of commit messages
-
-### Development Workflow
-
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Make your changes**
-4. **Run tests**: `npm test`
-5. **Format code**: `npm run format`
-6. **Commit changes**: `git commit -m 'feat: add amazing feature'`
-7. **Push to branch**: `git push origin feature/amazing-feature`
-8. **Open a Pull Request**
+1. Create a branch from `main`
+2. Make changes following existing patterns
+3. Run `npm run validate` to check types, lint, and build
+4. Run `npm test` to verify all tests pass
+5. Commit using [Conventional Commits](https://www.conventionalcommits.org/) (`npm run commit`)
+6. Open a Pull Request
 
 ### Code Style
 
-- Follow the existing code style
-- Use TypeScript for all new code
-- Add proper error handling
-- Include appropriate comments
-- Write meaningful commit messages
+- **Prettier**: single quotes, 100-char line width, trailing commas, semicolons
+- **ESLint**: unused variables prefixed with `_`
+- **TypeScript**: strict mode, no implicit any
+- **Path aliases**: `@lib/`, `@components/`, `@utils/`, `@constants/`, `@hooks/`, `@contexts/`
 
-### Version Bumping
+### Versioning
 
-Our versioning uses [SemVer](https://semver.org/) and our commits follow the [Conventional Commits](https://www.conventionalcommits.org/en/about/) specification.
+Uses [SemVer](https://semver.org/). Bump with `npm version [patch|minor|major]`, then push with tags.
 
-1. Make changes
-2. Commit those changes
-3. Pull all the tags
-4. Run `npm version [patch|minor|major]`
-5. Stage the changes
-6. Commit with `git commit -m "chore: bumped version to $version"`
-7. Push changes and tag
-
-## 📘 Changelog
-
----
+## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md)
 
-## 📄 License
+## License
 
----
-
-See LICENSE.MD
-
----
-
-Built with ❤️ by the Challenger Events team
+See [LICENSE.md](LICENSE.md)
