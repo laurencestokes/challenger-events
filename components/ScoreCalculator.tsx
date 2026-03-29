@@ -546,43 +546,41 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
   return (
     <div className="space-y-6">
       {/* User Profile Display */}
-      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Your Profile</h3>
+      <div className="bg-surface-high rounded-lg p-4">
+        <h3 className="text-sm font-medium text-text-primary mb-3">Your Profile</h3>
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
-            <span className="text-gray-500 dark:text-gray-400">Bodyweight:</span>
-            <div className="font-medium text-gray-900 dark:text-white">
+            <span className="text-text-secondary">Bodyweight:</span>
+            <div className="font-medium text-text-primary">
               {userProfile.bodyweight} kg
               {userProfile.competitionVerification &&
                 userProfile.competitionVerification.bodyweight && (
-                  <span className="ml-2 text-xs text-green-600 dark:text-green-400">
-                    (Competition weigh-in)
-                  </span>
+                  <span className="ml-2 text-xs text-green-400">(Competition weigh-in)</span>
                 )}
             </div>
             {userProfile.competitionVerification &&
               userProfile.profileBodyweight &&
               userProfile.competitionVerification.bodyweight !== userProfile.profileBodyweight && (
-                <div className="text-xs text-gray-500 dark:text-gray-400">
+                <div className="text-xs text-text-secondary">
                   Profile weight: {userProfile.profileBodyweight} kg
                 </div>
               )}
           </div>
           <div>
-            <span className="text-gray-500 dark:text-gray-400">Sex:</span>
-            <div className="font-medium text-gray-900 dark:text-white">
+            <span className="text-text-secondary">Sex:</span>
+            <div className="font-medium text-text-primary">
               {userProfile.sex === 'M' ? 'Male' : 'Female'}
             </div>
           </div>
         </div>
         {userProfile.competitionVerification &&
           userProfile.competitionVerification.status === 'VERIFIED' && (
-            <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+            <p className="text-xs text-green-400 mt-2">
               ✅ Competition weigh-in verified. All calculations use this weight.
             </p>
           )}
         {(!userProfile.bodyweight || userProfile.dateOfBirth === undefined) && (
-          <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">
+          <p className="text-xs text-yellow-400 mt-2">
             ⚠️ Update your profile for accurate scoring
           </p>
         )}
@@ -599,19 +597,14 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
           if (!state) return null;
 
           return (
-            <div
-              key={activity.id}
-              className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
-            >
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                {activity.name}
-              </h3>
+            <div key={activity.id} className="border border-border rounded-lg p-4">
+              <h3 className="text-sm font-medium text-text-primary mb-3">{activity.name}</h3>
               {/* Toggle for inverse mode */}
               <div className="mb-2 flex items-center gap-2">
-                <label className="text-xs text-gray-500 dark:text-gray-400">Mode:</label>
+                <label className="text-xs text-text-secondary">Mode:</label>
                 <button
                   type="button"
-                  className={`px-2 py-1 rounded text-xs font-medium ${state.inverseMode ? 'bg-primary-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'}`}
+                  className={`px-2 py-1 rounded text-xs font-medium ${state.inverseMode ? 'bg-primary text-white' : 'bg-surface-high text-text-primary'}`}
                   onClick={() => handleToggleMode(activity.id)}
                 >
                   {state.inverseMode ? 'Score → Required Input' : 'Raw Input → Score'}
@@ -621,9 +614,7 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
               <div className="mb-3">
                 {state.inverseMode ? (
                   <div>
-                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                      Target Score
-                    </label>
+                    <label className="block text-xs text-text-secondary mb-1">Target Score</label>
                     <input
                       type="number"
                       value={state.targetScore !== undefined ? state.targetScore : ''}
@@ -632,12 +623,12 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
                         handleTargetScoreChange(activity.id, val);
                       }}
                       placeholder="Enter target score"
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 text-sm border border-border rounded bg-surface-low text-text-primary"
                     />
                   </div>
                 ) : isTimeInput ? (
                   <div>
-                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    <label className="block text-xs text-text-secondary mb-1">
                       Time (mm:ss.ms)
                     </label>
                     <input
@@ -645,14 +636,12 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
                       value={state.inputValue}
                       onChange={(e) => handleTimeInputChange(activity.id, e.target.value)}
                       placeholder="1:30.5"
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 text-sm border border-border rounded bg-surface-low text-text-primary"
                     />
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
-                      Value ({unit})
-                    </label>
+                    <label className="block text-xs text-text-secondary mb-1">Value ({unit})</label>
                     <input
                       type="number"
                       value={state.value}
@@ -660,7 +649,7 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
                       min={min}
                       max={max}
                       step={unit === 'kg' ? 2.5 : 1}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 text-sm border border-border rounded bg-surface-low text-text-primary"
                     />
                   </div>
                 )}
@@ -673,9 +662,9 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
                       max={max}
                       value={state.value}
                       onChange={(e) => handleValueChange(activity.id, Number(e.target.value))}
-                      className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                      className="w-full h-2 bg-surface-high rounded-lg appearance-none cursor-pointer slider"
                     />
-                    <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <div className="flex justify-between text-xs text-text-secondary mt-1">
                       <span>{formatValue(min, unit)}</span>
                       <span>{formatValue(max, unit)}</span>
                     </div>
@@ -683,44 +672,44 @@ export default function ScoreCalculator({ activities, userProfileOverride }: Sco
                 )}
               </div>
               {/* Score/Required Input Display */}
-              <div className="bg-gray-50 dark:bg-gray-700 rounded p-3">
+              <div className="bg-surface-high rounded p-3">
                 {state.loading ? (
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Calculating...</div>
+                  <div className="text-sm text-text-secondary">Calculating...</div>
                 ) : state.error ? (
-                  <div className="text-sm text-red-600 dark:text-red-400">{state.error}</div>
+                  <div className="text-sm text-red-400">{state.error}</div>
                 ) : state.inverseMode ? (
                   state.requiredRawInput !== null && state.targetScore !== undefined ? (
                     <div>
-                      <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                      <div className="text-lg font-semibold text-text-primary">
                         Required: {formatValue(state.requiredRawInput ?? 0, unit)}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                      <div className="text-xs text-text-secondary">
                         Will yield score:{' '}
                         {state.actualScore !== undefined && state.actualScore !== null
                           ? state.actualScore.toFixed(1)
                           : '-'}{' '}
                         (target was {state.targetScore})
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                      <div className="text-xs text-text-secondary">
                         For target score: {state.targetScore}
                       </div>
                     </div>
                   ) : (
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <div className="text-sm text-text-secondary">
                       Enter a target score to calculate required input
                     </div>
                   )
                 ) : state.score !== null ? (
                   <div>
-                    <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                    <div className="text-lg font-semibold text-text-primary">
                       Score: {state.score.toFixed(1)}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-text-secondary">
                       Target: {formatValue(state.value, unit)}
                     </div>
                   </div>
                 ) : (
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                  <div className="text-sm text-text-secondary">
                     Enter a value to calculate score
                   </div>
                 )}

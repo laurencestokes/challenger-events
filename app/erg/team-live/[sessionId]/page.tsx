@@ -44,9 +44,7 @@ export default function TeamErgLiveDisplayPage() {
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-black text-white">
         <div className="text-center">
           <h2 className="text-3xl font-bold mb-4">Session Not Found</h2>
-          <p className="text-gray-400">
-            This team competition session does not exist or has ended.
-          </p>
+          <p className="text-muted">This team competition session does not exist or has ended.</p>
         </div>
       </div>
     );
@@ -62,19 +60,19 @@ export default function TeamErgLiveDisplayPage() {
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-black text-white">
         <div className="text-center">
           <h2 className="text-3xl font-bold mb-4">Team Competition Ended</h2>
-          <p className="text-gray-400 mb-8">This session has concluded.</p>
+          <p className="text-muted mb-8">This session has concluded.</p>
           <div className="mt-8">
             <h3 className="text-2xl mb-6 text-yellow-400">Final Team Scores</h3>
             <div className="flex gap-12 justify-center">
               <div className="bg-blue-500/20 rounded-xl p-6">
                 <p className="text-xl mb-2">{session.teamA.name}</p>
                 <p className="text-5xl font-bold text-blue-400">{teamAScore.toFixed(1)}</p>
-                <p className="text-sm text-gray-400 mt-2">Total Team Score</p>
+                <p className="text-sm text-muted mt-2">Total Team Score</p>
               </div>
               <div className="bg-purple-500/20 rounded-xl p-6">
                 <p className="text-xl mb-2">{session.teamB.name}</p>
                 <p className="text-5xl font-bold text-purple-400">{teamBScore.toFixed(1)}</p>
-                <p className="text-sm text-gray-400 mt-2">Total Team Score</p>
+                <p className="text-sm text-muted mt-2">Total Team Score</p>
               </div>
             </div>
           </div>
@@ -110,7 +108,7 @@ export default function TeamErgLiveDisplayPage() {
                 priority
               />
             </a>
-            <span className="px-3 py-1 text-xs font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
+            <span className="px-3 py-1 text-xs font-bold bg-primary text-white rounded-full  font-headline">
               BETA
             </span>
           </div>
@@ -148,7 +146,7 @@ export default function TeamErgLiveDisplayPage() {
             <div className="text-center">
               <h2 className="text-3xl font-bold text-blue-400 mb-4">{session.teamA.name}</h2>
               <div className="text-6xl font-bold text-blue-400 mb-4">{teamAScore.toFixed(1)}</div>
-              <p className="text-gray-400">Total Team Score</p>
+              <p className="text-muted">Total Team Score</p>
             </div>
           </div>
 
@@ -157,7 +155,7 @@ export default function TeamErgLiveDisplayPage() {
             <div className="text-center">
               <h2 className="text-3xl font-bold text-purple-400 mb-4">{session.teamB.name}</h2>
               <div className="text-6xl font-bold text-purple-400 mb-4">{teamBScore.toFixed(1)}</div>
-              <p className="text-gray-400">Total Team Score</p>
+              <p className="text-muted">Total Team Score</p>
             </div>
           </div>
         </div>
@@ -191,7 +189,7 @@ export default function TeamErgLiveDisplayPage() {
               return (
                 <div
                   key={`${participant.teamId}-${participant.participantId}`}
-                  className="bg-gray-800/50 rounded-xl p-6 border border-gray-700/50"
+                  className="bg-surface-low/50 rounded-xl p-6 border border-surface-high/50"
                 >
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
@@ -204,7 +202,7 @@ export default function TeamErgLiveDisplayPage() {
                         {teamName}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-muted">
                       Current Score:{' '}
                       <span className="font-bold text-white">
                         {participant.calculatedScore.toFixed(1)}
@@ -256,11 +254,11 @@ export default function TeamErgLiveDisplayPage() {
                 return (
                   <div
                     key={member.id}
-                    className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-surface-low/50 rounded-lg"
                   >
                     <div>
                       <p className="font-medium text-white">{member.name}</p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-muted">
                         {member.age}y, {member.sex}, {member.weight}kg
                       </p>
                     </div>
@@ -268,12 +266,12 @@ export default function TeamErgLiveDisplayPage() {
                       {isActive ? (
                         <div>
                           <p className="text-green-400 font-bold">ACTIVE</p>
-                          <p className="text-sm text-gray-400">
+                          <p className="text-sm text-muted">
                             {participantData?.calculatedScore.toFixed(1) || '0'} pts
                           </p>
                         </div>
                       ) : (
-                        <p className="text-gray-500">Waiting...</p>
+                        <p className="text-muted">Waiting...</p>
                       )}
                     </div>
                   </div>
@@ -299,11 +297,11 @@ export default function TeamErgLiveDisplayPage() {
                 return (
                   <div
                     key={member.id}
-                    className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-surface-low/50 rounded-lg"
                   >
                     <div>
                       <p className="font-medium text-white">{member.name}</p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-muted">
                         {member.age}y, {member.sex}, {member.weight}kg
                       </p>
                     </div>
@@ -311,12 +309,12 @@ export default function TeamErgLiveDisplayPage() {
                       {isActive ? (
                         <div>
                           <p className="text-green-400 font-bold">ACTIVE</p>
-                          <p className="text-sm text-gray-400">
+                          <p className="text-sm text-muted">
                             {participantData?.calculatedScore.toFixed(1) || '0'} pts
                           </p>
                         </div>
                       ) : (
-                        <p className="text-gray-500">Waiting...</p>
+                        <p className="text-muted">Waiting...</p>
                       )}
                     </div>
                   </div>

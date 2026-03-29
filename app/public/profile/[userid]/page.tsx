@@ -154,7 +154,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
           {children}
         </div>
         {isHovered && (
-          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-4 py-3 bg-black/95 backdrop-blur-sm text-white text-xs rounded-lg z-50 w-80 border border-gray-600/30 shadow-xl">
+          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-4 py-3 bg-black/95 backdrop-blur-sm text-white text-xs rounded-lg z-50 w-80 border border-border/30 shadow-xl">
             <div className="relative leading-relaxed">{text}</div>
             <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/95"></div>
           </div>
@@ -245,10 +245,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
 
   if (loading) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: '#0F0F0F' }}
-      >
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <LoadingSpinner />
         </div>
@@ -258,14 +255,12 @@ export default function PublicProfilePage({ params }: { params: { userid: string
 
   if (notFound) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200">
         <div className="max-w-4xl mx-auto py-12 px-4">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 text-center transform transition-all duration-300 hover:scale-105">
+          <div className="bg-surface-low p-8 rounded-2xl shadow-2xl border border-border text-center transform transition-all duration-300 hover:scale-105">
             <div className="text-6xl mb-4">🏃‍♂️</div>
-            <h1 className="text-3xl font-bold mb-4 text-gray-800 dark:text-gray-200">
-              Profile Not Found
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300 text-lg">
+            <h1 className="text-3xl font-bold mb-4 text-text-primary">Profile Not Found</h1>
+            <p className="text-text-secondary text-lg">
               This public profile does not exist or is not available.
             </p>
           </div>
@@ -276,10 +271,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
 
   if (!data || !eventScores) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: '#0F0F0F' }}
-      >
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <LoadingSpinner />
         </div>
@@ -417,7 +409,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
       return (
         <div
           key={type.id}
-          className="bg-[#131313]/50 backdrop-blur-sm rounded-xl p-4 border border-gray-600/30 flex flex-col"
+          className="bg-[#131313]/50 backdrop-blur-sm rounded-xl p-4 border border-border/30 flex flex-col"
         >
           <div className="flex items-center mb-3">
             <span className="mr-3 text-2xl">{EVENT_ICONS[type.id] || '🏅'}</span>
@@ -430,12 +422,12 @@ export default function PublicProfilePage({ params }: { params: { userid: string
           </div>
           <div className="text-center py-4">
             <div
-              className="text-3xl font-bold text-gray-500 mb-2"
+              className="text-3xl font-bold text-muted mb-2"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
               --
             </div>
-            <div className="text-sm text-gray-400" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            <div className="text-sm text-muted" style={{ fontFamily: 'Montserrat, sans-serif' }}>
               No score yet
             </div>
           </div>
@@ -446,7 +438,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
     return (
       <div
         key={type.id}
-        className="bg-[#131313]/50 backdrop-blur-sm rounded-xl p-4 border border-gray-600/30 flex flex-col"
+        className="bg-[#131313]/50 backdrop-blur-sm rounded-xl p-4 border border-border/30 flex flex-col"
       >
         <div className="flex items-center mb-3">
           <span className="mr-3 text-2xl">{EVENT_ICONS[type.id] || '🏅'}</span>
@@ -469,7 +461,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
                 {showVerified.calculatedScore}
               </div>
               <div
-                className="text-sm text-gray-300 mb-2"
+                className="text-sm text-text-secondary mb-2"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
               >
                 {beautifyRawScore(showVerified.rawValue, type.id, getReps(showVerified))}
@@ -488,7 +480,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
 
           {/* Unverified Score (Secondary) */}
           {showUnverified && (
-            <div className="border-t border-gray-600/30 pt-3">
+            <div className="border-t border-border/30 pt-3">
               <div
                 className="text-xl font-bold mb-1"
                 style={{ fontFamily: 'Montserrat, sans-serif', color: '#e84c04' }}
@@ -496,7 +488,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
                 {showUnverified.calculatedScore}
               </div>
               <div
-                className="text-xs text-gray-300 mb-1"
+                className="text-xs text-text-secondary mb-1"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
               >
                 {beautifyRawScore(showUnverified.rawValue, type.id, getReps(showUnverified))}
@@ -513,7 +505,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
 
         {/* Date/Event information */}
         <div
-          className="text-xs text-gray-400 space-y-1"
+          className="text-xs text-muted space-y-1"
           style={{ fontFamily: 'Montserrat, sans-serif' }}
         >
           {showVerified?.submittedAt && (
@@ -699,14 +691,14 @@ export default function PublicProfilePage({ params }: { params: { userid: string
               <div className="flex justify-center gap-4">
                 <button
                   onClick={handleShareClick}
-                  className="bg-[#131313]/50 backdrop-blur-sm border border-gray-600/30 text-white px-6 py-3 rounded-lg font-medium hover:bg-[#131313]/70 transition-colors"
+                  className="bg-[#131313]/50 backdrop-blur-sm border border-border/30 text-white px-6 py-3 rounded-lg font-medium hover:bg-[#131313]/70 transition-colors"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   SHARE
                 </button>
                 <button
                   onClick={() => setIsImageGeneratorModalOpen(true)}
-                  className="bg-[#131313]/50 backdrop-blur-sm border border-gray-600/30 text-white px-6 py-3 rounded-lg font-medium hover:bg-[#131313]/70 transition-colors"
+                  className="bg-[#131313]/50 backdrop-blur-sm border border-border/30 text-white px-6 py-3 rounded-lg font-medium hover:bg-[#131313]/70 transition-colors"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   EXPORT
@@ -742,7 +734,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
                   className="w-full h-full object-contain cursor-help"
                 />
                 {/* Rank Tooltip */}
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 px-4 py-3 bg-black/95 backdrop-blur-sm text-white text-xs rounded-lg z-50 w-80 border border-gray-600/30 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 px-4 py-3 bg-black/95 backdrop-blur-sm text-white text-xs rounded-lg z-50 w-80 border border-border/30 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
                   <div className="text-center mb-3">
                     <h4
                       className="font-bold text-sm mb-2"
@@ -751,7 +743,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
                       RANK SYSTEM
                     </h4>
                     <p
-                      className="text-gray-300 text-xs"
+                      className="text-text-secondary text-xs"
                       style={{ fontFamily: 'Montserrat, sans-serif' }}
                     >
                       Verified Score Requirements
@@ -807,14 +799,14 @@ export default function PublicProfilePage({ params }: { params: { userid: string
 
         {/* Stats Section */}
         <div
-          className="bg-[#131313]/50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-gray-600/30 border-b-4"
+          className="bg-[#131313]/50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-border/30 border-b-4"
           style={{ borderBottomColor: '#e84c04' }}
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="text-center">
               <Tooltip text="Best verified scores from official events or admin-verified submissions. These scores are used for official rankings and achievements.">
                 <p
-                  className="text-gray-300 text-sm mb-1 cursor-help hover:text-gray-200 transition-colors"
+                  className="text-text-secondary text-sm mb-1 cursor-help hover:text-gray-200 transition-colors"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   VERIFIED SCORE
@@ -834,7 +826,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
               ></div>
               <Tooltip text="Overall performance score combining all best scores across all events. Includes both verified and unverified scores.">
                 <p
-                  className="text-gray-300 text-sm mb-1 cursor-help hover:text-gray-200 transition-colors"
+                  className="text-text-secondary text-sm mb-1 cursor-help hover:text-gray-200 transition-colors"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   TOTAL SCORE
@@ -854,7 +846,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
               ></div>
               <Tooltip text="Average performance across strength events: Squat, Bench Press, and Deadlift. Format: Total/Verified (all scores vs verified-only scores).">
                 <p
-                  className="text-gray-300 text-sm mb-1 cursor-help hover:text-gray-200 transition-colors"
+                  className="text-text-secondary text-sm mb-1 cursor-help hover:text-gray-200 transition-colors"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   STRENGTH
@@ -862,7 +854,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
               </Tooltip>
               <p className="text-lg font-bold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                 <span className="text-white">{strengthTotalAll}</span>
-                <span className="text-gray-400">/</span>
+                <span className="text-muted">/</span>
                 <span style={{ color: '#4682B4' }}>{strengthTotalVerified}</span>
               </p>
             </div>
@@ -873,7 +865,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
               ></div>
               <Tooltip text="Average performance across endurance events: Rowing 500m, Rowing 4min, Bike 500m, and Ski 500m. Format: Total/Verified (all scores vs verified-only scores).">
                 <p
-                  className="text-gray-300 text-sm mb-1 cursor-help hover:text-gray-200 transition-colors"
+                  className="text-text-secondary text-sm mb-1 cursor-help hover:text-gray-200 transition-colors"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   ENDURANCE
@@ -881,7 +873,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
               </Tooltip>
               <p className="text-lg font-bold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                 <span className="text-white">{enduranceTotalAll}</span>
-                <span className="text-gray-400">/</span>
+                <span className="text-muted">/</span>
                 <span style={{ color: '#4682B4' }}>{enduranceTotalVerified}</span>
               </p>
             </div>
@@ -890,7 +882,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
 
         {/* Achievements Section */}
         <div
-          className="bg-[#131313]/50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-gray-600/30 border-b-4"
+          className="bg-[#131313]/50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-border/30 border-b-4"
           style={{ borderBottomColor: '#e84c04' }}
         >
           <h2
@@ -917,7 +909,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
                   {competitorAchievement.achievement.name}
                 </p>
                 {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-carbon text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
                   {competitorAchievement.achievement.description}
                 </div>
               </div>
@@ -940,7 +932,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
                   {highestScoreAchievement.achievement.name}
                 </p>
                 {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-carbon text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
                   {highestScoreAchievement.achievement.description}
                 </div>
               </div>
@@ -963,13 +955,13 @@ export default function PublicProfilePage({ params }: { params: { userid: string
                   {achievementResult.achievement.name.split(' ')[0]}
                 </p>
                 <p
-                  className="text-gray-300 text-xs"
+                  className="text-text-secondary text-xs"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   {achievementResult.achievement.name.split(' ')[1]}
                 </p>
                 {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-carbon text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
                   {achievementResult.achievement.description}
                 </div>
               </div>
@@ -981,7 +973,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
               specialistAchievements.length === 0 && (
                 <div className="col-span-5 text-center py-8">
                   <p
-                    className="text-gray-400 text-sm"
+                    className="text-muted text-sm"
                     style={{ fontFamily: 'Montserrat, sans-serif' }}
                   >
                     Complete events to earn achievements
@@ -993,7 +985,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
 
         {/* Performance Profile Section */}
         <div
-          className="bg-[#131313]/50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-gray-600/30 border-b-4"
+          className="bg-[#131313]/50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-border/30 border-b-4"
           style={{ borderBottomColor: '#e84c04' }}
         >
           <button
@@ -1031,7 +1023,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
         {/* Detailed Scores */}
         {allScores.length > 0 && (
           <div
-            className="bg-[#131313]/50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-gray-600/30 border-b-4"
+            className="bg-[#131313]/50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-border/30 border-b-4"
             style={{ borderBottomColor: '#e84c04' }}
           >
             <button
@@ -1065,7 +1057,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
         {/* Social Media Image Generator Modal */}
         {isImageGeneratorModalOpen && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-[#131313] rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-600/30">
+            <div className="bg-[#131313] rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-border/30">
               <div className="flex justify-between items-center mb-6">
                 <h2
                   className="text-white text-2xl font-bold"
@@ -1075,7 +1067,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
                 </h2>
                 <button
                   onClick={() => setIsImageGeneratorModalOpen(false)}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-muted hover:text-white transition-colors"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -1132,7 +1124,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
       {/* Share Modal */}
       {isShareModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#131313]/70 backdrop-blur-sm rounded-2xl p-6 w-full max-w-md border border-gray-600/30">
+          <div className="bg-[#131313]/70 backdrop-blur-sm rounded-2xl p-6 w-full max-w-md border border-border/30">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
@@ -1147,7 +1139,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
               </div>
               <button
                 onClick={() => setIsShareModalOpen(false)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-muted hover:text-white transition-colors"
               >
                 <span className="text-xl">×</span>
               </button>
@@ -1157,7 +1149,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
               {/* Profile Link */}
               <div>
                 <label
-                  className="block text-gray-300 text-sm font-medium mb-2"
+                  className="block text-text-secondary text-sm font-medium mb-2"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   Profile Link
@@ -1167,7 +1159,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
                     type="text"
                     value={`${typeof window !== 'undefined' ? window.location.origin : ''}/public/profile/${params.userid}`}
                     readOnly
-                    className="flex-1 px-4 py-3 bg-gray-700/50 border border-gray-600/30 rounded-lg text-white text-sm focus:outline-none"
+                    className="flex-1 px-4 py-3 bg-surface-high/50 border border-border/30 rounded-lg text-white text-sm focus:outline-none"
                     style={{ fontFamily: 'Montserrat, sans-serif' }}
                   />
                   <button
@@ -1192,16 +1184,16 @@ export default function PublicProfilePage({ params }: { params: { userid: string
               {qrCodeDataURL && (
                 <div className="text-center">
                   <label
-                    className="block text-gray-300 text-sm font-medium mb-3"
+                    className="block text-text-secondary text-sm font-medium mb-3"
                     style={{ fontFamily: 'Montserrat, sans-serif' }}
                   >
                     QR Code
                   </label>
-                  <div className="bg-white p-4 rounded-lg inline-block">
+                  <div className="bg-surface-low p-4 rounded-lg inline-block">
                     <img src={qrCodeDataURL} alt="QR Code for profile" className="w-48 h-48" />
                   </div>
                   <p
-                    className="text-gray-400 text-xs mt-2"
+                    className="text-muted text-xs mt-2"
                     style={{ fontFamily: 'Montserrat, sans-serif' }}
                   >
                     Scan to visit profile

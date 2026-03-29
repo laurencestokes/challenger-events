@@ -20,14 +20,7 @@ export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, children, ...props }, ref) => {
     return (
-      <div
-        ref={ref}
-        className={cn(
-          'rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-challenger',
-          className,
-        )}
-        {...props}
-      >
+      <div ref={ref} className={cn('panel text-text-primary', className)} {...props}>
         {children}
       </div>
     );

@@ -37,7 +37,7 @@ describe('Input', () => {
   it('applies error styling to input', () => {
     render(<Input error="Invalid" />);
     const input = document.querySelector('input');
-    expect(input?.className).toContain('border-accent-500');
+    expect(input?.className).toContain('border-error');
   });
 
   it('handles onChange events', () => {

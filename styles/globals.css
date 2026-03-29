@@ -1,118 +1,101 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import './design-system.css';
 
-@layer base {
+@plugin "@tailwindcss/typography";
 
-    /* Base font variables */
-    :root {
-        --font-montserrat: 'Montserrat', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
-        --font-orbitron: 'Orbitron', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
-        --font-helvetica: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        --font-ropa-sans: 'Ropa Sans', sans-serif;
-    }
 
-    /* Smooth transitions for theme changes */
-    * {
-        transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
-    }
+/* === App-specific tokens === */
 
-    /* Base body styles */
-    body {
-        @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-white;
-        font-feature-settings: 'rlig' 1, 'calt' 1;
-    }
+@theme {
+  /* Status colors not in DS */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
 
-    /* Heading styles with sans font */
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-        @apply font-sans;
-    }
-
-    /* Focus styles */
-    *:focus-visible {
-        @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-white dark:ring-offset-black;
-    }
+  /* Animation keyframes */
+  --animate-fade-in: fadeIn 0.5s ease-in-out;
+  --animate-slide-up: slideUp 0.3s ease-out;
 }
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* === Section & panel treatments === */
 
 @layer components {
+  /* Primary content panel — solid surface, subtle border, faint inner shadow */
+  .panel {
+    background-color: var(--color-surface-low);
+    border: 1px solid var(--color-surface-high);
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.02);
+  }
 
-    /* Button component styles */
-    .btn-primary {
-        @apply bg-primary-500 hover:bg-primary-600 text-white font-display font-bold px-6 py-3 rounded-md transition-colors shadow-challenger hover:shadow-challenger-lg;
-    }
+  /* Elevated panel — slightly lighter, for nested or highlighted content */
+  .panel-raised {
+    background-color: var(--color-surface-high);
+    border: 1px solid rgb(255 255 255 / 0.06);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.03),
+      0 1px 3px 0 rgb(0 0 0 / 0.4);
+  }
 
-    .btn-secondary {
-        @apply bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-sans px-6 py-3 rounded-md transition-colors;
-    }
-
-    .btn-accent {
-        @apply bg-accent-500 hover:bg-accent-600 text-white font-display font-bold px-6 py-3 rounded-md transition-colors shadow-glow-red;
-    }
-
-    /* Card component styles */
-    .card {
-        @apply bg-white dark:bg-gray-800 rounded-lg shadow-challenger text-gray-900 dark:text-white;
-    }
-
-    /* Input component styles */
-    .input {
-        @apply bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors;
-    }
-
-    /* Link styles */
-    .link-primary {
-        @apply text-primary-500 hover:text-primary-600 underline-offset-4 hover:underline transition-colors;
-    }
-
-    /* Gradient text effect */
-    .text-gradient {
-        @apply bg-gradient-athletic bg-clip-text text-transparent;
-    }
-
-    /* Glow effect for high-impact elements */
-    .glow-effect {
-        @apply shadow-glow animate-glow;
-    }
+  /* Accent panel — left border highlight for key sections */
+  .panel-accent {
+    background-color: var(--color-surface-low);
+    border: 1px solid var(--color-surface-high);
+    border-left: 2px solid var(--color-primary);
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.02);
+  }
 }
 
-@layer utilities {
+/* === App-specific component overrides === */
 
-    /* Text gradient utilities */
-    .text-gradient-orange {
-        @apply bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent;
-    }
+@layer components {
+  /* Custom scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) var(--color-surface-high);
+  }
 
-    /* Animation utilities */
-    .animate-bounce-subtle {
-        animation: bounceSubtle 0.6s ease-in-out;
-    }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
 
-    /* Custom scrollbar */
-    .scrollbar-thin {
-        scrollbar-width: thin;
-        scrollbar-color: theme('colors.primary.500') theme('colors.gray.200');
-    }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: var(--color-surface-high);
+    border-radius: 3px;
+  }
 
-    .scrollbar-thin::-webkit-scrollbar {
-        width: 6px;
-    }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--color-primary);
+    border-radius: 3px;
+  }
 
-    .scrollbar-thin::-webkit-scrollbar-track {
-        background: theme('colors.gray.200');
-        border-radius: 3px;
-    }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary-light);
+  }
+}
 
-    .scrollbar-thin::-webkit-scrollbar-thumb {
-        background: theme('colors.primary.500');
-        border-radius: 3px;
-    }
+/* === Base overrides === */
 
-    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-        background: theme('colors.primary.600');
-    }
+@layer base {
+  *:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-primary);
+  }
 }

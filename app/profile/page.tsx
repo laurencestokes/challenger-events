@@ -215,11 +215,11 @@ function QuickScoreSubmissionForm({ onScoreAdded }: { onScoreAdded: () => void }
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Test</label>
+          <label className="block text-sm font-medium text-text-secondary mb-1">Test</label>
           <select
             value={activityId}
             onChange={(e) => setActivityId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             required
           >
             <option value="">Select a test...</option>
@@ -233,7 +233,7 @@ function QuickScoreSubmissionForm({ onScoreAdded }: { onScoreAdded: () => void }
 
         {selectedActivity && (
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-text-secondary mb-1">
               {selectedActivity.inputType === 'WEIGHT' && 'Weight (kg)'}
               {selectedActivity.inputType === 'TIME' && 'Time (mm:ss.ms or ss.ms)'}
               {selectedActivity.inputType === 'DISTANCE' && 'Distance (m)'}
@@ -244,7 +244,7 @@ function QuickScoreSubmissionForm({ onScoreAdded }: { onScoreAdded: () => void }
               value={rawValue}
               onChange={(e) => handleScoreChange(e.target.value)}
               placeholder={isTimeInput() ? 'e.g., 1:26.3 or 86.3' : undefined}
-              className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               required
             />
           </div>
@@ -253,7 +253,9 @@ function QuickScoreSubmissionForm({ onScoreAdded }: { onScoreAdded: () => void }
 
       {selectedActivity?.supportsReps && (
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Reps (optional)</label>
+          <label className="block text-sm font-medium text-text-secondary mb-1">
+            Reps (optional)
+          </label>
           <input
             type="number"
             min={selectedActivity.minReps || 1}
@@ -261,9 +263,9 @@ function QuickScoreSubmissionForm({ onScoreAdded }: { onScoreAdded: () => void }
             placeholder={`${selectedActivity.defaultReps || 1} (default)`}
             value={reps}
             onChange={(e) => setReps(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
           />
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-muted mt-1">
             Leave empty for 1RM. Range: {selectedActivity.minReps || 1}-
             {selectedActivity.maxReps || 10}
           </p>
@@ -271,13 +273,15 @@ function QuickScoreSubmissionForm({ onScoreAdded }: { onScoreAdded: () => void }
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">Notes (optional)</label>
+        <label className="block text-sm font-medium text-text-secondary mb-1">
+          Notes (optional)
+        </label>
         <input
           type="text"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Add any notes about this score..."
-          className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
         />
       </div>
 
@@ -291,7 +295,7 @@ function QuickScoreSubmissionForm({ onScoreAdded }: { onScoreAdded: () => void }
         <button
           type="submit"
           disabled={submitScoreMutation.isPending}
-          className="px-6 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50 flex items-center"
+          className="px-6 py-2 bg-primary text-white rounded hover:bg-primary disabled:opacity-50 flex items-center"
         >
           {submitScoreMutation.isPending ? (
             <>
@@ -499,13 +503,13 @@ export default function Profile() {
   const getVerificationStatusColor = (status: string) => {
     switch (status) {
       case 'VERIFIED':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return 'bg-green-100 text-green-800';
       case 'REJECTED':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'bg-red-100 text-red-800';
       case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return 'bg-yellow-100 text-yellow-800';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return 'bg-surface-high text-text-primary';
     }
   };
 
@@ -586,7 +590,7 @@ export default function Profile() {
     'bg-indigo-500',
     'bg-green-500',
     'bg-yellow-500',
-    'bg-primary-500',
+    'bg-primary',
     'bg-teal-500',
     'bg-cyan-500',
   ];
@@ -681,9 +685,9 @@ export default function Profile() {
 
   return (
     <ProtectedRoute>
-      <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+      <div className="flex flex-col">
         <Header />
-        <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+        <div className="flex-1">
           <div className="container mx-auto px-4 py-8">
             {/* Welcome Section */}
             <WelcomeSection
@@ -713,7 +717,7 @@ export default function Profile() {
                     <h2 className="text-white text-2xl font-bold">Profile Information</h2>
                     <button
                       onClick={() => setIsEditing(!isEditing)}
-                      className="text-gray-400 hover:text-white text-sm border border-gray-600 px-3 py-1 rounded-lg transition-colors"
+                      className="text-muted hover:text-white text-sm border border-border px-3 py-1 rounded-lg transition-colors"
                       disabled={isLoadingProfile}
                     >
                       {isEditing ? 'Cancel' : 'Edit'}
@@ -722,7 +726,7 @@ export default function Profile() {
                   {isLoadingProfile ? (
                     <ProfileInfoSkeleton />
                   ) : (
-                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                    <div className="panel rounded-2xl p-6 ">
                       {error && (
                         <div className="mb-6 bg-red-900/20 border border-red-700/50 rounded-md p-4">
                           <div className="flex">
@@ -749,27 +753,27 @@ export default function Profile() {
                       {isEditing ? (
                         <form onSubmit={rhfHandleSubmit(onSubmit)} className="space-y-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-text-secondary mb-1">
                               Name
                             </label>
                             <input
                               type="text"
                               {...register('name')}
-                              className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                              className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                             />
                             {errors.name && (
                               <p className="text-xs text-red-400 mt-1">{errors.name.message}</p>
                             )}
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-text-secondary mb-1">
                               Bodyweight (kg)
                             </label>
                             <input
                               type="number"
                               step="0.1"
                               {...register('bodyweight')}
-                              className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                              className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                             />
                             {errors.bodyweight && (
                               <p className="text-xs text-red-400 mt-1">
@@ -778,13 +782,13 @@ export default function Profile() {
                             )}
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-text-secondary mb-1">
                               Date of Birth
                             </label>
                             <input
                               type="date"
                               {...register('dateOfBirth')}
-                              className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                              className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                             />
                             {errors.dateOfBirth && (
                               <p className="text-xs text-red-400 mt-1">
@@ -793,12 +797,12 @@ export default function Profile() {
                             )}
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-text-secondary mb-1">
                               Sex
                             </label>
                             <select
                               {...register('sex')}
-                              className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                              className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                             >
                               <option value="">Select...</option>
                               <option value="M">Male</option>
@@ -812,14 +816,14 @@ export default function Profile() {
                             <button
                               type="button"
                               onClick={() => setIsEditing(false)}
-                              className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-600"
+                              className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface-high border border-border rounded-md hover:bg-surface-high"
                             >
                               Cancel
                             </button>
                             <button
                               type="submit"
                               disabled={isLoading}
-                              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md disabled:opacity-50"
+                              className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary rounded-md disabled:opacity-50"
                             >
                               {isLoading ? 'Saving...' : 'Save Changes'}
                             </button>
@@ -828,21 +832,21 @@ export default function Profile() {
                       ) : (
                         <div className="space-y-4">
                           <div>
-                            <span className="text-sm text-gray-400">Name:</span>
+                            <span className="text-sm text-muted">Name:</span>
                             <div className="font-medium text-white">{profile?.name}</div>
                           </div>
                           <div>
-                            <span className="text-sm text-gray-400">Email:</span>
+                            <span className="text-sm text-muted">Email:</span>
                             <div className="font-medium text-white">{profile?.email}</div>
                           </div>
                           <div>
-                            <span className="text-sm text-gray-400">Bodyweight:</span>
+                            <span className="text-sm text-muted">Bodyweight:</span>
                             <div className="font-medium text-white">
                               {profile?.bodyweight ? `${profile.bodyweight} kg` : 'Not set'}
                             </div>
                           </div>
                           <div>
-                            <span className="text-sm text-gray-400">Age:</span>
+                            <span className="text-sm text-muted">Age:</span>
                             <div className="font-medium text-white">
                               {profile?.dateOfBirth
                                 ? `${calculateAge(profile.dateOfBirth)} years`
@@ -850,7 +854,7 @@ export default function Profile() {
                             </div>
                           </div>
                           <div>
-                            <span className="text-sm text-gray-400">Sex:</span>
+                            <span className="text-sm text-muted">Sex:</span>
                             <div className="font-medium text-white">
                               {profile?.sex || 'Not set'}
                             </div>
@@ -864,7 +868,7 @@ export default function Profile() {
                 {/* Public Profile Section */}
                 <div>
                   <h2 className="text-white text-2xl font-bold mb-4">Public Profile</h2>
-                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                  <div className="panel rounded-2xl p-6 ">
                     <div className="space-y-4">
                       <div>
                         <label className="flex items-center gap-2 text-white">
@@ -887,10 +891,10 @@ export default function Profile() {
                                 value={profileName}
                                 onChange={(e) => setProfileName(e.target.value)}
                                 placeholder="Enter a custom profile name"
-                                className="flex-1 border border-gray-600 rounded-md px-3 py-2 bg-gray-700 text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                className="flex-1 border border-border rounded-md px-3 py-2 bg-surface-high text-white focus:ring-2 focus:ring-primary focus:border-transparent"
                               />
                               {isCheckingProfileName && (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                               )}
                             </div>
                             {profileName && (
@@ -946,7 +950,7 @@ export default function Profile() {
                             href={`/public/profile/${profileName || user?.uid}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
+                            className="inline-block px-4 py-2 bg-primary text-white rounded hover:bg-primary transition-colors"
                           >
                             View Public Profile
                           </a>
@@ -954,7 +958,7 @@ export default function Profile() {
                         <button
                           type="button"
                           disabled={isLoading}
-                          className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
+                          className="px-4 py-2 bg-primary text-white rounded hover:bg-primary disabled:opacity-50"
                           onClick={async () => {
                             setIsLoading(true);
                             setError('');
@@ -998,10 +1002,10 @@ export default function Profile() {
                   {isLoadingProfile ? (
                     <VerificationStatusSkeleton />
                   ) : (
-                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                    <div className="panel rounded-2xl p-6 ">
                       <div className="space-y-4">
                         <div>
-                          <span className="text-sm text-gray-400">Status:</span>
+                          <span className="text-sm text-muted">Status:</span>
                           <div className="mt-1">
                             <span
                               className={`px-3 py-1 text-sm font-medium rounded-full ${getVerificationStatusColor(
@@ -1015,7 +1019,7 @@ export default function Profile() {
 
                         {profile?.verificationNotes && (
                           <div>
-                            <span className="text-sm text-gray-400">Notes:</span>
+                            <span className="text-sm text-muted">Notes:</span>
                             <div className="mt-1 text-sm text-white">
                               {profile.verificationNotes}
                             </div>
@@ -1024,7 +1028,7 @@ export default function Profile() {
 
                         {Boolean(profile?.verifiedAt) && (
                           <div>
-                            <span className="text-sm text-gray-400">Verified on:</span>
+                            <span className="text-sm text-muted">Verified on:</span>
                             <div className="mt-1 text-sm text-white">
                               {formatDate(profile?.verifiedAt as Date)}
                             </div>
@@ -1068,7 +1072,7 @@ export default function Profile() {
                     <h2 className="text-white text-2xl font-bold">My Teams</h2>
                     <Link
                       href="/teams"
-                      className="text-gray-400 hover:text-white text-sm border border-gray-600 px-3 py-1 rounded-lg transition-colors"
+                      className="text-muted hover:text-white text-sm border border-border px-3 py-1 rounded-lg transition-colors"
                     >
                       More
                     </Link>
@@ -1086,7 +1090,7 @@ export default function Profile() {
                           <Link
                             key={team.id}
                             href={`/teams/${team.id}`}
-                            className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 relative overflow-hidden hover:scale-105 transition-transform duration-200"
+                            className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 relative overflow-hidden hover:scale-105 transition-transform duration-200"
                           >
                             {/* Team Background/Logo */}
                             <div className="absolute inset-0">
@@ -1133,26 +1137,26 @@ export default function Profile() {
                         ))
                       ) : (
                         <>
-                          <div className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 flex items-center justify-center">
+                          <div className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 flex items-center justify-center">
                             <div className="text-center">
-                              <p className="text-gray-400 text-sm mb-2">No teams yet</p>
-                              <p className="text-gray-500 text-xs">Create or join one</p>
+                              <p className="text-muted text-sm mb-2">No teams yet</p>
+                              <p className="text-muted text-xs">Create or join one</p>
                             </div>
                           </div>
-                          <div className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 flex items-center justify-center">
+                          <div className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 flex items-center justify-center">
                             <div className="text-center">
-                              <p className="text-gray-400 text-sm mb-2">Join a team</p>
-                              <p className="text-gray-500 text-xs">Get started</p>
+                              <p className="text-muted text-sm mb-2">Join a team</p>
+                              <p className="text-muted text-xs">Get started</p>
                             </div>
                           </div>
                         </>
                       )}
                       <Link
                         href="/teams"
-                        className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 flex flex-col items-center justify-center border-2 border-dashed border-gray-600 hover:border-gray-500 transition-colors"
+                        className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 flex flex-col items-center justify-center border-2 border-dashed border-border hover:border-gray-500 transition-colors"
                       >
-                        <FiPlus className="w-8 h-8 text-gray-400 mb-2" />
-                        <span className="text-gray-400 text-sm">Create Team</span>
+                        <FiPlus className="w-8 h-8 text-muted mb-2" />
+                        <span className="text-muted text-sm">Create Team</span>
                       </Link>
                     </div>
                   )}
@@ -1164,7 +1168,7 @@ export default function Profile() {
                 {/* Submit New Score Section */}
                 <div>
                   <h2 className="text-white text-2xl font-bold mb-4">Submit New Score</h2>
-                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                  <div className="panel rounded-2xl p-6 ">
                     <QuickScoreSubmissionForm
                       onScoreAdded={() => {
                         // Refresh event/personal score data when a new score is added
@@ -1187,7 +1191,7 @@ export default function Profile() {
                     <h2 className="text-white text-2xl font-bold">My Latest Scores</h2>
                     <Link
                       href="/profile/scores"
-                      className="text-gray-400 hover:text-white text-sm border border-gray-600 px-3 py-1 rounded-lg transition-colors"
+                      className="text-muted hover:text-white text-sm border border-border px-3 py-1 rounded-lg transition-colors"
                     >
                       More
                     </Link>
@@ -1195,15 +1199,15 @@ export default function Profile() {
                   {isLoadingScores ? (
                     <ScoresListSkeleton />
                   ) : allScores.length === 0 ? (
-                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 text-center">
-                      <div className="text-gray-400">
+                    <div className="panel rounded-2xl p-8  text-center">
+                      <div className="text-muted">
                         <p>
                           No scores found. Start participating in events to see your scores here!
                         </p>
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                    <div className="panel rounded-2xl p-6 ">
                       <div className="space-y-3">
                         {allScores
                           .sort((a, b) => {
@@ -1221,12 +1225,12 @@ export default function Profile() {
                             return (
                               <div
                                 key={score.id}
-                                className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/30"
+                                className="bg-carbon/50 rounded-lg p-4 border border-surface-high/30"
                               >
                                 <div className="flex items-center justify-between">
                                   <div className="flex-1">
                                     <div className="flex items-center space-x-2 mb-1">
-                                      <span className="px-2 py-1 text-xs bg-primary-500/20 text-primary-400 rounded font-semibold">
+                                      <span className="px-2 py-1 text-xs bg-primary/20 text-primary-light rounded font-semibold">
                                         {getCanonicalEventName(score)}
                                       </span>
                                       {/* Verification Status Badge */}
@@ -1234,28 +1238,28 @@ export default function Profile() {
                                         className={`px-2 py-1 text-xs rounded font-medium ${
                                           isVerified
                                             ? 'bg-green-500/20 text-green-400'
-                                            : 'bg-gray-500/20 text-gray-400'
+                                            : 'bg-surface-high0/20 text-muted'
                                         }`}
                                       >
                                         {isVerified ? 'Verified' : 'Unverified'}
                                       </span>
                                       {score.eventName && (
-                                        <span className="px-2 py-1 text-xs bg-gray-500/20 text-gray-400 rounded">
+                                        <span className="px-2 py-1 text-xs bg-surface-high0/20 text-muted rounded">
                                           {score.eventName}
                                         </span>
                                       )}
                                     </div>
-                                    <div className="flex items-center space-x-1 text-xs text-gray-400">
+                                    <div className="flex items-center space-x-1 text-xs text-muted">
                                       <FiClock className="w-3 h-3" />
                                       <span>{formatDate(score.timestamp)}</span>
                                     </div>
                                   </div>
                                   <div className="text-right">
-                                    <div className="text-lg font-bold text-primary-400">
+                                    <div className="text-lg font-bold text-primary-light">
                                       {score.calculatedScore.toFixed(1)}
                                     </div>
-                                    <div className="text-xs text-gray-400">Challenger Score</div>
-                                    <div className="text-xs text-gray-500 mt-1">
+                                    <div className="text-xs text-muted">Challenger Score</div>
+                                    <div className="text-xs text-muted mt-1">
                                       {formatRawScoreWithReps(score)}
                                     </div>
                                   </div>

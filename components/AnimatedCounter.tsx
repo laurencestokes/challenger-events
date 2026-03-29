@@ -101,7 +101,7 @@ export default function AnimatedCounter({
 
         {/* Counter value */}
         <div
-          className={`counter-value font-bold mb-2 ${sizeClasses[size]} relative z-10 text-white ${useOrbitron ? 'font-display' : ''}`}
+          className={`counter-value font-bold mb-2 ${sizeClasses[size]} relative z-10 text-white ${useOrbitron ? 'font-headline' : ''}`}
           style={{
             fontFamily: useOrbitron ? 'var(--font-orbitron)' : 'var(--font-ropa-sans)',
             letterSpacing: '0.02em',
@@ -112,14 +112,14 @@ export default function AnimatedCounter({
         </div>
       </div>
       <div
-        className={`text-gray-300 text-lg font-medium uppercase tracking-wider ${useOrbitron ? 'font-display' : ''}`}
+        className={`text-text-secondary text-lg font-medium uppercase tracking-wider ${useOrbitron ? 'font-headline' : ''}`}
         style={{ fontFamily: useOrbitron ? 'var(--font-orbitron)' : 'var(--font-ropa-sans)' }}
       >
         {label}
       </div>
       {unit && (
         <div
-          className={`text-gray-400 text-sm uppercase tracking-wider ${useOrbitron ? 'font-display' : ''}`}
+          className={`text-muted text-sm uppercase tracking-wider ${useOrbitron ? 'font-headline' : ''}`}
           style={{ fontFamily: useOrbitron ? 'var(--font-orbitron)' : 'var(--font-ropa-sans)' }}
         >
           {unit}

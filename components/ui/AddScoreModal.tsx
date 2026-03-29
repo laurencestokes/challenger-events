@@ -113,9 +113,9 @@ export default function AddScoreModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      <div className="panel rounded-lg w-full max-w-md p-6 relative">
         <button
-          className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+          className="absolute top-2 right-2 text-muted hover:text-text-secondary"
           onClick={onClose}
           aria-label="Close"
         >
@@ -128,18 +128,14 @@ export default function AddScoreModal({
             />
           </svg>
         </button>
-        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-          Add Personal Score
-        </h2>
+        <h2 className="text-xl font-semibold mb-4 text-text-primary">Add Personal Score</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Test
-            </label>
+            <label className="block text-sm font-medium text-text-secondary mb-1">Test</label>
             <select
               value={activityId}
               onChange={(e) => setActivityId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 border border-border rounded bg-surface-high text-text-primary"
               required
             >
               <option value="">Select a test...</option>
@@ -152,7 +148,7 @@ export default function AddScoreModal({
           </div>
           {selectedActivity && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-text-secondary mb-1">
                 {selectedActivity.inputType === 'WEIGHT' && 'Weight (kg)'}
                 {selectedActivity.inputType === 'TIME' && 'Time (mm:ss.ms or ss.ms)'}
                 {selectedActivity.inputType === 'DISTANCE' && 'Distance (m)'}
@@ -163,14 +159,14 @@ export default function AddScoreModal({
                 value={rawValue}
                 onChange={(e) => handleScoreChange(e.target.value)}
                 placeholder={isTimeInput() ? 'e.g., 1:26.3 or 86.3' : undefined}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-border rounded bg-surface-high text-text-primary"
                 required
               />
             </div>
           )}
           {selectedActivity?.supportsReps && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-text-secondary mb-1">
                 Reps (optional)
               </label>
               <input
@@ -180,31 +176,31 @@ export default function AddScoreModal({
                 placeholder={`${selectedActivity.defaultReps || 1} (default)`}
                 value={reps}
                 onChange={(e) => setReps(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-border rounded bg-surface-high text-text-primary"
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-text-secondary mt-1">
                 Leave empty for 1RM. Range: {selectedActivity.minReps || 1}-
                 {selectedActivity.maxReps || 10}
               </p>
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-text-secondary mb-1">
               Notes (optional)
             </label>
             <input
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 border border-border rounded bg-surface-high text-text-primary"
             />
           </div>
-          {error && <div className="text-red-600 dark:text-red-400 text-sm">{error}</div>}
+          {error && <div className="text-red-400 text-sm">{error}</div>}
           <div className="flex justify-end">
             <button
               type="submit"
               disabled={isLoading}
-              className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-light disabled:opacity-50"
             >
               {isLoading ? 'Adding...' : 'Add Score'}
             </button>

@@ -21,10 +21,10 @@ export default function Accordion({ sections, defaultOpenId }: AccordionProps) {
   return (
     <div className="space-y-4">
       {sections.map((section) => (
-        <div key={section.id} className="border rounded-lg bg-white dark:bg-gray-800 shadow">
+        <div key={section.id} className="panel">
           <button
             type="button"
-            className="w-full flex justify-between items-center px-6 py-4 text-lg font-semibold text-left text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full flex justify-between items-center px-6 py-4 text-lg font-semibold text-left text-text-primary focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
             aria-expanded={openId === section.id}
             aria-controls={`accordion-content-${section.id}`}
             onClick={() => handleToggle(section.id)}
@@ -48,7 +48,7 @@ export default function Accordion({ sections, defaultOpenId }: AccordionProps) {
           {openId === section.id && (
             <div
               id={`accordion-content-${section.id}`}
-              className="px-6 pb-6 pt-2 border-t border-gray-200 dark:border-gray-700"
+              className="px-6 pb-6 pt-2 border-t border-surface-high"
             >
               {section.content}
             </div>

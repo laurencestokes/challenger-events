@@ -62,29 +62,27 @@ export default function EventImageUpload({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Upload Event Image
-        </label>
+        <label className="block text-sm font-medium text-text-secondary">Upload Event Image</label>
         <input
           ref={fileInputRef}
           type="file"
           accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
           onChange={handleFileSelect}
           disabled={uploading}
-          className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900 dark:file:text-blue-300 dark:hover:file:bg-blue-800 disabled:opacity-50"
+          className="block w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-900 file:text-blue-300 hover:file:bg-blue-800 disabled:opacity-50"
         />
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xs text-text-secondary">
           Supported formats: PNG, JPEG, JPG, GIF, WEBP. Max size: 5MB
         </p>
       </div>
 
       {uploading && (
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex justify-between text-sm text-text-secondary">
             <span>Uploading...</span>
             <span>{Math.round(progress)}%</span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div className="w-full bg-surface-high rounded-full h-2">
             <div
               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}

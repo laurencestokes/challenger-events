@@ -79,10 +79,8 @@ export default function TeamDebug({ eventId }: TeamDebugProps) {
   };
 
   return (
-    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-      <h3 className="text-lg font-medium text-yellow-800 dark:text-yellow-200 mb-4">
-        Team Participation Debug
-      </h3>
+    <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-4">
+      <h3 className="text-lg font-medium text-yellow-200 mb-4">Team Participation Debug</h3>
 
       <div className="space-y-4">
         <div className="flex space-x-2">
@@ -104,7 +102,7 @@ export default function TeamDebug({ eventId }: TeamDebugProps) {
 
         {message && (
           <div
-            className={`text-sm ${messageType === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
+            className={`text-sm ${messageType === 'success' ? 'text-green-400' : 'text-red-400'}`}
           >
             {message}
           </div>

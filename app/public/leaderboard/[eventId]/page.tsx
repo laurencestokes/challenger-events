@@ -271,10 +271,10 @@ export default function PublicEventLeaderboard() {
 
   if (isLoading) {
     return (
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary-500"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary"></div>
             <p className="text-white text-lg">Loading leaderboard...</p>
           </div>
         </div>
@@ -284,7 +284,7 @@ export default function PublicEventLeaderboard() {
 
   if (error) {
     return (
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -303,7 +303,7 @@ export default function PublicEventLeaderboard() {
               </svg>
             </div>
             <h1 className="text-3xl font-bold text-white mb-4">Error Loading Leaderboard</h1>
-            <p className="text-gray-400 text-lg mb-6 max-w-md mx-auto">{error}</p>
+            <p className="text-muted text-lg mb-6 max-w-md mx-auto">{error}</p>
             <button
               onClick={() =>
                 queryClient.invalidateQueries({ queryKey: queryKeys.public.leaderboard(eventId) })
@@ -321,12 +321,12 @@ export default function PublicEventLeaderboard() {
 
   if (!leaderboardData) {
     return (
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-16 h-16 bg-surface-high rounded-full flex items-center justify-center mx-auto mb-6">
               <svg
-                className="w-8 h-8 text-gray-400"
+                className="w-8 h-8 text-muted"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -340,7 +340,7 @@ export default function PublicEventLeaderboard() {
               </svg>
             </div>
             <h1 className="text-3xl font-bold text-white mb-4">No Leaderboard Data</h1>
-            <p className="text-gray-400 text-lg max-w-md mx-auto">
+            <p className="text-muted text-lg max-w-md mx-auto">
               No leaderboard data is available for this event.
             </p>
           </div>
@@ -352,10 +352,7 @@ export default function PublicEventLeaderboard() {
   const tabs = getAvailableTabs();
 
   return (
-    <div
-      className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col"
-      style={{ backgroundColor: '#0F0F0F' }}
-    >
+    <div className="min-h-screen bg-surface-high flex flex-col">
       {/* Connection Status */}
       <div className="fixed bottom-4 left-4 z-40">
         <div
@@ -369,9 +366,9 @@ export default function PublicEventLeaderboard() {
 
       {/* QR Code - Bottom Right */}
       <div className="fixed bottom-4 right-4 z-40">
-        <div className="bg-gray-800/90 backdrop-blur-sm p-3 rounded-lg shadow-lg border border-gray-700/50">
+        <div className="bg-surface-low/90 backdrop-blur-sm p-3 rounded-lg shadow-lg border border-surface-high/50">
           <div className="text-center mb-2">
-            <p className="text-xs text-gray-300 mb-1">Share</p>
+            <p className="text-xs text-text-secondary mb-1">Share</p>
           </div>
           <QRCodeSVG
             value={typeof window !== 'undefined' ? window.location.href : ''}
@@ -390,7 +387,7 @@ export default function PublicEventLeaderboard() {
             {/* Event Information Card */}
             {eventDetails && (
               <div className="mt-6">
-                <div className="w-full h-80 bg-gray-800 rounded-2xl relative overflow-hidden">
+                <div className="w-full h-80 bg-surface-low rounded-2xl relative overflow-hidden">
                   {/* Event Background Image */}
                   <div className="absolute inset-0">
                     <Image
@@ -407,7 +404,7 @@ export default function PublicEventLeaderboard() {
                   <div className="absolute top-6 left-6 right-6 z-10">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <h1 className="text-white font-bold text-3xl mb-2 font-display text-left">
+                        <h1 className="text-white font-bold text-3xl mb-2 font-headline text-left">
                           {leaderboardData.eventName}
                         </h1>
                         {eventInfo && (
@@ -431,7 +428,7 @@ export default function PublicEventLeaderboard() {
                             priority
                           />
                         </a>
-                        <span className="px-3 py-1 text-xs font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
+                        <span className="px-3 py-1 text-xs font-bold bg-primary text-white rounded-full  font-headline">
                           BETA
                         </span>
                       </div>
@@ -457,7 +454,7 @@ export default function PublicEventLeaderboard() {
                         </span>
                       </div>
                       <div className="flex items-center space-x-3 text-white mt-3">
-                        <span className="px-3 py-1 text-sm font-medium rounded-full bg-white/20 text-white">
+                        <span className="px-3 py-1 text-sm font-medium rounded-full bg-surface-low/20 text-white">
                           {eventDetails.status}
                         </span>
                         <span className="text-sm text-white/80">
@@ -489,7 +486,7 @@ export default function PublicEventLeaderboard() {
                   className={`px-3 py-1 text-sm font-medium rounded-md ${
                     viewMode === 'individual'
                       ? 'text-white'
-                      : 'text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600'
+                      : 'text-muted hover:text-white bg-surface-high hover:bg-surface-high'
                   }`}
                   style={viewMode === 'individual' ? { backgroundColor: '#4682b4' } : {}}
                 >
@@ -500,7 +497,7 @@ export default function PublicEventLeaderboard() {
                   className={`px-3 py-1 text-sm font-medium rounded-md ${
                     viewMode === 'team'
                       ? 'text-white'
-                      : 'text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600'
+                      : 'text-muted hover:text-white bg-surface-high hover:bg-surface-high'
                   }`}
                   style={viewMode === 'team' ? { backgroundColor: '#4682b4' } : {}}
                 >
@@ -515,7 +512,7 @@ export default function PublicEventLeaderboard() {
                 className={`px-3 py-1 text-sm font-medium rounded-md ${
                   displayMode === 'table'
                     ? 'text-white'
-                    : 'text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600'
+                    : 'text-muted hover:text-white bg-surface-high hover:bg-surface-high'
                 }`}
                 style={displayMode === 'table' ? { backgroundColor: '#4682b4' } : {}}
               >
@@ -526,7 +523,7 @@ export default function PublicEventLeaderboard() {
                 className={`px-3 py-1 text-sm font-medium rounded-md ${
                   displayMode === 'barchart'
                     ? 'text-white'
-                    : 'text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600'
+                    : 'text-muted hover:text-white bg-surface-high hover:bg-surface-high'
                 }`}
                 style={displayMode === 'barchart' ? { backgroundColor: '#4682b4' } : {}}
               >
@@ -536,17 +533,15 @@ export default function PublicEventLeaderboard() {
           </div>
 
           {/* Tabs */}
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg mb-6 border border-gray-700/50">
-            <div className="border-b border-gray-700/50">
+          <div className="panel rounded-2xl shadow-lg mb-6 ">
+            <div className="border-b border-surface-high/50">
               <nav className="flex space-x-8 overflow-x-auto px-2">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                      activeTab === tab.id
-                        ? ''
-                        : 'border-transparent text-gray-400 hover:text-white'
+                      activeTab === tab.id ? '' : 'border-transparent text-muted hover:text-white'
                     }`}
                     style={
                       activeTab === tab.id ? { borderBottomColor: '#4682b4', color: '#4682b4' } : {}
@@ -571,7 +566,7 @@ export default function PublicEventLeaderboard() {
                       {/* 2nd Place Team (Silver) */}
                       {leaderboardData.teamOverallLeaderboard[1] && (
                         <div className="order-2 md:order-1 relative z-10">
-                          <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
+                          <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
                             {/* Rank Badge */}
                             <div className="absolute -top-3 -left-3 w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center">
                               <span className="text-white font-bold text-lg">#2</span>
@@ -614,10 +609,10 @@ export default function PublicEventLeaderboard() {
                       {/* 1st Place Team (Gold) */}
                       {leaderboardData.teamOverallLeaderboard[0] && (
                         <div className="order-1 md:order-2 relative z-30">
-                          <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
+                          <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
                             {/* Rank Badge */}
                             <div className="absolute -top-3 -left-3 w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
-                              <span className="text-gray-900 font-bold text-lg">#1</span>
+                              <span className="text-text-primary font-bold text-lg">#1</span>
                             </div>
 
                             {/* Team Avatar */}
@@ -657,7 +652,7 @@ export default function PublicEventLeaderboard() {
                       {/* 3rd Place Team (Bronze) */}
                       {leaderboardData.teamOverallLeaderboard[2] && (
                         <div className="order-3 relative z-20">
-                          <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
+                          <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
                             {/* Rank Badge */}
                             <div className="absolute -top-3 -left-3 w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center">
                               <span className="text-white font-bold text-lg">#3</span>
@@ -704,7 +699,7 @@ export default function PublicEventLeaderboard() {
                       {/* 2nd Place (Silver) */}
                       {leaderboardData.overallLeaderboard[1] && (
                         <div className="order-2 md:order-1 relative z-10">
-                          <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
+                          <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
                             {/* Rank Badge */}
                             <div className="absolute -top-3 -left-3 w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center">
                               <span className="text-white font-bold text-lg">#2</span>
@@ -732,7 +727,7 @@ export default function PublicEventLeaderboard() {
                                 {leaderboardData.overallLeaderboard[1].name}
                               </h3>
                               {leaderboardData.overallLeaderboard[1].teamName && (
-                                <p className="text-gray-400 text-sm">
+                                <p className="text-muted text-sm">
                                   {leaderboardData.overallLeaderboard[1].teamName}
                                 </p>
                               )}
@@ -752,10 +747,10 @@ export default function PublicEventLeaderboard() {
                       {/* 1st Place (Gold) */}
                       {leaderboardData.overallLeaderboard[0] && (
                         <div className="order-1 md:order-2 relative z-30">
-                          <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
+                          <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
                             {/* Rank Badge */}
                             <div className="absolute -top-3 -left-3 w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
-                              <span className="text-gray-900 font-bold text-lg">#1</span>
+                              <span className="text-text-primary font-bold text-lg">#1</span>
                             </div>
 
                             {/* Avatar */}
@@ -780,7 +775,7 @@ export default function PublicEventLeaderboard() {
                                 {leaderboardData.overallLeaderboard[0].name}
                               </h3>
                               {leaderboardData.overallLeaderboard[0].teamName && (
-                                <p className="text-gray-400 text-sm">
+                                <p className="text-muted text-sm">
                                   {leaderboardData.overallLeaderboard[0].teamName}
                                 </p>
                               )}
@@ -800,7 +795,7 @@ export default function PublicEventLeaderboard() {
                       {/* 3rd Place (Bronze) */}
                       {leaderboardData.overallLeaderboard[2] && (
                         <div className="order-3 relative z-20">
-                          <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
+                          <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
                             {/* Rank Badge */}
                             <div className="absolute -top-3 -left-3 w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center">
                               <span className="text-white font-bold text-lg">#3</span>
@@ -828,7 +823,7 @@ export default function PublicEventLeaderboard() {
                                 {leaderboardData.overallLeaderboard[2].name}
                               </h3>
                               {leaderboardData.overallLeaderboard[2].teamName && (
-                                <p className="text-gray-400 text-sm">
+                                <p className="text-muted text-sm">
                                   {leaderboardData.overallLeaderboard[2].teamName}
                                 </p>
                               )}
@@ -855,28 +850,28 @@ export default function PublicEventLeaderboard() {
                         {displayMode === 'table' ? (
                           <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-600">
-                              <thead className="bg-gray-700">
+                              <thead className="bg-surface-high">
                                 <tr>
-                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                                     Rank
                                   </th>
-                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                                     {viewMode === 'team' ? 'Team' : 'Competitor'}
                                   </th>
                                   {activities.map((activity) => (
                                     <th
                                       key={activity.id}
-                                      className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+                                      className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider"
                                     >
                                       {activity.name}
                                     </th>
                                   ))}
-                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                                     Total
                                   </th>
                                 </tr>
                               </thead>
-                              <tbody className="bg-gray-800 divide-y divide-gray-600">
+                              <tbody className="bg-surface-low divide-y divide-gray-600">
                                 {viewMode === 'team'
                                   ? (() => {
                                       // Get all team members for each team to show individual scores
@@ -916,7 +911,7 @@ export default function PublicEventLeaderboard() {
                                       return Array.from(teams.values())
                                         .sort((a, b) => b.totalScore - a.totalScore)
                                         .map((team, index) => (
-                                          <tr key={team.teamId} className="hover:bg-gray-700">
+                                          <tr key={team.teamId} className="hover:bg-surface-high">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                               <div className="flex items-center">
                                                 <span className="text-lg font-semibold text-white">
@@ -946,7 +941,7 @@ export default function PublicEventLeaderboard() {
                                                     key={activity.id}
                                                     className="px-6 py-4 whitespace-nowrap"
                                                   >
-                                                    <div className="text-sm text-gray-500">-</div>
+                                                    <div className="text-sm text-muted">-</div>
                                                   </td>
                                                 );
                                               }
@@ -977,7 +972,7 @@ export default function PublicEventLeaderboard() {
                                                           return (
                                                             <div
                                                               key={idx}
-                                                              className="text-xs text-gray-400"
+                                                              className="text-xs text-muted"
                                                             >
                                                               <span className="font-medium">
                                                                 {member?.name || 'Unknown'}
@@ -995,7 +990,7 @@ export default function PublicEventLeaderboard() {
                                                           );
                                                         })}
                                                       {memberScores.length > 3 && (
-                                                        <div className="text-xs text-gray-500">
+                                                        <div className="text-xs text-muted">
                                                           +{memberScores.length - 3} more
                                                         </div>
                                                       )}
@@ -1013,7 +1008,7 @@ export default function PublicEventLeaderboard() {
                                         ));
                                     })()
                                   : leaderboardData.overallLeaderboard?.map((entry) => (
-                                      <tr key={entry.userId} className="hover:bg-gray-700">
+                                      <tr key={entry.userId} className="hover:bg-surface-high">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                           <div className="flex items-center">
                                             <span className="text-lg font-semibold text-white">
@@ -1029,7 +1024,7 @@ export default function PublicEventLeaderboard() {
                                               </div>
 
                                               {entry.teamId && entry.teamName && (
-                                                <div className="text-xs text-gray-400">
+                                                <div className="text-xs text-muted">
                                                   {entry.teamName}
                                                 </div>
                                               )}
@@ -1050,7 +1045,7 @@ export default function PublicEventLeaderboard() {
                                                       ? workoutScore.score.toFixed(1)
                                                       : '0.0'}
                                                   </div>
-                                                  <div className="text-xs text-gray-400">
+                                                  <div className="text-xs text-muted">
                                                     {workoutScore.rawValue
                                                       ? (
                                                           workoutScore as {
@@ -1076,7 +1071,7 @@ export default function PublicEventLeaderboard() {
                                                   </div>
                                                 </div>
                                               ) : (
-                                                <div className="text-sm text-gray-500">-</div>
+                                                <div className="text-sm text-muted">-</div>
                                               )}
                                             </td>
                                           );
@@ -1336,7 +1331,7 @@ export default function PublicEventLeaderboard() {
                           {/* 2nd Place Team (Silver) */}
                           {teamEntries[1] && (
                             <div className="order-2 md:order-1 relative z-10">
-                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
+                              <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
                                 <div className="absolute -top-3 -left-3 w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center">
                                   <span className="text-white font-bold text-lg">#2</span>
                                 </div>
@@ -1366,7 +1361,7 @@ export default function PublicEventLeaderboard() {
                                       .map((member, idx) => (
                                         <div
                                           key={member.userId || idx}
-                                          className="text-xs text-gray-300 text-center"
+                                          className="text-xs text-text-secondary text-center"
                                         >
                                           <span className="font-medium">{member.name}</span>
                                           {' - '}
@@ -1387,9 +1382,9 @@ export default function PublicEventLeaderboard() {
                           {/* 1st Place Team (Gold) */}
                           {teamEntries[0] && (
                             <div className="order-1 md:order-2 relative z-30">
-                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
+                              <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
                                 <div className="absolute -top-3 -left-3 w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
-                                  <span className="text-gray-900 font-bold text-lg">#1</span>
+                                  <span className="text-text-primary font-bold text-lg">#1</span>
                                 </div>
                                 <div className="flex justify-center mb-4">
                                   <div className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-yellow-400 overflow-hidden">
@@ -1417,7 +1412,7 @@ export default function PublicEventLeaderboard() {
                                       .map((member, idx) => (
                                         <div
                                           key={member.userId || idx}
-                                          className="text-xs text-gray-300 text-center"
+                                          className="text-xs text-text-secondary text-center"
                                         >
                                           <span className="font-medium">{member.name}</span>
                                           {' - '}
@@ -1438,7 +1433,7 @@ export default function PublicEventLeaderboard() {
                           {/* 3rd Place Team (Bronze) */}
                           {teamEntries[2] && (
                             <div className="order-3 relative z-20">
-                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
+                              <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
                                 <div className="absolute -top-3 -left-3 w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center">
                                   <span className="text-white font-bold text-lg">#3</span>
                                 </div>
@@ -1468,7 +1463,7 @@ export default function PublicEventLeaderboard() {
                                       .map((member, idx) => (
                                         <div
                                           key={member.userId || idx}
-                                          className="text-xs text-gray-300 text-center"
+                                          className="text-xs text-text-secondary text-center"
                                         >
                                           <span className="font-medium">{member.name}</span>
                                           {' - '}
@@ -1496,7 +1491,7 @@ export default function PublicEventLeaderboard() {
                           {/* 2nd Place (Silver) */}
                           {sortedEntries[1] && (
                             <div className="order-2 md:order-1 relative z-10">
-                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
+                              <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
                                 <div className="absolute -top-3 -left-3 w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center">
                                   <span className="text-white font-bold text-lg">#2</span>
                                 </div>
@@ -1516,7 +1511,7 @@ export default function PublicEventLeaderboard() {
                                     {sortedEntries[1].name}
                                   </h3>
                                   {sortedEntries[1].teamName && (
-                                    <p className="text-gray-400 text-sm">
+                                    <p className="text-muted text-sm">
                                       {sortedEntries[1].teamName}
                                     </p>
                                   )}
@@ -1525,7 +1520,7 @@ export default function PublicEventLeaderboard() {
                                   <div className="text-white font-bold text-2xl">
                                     {sortedEntries[1].score.toFixed(1)}
                                   </div>
-                                  <div className="text-gray-400 text-sm mt-1">
+                                  <div className="text-muted text-sm mt-1">
                                     {formatRawValue(
                                       sortedEntries[1].rawValue,
                                       activeTab,
@@ -1541,9 +1536,9 @@ export default function PublicEventLeaderboard() {
                           {/* 1st Place (Gold) */}
                           {sortedEntries[0] && (
                             <div className="order-1 md:order-2 relative z-30">
-                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
+                              <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
                                 <div className="absolute -top-3 -left-3 w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
-                                  <span className="text-gray-900 font-bold text-lg">#1</span>
+                                  <span className="text-text-primary font-bold text-lg">#1</span>
                                 </div>
                                 <div className="flex justify-center mb-4">
                                   <div className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-yellow-400 overflow-hidden">
@@ -1561,7 +1556,7 @@ export default function PublicEventLeaderboard() {
                                     {sortedEntries[0].name}
                                   </h3>
                                   {sortedEntries[0].teamName && (
-                                    <p className="text-gray-400 text-sm">
+                                    <p className="text-muted text-sm">
                                       {sortedEntries[0].teamName}
                                     </p>
                                   )}
@@ -1570,7 +1565,7 @@ export default function PublicEventLeaderboard() {
                                   <div className="text-white font-bold text-3xl">
                                     {sortedEntries[0].score.toFixed(1)}
                                   </div>
-                                  <div className="text-gray-400 text-sm mt-1">
+                                  <div className="text-muted text-sm mt-1">
                                     {formatRawValue(
                                       sortedEntries[0].rawValue,
                                       activeTab,
@@ -1586,7 +1581,7 @@ export default function PublicEventLeaderboard() {
                           {/* 3rd Place (Bronze) */}
                           {sortedEntries[2] && (
                             <div className="order-3 relative z-20">
-                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
+                              <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
                                 <div className="absolute -top-3 -left-3 w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center">
                                   <span className="text-white font-bold text-lg">#3</span>
                                 </div>
@@ -1606,7 +1601,7 @@ export default function PublicEventLeaderboard() {
                                     {sortedEntries[2].name}
                                   </h3>
                                   {sortedEntries[2].teamName && (
-                                    <p className="text-gray-400 text-sm">
+                                    <p className="text-muted text-sm">
                                       {sortedEntries[2].teamName}
                                     </p>
                                   )}
@@ -1615,7 +1610,7 @@ export default function PublicEventLeaderboard() {
                                   <div className="text-white font-bold text-2xl">
                                     {sortedEntries[2].score.toFixed(1)}
                                   </div>
-                                  <div className="text-gray-400 text-sm mt-1">
+                                  <div className="text-muted text-sm mt-1">
                                     {formatRawValue(
                                       sortedEntries[2].rawValue,
                                       activeTab,
@@ -1635,23 +1630,23 @@ export default function PublicEventLeaderboard() {
                   {displayMode === 'table' ? (
                     <div className="overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-600">
-                        <thead className="bg-gray-700">
+                        <thead className="bg-surface-high">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                               Rank
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                               {viewMode === 'team' ? 'Team' : 'Competitor'}
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                               Score
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                               Performance
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="bg-gray-800 divide-y divide-gray-600">
+                        <tbody className="bg-surface-low divide-y divide-gray-600">
                           {viewMode === 'team'
                             ? (() => {
                                 const workoutEntries =
@@ -1735,7 +1730,7 @@ export default function PublicEventLeaderboard() {
                                   })
                                   .sort((a, b) => b.totalScore - a.totalScore)
                                   .map((team, index) => (
-                                    <tr key={team.teamId} className="hover:bg-gray-700">
+                                    <tr key={team.teamId} className="hover:bg-surface-high">
                                       <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
                                           <span className="text-lg font-semibold text-white">
@@ -1772,9 +1767,9 @@ export default function PublicEventLeaderboard() {
                                             .map((member) => (
                                               <div
                                                 key={member.userId}
-                                                className="border-l-2 border-gray-600 pl-3"
+                                                className="border-l-2 border-border pl-3"
                                               >
-                                                <div className="text-xs font-medium text-gray-300 mb-1">
+                                                <div className="text-xs font-medium text-text-secondary mb-1">
                                                   {member.name}
                                                 </div>
                                                 <div className="space-y-1">
@@ -1783,7 +1778,7 @@ export default function PublicEventLeaderboard() {
                                                     .map((performance, perfIndex) => (
                                                       <div
                                                         key={perfIndex}
-                                                        className="text-xs text-gray-400"
+                                                        className="text-xs text-muted"
                                                       >
                                                         {performance.rawValue
                                                           ? (() => {
@@ -1814,7 +1809,7 @@ export default function PublicEventLeaderboard() {
                                 ?.find((workout) => workout.activityId === activeTab)
                                 ?.entries.sort((a, b) => a.rank - b.rank) // Sort by rank
                                 .map((entry) => (
-                                  <tr key={entry.userId} className="hover:bg-gray-700">
+                                  <tr key={entry.userId} className="hover:bg-surface-high">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                       <div className="flex items-center">
                                         <span className="text-lg font-semibold text-white">
@@ -1830,7 +1825,7 @@ export default function PublicEventLeaderboard() {
                                           </div>
 
                                           {entry.teamName && (
-                                            <div className="text-xs text-gray-400">
+                                            <div className="text-xs text-muted">
                                               {entry.teamName}
                                             </div>
                                           )}
@@ -1843,7 +1838,7 @@ export default function PublicEventLeaderboard() {
                                       </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                      <div className="text-sm text-gray-400">
+                                      <div className="text-sm text-muted">
                                         {entry.rawValue
                                           ? (() => {
                                               const activity = activities.find(
@@ -2070,42 +2065,42 @@ export default function PublicEventLeaderboard() {
             if (filteredResults.length === 0) return null;
 
             return (
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg mb-6 border border-gray-700/50">
+              <div className="panel rounded-2xl shadow-lg mb-6 ">
                 <div className="p-8">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-white">Latest Results</h2>
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-sm text-gray-400">Live Updates</span>
+                      <span className="text-sm text-muted">Live Updates</span>
                     </div>
                   </div>
 
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-600">
-                      <thead className="bg-gray-700">
+                      <thead className="bg-surface-high">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                             Competitor
                           </th>
                           {activeTab === 'overall' && (
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                               Activity
                             </th>
                           )}
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                             Score
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                             Performance
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                             Time
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-gray-800 divide-y divide-gray-600">
+                      <tbody className="bg-surface-low divide-y divide-gray-600">
                         {filteredResults.map((result) => (
-                          <tr key={result.id} className="hover:bg-gray-700">
+                          <tr key={result.id} className="hover:bg-surface-high">
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
                                 <div>
@@ -2113,14 +2108,16 @@ export default function PublicEventLeaderboard() {
                                     {result.name}
                                   </div>
                                   {result.teamName && (
-                                    <div className="text-xs text-gray-400">{result.teamName}</div>
+                                    <div className="text-xs text-muted">{result.teamName}</div>
                                   )}
                                 </div>
                               </div>
                             </td>
                             {activeTab === 'overall' && (
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-300">{result.activityName}</div>
+                                <div className="text-sm text-text-secondary">
+                                  {result.activityName}
+                                </div>
                               </td>
                             )}
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -2129,7 +2126,7 @@ export default function PublicEventLeaderboard() {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-400">
+                              <div className="text-sm text-muted">
                                 {result.rawValue
                                   ? formatRawValue(
                                       result.rawValue,
@@ -2141,7 +2138,7 @@ export default function PublicEventLeaderboard() {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-500">
+                              <div className="text-sm text-muted">
                                 {new Date(result.submittedAt).toLocaleTimeString('en-US', {
                                   hour: '2-digit',
                                   minute: '2-digit',

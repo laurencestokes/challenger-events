@@ -158,15 +158,15 @@ export default function EventPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200';
+        return 'bg-success-100 text-success-800';
       case 'COMPLETED':
-        return 'bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200';
+        return 'bg-accent-100 text-accent-800';
       case 'CANCELLED':
-        return 'bg-error-100 text-error-800 dark:bg-error-900 dark:text-error-200';
+        return 'bg-error-100 text-error-800';
       case 'DRAFT':
-        return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200';
+        return 'bg-secondary-100 text-secondary-800';
       default:
-        return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200';
+        return 'bg-secondary-100 text-secondary-800';
     }
   };
 
@@ -232,42 +232,42 @@ export default function EventPage() {
   if (isLoading) {
     return (
       <ProtectedRoute>
-        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="flex flex-col">
           <Header />
-          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+          <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
               {/* Welcome Section Skeleton */}
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center">
-                  <div className="w-16 h-16 bg-gray-700 rounded-full animate-pulse mr-4"></div>
+                  <div className="w-16 h-16 bg-surface-high rounded-full animate-pulse mr-4"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-700 rounded w-24 mb-2 animate-pulse"></div>
-                    <div className="h-6 bg-gray-700 rounded w-32 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-24 mb-2 animate-pulse"></div>
+                    <div className="h-6 bg-surface-high rounded w-32 animate-pulse"></div>
                   </div>
                 </div>
                 <div className="text-right space-y-3">
                   <div className="flex flex-col items-end">
-                    <div className="h-4 bg-gray-700 rounded w-20 mb-1 animate-pulse"></div>
-                    <div className="bg-gray-700 rounded-lg w-20 h-10 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-20 mb-1 animate-pulse"></div>
+                    <div className="bg-surface-high rounded-lg w-20 h-10 animate-pulse"></div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <div className="h-4 bg-gray-700 rounded w-16 mb-1 animate-pulse"></div>
-                    <div className="bg-gray-700 rounded-lg w-20 h-10 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-16 mb-1 animate-pulse"></div>
+                    <div className="bg-surface-high rounded-lg w-20 h-10 animate-pulse"></div>
                   </div>
                 </div>
               </div>
 
               {/* Breadcrumbs Skeleton */}
               <div className="mb-6">
-                <div className="h-4 bg-gray-700 rounded w-32 animate-pulse"></div>
+                <div className="h-4 bg-surface-high rounded w-32 animate-pulse"></div>
               </div>
 
               {/* Event Header Skeleton */}
               <div className="mb-8">
-                <div className="h-8 bg-gray-700 rounded w-64 mb-2 animate-pulse"></div>
+                <div className="h-8 bg-surface-high rounded w-64 mb-2 animate-pulse"></div>
                 <div className="flex items-center space-x-3">
-                  <div className="h-6 bg-gray-700 rounded w-16 animate-pulse"></div>
-                  <div className="h-4 bg-gray-700 rounded w-24 animate-pulse"></div>
+                  <div className="h-6 bg-surface-high rounded w-16 animate-pulse"></div>
+                  <div className="h-4 bg-surface-high rounded w-24 animate-pulse"></div>
                 </div>
               </div>
 
@@ -281,7 +281,7 @@ export default function EventPage() {
                 {/* Left Column */}
                 <div className="space-y-8">
                   <div>
-                    <div className="h-6 bg-gray-700 rounded w-32 mb-4 animate-pulse"></div>
+                    <div className="h-6 bg-surface-high rounded w-32 mb-4 animate-pulse"></div>
                     <TeamManagementSkeleton />
                   </div>
                 </div>
@@ -289,11 +289,11 @@ export default function EventPage() {
                 {/* Right Column */}
                 <div className="space-y-8">
                   <div>
-                    <div className="h-6 bg-gray-700 rounded w-24 mb-4 animate-pulse"></div>
+                    <div className="h-6 bg-surface-high rounded w-24 mb-4 animate-pulse"></div>
                     <QuickActionsSkeleton />
                   </div>
                   <div>
-                    <div className="h-6 bg-gray-700 rounded w-20 mb-4 animate-pulse"></div>
+                    <div className="h-6 bg-surface-high rounded w-20 mb-4 animate-pulse"></div>
                     <EventStatsSkeleton />
                   </div>
                 </div>
@@ -309,15 +309,15 @@ export default function EventPage() {
   if (error) {
     return (
       <ProtectedRoute>
-        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="flex flex-col">
           <Header />
-          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+          <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
               <div className="text-center py-8">
                 <p className="text-red-400">{error}</p>
                 <Link
                   href="/dashboard"
-                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary transition-colors"
                 >
                   Back to Dashboard
                 </Link>
@@ -333,15 +333,15 @@ export default function EventPage() {
   if (!event) {
     return (
       <ProtectedRoute>
-        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="flex flex-col">
           <Header />
-          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+          <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
               <div className="text-center py-8">
-                <p className="text-gray-400">Event not found.</p>
+                <p className="text-muted">Event not found.</p>
                 <Link
                   href="/dashboard"
-                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary transition-colors"
                 >
                   Back to Dashboard
                 </Link>
@@ -356,9 +356,9 @@ export default function EventPage() {
 
   return (
     <ProtectedRoute>
-      <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+      <div className="flex flex-col">
         <Header />
-        <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+        <div className="flex-1">
           <div className="container mx-auto px-4 py-8">
             {/* Welcome Section */}
             <WelcomeSection
@@ -370,7 +370,7 @@ export default function EventPage() {
 
             {/* Breadcrumbs */}
             <nav
-              className="mb-6 text-sm text-gray-400 flex items-center space-x-2"
+              className="mb-6 text-sm text-muted flex items-center space-x-2"
               aria-label="Breadcrumb"
             >
               <Link href="/dashboard" className="hover:text-white transition-colors">
@@ -389,13 +389,13 @@ export default function EventPage() {
                 >
                   {event.status}
                 </span>
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-muted">
                   Code: <span className="font-mono font-medium text-white">{event.code}</span>
                 </span>
                 {!isJoined && event.status === 'ACTIVE' && (
                   <button
                     onClick={handleJoinEvent}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary transition-colors"
                   >
                     Join Event
                   </button>
@@ -410,7 +410,7 @@ export default function EventPage() {
 
             {/* Event Card */}
             <div className="mb-8">
-              <div className="w-full h-80 bg-gray-800 rounded-2xl relative overflow-hidden">
+              <div className="w-full h-80 bg-surface-low rounded-2xl relative overflow-hidden">
                 {/* Event Background Image */}
                 <div className="absolute inset-0">
                   {event.imageUrl ? (
@@ -496,9 +496,9 @@ export default function EventPage() {
                 {event.isTeamEvent && isJoined && (
                   <div>
                     <h2 className="text-white text-2xl font-bold mb-4">Team Management</h2>
-                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                    <div className="panel rounded-2xl p-6 ">
                       <div className="mb-6">
-                        <p className="text-sm text-gray-400">
+                        <p className="text-sm text-muted">
                           This is a team event.{' '}
                           {event.teamScoringMethod === 'SUM'
                             ? 'Team scores are calculated by summing all member scores.'
@@ -517,11 +517,11 @@ export default function EventPage() {
                 {!isJoined && (
                   <div>
                     <h2 className="text-white text-2xl font-bold mb-4">About This Event</h2>
-                    <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                    <div className="panel rounded-2xl p-6 ">
                       <div className="space-y-4">
                         {event.description && (
                           <div>
-                            <p className="text-gray-300 text-sm leading-relaxed">
+                            <p className="text-text-secondary text-sm leading-relaxed">
                               {event.description}
                             </p>
                           </div>
@@ -565,12 +565,12 @@ export default function EventPage() {
                 {/* Quick Actions */}
                 <div>
                   <h2 className="text-white text-2xl font-bold mb-4">Quick Actions</h2>
-                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                  <div className="panel rounded-2xl p-6 ">
                     <div className="space-y-3">
                       {!isJoined && event.status === 'ACTIVE' && (
                         <button
                           onClick={handleJoinEvent}
-                          className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                          className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary transition-colors"
                         >
                           Join Event
                         </button>
@@ -584,31 +584,31 @@ export default function EventPage() {
                       )}
                       <Link
                         href={`/events/${eventId}/leaderboard`}
-                        className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                        className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary transition-colors"
                       >
                         📊 View Live Leaderboard
                       </Link>
                       <Link
                         href={`/events/${eventId}/calculator`}
-                        className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                        className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary transition-colors"
                       >
                         🧮 Score Calculator
                       </Link>
                       <Link
                         href={`/events/${eventId}/brief`}
-                        className="block w-full text-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600 transition-colors"
+                        className="block w-full text-center px-4 py-2 border border-border text-sm font-medium rounded-md text-text-secondary bg-surface-high hover:bg-surface-high transition-colors"
                       >
                         View Event Brief
                       </Link>
                       <Link
                         href={`/public/leaderboard/${eventId}`}
-                        className="block w-full text-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600 transition-colors"
+                        className="block w-full text-center px-4 py-2 border border-border text-sm font-medium rounded-md text-text-secondary bg-surface-high hover:bg-surface-high transition-colors"
                       >
                         View Public Leaderboard
                       </Link>
                       <button
                         onClick={handleCopyEventCode}
-                        className="block w-full px-4 py-2 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600 transition-colors"
+                        className="block w-full px-4 py-2 border border-border text-sm font-medium rounded-md text-text-secondary bg-surface-high hover:bg-surface-high transition-colors"
                       >
                         Copy Event Code
                       </button>
@@ -619,16 +619,16 @@ export default function EventPage() {
                 {/* Event Stats */}
                 <div>
                   <h2 className="text-white text-2xl font-bold mb-4">Event Stats</h2>
-                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                  <div className="panel rounded-2xl p-6 ">
                     <div className="space-y-3">
                       {/* <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">Participants</span>
+                        <span className="text-sm text-muted">Participants</span>
                         <span className="text-sm font-medium text-white">
                           {event.participants?.length || 0}
                         </span>
                       </div> */}
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">Status</span>
+                        <span className="text-sm text-muted">Status</span>
                         <span
                           className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(event.status)}`}
                         >
@@ -636,7 +636,7 @@ export default function EventPage() {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">Created</span>
+                        <span className="text-sm text-muted">Created</span>
                         <span className="text-sm font-medium text-white">
                           {formatDate(event.createdAt)}
                         </span>

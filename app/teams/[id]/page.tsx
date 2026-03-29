@@ -429,10 +429,7 @@ export default function TeamDetailPage() {
   if (isLoading || authLoading) {
     return (
       <ProtectedRoute>
-        <div
-          className="bg-gray-50 dark:bg-gray-900 flex flex-col min-h-screen"
-          style={{ backgroundColor: '#0F0F0F' }}
-        >
+        <div className="flex flex-col min-h-screen">
           <Header />
           <div className="flex-1 flex flex-col">
             <div className="container mx-auto px-4 py-8 flex-1">
@@ -449,10 +446,7 @@ export default function TeamDetailPage() {
   if (displayError) {
     return (
       <ProtectedRoute>
-        <div
-          className="bg-gray-50 dark:bg-gray-900 flex flex-col"
-          style={{ backgroundColor: '#0F0F0F' }}
-        >
+        <div className="flex flex-col">
           <Header />
           <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
@@ -461,7 +455,7 @@ export default function TeamDetailPage() {
               </div>
               <button
                 onClick={() => router.push('/teams')}
-                className="mt-4 px-4 py-2 text-sm font-medium text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-600"
+                className="mt-4 px-4 py-2 text-sm font-medium text-white bg-surface-high border border-border rounded-md hover:bg-surface-high"
               >
                 Back to Teams
               </button>
@@ -476,18 +470,15 @@ export default function TeamDetailPage() {
   if (!team) {
     return (
       <ProtectedRoute>
-        <div
-          className="bg-gray-50 dark:bg-gray-900 flex flex-col"
-          style={{ backgroundColor: '#0F0F0F' }}
-        >
+        <div className="flex flex-col">
           <Header />
           <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
               <div className="text-center py-8">
-                <p className="text-gray-400">Team not found</p>
+                <p className="text-muted">Team not found</p>
                 <button
                   onClick={() => router.push('/teams')}
-                  className="mt-4 px-4 py-2 text-sm font-medium text-white bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-600"
+                  className="mt-4 px-4 py-2 text-sm font-medium text-white bg-surface-high border border-border rounded-md hover:bg-surface-high"
                 >
                   Back to Teams
                 </button>
@@ -502,16 +493,13 @@ export default function TeamDetailPage() {
 
   return (
     <ProtectedRoute>
-      <div
-        className="bg-gray-50 dark:bg-gray-900 flex flex-col min-h-screen"
-        style={{ backgroundColor: '#0F0F0F' }}
-      >
+      <div className="flex flex-col min-h-screen">
         <Header />
         <div className="flex-1 flex flex-col">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1">
             {/* Breadcrumbs */}
             <nav
-              className="mb-6 text-sm text-gray-400 flex items-center space-x-2 overflow-hidden"
+              className="mb-6 text-sm text-muted flex items-center space-x-2 overflow-hidden"
               aria-label="Breadcrumb"
             >
               <button
@@ -633,7 +621,7 @@ export default function TeamDetailPage() {
                       <button
                         onClick={handleJoinPublicTeam}
                         disabled={isProcessing}
-                        className="px-3 sm:px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 sm:px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary rounded-md whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isProcessing ? 'Joining...' : 'Join Team'}
                       </button>
@@ -641,8 +629,8 @@ export default function TeamDetailPage() {
                   </>
                 )}
               </div>
-              {team.description && <p className="text-gray-400 mb-4">{team.description}</p>}
-              <p className="text-sm text-gray-500">Created on {formatDate(team.createdAt)}</p>
+              {team.description && <p className="text-muted mb-4">{team.description}</p>}
+              <p className="text-sm text-muted">Created on {formatDate(team.createdAt)}</p>
               {logoUploadError && (
                 <div className="mt-2 p-2 bg-red-900/30 border border-red-700/50 rounded text-red-400 text-sm">
                   {logoUploadError}
@@ -651,7 +639,7 @@ export default function TeamDetailPage() {
             </div>
 
             {/* Team Members */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-gray-700/50">
+            <div className="panel rounded-2xl p-4 sm:p-6 ">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
                 <h2 className="text-lg sm:text-xl font-semibold text-white">
                   Team Members ({formatMemberCount(members.length)})
@@ -674,7 +662,7 @@ export default function TeamDetailPage() {
               </div>
 
               {members.length === 0 ? (
-                <p className="text-gray-400 text-center py-8">No members found</p>
+                <p className="text-muted text-center py-8">No members found</p>
               ) : (
                 <div className="space-y-4">
                   {members.map((member) => {
@@ -683,7 +671,7 @@ export default function TeamDetailPage() {
                       return (
                         <div
                           key={member.id}
-                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-gray-700/50 rounded-lg bg-gray-900/50 gap-4"
+                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-surface-high/50 rounded-lg bg-carbon/50 gap-4"
                         >
                           <div className="flex items-center space-x-4 min-w-0 flex-1">
                             <div className="flex-shrink-0">
@@ -692,9 +680,9 @@ export default function TeamDetailPage() {
                               </div>
                             </div>
                             <div className="min-w-0 flex-1">
-                              <h3 className="font-medium text-gray-400">Private Member</h3>
-                              <p className="text-sm text-gray-500">Member details are private</p>
-                              <p className="text-xs text-gray-500">
+                              <h3 className="font-medium text-muted">Private Member</h3>
+                              <p className="text-sm text-muted">Member details are private</p>
+                              <p className="text-xs text-muted">
                                 Joined {formatDate(member.joinedAt)}
                               </p>
                             </div>
@@ -703,8 +691,8 @@ export default function TeamDetailPage() {
                             <span
                               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap self-start sm:self-auto ${
                                 member.role === 'CAPTAIN'
-                                  ? 'bg-primary-500/20 text-primary-400'
-                                  : 'bg-gray-500/20 text-gray-400'
+                                  ? 'bg-primary/20 text-primary-light'
+                                  : 'bg-surface-high0/20 text-muted'
                               }`}
                             >
                               {getRoleDisplayName(member.role)}
@@ -718,11 +706,11 @@ export default function TeamDetailPage() {
                     return (
                       <div
                         key={member.id}
-                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-gray-700/50 rounded-lg bg-gray-900/50 gap-4"
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-surface-high/50 rounded-lg bg-carbon/50 gap-4"
                       >
                         <div className="flex items-center space-x-4 min-w-0 flex-1">
                           <div className="flex-shrink-0">
-                            <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
+                            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                               <span className="text-white font-medium">
                                 {member.user?.name?.charAt(0) ||
                                   member.user?.email?.charAt(0) ||
@@ -734,8 +722,8 @@ export default function TeamDetailPage() {
                             <h3 className="font-medium text-white truncate">
                               {member.user?.name || 'Unknown User'}
                             </h3>
-                            <p className="text-sm text-gray-400 truncate">{member.user?.email}</p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-sm text-muted truncate">{member.user?.email}</p>
+                            <p className="text-xs text-muted">
                               Joined {formatDate(member.joinedAt)}
                             </p>
                           </div>
@@ -755,7 +743,7 @@ export default function TeamDetailPage() {
                                     });
                                     setShowConfirmModal(true);
                                   }}
-                                  className="text-sm text-primary-400 hover:text-primary-300 whitespace-nowrap"
+                                  className="text-sm text-primary-light hover:text-primary-300 whitespace-nowrap"
                                 >
                                   Promote to Captain
                                 </button>
@@ -780,8 +768,8 @@ export default function TeamDetailPage() {
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap self-start sm:self-auto ${
                               member.role === 'CAPTAIN'
-                                ? 'bg-primary-500/20 text-primary-400'
-                                : 'bg-gray-500/20 text-gray-400'
+                                ? 'bg-primary/20 text-primary-light'
+                                : 'bg-surface-high0/20 text-muted'
                             }`}
                           >
                             {getRoleDisplayName(member.role)}
@@ -797,12 +785,12 @@ export default function TeamDetailPage() {
             {/* Pending Invitations Section - Only for Captains */}
             {isCaptain && (
               <div className="mt-8">
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-gray-700/50">
+                <div className="panel rounded-2xl p-4 sm:p-6 ">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg sm:text-xl font-semibold text-white">
                       Pending Invitations
                       {pendingInvitations.length > 0 && (
-                        <span className="text-sm text-gray-400 ml-2">
+                        <span className="text-sm text-muted ml-2">
                           ({pendingInvitations.length})
                         </span>
                       )}
@@ -814,16 +802,16 @@ export default function TeamDetailPage() {
                       {[...Array(2)].map((_, i) => (
                         <div
                           key={i}
-                          className="flex items-center justify-between p-4 border border-gray-700/50 rounded-lg bg-gray-900/50 animate-pulse"
+                          className="flex items-center justify-between p-4 border border-surface-high/50 rounded-lg bg-carbon/50 animate-pulse"
                         >
                           <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 bg-gray-700 rounded-full"></div>
+                            <div className="w-10 h-10 bg-surface-high rounded-full"></div>
                             <div>
-                              <div className="h-4 bg-gray-700 rounded w-32 mb-2"></div>
-                              <div className="h-3 bg-gray-700 rounded w-48"></div>
+                              <div className="h-4 bg-surface-high rounded w-32 mb-2"></div>
+                              <div className="h-3 bg-surface-high rounded w-48"></div>
                             </div>
                           </div>
-                          <div className="h-6 bg-gray-700 rounded w-16"></div>
+                          <div className="h-6 bg-surface-high rounded w-16"></div>
                         </div>
                       ))}
                     </div>
@@ -832,7 +820,7 @@ export default function TeamDetailPage() {
                       {pendingInvitations.map((invitation) => (
                         <div
                           key={invitation.id}
-                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-gray-700/50 rounded-lg bg-gray-900/50 gap-4"
+                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border border-surface-high/50 rounded-lg bg-carbon/50 gap-4"
                         >
                           <div className="flex items-center space-x-4 min-w-0 flex-1">
                             <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -844,7 +832,7 @@ export default function TeamDetailPage() {
                               <h3 className="font-medium text-white truncate">
                                 {invitation.email}
                               </h3>
-                              <p className="text-sm text-gray-400">
+                              <p className="text-sm text-muted">
                                 Invited {formatDate(invitation.createdAt)}
                               </p>
                             </div>
@@ -853,7 +841,7 @@ export default function TeamDetailPage() {
                             <span className="px-2 py-1 text-xs bg-yellow-500/20 text-yellow-400 rounded-full whitespace-nowrap">
                               Pending
                             </span>
-                            <span className="text-xs text-gray-500 whitespace-nowrap">
+                            <span className="text-xs text-muted whitespace-nowrap">
                               Code: {invitation.code}
                             </span>
                           </div>
@@ -862,8 +850,8 @@ export default function TeamDetailPage() {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <p className="text-gray-400 mb-2">No pending invitations</p>
-                      <p className="text-gray-500 text-sm">
+                      <p className="text-muted mb-2">No pending invitations</p>
+                      <p className="text-muted text-sm">
                         Invite users to join your team using the "Invite User" button above
                       </p>
                     </div>
@@ -875,14 +863,14 @@ export default function TeamDetailPage() {
             {/* Invite User Modal */}
             {showInviteModal && (
               <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-                <div className="relative top-20 mx-auto p-5 border border-gray-700/50 w-96 shadow-lg rounded-2xl bg-gray-800">
+                <div className="relative top-20 mx-auto p-5 border border-surface-high/50 w-96 shadow-lg rounded-2xl bg-surface-low">
                   <div className="mt-3">
                     <h3 className="text-lg font-medium text-white mb-4">Invite User to Team</h3>
                     <form onSubmit={handleInviteUser} className="space-y-4">
                       <div>
                         <label
                           htmlFor="inviteEmail"
-                          className="block text-sm font-medium text-gray-300"
+                          className="block text-sm font-medium text-text-secondary"
                         >
                           Email Address *
                         </label>
@@ -892,7 +880,7 @@ export default function TeamDetailPage() {
                           value={inviteEmail}
                           onChange={(e) => setInviteEmail(e.target.value)}
                           required
-                          className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-700"
+                          className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                           placeholder="Enter email address"
                         />
                       </div>
@@ -930,14 +918,14 @@ export default function TeamDetailPage() {
                         <button
                           type="button"
                           onClick={closeInviteModal}
-                          className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-600"
+                          className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface-high border border-border rounded-md hover:bg-surface-high"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
                           disabled={inviteUserMutation.isPending}
-                          className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
+                          className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
                         >
                           {inviteUserMutation.isPending ? 'Sending...' : 'Send Invitation'}
                         </button>
@@ -951,7 +939,7 @@ export default function TeamDetailPage() {
             {/* Confirmation Modal */}
             {showConfirmModal && confirmAction && (
               <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-                <div className="relative top-20 mx-auto p-5 border border-gray-700/50 w-96 shadow-lg rounded-2xl bg-gray-800">
+                <div className="relative top-20 mx-auto p-5 border border-surface-high/50 w-96 shadow-lg rounded-2xl bg-surface-low">
                   <div className="mt-3">
                     <h3 className="text-lg font-medium text-white mb-4">
                       {confirmAction.type === 'delete'
@@ -962,7 +950,7 @@ export default function TeamDetailPage() {
                             ? 'Remove Member'
                             : 'Promote to Captain'}
                     </h3>
-                    <p className="text-gray-400 mb-6">
+                    <p className="text-muted mb-6">
                       {confirmAction.type === 'delete'
                         ? 'Are you sure you want to delete this team? This will permanently delete the team and remove all members. This action cannot be undone.'
                         : confirmAction.type === 'remove' && confirmAction.memberName === 'the team'
@@ -978,7 +966,7 @@ export default function TeamDetailPage() {
                           setShowConfirmModal(false);
                           setConfirmAction(null);
                         }}
-                        className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-600"
+                        className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface-high border border-border rounded-md hover:bg-surface-high"
                       >
                         Cancel
                       </button>
@@ -997,7 +985,7 @@ export default function TeamDetailPage() {
                         className={`px-4 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed ${
                           confirmAction.type === 'delete' || confirmAction.type === 'remove'
                             ? 'bg-red-600 hover:bg-red-700'
-                            : 'bg-primary-600 hover:bg-primary-700'
+                            : 'bg-primary hover:bg-primary'
                         }`}
                       >
                         {isProcessing
@@ -1020,14 +1008,14 @@ export default function TeamDetailPage() {
             {/* Edit Team Modal */}
             {showEditModal && (
               <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-                <div className="relative top-20 mx-auto p-5 border border-gray-700/50 w-96 shadow-lg rounded-2xl bg-gray-800">
+                <div className="relative top-20 mx-auto p-5 border border-surface-high/50 w-96 shadow-lg rounded-2xl bg-surface-low">
                   <div className="mt-3">
                     <h3 className="text-lg font-medium text-white mb-4">Edit Team</h3>
                     <form onSubmit={handleEditTeam} className="space-y-4">
                       <div>
                         <label
                           htmlFor="editName"
-                          className="block text-sm font-medium text-gray-300"
+                          className="block text-sm font-medium text-text-secondary"
                         >
                           Team Name *
                         </label>
@@ -1037,14 +1025,14 @@ export default function TeamDetailPage() {
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
                           required
-                          className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-700"
+                          className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                           placeholder="Enter team name"
                         />
                       </div>
                       <div>
                         <label
                           htmlFor="editDescription"
-                          className="block text-sm font-medium text-gray-300"
+                          className="block text-sm font-medium text-text-secondary"
                         >
                           Description
                         </label>
@@ -1053,7 +1041,7 @@ export default function TeamDetailPage() {
                           value={editDescription}
                           onChange={(e) => setEditDescription(e.target.value)}
                           rows={3}
-                          className="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-700"
+                          className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                           placeholder="Enter team description (optional)"
                         />
                       </div>
@@ -1061,14 +1049,14 @@ export default function TeamDetailPage() {
                         <button
                           type="button"
                           onClick={() => setShowEditModal(false)}
-                          className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 border border-gray-600 rounded-md hover:bg-gray-600"
+                          className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface-high border border-border rounded-md hover:bg-surface-high"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
                           disabled={isEditing}
-                          className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
+                          className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
                         >
                           {isEditing ? 'Saving...' : 'Save Changes'}
                         </button>

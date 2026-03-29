@@ -134,7 +134,7 @@ export default function SocialMediaImageGenerator({
           <div className="relative z-10 p-8 h-full flex flex-col justify-center">
             {/* Main Profile Card */}
             <div
-              className="bg-[#131313]/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-600/30 border-b-4 max-w-3xl mx-auto w-full"
+              className="bg-[#131313]/50 backdrop-blur-sm rounded-2xl p-8 border border-border/30 border-b-4 max-w-3xl mx-auto w-full"
               style={{ borderBottomColor: '#e84c04' }}
             >
               {/* Top Section - Two Column Layout */}
@@ -232,7 +232,7 @@ export default function SocialMediaImageGenerator({
                   <div className="text-sm font-bold text-white mb-2">STRENGTH</div>
                   <div className="text-2xl font-bold">
                     <span className="text-white">{strengthTotalAll}</span>
-                    <span className="text-gray-400 mx-1">/</span>
+                    <span className="text-muted mx-1">/</span>
                     <span style={{ color: '#4682B4' }}>{strengthTotalVerified}</span>
                   </div>
                 </div>
@@ -240,7 +240,7 @@ export default function SocialMediaImageGenerator({
                   <div className="text-sm font-bold text-white mb-2">ENDURANCE</div>
                   <div className="text-2xl font-bold">
                     <span className="text-white">{enduranceTotalAll}</span>
-                    <span className="text-gray-400 mx-1">/</span>
+                    <span className="text-muted mx-1">/</span>
                     <span style={{ color: '#4682B4' }}>{enduranceTotalVerified}</span>
                   </div>
                 </div>
@@ -332,10 +332,10 @@ export default function SocialMediaImageGenerator({
         <h3 className="text-white text-lg font-semibold mb-4">Preview:</h3>
         <div className="max-w-md mx-auto">
           {isGenerating ? (
-            <div className="w-full aspect-[4/5] bg-gray-700 rounded-lg animate-pulse flex items-center justify-center">
+            <div className="w-full aspect-[4/5] bg-surface-high rounded-lg animate-pulse flex items-center justify-center">
               <div className="flex flex-col items-center gap-3">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-                <span className="text-gray-300 text-sm">Generating image...</span>
+                <span className="text-text-secondary text-sm">Generating image...</span>
               </div>
             </div>
           ) : generatedImage ? (
@@ -345,8 +345,8 @@ export default function SocialMediaImageGenerator({
               className="w-full rounded-lg shadow-lg"
             />
           ) : (
-            <div className="w-full aspect-[4/5] bg-gray-700 rounded-lg flex items-center justify-center">
-              <span className="text-gray-400">No image generated</span>
+            <div className="w-full aspect-[4/5] bg-surface-high rounded-lg flex items-center justify-center">
+              <span className="text-muted">No image generated</span>
             </div>
           )}
         </div>

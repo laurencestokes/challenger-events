@@ -329,7 +329,7 @@ export default function TeamsPage() {
     'bg-indigo-500',
     'bg-green-500',
     'bg-yellow-500',
-    'bg-primary-500',
+    'bg-primary',
     'bg-teal-500',
     'bg-cyan-500',
   ];
@@ -388,9 +388,9 @@ export default function TeamsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+      <div className="flex flex-col">
         <Header />
-        <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+        <div className="flex-1">
           <div className="container mx-auto px-4 py-8">
             {/* Welcome Section */}
             <WelcomeSection
@@ -402,7 +402,7 @@ export default function TeamsPage() {
 
             {/* Breadcrumbs */}
             <nav
-              className="mb-6 text-sm text-gray-400 flex items-center space-x-2"
+              className="mb-6 text-sm text-muted flex items-center space-x-2"
               aria-label="Breadcrumb"
             >
               <Link href="/dashboard" className="hover:text-white transition-colors">
@@ -414,7 +414,7 @@ export default function TeamsPage() {
 
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-white mb-2">Team Management</h1>
-              <p className="text-gray-400">
+              <p className="text-muted">
                 {isAdmin
                   ? 'Create teams, join existing ones, and manage team memberships. As an admin, you can manually add users to any team.'
                   : 'Create teams, join existing ones, and manage your team memberships'}
@@ -424,11 +424,11 @@ export default function TeamsPage() {
             {/* Admin Quick Add Members Section */}
             {isAdmin && (
               <div className="mb-8">
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+                <div className="panel rounded-2xl  p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h2 className="text-xl font-semibold text-white mb-1">Quick Add Members</h2>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-muted">
                         Quickly add users (including guests) to any team
                       </p>
                     </div>
@@ -441,7 +441,7 @@ export default function TeamsPage() {
                         setSearchResults([]);
                         setIsAddMemberModalOpen(true);
                       }}
-                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-sm font-medium transition-colors"
+                      className="px-4 py-2 bg-primary hover:bg-primary text-white rounded-md text-sm font-medium transition-colors"
                     >
                       Add Members to Team
                     </button>
@@ -458,7 +458,7 @@ export default function TeamsPage() {
                 </h2>
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="text-gray-400 hover:text-white text-sm border border-gray-600 px-3 py-1 rounded-lg transition-colors"
+                  className="text-muted hover:text-white text-sm border border-border px-3 py-1 rounded-lg transition-colors"
                 >
                   Create Team
                 </button>
@@ -477,7 +477,7 @@ export default function TeamsPage() {
                   {teams.map((team, index) => (
                     <div
                       key={team.id}
-                      className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 relative overflow-hidden hover:scale-105 transition-transform duration-200"
+                      className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 relative overflow-hidden hover:scale-105 transition-transform duration-200"
                     >
                       <Link
                         href={`/teams/${team.id}`}
@@ -553,7 +553,7 @@ export default function TeamsPage() {
                       {isAdmin && (
                         <button
                           onClick={() => handleOpenAddMemberModal(team)}
-                          className="admin-add-member-btn absolute top-2 right-2 z-20 px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-md text-xs font-medium transition-colors shadow-lg"
+                          className="admin-add-member-btn absolute bottom-[4.5rem] right-2 z-20 px-3 py-1.5 bg-primary hover:bg-primary-light text-white rounded-md text-xs font-medium transition-colors shadow-lg"
                         >
                           Add Members
                         </button>
@@ -564,31 +564,31 @@ export default function TeamsPage() {
                   {/* Create Team Box */}
                   <button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 flex flex-col items-center justify-center border-2 border-dashed border-gray-600 hover:border-gray-500 transition-colors"
+                    className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 flex flex-col items-center justify-center border-2 border-dashed border-border hover:border-gray-500 transition-colors"
                   >
-                    <FiPlus className="w-8 h-8 text-gray-400 mb-2" />
-                    <span className="text-gray-400 text-sm">Create Team</span>
+                    <FiPlus className="w-8 h-8 text-muted mb-2" />
+                    <span className="text-muted text-sm">Create Team</span>
                   </button>
 
                   {/* Join Team by Code Box */}
                   <button
                     onClick={() => setIsJoinModalOpen(true)}
-                    className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 flex flex-col items-center justify-center border-2 border-dashed border-gray-600 hover:border-gray-500 transition-colors"
+                    className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 flex flex-col items-center justify-center border-2 border-dashed border-border hover:border-gray-500 transition-colors"
                   >
-                    <FiUsers className="w-8 h-8 text-gray-400 mb-2" />
-                    <span className="text-gray-400 text-sm">Join Team by Code</span>
+                    <FiUsers className="w-8 h-8 text-muted mb-2" />
+                    <span className="text-muted text-sm">Join Team by Code</span>
                   </button>
                 </div>
               ) : (
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 text-center">
-                  <div className="text-gray-400 mb-4">
+                <div className="panel rounded-2xl p-8  text-center">
+                  <div className="text-muted mb-4">
                     <FiUsers className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p className="text-lg font-medium">No teams yet</p>
                     <p className="text-sm">Create or join a team to get started</p>
                   </div>
                   <button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="inline-block px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
+                    className="inline-block px-4 py-2 bg-primary text-white rounded hover:bg-primary transition-colors"
                   >
                     Create Your First Team
                   </button>
@@ -602,7 +602,7 @@ export default function TeamsPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-white text-2xl font-bold">Public Teams</h2>
                   {publicTeams.length > 0 && (
-                    <span className="text-sm text-gray-400">{publicTeams.length} available</span>
+                    <span className="text-sm text-muted">{publicTeams.length} available</span>
                   )}
                 </div>
 
@@ -617,7 +617,7 @@ export default function TeamsPage() {
                     {publicTeams.map((team, index) => (
                       <div
                         key={team.id}
-                        className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 relative overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200"
+                        className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 relative overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200"
                         onClick={() => router.push(`/teams/${team.id}`)}
                       >
                         {/* Team Background/Logo */}
@@ -673,7 +673,7 @@ export default function TeamsPage() {
                               e.stopPropagation();
                               handleJoinPublicTeam(team.id);
                             }}
-                            className="w-full mt-2 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white text-sm rounded transition-colors"
+                            className="w-full mt-2 px-3 py-1.5 bg-surface-low/20 hover:bg-surface-low/30 text-white text-sm rounded transition-colors"
                           >
                             Join Team
                           </button>
@@ -682,11 +682,11 @@ export default function TeamsPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                  <div className="panel rounded-2xl p-6 ">
                     <div className="text-center py-8">
-                      <FiUsers className="w-12 h-12 mx-auto mb-4 text-gray-400 opacity-50" />
-                      <p className="text-gray-400 mb-4">No public teams available</p>
-                      <p className="text-gray-500 text-sm">
+                      <FiUsers className="w-12 h-12 mx-auto mb-4 text-muted opacity-50" />
+                      <p className="text-muted mb-4">No public teams available</p>
+                      <p className="text-muted text-sm">
                         Public teams will appear here when created by administrators
                       </p>
                     </div>
@@ -700,7 +700,7 @@ export default function TeamsPage() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-white text-2xl font-bold">Team Invitations</h2>
                 {pendingInvitations.length > 0 && (
-                  <span className="text-sm text-gray-400">{pendingInvitations.length} pending</span>
+                  <span className="text-sm text-muted">{pendingInvitations.length} pending</span>
                 )}
               </div>
 
@@ -714,7 +714,7 @@ export default function TeamsPage() {
                   {pendingInvitations.map((invitation, _index) => (
                     <div key={invitation.id} className="flex-shrink-0">
                       {/* Team Card - Same as My Teams */}
-                      <div className="w-64 h-48 bg-gray-800 rounded-lg relative overflow-hidden hover:scale-105 transition-transform duration-200">
+                      <div className="w-64 h-48 bg-surface-low rounded-lg relative overflow-hidden hover:scale-105 transition-transform duration-200">
                         {/* Team Background/Logo */}
                         <div className="absolute inset-0">
                           {invitation.team?.logoUrl ? (
@@ -776,13 +776,13 @@ export default function TeamsPage() {
                         <div className="flex space-x-2">
                           <button
                             onClick={() => respondToInvitation(invitation.id, 'decline')}
-                            className="flex-1 px-3 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm"
+                            className="flex-1 px-3 py-2 bg-surface-high text-white rounded-lg hover:bg-surface-high transition-colors text-sm"
                           >
                             Decline
                           </button>
                           <button
                             onClick={() => respondToInvitation(invitation.id, 'accept')}
-                            className="flex-1 px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm"
+                            className="flex-1 px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary transition-colors text-sm"
                           >
                             Accept
                           </button>
@@ -794,23 +794,23 @@ export default function TeamsPage() {
                   {/* Join Team by Code Box */}
                   <button
                     onClick={() => setIsJoinModalOpen(true)}
-                    className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 flex flex-col items-center justify-center border-2 border-dashed border-gray-600 hover:border-gray-500 transition-colors"
+                    className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 flex flex-col items-center justify-center border-2 border-dashed border-border hover:border-gray-500 transition-colors"
                   >
-                    <FiUsers className="w-8 h-8 text-gray-400 mb-2" />
-                    <span className="text-gray-400 text-sm">Join Team by Code</span>
+                    <FiUsers className="w-8 h-8 text-muted mb-2" />
+                    <span className="text-muted text-sm">Join Team by Code</span>
                   </button>
                 </div>
               ) : (
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                <div className="panel rounded-2xl p-6 ">
                   <div className="text-center py-8">
-                    <FiUsers className="w-12 h-12 mx-auto mb-4 text-gray-400 opacity-50" />
-                    <p className="text-gray-400 mb-4">No pending team invitations</p>
-                    <p className="text-gray-500 text-sm mb-6">
+                    <FiUsers className="w-12 h-12 mx-auto mb-4 text-muted opacity-50" />
+                    <p className="text-muted mb-4">No pending team invitations</p>
+                    <p className="text-muted text-sm mb-6">
                       Team captains can invite you by email or you can join with a team code
                     </p>
                     <button
                       onClick={() => setIsJoinModalOpen(true)}
-                      className="inline-block px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
+                      className="inline-block px-4 py-2 bg-primary text-white rounded hover:bg-primary transition-colors"
                     >
                       Join Team by Code
                     </button>
@@ -839,13 +839,13 @@ export default function TeamsPage() {
 
       {/* Admin: Add Member Modal */}
       {isAdmin && isAddMemberModalOpen && (
-        <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-6 border w-full max-w-2xl shadow-lg rounded-lg bg-gray-800 border-gray-700">
+        <div className="fixed inset-0 bg-carbon/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-6 border w-full max-w-2xl shadow-lg rounded-lg bg-surface-low border-surface-high">
             <div className="mb-4">
               <h3 className="text-xl font-bold text-white mb-2">
                 {selectedTeam ? `Add Members to ${selectedTeam.name}` : 'Add Members to Team'}
               </h3>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-muted">
                 {selectedTeam
                   ? 'Search for users (including guest users) and add them to this team'
                   : 'Select a team and search for users (including guest users) to add'}
@@ -855,7 +855,9 @@ export default function TeamsPage() {
             {/* Team Selection (if no team selected yet) */}
             {!selectedTeam && (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">Select Team</label>
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Select Team
+                </label>
                 {/* Team Search Input */}
                 <div className="mb-3">
                   <input
@@ -863,12 +865,12 @@ export default function TeamsPage() {
                     placeholder="Search teams by name or description..."
                     value={teamSearchTerm}
                     onChange={(e) => setTeamSearchTerm(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
-                <div className="max-h-64 overflow-y-auto border border-gray-700 rounded-md bg-gray-700">
+                <div className="max-h-64 overflow-y-auto border border-surface-high rounded-md bg-surface-high">
                   {teams.length === 0 ? (
-                    <div className="p-4 text-center text-gray-400 text-sm">No teams available</div>
+                    <div className="p-4 text-center text-muted text-sm">No teams available</div>
                   ) : (
                     (() => {
                       // Filter teams based on search term
@@ -884,7 +886,7 @@ export default function TeamsPage() {
 
                       if (filteredTeams.length === 0) {
                         return (
-                          <div className="p-4 text-center text-gray-400 text-sm">
+                          <div className="p-4 text-center text-muted text-sm">
                             No teams found matching "{teamSearchTerm}"
                           </div>
                         );
@@ -894,22 +896,22 @@ export default function TeamsPage() {
                         <button
                           key={team.id}
                           onClick={() => setSelectedTeam(team)}
-                          className="w-full text-left p-3 border-b border-gray-600 hover:bg-gray-600 transition-colors"
+                          className="w-full text-left p-3 border-b border-border hover:bg-surface-high transition-colors"
                         >
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="text-white font-medium">{team.name}</p>
                               {team.description && (
-                                <p className="text-sm text-gray-400 mt-1 line-clamp-1">
+                                <p className="text-sm text-muted mt-1 line-clamp-1">
                                   {team.description}
                                 </p>
                               )}
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className="text-xs text-muted mt-1">
                                 {team.memberCount || 0} members • {team.scope || 'N/A'}
                               </p>
                             </div>
                             <svg
-                              className="w-5 h-5 text-gray-400"
+                              className="w-5 h-5 text-muted"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -933,11 +935,13 @@ export default function TeamsPage() {
             {/* Role Selection (only show when team is selected) */}
             {selectedTeam && (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-300 mb-2">Member Role</label>
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Member Role
+                </label>
                 <select
                   value={memberRole}
                   onChange={(e) => setMemberRole(e.target.value as 'MEMBER' | 'CAPTAIN')}
-                  className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="MEMBER">Member</option>
                   <option value="CAPTAIN">Captain</option>
@@ -954,16 +958,16 @@ export default function TeamsPage() {
                     placeholder="Search by name, email, or user ID..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="flex-1 px-3 py-2 border border-border rounded-md bg-surface-high text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
                 <div className="flex items-center space-x-2">
-                  <label className="flex items-center text-sm text-gray-300">
+                  <label className="flex items-center text-sm text-text-secondary">
                     <input
                       type="checkbox"
                       checked={includeGuests}
                       onChange={(e) => setIncludeGuests(e.target.checked)}
-                      className="mr-2 rounded border-gray-600 bg-gray-700 text-primary-600 focus:ring-primary-500"
+                      className="mr-2 rounded border-border bg-surface-high text-primary focus:ring-primary"
                     />
                     Include guest users
                   </label>
@@ -983,17 +987,17 @@ export default function TeamsPage() {
             {/* Search Results */}
             {selectedTeam && isSearching ? (
               <div className="text-center py-4">
-                <p className="text-gray-400">Searching...</p>
+                <p className="text-muted">Searching...</p>
               </div>
             ) : selectedTeam && searchResults.length > 0 ? (
-              <div className="max-h-96 overflow-y-auto border border-gray-700 rounded-md mb-4">
+              <div className="max-h-96 overflow-y-auto border border-surface-high rounded-md mb-4">
                 {searchResults.map((user) => {
                   const isSelected = selectedUserIds.includes(user.id);
                   return (
                     <div
                       key={user.id}
                       onClick={() => toggleUserSelection(user.id)}
-                      className={`p-3 border-b border-gray-700 cursor-pointer hover:bg-gray-700/50 transition-colors ${
+                      className={`p-3 border-b border-surface-high cursor-pointer hover:bg-surface-high/50 transition-colors ${
                         isSelected ? 'bg-primary-900/20 border-primary-700/50' : ''
                       }`}
                     >
@@ -1007,12 +1011,12 @@ export default function TeamsPage() {
                               </span>
                             )}
                           </p>
-                          <p className="text-sm text-gray-400">{user.email}</p>
-                          <p className="text-xs text-gray-500 mt-1">ID: {user.id}</p>
+                          <p className="text-sm text-muted">{user.email}</p>
+                          <p className="text-xs text-muted mt-1">ID: {user.id}</p>
                         </div>
                         {isSelected && (
                           <svg
-                            className="w-5 h-5 text-primary-400"
+                            className="w-5 h-5 text-primary-light"
                             fill="currentColor"
                             viewBox="0 0 20 20"
                           >
@@ -1030,7 +1034,7 @@ export default function TeamsPage() {
               </div>
             ) : selectedTeam && searchTerm.trim() ? (
               <div className="text-center py-4">
-                <p className="text-gray-400">No users found</p>
+                <p className="text-muted">No users found</p>
               </div>
             ) : null}
 
@@ -1051,7 +1055,7 @@ export default function TeamsPage() {
                     setTeamSearchTerm('');
                   }
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors"
+                className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface-high hover:bg-surface-high rounded-md transition-colors"
               >
                 {selectedTeam ? 'Back' : 'Cancel'}
               </button>
@@ -1059,7 +1063,7 @@ export default function TeamsPage() {
                 <button
                   onClick={handleAddMembers}
                   disabled={selectedUserIds.length === 0 || isAddingMembers}
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isAddingMembers ? 'Adding...' : `Add ${selectedUserIds.length} Member(s)`}
                 </button>

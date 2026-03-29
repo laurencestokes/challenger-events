@@ -27,12 +27,12 @@ export default function PublicProfileShare({ url }: { url: string }) {
     <div className="mt-4 flex flex-col items-center">
       <button
         onClick={handleCopy}
-        className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-400"
+        className="px-4 py-2 bg-primary text-white rounded hover:bg-primary focus:outline-none focus:ring-2 focus:ring-primary"
       >
         {copied ? 'Copied!' : 'Copy Profile Link'}
       </button>
       <QRCodeSVG value={url} />
-      <span className="text-xs text-gray-400 mt-1">Scan to view this profile</span>
+      <span className="text-xs text-muted mt-1">Scan to view this profile</span>
     </div>
   );
 }

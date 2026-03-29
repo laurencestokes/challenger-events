@@ -121,22 +121,22 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'VERIFIED':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return 'bg-green-900 text-green-200';
       case 'REJECTED':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'bg-red-900 text-red-200';
       case 'PENDING':
       default:
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return 'bg-yellow-900 text-yellow-200';
     }
   };
 
   if (isLoading) {
     return (
       <ProtectedRoute>
-        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="min-h-screen">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary-500"></div>
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary"></div>
               <p className="text-white text-lg">Loading competition verification...</p>
             </div>
           </div>
@@ -147,7 +147,7 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
 
   return (
     <ProtectedRoute>
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {/* Welcome Section */}
           <WelcomeSection />
@@ -157,35 +157,29 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
             <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
               <div>
                 <div className="flex items-center space-x-3 mb-2">
-                  <Link
-                    href="/dashboard"
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
-                  >
+                  <Link href="/dashboard" className="text-muted hover:text-text-secondary text-sm">
                     Dashboard
                   </Link>
-                  <span className="text-gray-400 dark:text-gray-500">/</span>
-                  <Link
-                    href="/admin"
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
-                  >
+                  <span className="text-muted">/</span>
+                  <Link href="/admin" className="text-muted hover:text-text-secondary text-sm">
                     Admin
                   </Link>
-                  <span className="text-gray-400 dark:text-gray-500">/</span>
+                  <span className="text-muted">/</span>
                   <Link
                     href="/admin/events"
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
+                    className="text-muted hover:text-text-secondary text-sm"
                   >
                     Events
                   </Link>
-                  <span className="text-gray-400 dark:text-gray-500">/</span>
-                  <span className="text-gray-900 dark:text-white text-sm font-medium">
+                  <span className="text-muted">/</span>
+                  <span className="text-text-primary text-sm font-medium">
                     Competition Verification
                   </span>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-3xl font-bold text-text-primary">
                   Competition Verification: {event?.name}
                 </h1>
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
+                <p className="mt-2 text-text-secondary">
                   Weigh and verify competitors for this competition
                 </p>
               </div>
@@ -193,7 +187,7 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
           </div>
 
           {error && (
-            <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+            <div className="mb-6 bg-red-900/20 border border-red-800 rounded-md p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -205,71 +199,68 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
-                  <div className="mt-2 text-sm text-red-700 dark:text-red-300">{error}</div>
+                  <h3 className="text-sm font-medium text-red-200">Error</h3>
+                  <div className="mt-2 text-sm text-red-300">{error}</div>
                 </div>
               </div>
             </div>
           )}
 
           {/* Competitors Table */}
-          <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white">Competitors</h2>
+          <div className="bg-surface-low rounded-lg">
+            <div className="px-6 py-4 border-b border-border">
+              <h2 className="text-lg font-medium text-text-primary">Competitors</h2>
             </div>
             <div className="p-6">
               {isLoading ? (
                 <EventListSkeleton />
               ) : participants.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400">No competitors found.</p>
+                  <p className="text-text-secondary">No competitors found.</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-700">
+                  <table className="min-w-full divide-y divide-surface-high">
+                    <thead className="bg-surface-high">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                           Competitor
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                           Profile Weight
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                           Competition Weight
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                           Actions
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody className="bg-surface-low divide-y divide-surface-high">
                       {participants.map((competitor) => {
                         const status = getVerificationStatus(competitor.id);
                         const competitionWeight = getVerificationBodyweight(competitor.id);
 
                         return (
-                          <tr
-                            key={competitor.id}
-                            className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                          >
+                          <tr key={competitor.id} className="hover:bg-surface-high">
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div>
-                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                <div className="text-sm font-medium text-text-primary">
                                   {competitor.name || 'No name'}
                                 </div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                <div className="text-sm text-text-secondary">
                                   {competitor.email}
                                 </div>
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">
                               {competitor.bodyweight ? `${competitor.bodyweight}kg` : 'Not set'}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">
                               {competitionWeight ? `${competitionWeight}kg` : 'Not weighed'}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -282,7 +273,7 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                               <button
                                 onClick={() => openWeighInModal(competitor)}
-                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
+                                className="text-blue-400 hover:text-blue-300 text-sm"
                               >
                                 {status === 'VERIFIED' ? 'Re-weigh' : 'Weigh In'}
                               </button>
@@ -301,17 +292,17 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
         {/* Weigh In Modal */}
         {showWeighInModal && selectedCompetitor && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-surface-low">
               <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                <h3 className="text-lg font-medium text-text-primary mb-4">
                   Weigh In: {selectedCompetitor.name || selectedCompetitor.email}
                 </h3>
 
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <h4 className="text-sm font-medium text-text-secondary mb-2">
                     Competitor Details
                   </h4>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                  <div className="text-sm text-text-secondary space-y-1">
                     <div>Email: {selectedCompetitor.email}</div>
                     <div>
                       Profile Weight:{' '}
@@ -326,7 +317,7 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
                   <div>
                     <label
                       htmlFor="bodyweight"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      className="block text-sm font-medium text-text-secondary"
                     >
                       Competition Weight (kg) *
                     </label>
@@ -337,7 +328,7 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
                       onChange={(e) => setBodyweight(e.target.value)}
                       required
                       step="0.1"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                      className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-muted text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                       placeholder="Enter weight in kg"
                     />
                   </div>
@@ -345,7 +336,7 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
                   <div>
                     <label
                       htmlFor="notes"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      className="block text-sm font-medium text-text-secondary"
                     >
                       Notes (Optional)
                     </label>
@@ -354,7 +345,7 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
                       value={verificationNotes}
                       onChange={(e) => setVerificationNotes(e.target.value)}
                       rows={3}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                      className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-muted text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                       placeholder="Add any notes about this weigh-in..."
                     />
                   </div>
@@ -363,7 +354,7 @@ export default function CompetitionVerificationPage({ params }: { params: { id: 
                     <button
                       type="button"
                       onClick={() => setShowWeighInModal(false)}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                      className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface-high border border-border rounded-md hover:bg-surface-high"
                     >
                       Cancel
                     </button>

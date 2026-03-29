@@ -1,0 +1,164 @@
+/*
+ * DS component class overrides.
+ * Classes used by @challengerco/challenger-fitness-design-system components
+ * that Tailwind can't auto-detect from node_modules.
+ * This file is imported separately from globals.css so it bypasses
+ * Tailwind's tree-shaking.
+ *
+ * ⚠️  FRAGILE: These rules manually replicate Tailwind utilities that the DS
+ * components use internally. If the DS package updates its components to use
+ * different class names, these rules will silently stop working. When upgrading
+ * @challengerco/challenger-fitness-design-system, grep the DS component source
+ * for class usage and verify these overrides still match.
+ *
+ * Source of truth: node_modules/@challengerco/challenger-fitness-design-system/components/
+ */
+
+/* === Navigation: responsive breakpoints === */
+
+@media (min-width: 640px) {
+  .sm\:block {
+    display: block !important;
+  }
+  .sm\:px-12 {
+    padding-inline: 3rem !important;
+  }
+}
+
+@media (min-width: 1060px) {
+  .lg-nav\:flex {
+    display: flex !important;
+  }
+  .lg-nav\:hidden\! {
+    display: none !important;
+  }
+}
+
+/* === Navigation: layout utilities === */
+
+.gap-10 {
+  gap: 2.5rem;
+}
+
+.gap-6 {
+  gap: 1.5rem;
+}
+
+.flex-nowrap {
+  flex-wrap: nowrap;
+}
+
+.inset-x-0 {
+  left: 0;
+  right: 0;
+}
+
+.mb-16 {
+  margin-bottom: 4rem;
+}
+
+.ml-auto {
+  margin-left: auto;
+}
+
+.outline-none {
+  outline: none;
+}
+
+.m-4 {
+  margin: 1rem;
+}
+
+.max-w-\[375px\] {
+  max-width: 375px;
+}
+
+.w-\[calc\(100\%-2rem\)\] {
+  width: calc(100% - 2rem);
+}
+
+.h-\[calc\(100\%-2rem\)\] {
+  height: calc(100% - 2rem);
+}
+
+/* === Navigation: visual utilities === */
+
+.text-offwhite {
+  color: #F0EEE9;
+}
+
+.bg-background\/95 {
+  background-color: rgb(14 14 14 / 0.95);
+}
+
+.backdrop-blur-sm {
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* === Navigation: hover color for icon and wordmark === */
+
+.hover\:text-primary:hover {
+  color: var(--color-primary) !important;
+}
+
+/* === NavigationLink: typography === */
+
+.text-\[11px\] {
+  font-size: 11px;
+}
+
+.tracking-\[0\.2em\] {
+  letter-spacing: 0.2em;
+}
+
+.duration-125 {
+  transition-duration: 125ms;
+}
+
+.focus-visible\:text-primary:focus-visible {
+  color: var(--color-primary);
+}
+
+/* === Navigation: mobile menu animations === */
+
+.data-\[entering\]\:animate-\[nav-fade-in_0\.3s_ease-in-out\][data-entering] {
+  animation: nav-fade-in 0.3s ease-in-out;
+}
+
+.data-\[exiting\]\:animate-\[nav-fade-out_0\.3s_ease-in-out\][data-exiting] {
+  animation: nav-fade-out 0.3s ease-in-out;
+}
+
+.data-\[entering\]\:animate-\[nav-slide-in_0\.3s_ease-in-out\][data-entering] {
+  animation: nav-slide-in 0.3s ease-in-out;
+}
+
+.data-\[exiting\]\:animate-\[nav-slide-out_0\.3s_ease-in-out\][data-exiting] {
+  animation: nav-slide-out 0.3s ease-in-out;
+}
+
+/* === Dot-matrix background === */
+
+.bg-dot-matrix {
+  background-image: radial-gradient(
+    circle,
+    var(--color-surface-high) 1px,
+    transparent 1px
+  );
+  background-size: 12px 12px;
+}
+
+/* === Layout: content offset for fixed header === */
+
+header.fixed + * {
+  margin-top: 5rem;
+}
+
+/* === Layout: constrain header to body width === */
+
+header.fixed {
+  max-width: 100%;
+  padding-left: max(1.5rem, calc((100% - var(--breakpoint-content)) / 2));
+  padding-right: max(1.5rem, calc((100% - var(--breakpoint-content)) / 2));
+}

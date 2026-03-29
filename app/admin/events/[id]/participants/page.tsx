@@ -330,7 +330,7 @@ export default function EventParticipantsPage() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <WelcomeSection showMetrics={true} isLoading={isLoading} />
 
@@ -339,28 +339,26 @@ export default function EventParticipantsPage() {
             <div className="flex items-center space-x-3 mb-2">
               <button
                 onClick={() => router.push('/admin/events')}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
+                className="text-muted hover:text-text-secondary text-sm"
               >
                 Manage Events
               </button>
-              <span className="text-gray-400 dark:text-gray-500">/</span>
+              <span className="text-muted">/</span>
               <Link
                 href={`/admin/events/${eventId}`}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
+                className="text-muted hover:text-text-secondary text-sm"
               >
                 Event Details
               </Link>
-              <span className="text-gray-400 dark:text-gray-500">/</span>
-              <span className="text-gray-900 dark:text-white text-sm font-medium">
-                Participants
-              </span>
+              <span className="text-muted">/</span>
+              <span className="text-text-primary text-sm font-medium">Participants</span>
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-white">
                   {event?.name ? `Participants - ${event.name}` : 'Participants'}
                 </h1>
-                <p className="mt-2 text-gray-400">Manage participants for this event</p>
+                <p className="mt-2 text-muted">Manage participants for this event</p>
               </div>
               <div className="flex gap-3">
                 <Link
@@ -396,35 +394,35 @@ export default function EventParticipantsPage() {
           <div className="space-y-6">
             {/* Regular Participants */}
             {regularParticipants.length > 0 && (
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+              <div className="panel rounded-2xl  p-6">
                 <h2 className="text-xl font-semibold text-white mb-4">
                   Registered Participants ({regularParticipants.length})
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-gray-700">
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                      <tr className="border-b border-surface-high">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Name
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Email
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Age
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Sex
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Bodyweight
                         </th>
                         {event?.isTeamEvent && (
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                          <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                             Team
                           </th>
                         )}
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Actions
                         </th>
                       </tr>
@@ -433,13 +431,13 @@ export default function EventParticipantsPage() {
                       {regularParticipants.map((participant) => (
                         <tr
                           key={participant.id}
-                          className="border-b border-gray-700/50 hover:bg-gray-700/30"
+                          className="border-b border-surface-high/50 hover:bg-surface-high/30"
                         >
                           <td className="py-3 px-4 text-white">{participant.name}</td>
-                          <td className="py-3 px-4 text-gray-400">{participant.email || 'N/A'}</td>
-                          <td className="py-3 px-4 text-gray-400">{participant.age || 'N/A'}</td>
-                          <td className="py-3 px-4 text-gray-400">{participant.sex || 'N/A'}</td>
-                          <td className="py-3 px-4 text-gray-400">
+                          <td className="py-3 px-4 text-muted">{participant.email || 'N/A'}</td>
+                          <td className="py-3 px-4 text-muted">{participant.age || 'N/A'}</td>
+                          <td className="py-3 px-4 text-muted">{participant.sex || 'N/A'}</td>
+                          <td className="py-3 px-4 text-muted">
                             {participant.bodyweight ? `${participant.bodyweight} kg` : 'N/A'}
                           </td>
                           {event?.isTeamEvent && (
@@ -453,7 +451,7 @@ export default function EventParticipantsPage() {
                                   }
                                 }}
                                 disabled={assigningTeam === participant.id}
-                                className="text-sm bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 min-w-[150px]"
+                                className="text-sm bg-surface-high border border-border rounded px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 min-w-[150px]"
                               >
                                 <option value="">
                                   {assigningTeam === participant.id ? 'Updating...' : 'No team'}
@@ -491,39 +489,39 @@ export default function EventParticipantsPage() {
             )}
 
             {/* Guest Participants */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+            <div className="panel rounded-2xl  p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-white">
                   Guest Participants ({guestParticipants.length})
                 </h2>
               </div>
               {guestParticipants.length === 0 ? (
-                <p className="text-gray-400 text-center py-8">
+                <p className="text-muted text-center py-8">
                   No guest participants yet. Click "Add Guest Participant" to add one.
                 </p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-gray-700">
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                      <tr className="border-b border-surface-high">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Name
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Age
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Sex
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Bodyweight
                         </th>
                         {event?.isTeamEvent && (
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                          <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                             Team
                           </th>
                         )}
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Actions
                         </th>
                       </tr>
@@ -532,12 +530,12 @@ export default function EventParticipantsPage() {
                       {guestParticipants.map((participant) => (
                         <tr
                           key={participant.id}
-                          className="border-b border-gray-700/50 hover:bg-gray-700/30"
+                          className="border-b border-surface-high/50 hover:bg-surface-high/30"
                         >
                           <td className="py-3 px-4 text-white">{participant.name}</td>
-                          <td className="py-3 px-4 text-gray-400">{participant.age || 'N/A'}</td>
-                          <td className="py-3 px-4 text-gray-400">{participant.sex || 'N/A'}</td>
-                          <td className="py-3 px-4 text-gray-400">
+                          <td className="py-3 px-4 text-muted">{participant.age || 'N/A'}</td>
+                          <td className="py-3 px-4 text-muted">{participant.sex || 'N/A'}</td>
+                          <td className="py-3 px-4 text-muted">
                             {participant.bodyweight ? `${participant.bodyweight} kg` : 'N/A'}
                           </td>
                           {event?.isTeamEvent && (
@@ -551,7 +549,7 @@ export default function EventParticipantsPage() {
                                   }
                                 }}
                                 disabled={assigningTeam === participant.id}
-                                className="text-sm bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 min-w-[150px]"
+                                className="text-sm bg-surface-high border border-border rounded px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 min-w-[150px]"
                               >
                                 <option value="">
                                   {assigningTeam === participant.id ? 'Updating...' : 'No team'}
@@ -602,13 +600,13 @@ export default function EventParticipantsPage() {
 
             {/* Orphaned Scores (from deleted users) */}
             {orphanedScores.length > 0 && (
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+              <div className="panel rounded-2xl  p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h2 className="text-xl font-semibold text-white">
                       Orphaned Scores ({orphanedScores.length})
                     </h2>
-                    <p className="text-sm text-gray-400 mt-1">
+                    <p className="text-sm text-muted mt-1">
                       Scores from deleted users. These appear as "Unknown User" on the leaderboard.
                     </p>
                   </div>
@@ -619,7 +617,7 @@ export default function EventParticipantsPage() {
                       })
                     }
                     disabled={isLoadingOrphanedScores}
-                    className="px-3 py-1 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50"
+                    className="px-3 py-1 text-sm bg-surface-high text-white rounded-lg hover:bg-surface-high transition-colors disabled:opacity-50"
                   >
                     {isLoadingOrphanedScores ? 'Loading...' : 'Refresh'}
                   </button>
@@ -627,20 +625,20 @@ export default function EventParticipantsPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-gray-700">
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                      <tr className="border-b border-surface-high">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Activity
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Raw Value
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Calculated Score
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Submitted
                         </th>
-                        <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                        <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                           Actions
                         </th>
                       </tr>
@@ -649,18 +647,16 @@ export default function EventParticipantsPage() {
                       {orphanedScores.map((score) => (
                         <tr
                           key={score.id}
-                          className="border-b border-gray-700/50 hover:bg-gray-700/30"
+                          className="border-b border-surface-high/50 hover:bg-surface-high/30"
                         >
                           <td className="py-3 px-4 text-white">{score.activityName}</td>
-                          <td className="py-3 px-4 text-gray-400">
+                          <td className="py-3 px-4 text-muted">
                             {score.rawValue}
                             {score.activityUnit && ` ${score.activityUnit}`}
                             {score.reps && ` (${score.reps} reps)`}
                           </td>
-                          <td className="py-3 px-4 text-gray-400">{score.calculatedScore}</td>
-                          <td className="py-3 px-4 text-gray-400">
-                            {formatDate(score.submittedAt)}
-                          </td>
+                          <td className="py-3 px-4 text-muted">{score.calculatedScore}</td>
+                          <td className="py-3 px-4 text-muted">{formatDate(score.submittedAt)}</td>
                           <td className="py-3 px-4">
                             <button
                               onClick={() => handleDeleteScore(score)}
@@ -681,26 +677,32 @@ export default function EventParticipantsPage() {
           {/* Add/Edit Guest Modal */}
           {showAddModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 max-w-md w-full mx-4">
+              <div className="bg-surface-low rounded-2xl border border-surface-high p-6 max-w-md w-full mx-4">
                 <h2 className="text-2xl font-bold text-white mb-4">
                   {editingParticipant ? 'Edit Guest Participant' : 'Add Guest Participant'}
                 </h2>
                 <form onSubmit={handleAddGuest} className="space-y-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-text-secondary mb-1"
+                    >
                       Name *
                     </label>
                     <input
                       type="text"
                       id="name"
                       required
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label htmlFor="age" className="block text-sm font-medium text-gray-300 mb-1">
+                    <label
+                      htmlFor="age"
+                      className="block text-sm font-medium text-text-secondary mb-1"
+                    >
                       Age *
                     </label>
                     <input
@@ -709,19 +711,22 @@ export default function EventParticipantsPage() {
                       required
                       min="1"
                       max="120"
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                       value={age}
                       onChange={(e) => setAge(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label htmlFor="sex" className="block text-sm font-medium text-gray-300 mb-1">
+                    <label
+                      htmlFor="sex"
+                      className="block text-sm font-medium text-text-secondary mb-1"
+                    >
                       Sex *
                     </label>
                     <select
                       id="sex"
                       required
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                       value={sex}
                       onChange={(e) => setSex(e.target.value as 'M' | 'F')}
                     >
@@ -732,7 +737,7 @@ export default function EventParticipantsPage() {
                   <div>
                     <label
                       htmlFor="bodyweight"
-                      className="block text-sm font-medium text-gray-300 mb-1"
+                      className="block text-sm font-medium text-text-secondary mb-1"
                     >
                       Bodyweight (kg) *
                     </label>
@@ -743,7 +748,7 @@ export default function EventParticipantsPage() {
                       min="0"
                       max="500"
                       step="0.1"
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                       value={bodyweight}
                       onChange={(e) => setBodyweight(e.target.value)}
                     />
@@ -757,7 +762,7 @@ export default function EventParticipantsPage() {
                     <button
                       type="button"
                       onClick={handleCloseModal}
-                      className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
+                      className="px-4 py-2 bg-surface-high text-text-secondary rounded-lg hover:bg-surface-high transition-colors"
                     >
                       Cancel
                     </button>
@@ -791,7 +796,7 @@ export default function EventParticipantsPage() {
           {/* View Scores Modal */}
           {showScoresModal && selectedParticipant && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="bg-surface-low rounded-2xl border border-surface-high p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-white">
                     Scores for {selectedParticipant.name}
@@ -802,7 +807,7 @@ export default function EventParticipantsPage() {
                       setSelectedParticipant(null);
                       setParticipantScores([]);
                     }}
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="text-muted hover:text-white transition-colors"
                   >
                     <FiX className="w-6 h-6" />
                   </button>
@@ -810,30 +815,30 @@ export default function EventParticipantsPage() {
 
                 {isLoadingScores ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-400">Loading scores...</p>
+                    <p className="text-muted">Loading scores...</p>
                   </div>
                 ) : participantScores.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-400">No scores found for this participant.</p>
+                    <p className="text-muted">No scores found for this participant.</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className="border-b border-gray-700">
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                        <tr className="border-b border-surface-high">
+                          <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                             Activity
                           </th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                          <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                             Raw Value
                           </th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                          <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                             Calculated Score
                           </th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                          <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                             Submitted
                           </th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-300">
+                          <th className="text-left py-3 px-4 text-sm font-medium text-text-secondary">
                             Actions
                           </th>
                         </tr>
@@ -842,18 +847,18 @@ export default function EventParticipantsPage() {
                         {participantScores.map((score) => (
                           <tr
                             key={score.id}
-                            className="border-b border-gray-700/50 hover:bg-gray-700/30"
+                            className="border-b border-surface-high/50 hover:bg-surface-high/30"
                           >
                             <td className="py-3 px-4 text-white">{score.activityName}</td>
-                            <td className="py-3 px-4 text-gray-400">
+                            <td className="py-3 px-4 text-muted">
                               {score.rawValue}
                               {score.activityUnit && ` ${score.activityUnit}`}
                               {score.reps && ` (${score.reps} reps)`}
                             </td>
-                            <td className="py-3 px-4 text-gray-400">
+                            <td className="py-3 px-4 text-muted">
                               {score.calculatedScore.toFixed(2)}
                             </td>
-                            <td className="py-3 px-4 text-gray-400">
+                            <td className="py-3 px-4 text-muted">
                               {formatDate(score.submittedAt)}
                             </td>
                             <td className="py-3 px-4">

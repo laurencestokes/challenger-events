@@ -315,7 +315,7 @@ export default function CompetitorDashboard() {
     'bg-indigo-500',
     'bg-green-500',
     'bg-yellow-500',
-    'bg-primary-500',
+    'bg-primary',
     'bg-teal-500',
     'bg-cyan-500',
   ];
@@ -362,7 +362,7 @@ export default function CompetitorDashboard() {
   };
 
   return (
-    <div className="" style={{ backgroundColor: '#0F0F0F' }}>
+    <div>
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <WelcomeSection
@@ -379,10 +379,10 @@ export default function CompetitorDashboard() {
             {/* Upcoming Events Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-white text-2xl font-bold">Upcoming Events</h2>
+                <h2 className="text-text-primary text-2xl font-bold">Upcoming Events</h2>
                 <Link
                   href="/events"
-                  className="text-gray-400 hover:text-white text-sm border border-gray-600 px-3 py-1 rounded-lg transition-colors"
+                  className="text-muted hover:text-text-primary text-sm border border-border px-3 py-1 rounded-lg transition-colors"
                 >
                   More
                 </Link>
@@ -400,7 +400,7 @@ export default function CompetitorDashboard() {
                     <Link
                       key={event.id}
                       href={`/events/${event.id}`}
-                      className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 relative overflow-hidden hover:scale-105 transition-transform duration-200"
+                      className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 relative overflow-hidden hover:scale-105 transition-transform duration-200"
                     >
                       {/* Event Image */}
                       <div className="absolute inset-0">
@@ -448,7 +448,7 @@ export default function CompetitorDashboard() {
                   ))
                 ) : (
                   <>
-                    <div className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 relative overflow-hidden">
+                    <div className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 relative overflow-hidden">
                       <Image
                         src="/upcoming_events_placeholder.png"
                         alt="No upcoming events"
@@ -471,7 +471,7 @@ export default function CompetitorDashboard() {
                         </div>
                       </div>
                     </div>
-                    <div className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 relative overflow-hidden">
+                    <div className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 relative overflow-hidden">
                       <Image
                         src="/upcoming_events_placeholder.png"
                         alt="More events coming"
@@ -502,10 +502,10 @@ export default function CompetitorDashboard() {
             {/* Teams Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-white text-2xl font-bold">Teams</h2>
+                <h2 className="text-text-primary text-2xl font-bold">Teams</h2>
                 <Link
                   href="/teams"
-                  className="text-gray-400 hover:text-white text-sm border border-gray-600 px-3 py-1 rounded-lg transition-colors"
+                  className="text-muted hover:text-text-primary text-sm border border-border px-3 py-1 rounded-lg transition-colors"
                 >
                   More
                 </Link>
@@ -524,7 +524,7 @@ export default function CompetitorDashboard() {
                     <Link
                       key={team.id}
                       href={`/teams/${team.id}`}
-                      className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 relative overflow-hidden hover:scale-105 transition-transform duration-200"
+                      className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 relative overflow-hidden hover:scale-105 transition-transform duration-200"
                     >
                       {/* Team Background/Logo */}
                       <div className="absolute inset-0">
@@ -564,26 +564,26 @@ export default function CompetitorDashboard() {
                   ))
                 ) : (
                   <>
-                    <div className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 flex items-center justify-center">
+                    <div className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 flex items-center justify-center">
                       <div className="text-center">
-                        <p className="text-gray-400 text-sm mb-2">No teams yet</p>
-                        <p className="text-gray-500 text-xs">Create or join one</p>
+                        <p className="text-muted text-sm mb-2">No teams yet</p>
+                        <p className="text-muted text-xs">Create or join one</p>
                       </div>
                     </div>
-                    <div className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 flex items-center justify-center">
+                    <div className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 flex items-center justify-center">
                       <div className="text-center">
-                        <p className="text-gray-400 text-sm mb-2">Join a team</p>
-                        <p className="text-gray-500 text-xs">Get started</p>
+                        <p className="text-muted text-sm mb-2">Join a team</p>
+                        <p className="text-muted text-xs">Get started</p>
                       </div>
                     </div>
                   </>
                 )}
                 <Link
                   href="/teams"
-                  className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 flex flex-col items-center justify-center border-2 border-dashed border-gray-600 hover:border-gray-500 transition-colors"
+                  className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 flex flex-col items-center justify-center border-2 border-dashed border-border hover:border-gray-500 transition-colors"
                 >
-                  <FiPlus className="w-8 h-8 text-gray-400 mb-2" />
-                  <span className="text-gray-400 text-sm">Create Team</span>
+                  <FiPlus className="w-8 h-8 text-muted mb-2" />
+                  <span className="text-muted text-sm">Create Team</span>
                 </Link>
               </div>
             </div>
@@ -594,10 +594,10 @@ export default function CompetitorDashboard() {
             {/* Upcoming Events Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-white text-2xl font-bold">My Events</h2>
+                <h2 className="text-text-primary text-2xl font-bold">My Events</h2>
                 <Link
                   href="/events"
-                  className="text-gray-400 hover:text-white text-sm border border-gray-600 px-3 py-1 rounded-lg transition-colors"
+                  className="text-muted hover:text-text-primary text-sm border border-border px-3 py-1 rounded-lg transition-colors"
                 >
                   More
                 </Link>
@@ -616,7 +616,7 @@ export default function CompetitorDashboard() {
                     <Link
                       key={event.id}
                       href={`/events/${event.id}`}
-                      className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 relative overflow-hidden hover:scale-105 transition-transform duration-200"
+                      className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 relative overflow-hidden hover:scale-105 transition-transform duration-200"
                     >
                       {/* Event Image */}
                       <div className="absolute inset-0">
@@ -664,9 +664,9 @@ export default function CompetitorDashboard() {
                   ))
                 ) : (
                   <>
-                    <div className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 flex items-center justify-center">
+                    <div className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 flex items-center justify-center">
                       <div className="text-center">
-                        <p className="text-gray-400 text-sm mb-2">No events yet</p>
+                        <p className="text-muted text-sm mb-2">No events yet</p>
                         <Link
                           href="/events/join"
                           className="text-orange-400 text-xs hover:text-orange-300"
@@ -675,9 +675,9 @@ export default function CompetitorDashboard() {
                         </Link>
                       </div>
                     </div>
-                    <div className="w-64 h-48 bg-gray-800 rounded-lg flex-shrink-0 flex items-center justify-center">
+                    <div className="w-64 h-48 bg-surface-low rounded-lg flex-shrink-0 flex items-center justify-center">
                       <div className="text-center">
-                        <p className="text-gray-400 text-sm mb-2">Discover events</p>
+                        <p className="text-muted text-sm mb-2">Discover events</p>
                         <Link
                           href="/events"
                           className="text-orange-400 text-xs hover:text-orange-300"
@@ -694,13 +694,13 @@ export default function CompetitorDashboard() {
             {/* Join Event by Code Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-white text-2xl font-bold">Join Event by Code</h2>
+                <h2 className="text-text-primary text-2xl font-bold">Join Event by Code</h2>
               </div>
               <button
                 onClick={() => setIsJoinModalOpen(true)}
-                className="w-full h-32 bg-primary-500 hover:bg-primary-600 rounded-2xl p-6 flex items-center space-x-4 transition-all"
+                className="w-full h-32 bg-primary hover:bg-primary-light rounded-2xl p-6 flex items-center space-x-4 transition-all"
               >
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-surface-low/20 rounded-lg flex items-center justify-center">
                   <FiCalendar className="w-6 h-6 text-white" />
                 </div>
                 <span className="text-white text-xl font-bold">Enter Event Code</span>
@@ -711,14 +711,14 @@ export default function CompetitorDashboard() {
 
         {/* Performance Graph Section */}
         <div className="mt-8">
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+          <div className="panel rounded-2xl p-6">
             <button
               onClick={() => setIsPerformanceGraphExpanded(!isPerformanceGraphExpanded)}
               className="flex items-center justify-between w-full hover:opacity-80 transition-opacity"
             >
-              <h2 className="text-white text-2xl font-bold">Performance Over Time</h2>
+              <h2 className="text-text-primary text-2xl font-bold">Performance Over Time</h2>
               <FiChevronDown
-                className={`w-6 h-6 text-white transition-transform duration-200 ${
+                className={`w-6 h-6 text-text-primary transition-transform duration-200 ${
                   isPerformanceGraphExpanded ? 'rotate-180' : ''
                 }`}
               />
@@ -728,7 +728,7 @@ export default function CompetitorDashboard() {
                 {isLoadingScores ? (
                   <PerformanceGraphSkeleton />
                 ) : (
-                  <div className="bg-gray-900/50 rounded-xl p-4">
+                  <div className="panel-raised rounded-xl p-4">
                     <PerformanceGraph
                       scores={recentScores as ComponentProps<typeof PerformanceGraph>['scores']}
                       isLoading={false}
@@ -742,14 +742,14 @@ export default function CompetitorDashboard() {
 
         {/* Score History Section */}
         <div className="mt-8">
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+          <div className="panel rounded-2xl p-6">
             <button
               onClick={() => setIsScoreHistoryExpanded(!isScoreHistoryExpanded)}
               className="flex items-center justify-between w-full hover:opacity-80 transition-opacity"
             >
-              <h2 className="text-white text-2xl font-bold">Score History</h2>
+              <h2 className="text-text-primary text-2xl font-bold">Score History</h2>
               <FiChevronDown
-                className={`w-6 h-6 text-white transition-transform duration-200 ${
+                className={`w-6 h-6 text-text-primary transition-transform duration-200 ${
                   isScoreHistoryExpanded ? 'rotate-180' : ''
                 }`}
               />
@@ -758,15 +758,15 @@ export default function CompetitorDashboard() {
               <>
                 {isLoadingScores ? (
                   <div className="space-y-3">
-                    <div className="bg-gray-700/50 rounded-lg p-4 animate-pulse">
+                    <div className="bg-surface-high/50 rounded-lg p-4 animate-pulse">
                       <div className="h-4 bg-gray-600 rounded w-3/4 mb-2"></div>
                       <div className="h-3 bg-gray-600 rounded w-1/2"></div>
                     </div>
-                    <div className="bg-gray-700/50 rounded-lg p-4 animate-pulse">
+                    <div className="bg-surface-high/50 rounded-lg p-4 animate-pulse">
                       <div className="h-4 bg-gray-600 rounded w-3/4 mb-2"></div>
                       <div className="h-3 bg-gray-600 rounded w-1/2"></div>
                     </div>
-                    <div className="bg-gray-700/50 rounded-lg p-4 animate-pulse">
+                    <div className="bg-surface-high/50 rounded-lg p-4 animate-pulse">
                       <div className="h-4 bg-gray-600 rounded w-3/4 mb-2"></div>
                       <div className="h-3 bg-gray-600 rounded w-1/2"></div>
                     </div>
@@ -777,25 +777,24 @@ export default function CompetitorDashboard() {
                       {recentScores.slice(0, 5).map((score) => {
                         const isVerified = score.eventId || score.verified;
                         return (
-                          <div
-                            key={score.id}
-                            className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/30"
-                          >
+                          <div key={score.id} className="panel-raised rounded-lg p-4">
                             <div className="flex items-center justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center space-x-2 mb-1">
-                                  <span className="px-2 py-1 text-xs bg-primary-500/20 text-primary-400 rounded font-semibold">
+                                  <span className="px-2 py-1 text-xs bg-primary/20 text-primary-light rounded font-semibold">
                                     {getCanonicalEventName(score)}
                                   </span>
                                   {score.eventName && (
-                                    <span className="text-sm text-gray-300">{score.eventName}</span>
+                                    <span className="text-sm text-text-secondary">
+                                      {score.eventName}
+                                    </span>
                                   )}
                                   {/* Verification Status Badge */}
                                   <span
                                     className={`px-2 py-1 text-xs rounded font-medium flex items-center space-x-1 ${
                                       isVerified
                                         ? 'bg-green-500/20 text-green-400'
-                                        : 'bg-gray-500/20 text-gray-400'
+                                        : 'bg-surface-high0/20 text-muted'
                                     }`}
                                   >
                                     {isVerified ? (
@@ -808,16 +807,16 @@ export default function CompetitorDashboard() {
                                     )}
                                   </span>
                                 </div>
-                                <div className="flex items-center space-x-1 text-xs text-gray-400">
+                                <div className="flex items-center space-x-1 text-xs text-muted">
                                   <FiClock className="w-3 h-3" />
                                   <span>{formatEventDate(score.timestamp)}</span>
                                 </div>
                               </div>
                               <div className="text-right">
-                                <div className="text-lg font-bold text-primary-400">
+                                <div className="text-lg font-bold text-primary-light">
                                   {score.calculatedScore.toFixed(1)}
                                 </div>
-                                <div className="text-xs text-gray-400">
+                                <div className="text-xs text-muted">
                                   {formatRawScoreWithReps(score)}
                                 </div>
                               </div>
@@ -829,7 +828,7 @@ export default function CompetitorDashboard() {
                     <div className="text-center">
                       <Link
                         href="/profile/scores"
-                        className="inline-flex items-center space-x-2 text-primary-400 hover:text-primary-300 text-sm font-medium transition-colors"
+                        className="inline-flex items-center space-x-2 text-primary-light hover:text-primary text-sm font-medium transition-colors"
                       >
                         <span>View All Scores</span>
                         <FiExternalLink className="w-4 h-4" />
@@ -838,8 +837,8 @@ export default function CompetitorDashboard() {
                   </>
                 ) : (
                   <div className="text-center py-8">
-                    <div className="text-gray-400 mb-2">No scores yet</div>
-                    <div className="text-gray-500 text-sm">
+                    <div className="text-muted mb-2">No scores yet</div>
+                    <div className="text-muted text-sm">
                       Start participating in events to see your scores here!
                     </div>
                   </div>

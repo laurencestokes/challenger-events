@@ -87,7 +87,7 @@ export default function CreateEvent() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {/* Welcome Section */}
           <WelcomeSection showMetrics={true} isLoading={isLoading} />
@@ -97,23 +97,21 @@ export default function CreateEvent() {
             <div className="flex items-center space-x-3 mb-2">
               <button
                 onClick={() => router.push('/admin/events')}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
+                className="text-muted hover:text-text-secondary text-sm"
               >
                 Manage Events
               </button>
-              <span className="text-gray-400 dark:text-gray-500">/</span>
-              <span className="text-gray-900 dark:text-white text-sm font-medium">
-                Create Event
-              </span>
+              <span className="text-muted">/</span>
+              <span className="text-text-primary text-sm font-medium">Create Event</span>
             </div>
-            <h1 className="text-3xl font-bold text-white">Create New Event</h1>
-            <p className="mt-2 text-gray-400">Set up a new competition for your competitors</p>
+            <h1 className="text-3xl font-bold text-text-primary">Create New Event</h1>
+            <p className="mt-2 text-muted">Set up a new competition for your competitors</p>
           </div>
 
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8">
+          <div className="panel rounded-2xl  p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-300">
+                <label htmlFor="name" className="block text-sm font-medium text-text-secondary">
                   Event Name *
                 </label>
                 <input
@@ -121,7 +119,7 @@ export default function CreateEvent() {
                   id="name"
                   name="name"
                   required
-                  className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="mt-1 block w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   placeholder="Enter event name"
                   value={name}
                   onChange={handleInputChange}
@@ -129,14 +127,17 @@ export default function CreateEvent() {
               </div>
 
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-300">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-text-secondary"
+                >
                   Description
                 </label>
                 <textarea
                   id="description"
                   name="description"
                   rows={3}
-                  className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="mt-1 block w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   placeholder="Enter event description"
                   value={description}
                   onChange={handleInputChange}
@@ -145,28 +146,34 @@ export default function CreateEvent() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="startDate" className="block text-sm font-medium text-gray-300">
+                  <label
+                    htmlFor="startDate"
+                    className="block text-sm font-medium text-text-secondary"
+                  >
                     Start Date
                   </label>
                   <input
                     type="datetime-local"
                     id="startDate"
                     name="startDate"
-                    className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="mt-1 block w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     value={startDate}
                     onChange={handleInputChange}
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="endDate" className="block text-sm font-medium text-gray-300">
+                  <label
+                    htmlFor="endDate"
+                    className="block text-sm font-medium text-text-secondary"
+                  >
                     End Date
                   </label>
                   <input
                     type="datetime-local"
                     id="endDate"
                     name="endDate"
-                    className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="mt-1 block w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     value={endDate}
                     onChange={handleInputChange}
                   />
@@ -174,12 +181,17 @@ export default function CreateEvent() {
               </div>
 
               {/* Event Scoping Settings */}
-              <div className="border-t border-gray-700/50 pt-6">
-                <h3 className="text-lg font-medium text-white mb-4">Event Access & Location</h3>
+              <div className="border-t border-surface-high/50 pt-6">
+                <h3 className="text-lg font-medium text-text-primary mb-4">
+                  Event Access & Location
+                </h3>
 
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="scope" className="block text-sm font-medium text-gray-300">
+                    <label
+                      htmlFor="scope"
+                      className="block text-sm font-medium text-text-secondary"
+                    >
                       Event Scope
                     </label>
                     <select
@@ -190,7 +202,7 @@ export default function CreateEvent() {
                           e.target.value as 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY',
                         )
                       }
-                      className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="mt-1 block w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     >
                       <option value="PUBLIC">Public - Anyone can join</option>
                       <option value="ORGANIZATION">
@@ -205,7 +217,7 @@ export default function CreateEvent() {
                     <div>
                       <label
                         htmlFor="organizationId"
-                        className="block text-sm font-medium text-gray-300"
+                        className="block text-sm font-medium text-text-secondary"
                       >
                         Organization ID
                       </label>
@@ -214,7 +226,7 @@ export default function CreateEvent() {
                         id="organizationId"
                         value={organizationId}
                         onChange={(e) => setOrganizationId(e.target.value)}
-                        className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="mt-1 block w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         placeholder="Enter organization ID"
                       />
                     </div>
@@ -222,7 +234,10 @@ export default function CreateEvent() {
 
                   {scope === 'GYM' && (
                     <div>
-                      <label htmlFor="gymId" className="block text-sm font-medium text-gray-300">
+                      <label
+                        htmlFor="gymId"
+                        className="block text-sm font-medium text-text-secondary"
+                      >
                         Gym ID
                       </label>
                       <input
@@ -230,7 +245,7 @@ export default function CreateEvent() {
                         id="gymId"
                         value={gymId}
                         onChange={(e) => setGymId(e.target.value)}
-                        className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="mt-1 block w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         placeholder="Enter gym ID"
                       />
                     </div>
@@ -239,7 +254,10 @@ export default function CreateEvent() {
                   {/* Location Settings */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="country" className="block text-sm font-medium text-gray-300">
+                      <label
+                        htmlFor="country"
+                        className="block text-sm font-medium text-text-secondary"
+                      >
                         Country
                       </label>
                       <div className="relative">
@@ -247,7 +265,7 @@ export default function CreateEvent() {
                           id="country"
                           value={country}
                           onChange={(e) => setCountry(e.target.value)}
-                          className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          className="mt-1 block w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         >
                           <option value="GB">🇬🇧 United Kingdom</option>
                         </select>
@@ -255,7 +273,10 @@ export default function CreateEvent() {
                     </div>
 
                     <div>
-                      <label htmlFor="postcode" className="block text-sm font-medium text-gray-300">
+                      <label
+                        htmlFor="postcode"
+                        className="block text-sm font-medium text-text-secondary"
+                      >
                         Postcode (Optional)
                       </label>
                       <input
@@ -263,7 +284,7 @@ export default function CreateEvent() {
                         id="postcode"
                         value={postcode}
                         onChange={(e) => setPostcode(e.target.value)}
-                        className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="mt-1 block w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         placeholder="e.g., SW1A 1AA"
                       />
                     </div>
@@ -272,23 +293,23 @@ export default function CreateEvent() {
               </div>
 
               {/* Event Status */}
-              <div className="border-t border-gray-700/50 pt-6">
-                <h3 className="text-lg font-medium text-white mb-4">Event Status</h3>
+              <div className="border-t border-surface-high/50 pt-6">
+                <h3 className="text-lg font-medium text-text-primary mb-4">Event Status</h3>
 
                 <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-300">
+                  <label htmlFor="status" className="block text-sm font-medium text-text-secondary">
                     Initial Status
                   </label>
                   <select
                     id="status"
                     value={status}
                     onChange={(e) => setStatus(e.target.value as 'DRAFT' | 'ACTIVE')}
-                    className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="mt-1 block w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   >
                     <option value="ACTIVE">Active - Available to join immediately</option>
                     <option value="DRAFT">Draft - Save for later activation</option>
                   </select>
-                  <p className="mt-2 text-sm text-gray-400">
+                  <p className="mt-2 text-sm text-muted">
                     {status === 'ACTIVE'
                       ? 'Event will be immediately available for users to join'
                       : 'Event will be saved as draft and can be activated later from the events management page'}
@@ -297,8 +318,10 @@ export default function CreateEvent() {
               </div>
 
               {/* Team Event Settings */}
-              <div className="border-t border-gray-700/50 pt-6">
-                <h3 className="text-lg font-medium text-white mb-4">Team Competition Settings</h3>
+              <div className="border-t border-surface-high/50 pt-6">
+                <h3 className="text-lg font-medium text-text-primary mb-4">
+                  Team Competition Settings
+                </h3>
 
                 <div className="space-y-4">
                   <div className="flex items-center">
@@ -307,19 +330,19 @@ export default function CreateEvent() {
                       id="isTeamEvent"
                       checked={isTeamEvent}
                       onChange={(e) => setIsTeamEvent(e.target.checked)}
-                      className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-600 rounded bg-gray-700"
+                      className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-surface-high rounded bg-surface-high"
                     />
-                    <label htmlFor="isTeamEvent" className="ml-2 block text-sm text-white">
+                    <label htmlFor="isTeamEvent" className="ml-2 block text-sm text-text-primary">
                       Enable team competition
                     </label>
                   </div>
 
                   {isTeamEvent && (
-                    <div className="space-y-4 pl-6 border-l-2 border-gray-700/50">
+                    <div className="space-y-4 pl-6 border-l-2 border-surface-high/50">
                       <div>
                         <label
                           htmlFor="teamScoringMethod"
-                          className="block text-sm font-medium text-gray-300"
+                          className="block text-sm font-medium text-text-secondary"
                         >
                           Team Scoring Method
                         </label>
@@ -329,7 +352,7 @@ export default function CreateEvent() {
                           onChange={(e) =>
                             setTeamScoringMethod(e.target.value as 'SUM' | 'AVERAGE' | 'BEST')
                           }
-                          className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          className="mt-1 block w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         >
                           <option value="SUM">Sum of all member scores</option>
                           <option value="AVERAGE">Average of member scores</option>
@@ -340,7 +363,7 @@ export default function CreateEvent() {
                       <div>
                         <label
                           htmlFor="maxTeamSize"
-                          className="block text-sm font-medium text-gray-300"
+                          className="block text-sm font-medium text-text-secondary"
                         >
                           Maximum Team Size
                         </label>
@@ -351,7 +374,7 @@ export default function CreateEvent() {
                           max="10"
                           value={maxTeamSize}
                           onChange={(e) => setMaxTeamSize(Number(e.target.value))}
-                          className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          className="mt-1 block w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         />
                       </div>
                     </div>
@@ -369,14 +392,14 @@ export default function CreateEvent() {
                 <button
                   type="button"
                   onClick={() => router.push('/admin/events')}
-                  className="px-4 py-3 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
+                  className="px-4 py-3 bg-surface-high text-text-secondary rounded-lg hover:bg-surface-high transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading || !name}
-                  className="px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-3 bg-orange-500 text-text-primary rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? 'Creating...' : 'Create Event'}
                 </button>

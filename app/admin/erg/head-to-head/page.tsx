@@ -97,10 +97,10 @@ export default function HeadToHeadSetupPage() {
   if (authLoading || loading) {
     return (
       <ProtectedRoute>
-        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="min-h-screen">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary-500"></div>
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary"></div>
               <p className="text-white text-lg">Loading...</p>
             </div>
           </div>
@@ -111,7 +111,7 @@ export default function HeadToHeadSetupPage() {
 
   return (
     <ProtectedRoute>
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {/* Welcome Section */}
           <WelcomeSection />
@@ -121,23 +121,16 @@ export default function HeadToHeadSetupPage() {
             <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
               <div>
                 <div className="flex items-center space-x-3 mb-2">
-                  <Link
-                    href="/dashboard"
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
-                  >
+                  <Link href="/dashboard" className="text-muted hover:text-text-secondary text-sm">
                     Dashboard
                   </Link>
-                  <span className="text-gray-400 dark:text-gray-500">/</span>
-                  <span className="text-gray-900 dark:text-white text-sm font-medium">
-                    Erg Live
-                  </span>
+                  <span className="text-muted">/</span>
+                  <span className="text-text-primary text-sm font-medium">Erg Live</span>
                 </div>
                 <h1 className="text-3xl font-bold text-white">
                   Create Head-to-Head Erg Competition
                 </h1>
-                <p className="mt-2 text-gray-400">
-                  Set up live erg competitions between competitors
-                </p>
+                <p className="mt-2 text-muted">Set up live erg competitions between competitors</p>
               </div>
             </div>
           </div>
@@ -160,14 +153,14 @@ export default function HeadToHeadSetupPage() {
             </div>
           )}
 
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8">
+          <div className="panel rounded-2xl  p-8">
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Event</label>
+                <label className="block text-sm font-medium text-text-secondary mb-2">Event</label>
                 <select
                   value={selectedEventId}
                   onChange={(e) => setSelectedEventId(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 >
                   <option value="">Select Event</option>
                   {events.map((event) => (
@@ -179,11 +172,13 @@ export default function HeadToHeadSetupPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Event Type</label>
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Event Type
+                </label>
                 <select
                   value={selectedEventType}
                   onChange={(e) => setSelectedEventType(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 >
                   <option value="">Select Event Type</option>
                   {EVENT_TYPES.filter((eventType) => eventType.category === 'ENDURANCE').map(
@@ -204,7 +199,7 @@ export default function HeadToHeadSetupPage() {
                       <h3 className="text-blue-400 font-medium">
                         Competitors will be managed in the control panel
                       </h3>
-                      <p className="text-gray-300 text-sm mt-1">
+                      <p className="text-text-secondary text-sm mt-1">
                         After creating the session, you'll be able to add and manage competitors
                         from the control panel.
                       </p>
@@ -230,15 +225,15 @@ export default function HeadToHeadSetupPage() {
                 <Button
                   variant="secondary"
                   onClick={() => router.push('/admin')}
-                  className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-6 py-3 rounded-lg font-medium transition-colors"
+                  className="bg-surface-high hover:bg-surface-high text-text-secondary px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   Cancel
                 </Button>
               </div>
 
-              <div className="mt-6 p-6 bg-gray-700/50 rounded-lg border border-gray-600/50">
+              <div className="mt-6 p-6 bg-surface-high/50 rounded-lg border border-border/50">
                 <h3 className="font-semibold text-white mb-3">How it works:</h3>
-                <ol className="list-decimal list-inside space-y-2 text-sm text-gray-300">
+                <ol className="list-decimal list-inside space-y-2 text-sm text-text-secondary">
                   <li>Select an event to pull competitors from</li>
                   <li>Choose the event type (erg endurance events only)</li>
                   <li>Select two competitors from the event participants</li>

@@ -148,26 +148,26 @@ export default function AdminScoreToolPage() {
 
   return (
     <ProtectedRoute requireAuth requireAdmin>
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <WelcomeSection />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-4">
+            <div className="panel rounded-2xl  p-4">
               <h3 className="text-sm font-semibold text-white mb-1">How it works</h3>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs text-text-secondary">
                 Enter competitor details and event input to see the computed score. Nothing is
                 saved.
               </p>
             </div>
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-4">
+            <div className="panel rounded-2xl  p-4">
               <h3 className="text-sm font-semibold text-white mb-1">Input tips</h3>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs text-text-secondary">
                 Rowing/Bike/Run times accept mm:ss (e.g., 1:35) or seconds (e.g., 95).
               </p>
             </div>
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-4">
+            <div className="panel rounded-2xl  p-4">
               <h3 className="text-sm font-semibold text-white mb-1">Constraints</h3>
-              <p className="text-xs text-gray-300">
+              <p className="text-xs text-text-secondary">
                 Age 18–100, bodyweight 40–250kg, reps 1–10 (for lifts).
               </p>
             </div>
@@ -181,7 +181,7 @@ export default function AdminScoreToolPage() {
                 onChange={(e) => setName(e.target.value)}
               />
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-sans">
+                <label className="block text-sm font-medium text-text-secondary mb-2 font-sans">
                   Sex
                 </label>
                 <div className="flex gap-3">
@@ -189,9 +189,7 @@ export default function AdminScoreToolPage() {
                     type="button"
                     onClick={() => setSex('M')}
                     className={`px-3 py-2 rounded-md text-sm ${
-                      sex === 'M'
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'
+                      sex === 'M' ? 'bg-primary text-white' : 'bg-gray-200 text-text-primary'
                     }`}
                   >
                     Male
@@ -200,9 +198,7 @@ export default function AdminScoreToolPage() {
                     type="button"
                     onClick={() => setSex('F')}
                     className={`px-3 py-2 rounded-md text-sm ${
-                      sex === 'F'
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'
+                      sex === 'F' ? 'bg-primary text-white' : 'bg-gray-200 text-text-primary'
                     }`}
                   >
                     Female
@@ -235,11 +231,11 @@ export default function AdminScoreToolPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 font-sans">
+                <label className="block text-sm font-medium text-text-secondary mb-2 font-sans">
                   Event Type
                 </label>
                 <select
-                  className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                  className="flex h-10 w-full rounded-md border border-border bg-surface-low px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                   value={selectedEventId}
                   onChange={(e) => setSelectedEventId(e.target.value)}
                 >
@@ -250,9 +246,7 @@ export default function AdminScoreToolPage() {
                   ))}
                 </select>
                 {selectedEvent && (
-                  <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-                    {selectedEvent.description}
-                  </p>
+                  <p className="mt-2 text-xs text-text-secondary">{selectedEvent.description}</p>
                 )}
               </div>
 
@@ -280,18 +274,16 @@ export default function AdminScoreToolPage() {
               )}
             </div>
 
-            {error && <div className="text-accent-600 dark:text-accent-400 text-sm">{error}</div>}
+            {error && <div className="text-error text-sm">{error}</div>}
 
             <div className="flex items-center gap-3">
               <Button type="submit" loading={loading}>
                 Calculate Score
               </Button>
               {result && (
-                <div className="text-sm text-gray-900 dark:text-white">
+                <div className="text-sm text-text-primary">
                   Score for <span className="font-semibold">{result.system}</span>:
-                  <span className="ml-2 text-primary-600 dark:text-primary-400 font-bold text-lg">
-                    {result.score}
-                  </span>
+                  <span className="ml-2 text-primary font-bold text-lg">{result.score}</span>
                 </div>
               )}
             </div>

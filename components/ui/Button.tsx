@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { Button as DSButton } from '@challengerco/challenger-fitness-design-system/client';
 import { cn } from '../../lib/utils';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -7,6 +10,19 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   loading?: boolean;
   children: React.ReactNode;
 }
+
+const sizeClasses = {
+  default: 'h-10 px-4 py-2',
+  sm: 'h-9 px-3 text-xs',
+  lg: 'h-11 px-8',
+  icon: 'h-10 w-10 px-0 justify-center',
+};
+
+const variantOverrides: Record<string, string> = {
+  destructive: 'border-error bg-error text-text-primary hover:bg-error/80',
+  ghost: 'border-transparent bg-transparent hover:bg-surface-high hover:border-transparent',
+  link: 'border-transparent bg-transparent underline-offset-4 hover:underline hover:border-transparent px-0 py-0 h-auto',
+};
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -17,46 +33,30 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       loading = false,
       children,
       disabled,
-      ...props
+      type,
+      onClick,
+      'aria-label': ariaLabel,
+      ..._props
     },
-    ref,
+    _ref,
   ) => {
-    const baseClasses =
-      'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-white dark:ring-offset-black';
-
-    const variantClasses = {
-      default:
-        'bg-primary-500 text-white hover:bg-primary-600 focus-visible:ring-primary-500 font-sans font-bold shadow-challenger hover:shadow-challenger-lg',
-      destructive:
-        'bg-accent-500 text-white hover:bg-accent-600 focus-visible:ring-accent-500 font-sans font-bold shadow-glow-red',
-      outline:
-        'border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus-visible:ring-primary-500 font-sans',
-      secondary:
-        'bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 focus-visible:ring-gray-500 font-sans',
-      ghost:
-        'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 focus-visible:ring-gray-500 font-sans',
-      link: 'text-primary-500 underline-offset-4 hover:underline focus-visible:ring-primary-500 font-sans',
-    };
-
-    const sizeClasses = {
-      default: 'h-10 px-4 py-2',
-      sm: 'h-9 rounded-md px-3',
-      lg: 'h-11 rounded-md px-8',
-      icon: 'h-10 w-10',
-    };
+    const dsVariant = variant === 'default' || variant === 'destructive' ? 'primary' : 'secondary';
+    const overrideClass = variantOverrides[variant] || '';
 
     return (
-      <button
+      <DSButton
+        as="button"
+        variant={dsVariant}
         className={cn(
-          baseClasses,
-          variantClasses[variant],
           sizeClasses[size],
+          overrideClass,
           loading && 'opacity-75 cursor-not-allowed',
           className,
         )}
-        ref={ref}
-        disabled={disabled || loading}
-        {...props}
+        isDisabled={disabled || loading}
+        type={type === 'submit' ? 'submit' : type === 'reset' ? 'reset' : 'button'}
+        onPress={onClick ? () => onClick({} as React.MouseEvent<HTMLButtonElement>) : undefined}
+        aria-label={ariaLabel}
       >
         {loading && (
           <svg
@@ -81,7 +81,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           </svg>
         )}
         {children}
-      </button>
+      </DSButton>
     );
   },
 );

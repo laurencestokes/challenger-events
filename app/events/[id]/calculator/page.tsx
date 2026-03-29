@@ -179,40 +179,40 @@ export default function EventCalculator() {
   if (isLoading) {
     return (
       <ProtectedRoute>
-        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="flex flex-col">
           <Header />
-          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+          <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
               {/* Welcome Section Skeleton */}
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center">
-                  <div className="w-16 h-16 bg-gray-700 rounded-full animate-pulse mr-4"></div>
+                  <div className="w-16 h-16 bg-surface-high rounded-full animate-pulse mr-4"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-700 rounded w-24 mb-2 animate-pulse"></div>
-                    <div className="h-6 bg-gray-700 rounded w-32 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-24 mb-2 animate-pulse"></div>
+                    <div className="h-6 bg-surface-high rounded w-32 animate-pulse"></div>
                   </div>
                 </div>
                 <div className="text-right space-y-3">
                   <div className="flex flex-col items-end">
-                    <div className="h-4 bg-gray-700 rounded w-20 mb-1 animate-pulse"></div>
-                    <div className="bg-gray-700 rounded-lg w-20 h-10 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-20 mb-1 animate-pulse"></div>
+                    <div className="bg-surface-high rounded-lg w-20 h-10 animate-pulse"></div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <div className="h-4 bg-gray-700 rounded w-16 mb-1 animate-pulse"></div>
-                    <div className="bg-gray-700 rounded-lg w-20 h-10 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-16 mb-1 animate-pulse"></div>
+                    <div className="bg-surface-high rounded-lg w-20 h-10 animate-pulse"></div>
                   </div>
                 </div>
               </div>
 
               {/* Breadcrumbs Skeleton */}
               <div className="mb-6">
-                <div className="h-4 bg-gray-700 rounded w-48 animate-pulse"></div>
+                <div className="h-4 bg-surface-high rounded w-48 animate-pulse"></div>
               </div>
 
               {/* Event Header Skeleton */}
               <div className="mb-8">
-                <div className="h-8 bg-gray-700 rounded w-80 mb-2 animate-pulse"></div>
-                <div className="h-4 bg-gray-700 rounded w-64 animate-pulse"></div>
+                <div className="h-8 bg-surface-high rounded w-80 mb-2 animate-pulse"></div>
+                <div className="h-4 bg-surface-high rounded w-64 animate-pulse"></div>
               </div>
 
               {/* Event Card Skeleton */}
@@ -221,12 +221,12 @@ export default function EventCalculator() {
               </div>
 
               {/* Calculator Skeleton */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 animate-pulse">
-                <div className="h-6 bg-gray-700 rounded w-40 mb-4"></div>
+              <div className="panel rounded-2xl p-6  animate-pulse">
+                <div className="h-6 bg-surface-high rounded w-40 mb-4"></div>
                 <div className="space-y-4">
-                  <div className="h-4 bg-gray-700 rounded w-full"></div>
-                  <div className="h-4 bg-gray-700 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-700 rounded w-5/6"></div>
+                  <div className="h-4 bg-surface-high rounded w-full"></div>
+                  <div className="h-4 bg-surface-high rounded w-3/4"></div>
+                  <div className="h-4 bg-surface-high rounded w-5/6"></div>
                 </div>
               </div>
             </div>
@@ -240,15 +240,15 @@ export default function EventCalculator() {
   if (error) {
     return (
       <ProtectedRoute>
-        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="flex flex-col">
           <Header />
-          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+          <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
               <div className="text-center py-8">
                 <p className="text-red-400">{error}</p>
                 <Link
                   href="/dashboard"
-                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary transition-colors"
                 >
                   Back to Dashboard
                 </Link>
@@ -264,15 +264,15 @@ export default function EventCalculator() {
   if (!event) {
     return (
       <ProtectedRoute>
-        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="flex flex-col">
           <Header />
-          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+          <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
               <div className="text-center py-8">
-                <p className="text-gray-400">Event not found.</p>
+                <p className="text-muted">Event not found.</p>
                 <Link
                   href="/dashboard"
-                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary transition-colors"
                 >
                   Back to Dashboard
                 </Link>
@@ -291,9 +291,9 @@ export default function EventCalculator() {
 
   return (
     <ProtectedRoute>
-      <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+      <div className="flex flex-col">
         <Header />
-        <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+        <div className="flex-1">
           <div className="container mx-auto px-4 py-8">
             {/* Welcome Section */}
             <div className="flex items-center justify-between mb-8">
@@ -304,7 +304,7 @@ export default function EventCalculator() {
                   </span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-gray-400 text-sm">Welcome Back</p>
+                  <p className="text-muted text-sm">Welcome Back</p>
                   <h1 className="text-white text-2xl font-bold">{user?.name || user?.email}</h1>
                 </div>
               </div>
@@ -332,7 +332,7 @@ export default function EventCalculator() {
 
             {/* Breadcrumbs */}
             <nav
-              className="mb-6 text-sm text-gray-400 flex items-center space-x-2"
+              className="mb-6 text-sm text-muted flex items-center space-x-2"
               aria-label="Breadcrumb"
             >
               <Link href="/dashboard" className="hover:text-white transition-colors">
@@ -349,12 +349,12 @@ export default function EventCalculator() {
             {/* Event Header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-white mb-2">Score Calculator</h1>
-              <p className="text-gray-400">Calculate your target scores for {event.name}</p>
+              <p className="text-muted">Calculate your target scores for {event.name}</p>
             </div>
 
             {/* Event Card */}
             <div className="mb-8">
-              <div className="w-full h-80 bg-gray-800 rounded-2xl relative overflow-hidden">
+              <div className="w-full h-80 bg-surface-low rounded-2xl relative overflow-hidden">
                 {/* Event Background Image */}
                 <div className="absolute inset-0">
                   {event.imageUrl ? (
@@ -418,7 +418,7 @@ export default function EventCalculator() {
                       </span>
                     </div>
                     <div className="flex items-center space-x-3 text-white mt-3">
-                      <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-white/20 text-white">
+                      <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-surface-low/20 text-white">
                         {event.status}
                       </span>
                       <span className="text-sm text-white/80">
@@ -431,10 +431,10 @@ export default function EventCalculator() {
             </div>
 
             {/* Score Calculator Section */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+            <div className="panel rounded-2xl p-6 ">
               <div className="mb-6">
                 <h2 className="text-2xl font-semibold text-white mb-2">Score Calculator</h2>
-                <p className="text-gray-400">
+                <p className="text-muted">
                   Calculate your target scores for each workout in this event. Your personal stats
                   are automatically configured.
                 </p>
@@ -455,13 +455,13 @@ export default function EventCalculator() {
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <Link
                 href={`/events/${eventId}`}
-                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-primary transition-colors"
               >
                 Back to Event
               </Link>
               <Link
                 href={`/events/${eventId}/leaderboard`}
-                className="inline-flex items-center justify-center px-6 py-3 border border-gray-600 text-base font-medium rounded-md text-gray-300 bg-gray-800 hover:bg-gray-700 transition-colors"
+                className="inline-flex items-center justify-center px-6 py-3 border border-border text-base font-medium rounded-md text-text-secondary bg-surface-low hover:bg-surface-high transition-colors"
               >
                 View Leaderboard
               </Link>

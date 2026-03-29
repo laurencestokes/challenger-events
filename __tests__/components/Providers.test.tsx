@@ -6,9 +6,6 @@ jest.mock('@tanstack/react-query', () => ({
   QueryClient: jest.fn().mockImplementation(() => ({})),
   QueryClientProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-jest.mock('next-themes', () => ({
-  ThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
 jest.mock('../../contexts/AuthContext', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));

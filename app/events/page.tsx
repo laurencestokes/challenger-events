@@ -285,7 +285,7 @@ export default function EventsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="flex flex-col min-h-screen" style={{ backgroundColor: '#0F0F0F' }}>
+      <div className="flex flex-col min-h-screen">
         <Header />
         <div className="flex-1">
           <div className="container mx-auto px-4 py-8">
@@ -299,21 +299,21 @@ export default function EventsPage() {
 
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-white mb-2">Upcoming Events</h1>
-              <p className="text-gray-400">Discover and join competitions</p>
+              <h1 className="text-3xl font-bold text-text-primary mb-2">Upcoming Events</h1>
+              <p className="text-muted">Discover and join competitions</p>
             </div>
 
             {/* Search and Filters */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
+            <div className="panel rounded-2xl  p-6 mb-8">
               {/* Search Bar */}
               <div className="relative mb-4">
-                <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted" />
                 <input
                   type="text"
                   placeholder="Search events..."
                   value={filters.searchTerm}
                   onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
-                  className="w-full pl-12 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full pl-12 pr-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
 
@@ -321,7 +321,7 @@ export default function EventsPage() {
               <div className="flex items-center justify-between">
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
+                  className="flex items-center space-x-2 text-text-secondary hover:text-text-primary transition-colors"
                 >
                   <FiFilter />
                   <span>Filters</span>
@@ -338,7 +338,7 @@ export default function EventsPage() {
                 {activeFiltersCount > 0 && (
                   <button
                     onClick={clearFilters}
-                    className="text-orange-400 hover:text-orange-300 text-sm"
+                    className="text-primary-light hover:text-primary text-sm"
                   >
                     Clear filters
                   </button>
@@ -350,11 +350,13 @@ export default function EventsPage() {
                 <div className="mt-4 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Scope</label>
+                      <label className="block text-sm font-medium text-text-secondary mb-2">
+                        Scope
+                      </label>
                       <select
                         value={filters.scope}
                         onChange={(e) => setFilters({ ...filters, scope: e.target.value })}
-                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       >
                         <option value="ALL">All Events</option>
                         <option value="PUBLIC">Public</option>
@@ -364,13 +366,13 @@ export default function EventsPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-text-secondary mb-2">
                         Date Range
                       </label>
                       <select
                         value={filters.dateRange}
                         onChange={(e) => setFilters({ ...filters, dateRange: e.target.value })}
-                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       >
                         <option value="ALL">All Dates</option>
                         <option value="THIS_WEEK">This Week</option>
@@ -384,7 +386,7 @@ export default function EventsPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-text-secondary mb-2">
                         Location Filter
                       </label>
                       <input
@@ -392,21 +394,21 @@ export default function EventsPage() {
                         placeholder="Enter postcode to find nearby events"
                         value={filters.postcode}
                         onChange={(e) => setFilters({ ...filters, postcode: e.target.value })}
-                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       />
-                      <p className="text-xs text-gray-400 mt-1">Find events near this location</p>
+                      <p className="text-xs text-muted mt-1">Find events near this location</p>
                     </div>
                   </div>
 
                   {/* Distance Filter */}
                   {filters.postcode && (
-                    <div className="bg-gray-700/50 rounded-lg p-4">
-                      <h4 className="text-sm font-medium text-white mb-3">
+                    <div className="bg-surface-high/50 rounded-lg p-4">
+                      <h4 className="text-sm font-medium text-text-primary mb-3">
                         Distance from Postcode
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">
+                          <label className="block text-sm font-medium text-text-secondary mb-2">
                             Maximum Distance
                           </label>
                           <input
@@ -416,12 +418,12 @@ export default function EventsPage() {
                             max="500"
                             value={filters.distance}
                             onChange={(e) => setFilters({ ...filters, distance: e.target.value })}
-                            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            className="w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                           />
-                          <p className="text-xs text-gray-400 mt-1">Events within this distance</p>
+                          <p className="text-xs text-muted mt-1">Events within this distance</p>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-2">
+                          <label className="block text-sm font-medium text-text-secondary mb-2">
                             Unit
                           </label>
                           <select
@@ -432,14 +434,14 @@ export default function EventsPage() {
                                 distanceUnit: e.target.value as 'miles' | 'km',
                               })
                             }
-                            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            className="w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                           >
                             <option value="miles">Miles</option>
                             <option value="km">Kilometers</option>
                           </select>
                         </div>
                       </div>
-                      <p className="text-xs text-gray-400 mt-2">
+                      <p className="text-xs text-muted mt-2">
                         Leave empty to show all events with matching postcodes, or enter a distance
                         to find events within that radius.
                       </p>
@@ -474,7 +476,7 @@ export default function EventsPage() {
                   <Link
                     key={event.id}
                     href={`/events/${event.id}`}
-                    className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 overflow-hidden"
+                    className="panel rounded-2xl  overflow-hidden"
                   >
                     {/* Event Image */}
                     <div className="relative h-48">
@@ -509,23 +511,21 @@ export default function EventsPage() {
 
                     {/* Event Content */}
                     <div className="p-6">
-                      <h3 className="text-white font-bold text-xl mb-2">{event.name}</h3>
+                      <h3 className="text-text-primary font-bold text-xl mb-2">{event.name}</h3>
 
                       {event.description && (
-                        <p className="text-gray-400 text-sm mb-4 line-clamp-2">
-                          {event.description}
-                        </p>
+                        <p className="text-muted text-sm mb-4 line-clamp-2">{event.description}</p>
                       )}
 
                       {/* Event Details */}
                       <div className="space-y-2">
-                        <div className="flex items-center text-gray-300 text-sm">
+                        <div className="flex items-center text-text-secondary text-sm">
                           <FiCalendar className="mr-2" />
                           <span>{formatDate(event.startDate)}</span>
                         </div>
 
                         {event.postcode && (
-                          <div className="flex items-center text-gray-300 text-sm">
+                          <div className="flex items-center text-text-secondary text-sm">
                             <FiMapPin className="mr-2" />
                             <span>{event.postcode}</span>
                             <span className="ml-1">🇬🇧</span>
@@ -533,7 +533,7 @@ export default function EventsPage() {
                         )}
 
                         {event.isTeamEvent && event.maxTeamSize && (
-                          <div className="flex items-center text-gray-300 text-sm">
+                          <div className="flex items-center text-text-secondary text-sm">
                             <FiUsers className="mr-2" />
                             <span>Max {event.maxTeamSize} members</span>
                           </div>
@@ -545,7 +545,7 @@ export default function EventsPage() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <div className="text-gray-400 mb-4">
+                <div className="text-muted mb-4">
                   <FiCalendar className="mx-auto text-4xl mb-2" />
                   <p className="text-lg">No events found</p>
                   <p className="text-sm">Try adjusting your filters or check back later</p>

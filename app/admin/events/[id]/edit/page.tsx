@@ -164,7 +164,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
   if (isLoading) {
     return (
       <ProtectedRoute requireAdmin>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
         </div>
       </ProtectedRoute>
@@ -174,9 +174,9 @@ export default function EditEvent({ params }: { params: { id: string } }) {
   if (error && !event) {
     return (
       <ProtectedRoute requireAdmin>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-center">
-            <p className="text-red-600 dark:text-red-400">{error}</p>
+            <p className="text-red-400">{error}</p>
             <button
               onClick={() => router.push('/admin/events')}
               className="mt-4 text-indigo-600 hover:text-indigo-500"
@@ -191,14 +191,14 @@ export default function EditEvent({ params }: { params: { id: string } }) {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Event</h1>
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
+                <h1 className="text-3xl font-bold text-text-primary">Edit Event</h1>
+                <p className="mt-2 text-text-secondary">
                   Update event details and publish when ready
                 </p>
               </div>
@@ -225,14 +225,14 @@ export default function EditEvent({ params }: { params: { id: string } }) {
 
           {/* Success/Error Messages */}
           {success && (
-            <div className="mb-6 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-md p-4">
-              <p className="text-green-800 dark:text-green-200">{success}</p>
+            <div className="mb-6 bg-green-900 border border-green-700 rounded-md p-4">
+              <p className="text-green-200">{success}</p>
             </div>
           )}
 
           {(error || mutationError) && (
-            <div className="mb-6 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-md p-4">
-              <p className="text-red-800 dark:text-red-200">
+            <div className="mb-6 bg-red-900 border border-red-700 rounded-md p-4">
+              <p className="text-red-200">
                 {error ??
                   (mutationError instanceof Error ? mutationError.message : 'An error occurred')}
               </p>
@@ -241,27 +241,24 @@ export default function EditEvent({ params }: { params: { id: string } }) {
 
           {/* Event Code Display */}
           {event && (
-            <div className="mb-6 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-md p-4">
-              <p className="text-blue-800 dark:text-blue-200">
+            <div className="mb-6 bg-blue-900 border border-blue-700 rounded-md p-4">
+              <p className="text-blue-200">
                 <strong>Event Code:</strong> <span className="font-mono">{event.code}</span>
               </p>
-              <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">
+              <p className="text-sm text-blue-300 mt-1">
                 Share this code with competitors to let them join the event.
               </p>
             </div>
           )}
 
           {/* Edit Form */}
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white">Event Details</h2>
+          <div className="bg-surface-low shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-border">
+              <h2 className="text-lg font-medium text-text-primary">Event Details</h2>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
               <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
+                <label htmlFor="name" className="block text-sm font-medium text-text-secondary">
                   Event Name *
                 </label>
                 <input
@@ -270,14 +267,14 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-1 block w-full border border-border rounded-md px-3 py-2 text-text-primary bg-surface-high focus:outline-none focus:ring-primary focus:border-primary"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="description"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  className="block text-sm font-medium text-text-secondary"
                 >
                   Description
                 </label>
@@ -286,7 +283,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
-                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-1 block w-full border border-border rounded-md px-3 py-2 text-text-primary bg-surface-high focus:outline-none focus:ring-primary focus:border-primary"
                 />
               </div>
 
@@ -294,7 +291,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                 <div>
                   <label
                     htmlFor="startDate"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="block text-sm font-medium text-text-secondary"
                   >
                     Start Date
                   </label>
@@ -303,14 +300,14 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                     id="startDate"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="mt-1 block w-full border border-border rounded-md px-3 py-2 text-text-primary bg-surface-high focus:outline-none focus:ring-primary focus:border-primary"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="endDate"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="block text-sm font-medium text-text-secondary"
                   >
                     End Date
                   </label>
@@ -319,21 +316,19 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                     id="endDate"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="mt-1 block w-full border border-border rounded-md px-3 py-2 text-text-primary bg-surface-high focus:outline-none focus:ring-primary focus:border-primary"
                   />
                 </div>
               </div>
 
               {/* Event Access (Scope) */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Event Access
-                </h3>
+              <div className="border-t border-border pt-6">
+                <h3 className="text-lg font-medium text-text-primary mb-4">Event Access</h3>
                 <div className="space-y-4">
                   <div>
                     <label
                       htmlFor="scope"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      className="block text-sm font-medium text-text-secondary"
                     >
                       Event Scope
                     </label>
@@ -345,7 +340,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                           e.target.value as 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY',
                         )
                       }
-                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      className="mt-1 block w-full border border-border rounded-md px-3 py-2 text-text-primary bg-surface-high focus:outline-none focus:ring-primary focus:border-primary"
                     >
                       <option value="PUBLIC">Public - Anyone can join</option>
                       <option value="ORGANIZATION">
@@ -360,7 +355,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                     <div>
                       <label
                         htmlFor="organizationId"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                        className="block text-sm font-medium text-text-secondary"
                       >
                         Organization ID
                       </label>
@@ -369,7 +364,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                         id="organizationId"
                         value={organizationId}
                         onChange={(e) => setOrganizationId(e.target.value)}
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        className="mt-1 block w-full border border-border rounded-md px-3 py-2 text-text-primary bg-surface-high focus:outline-none focus:ring-primary focus:border-primary"
                         placeholder="Enter organization ID"
                       />
                     </div>
@@ -379,7 +374,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                     <div>
                       <label
                         htmlFor="gymId"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                        className="block text-sm font-medium text-text-secondary"
                       >
                         Gym ID
                       </label>
@@ -388,7 +383,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                         id="gymId"
                         value={gymId}
                         onChange={(e) => setGymId(e.target.value)}
-                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        className="mt-1 block w-full border border-border rounded-md px-3 py-2 text-text-primary bg-surface-high focus:outline-none focus:ring-primary focus:border-primary"
                         placeholder="Enter gym ID"
                       />
                     </div>
@@ -397,13 +392,13 @@ export default function EditEvent({ params }: { params: { id: string } }) {
               </div>
 
               {/* Location Settings */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Location</h3>
+              <div className="border-t border-border pt-6">
+                <h3 className="text-lg font-medium text-text-primary mb-4">Location</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label
                       htmlFor="country"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      className="block text-sm font-medium text-text-secondary"
                     >
                       Country
                     </label>
@@ -411,7 +406,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                       id="country"
                       value={country}
                       onChange={(e) => setCountry(e.target.value)}
-                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      className="mt-1 block w-full border border-border rounded-md px-3 py-2 text-text-primary bg-surface-high focus:outline-none focus:ring-primary focus:border-primary"
                     >
                       <option value="GB">United Kingdom</option>
                     </select>
@@ -420,7 +415,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                   <div>
                     <label
                       htmlFor="postcode"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      className="block text-sm font-medium text-text-secondary"
                     >
                       Postcode (Optional)
                     </label>
@@ -430,17 +425,14 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                       value={postcode}
                       onChange={(e) => setPostcode(e.target.value)}
                       placeholder="e.g., SW1A 1AA"
-                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      className="mt-1 block w-full border border-border rounded-md px-3 py-2 text-text-primary bg-surface-high focus:outline-none focus:ring-primary focus:border-primary"
                     />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label
-                  htmlFor="status"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
+                <label htmlFor="status" className="block text-sm font-medium text-text-secondary">
                   Status
                 </label>
                 <select
@@ -449,7 +441,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                   onChange={(e) =>
                     setStatus(e.target.value as 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED')
                   }
-                  className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-1 block w-full border border-border rounded-md px-3 py-2 text-text-primary bg-surface-high focus:outline-none focus:ring-primary focus:border-primary"
                 >
                   <option value="DRAFT">Draft</option>
                   <option value="ACTIVE">Active</option>
@@ -459,8 +451,8 @@ export default function EditEvent({ params }: { params: { id: string } }) {
               </div>
 
               {/* Team Event Settings */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              <div className="border-t border-border pt-6">
+                <h3 className="text-lg font-medium text-text-primary mb-4">
                   Team Competition Settings
                 </h3>
 
@@ -471,22 +463,19 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                       id="isTeamEvent"
                       checked={isTeamEvent}
                       onChange={(e) => setIsTeamEvent(e.target.checked)}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
                     />
-                    <label
-                      htmlFor="isTeamEvent"
-                      className="ml-2 block text-sm text-gray-900 dark:text-white"
-                    >
+                    <label htmlFor="isTeamEvent" className="ml-2 block text-sm text-text-primary">
                       Enable team competition
                     </label>
                   </div>
 
                   {isTeamEvent && (
-                    <div className="space-y-4 pl-6 border-l-2 border-gray-200 dark:border-gray-700">
+                    <div className="space-y-4 pl-6 border-l-2 border-border">
                       <div>
                         <label
                           htmlFor="teamScoringMethod"
-                          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                          className="block text-sm font-medium text-text-secondary"
                         >
                           Team Scoring Method
                         </label>
@@ -496,7 +485,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                           onChange={(e) =>
                             setTeamScoringMethod(e.target.value as 'SUM' | 'AVERAGE' | 'BEST')
                           }
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                          className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                         >
                           <option value="SUM">Sum of all member scores</option>
                           <option value="AVERAGE">Average of member scores</option>
@@ -507,7 +496,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                       <div>
                         <label
                           htmlFor="maxTeamSize"
-                          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                          className="block text-sm font-medium text-text-secondary"
                         >
                           Maximum Team Size
                         </label>
@@ -518,7 +507,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                           max="10"
                           value={maxTeamSize}
                           onChange={(e) => setMaxTeamSize(Number(e.target.value))}
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                          className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-muted text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                         />
                       </div>
                     </div>
@@ -530,7 +519,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                 <button
                   type="button"
                   onClick={() => router.push('/admin/events')}
-                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  className="text-text-secondary hover:text-text-primary"
                 >
                   Cancel
                 </button>

@@ -11,13 +11,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // Show loading spinner while checking authentication
   if (loading) {
     return (
-      <div
-        style={{ backgroundColor: '#0F0F0F' }}
-        className="min-h-screen flex items-center justify-center"
-      >
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4 border-primary-500"></div>
-          <p className="text-white text-lg font-sans">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4 border-primary"></div>
+          <p className="text-text-primary text-lg font-body">Loading...</p>
         </div>
       </div>
     );
@@ -26,7 +23,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // Show access denied if user is not admin
   if (!user || user.role !== 'ADMIN') {
     return (
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col">
         <Header />
         <div className="flex-1">
           <div className="container mx-auto px-4 py-8">
@@ -46,8 +43,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   />
                 </svg>
               </div>
-              <h1 className="text-3xl font-bold text-white mb-4">Access Denied</h1>
-              <p className="text-gray-400 text-lg max-w-md mx-auto">
+              <h1 className="text-3xl font-bold text-text-primary mb-4">Access Denied</h1>
+              <p className="text-muted text-lg max-w-md mx-auto">
                 You don't have permission to access the admin area. Please contact an administrator
                 if you believe this is an error.
               </p>
@@ -61,7 +58,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <ProtectedRoute>
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col">
         <Header />
         <div className="flex-1">{children}</div>
         <Footer />

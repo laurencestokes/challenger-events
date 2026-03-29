@@ -93,8 +93,8 @@ export default function TeamsPage() {
   if (isLoading) {
     return (
       <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">Loading teams...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+        <p className="mt-2 text-text-secondary">Loading teams...</p>
       </div>
     );
   }
@@ -109,33 +109,33 @@ export default function TeamsPage() {
 
       {/* User's Teams */}
       {userTeams.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Teams</h3>
+        <div className="bg-surface-low rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-text-primary mb-4">Your Teams</h3>
           <div className="space-y-3">
             {userTeams.map((team) => (
               <div
                 key={team.id}
-                className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-surface-high cursor-pointer"
                 onClick={() => router.push(`/teams/${team.id}`)}
               >
                 <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">{team.name}</h4>
+                  <h4 className="font-medium text-text-primary">{team.name}</h4>
                   {team.description && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{team.description}</p>
+                    <p className="text-sm text-text-secondary">{team.description}</p>
                   )}
                 </div>
                 <div className="flex items-center space-x-2">
                   <span
                     className={`text-xs px-2 py-1 rounded-full ${
                       team.userRole === 'CAPTAIN'
-                        ? 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200'
-                        : 'text-gray-500 dark:text-gray-400'
+                        ? 'bg-primary/20 text-primary-light'
+                        : 'text-muted'
                     }`}
                   >
                     {team.userRole === 'CAPTAIN' ? 'Captain' : 'Member'}
                   </span>
                   <svg
-                    className="w-4 h-4 text-gray-400"
+                    className="w-4 h-4 text-muted"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -155,30 +155,30 @@ export default function TeamsPage() {
       )}
 
       {/* Team Actions */}
-      <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Team Actions</h3>
+      <div className="bg-surface-low rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-text-primary mb-4">Team Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-            <h4 className="font-medium text-gray-900 dark:text-white mb-2">Join a Team</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <div className="border border-border rounded-lg p-4">
+            <h4 className="font-medium text-text-primary mb-2">Join a Team</h4>
+            <p className="text-sm text-text-secondary mb-4">
               Join an existing team using an invitation code provided by the team captain.
             </p>
             <button
               onClick={() => setShowJoinByCodeModal(true)}
-              className="w-full px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md"
+              className="w-full px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-light rounded-md"
             >
               Join by Code
             </button>
           </div>
 
-          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-            <h4 className="font-medium text-gray-900 dark:text-white mb-2">Create a Team</h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <div className="border border-border rounded-lg p-4">
+            <h4 className="font-medium text-text-primary mb-2">Create a Team</h4>
+            <p className="text-sm text-text-secondary mb-4">
               Create a new team and become the team captain. You can then invite others to join.
             </p>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+              className="w-full px-4 py-2 text-sm font-medium text-text-secondary bg-surface-high border border-border rounded-md hover:bg-surface-high"
             >
               Create Team
             </button>
@@ -189,16 +189,14 @@ export default function TeamsPage() {
       {/* Create Team Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-surface-low">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                Create New Team
-              </h3>
+              <h3 className="text-lg font-medium text-text-primary mb-4">Create New Team</h3>
               <form onSubmit={handleCreateTeam} className="space-y-4">
                 <div>
                   <label
                     htmlFor="teamName"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="block text-sm font-medium text-text-secondary"
                   >
                     Team Name *
                   </label>
@@ -208,14 +206,14 @@ export default function TeamsPage() {
                     value={teamName}
                     onChange={(e) => setTeamName(e.target.value)}
                     required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                    className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-muted text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                     placeholder="Enter team name"
                   />
                 </div>
                 <div>
                   <label
                     htmlFor="teamDescription"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="block text-sm font-medium text-text-secondary"
                   >
                     Description
                   </label>
@@ -224,7 +222,7 @@ export default function TeamsPage() {
                     value={teamDescription}
                     onChange={(e) => setTeamDescription(e.target.value)}
                     rows={3}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                    className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-muted text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                     placeholder="Optional team description"
                   />
                 </div>
@@ -232,13 +230,13 @@ export default function TeamsPage() {
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                    className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface-high border border-border rounded-md hover:bg-surface-high"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md"
+                    className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-light rounded-md"
                   >
                     Create Team
                   </button>
@@ -252,16 +250,14 @@ export default function TeamsPage() {
       {/* Join by Code Modal */}
       {showJoinByCodeModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-surface-low">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                Join Team by Code
-              </h3>
+              <h3 className="text-lg font-medium text-text-primary mb-4">Join Team by Code</h3>
               <form onSubmit={handleJoinByCode} className="space-y-4">
                 <div>
                   <label
                     htmlFor="joinCode"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="block text-sm font-medium text-text-secondary"
                   >
                     Invitation Code *
                   </label>
@@ -271,7 +267,7 @@ export default function TeamsPage() {
                     value={joinCode}
                     onChange={(e) => setJoinCode(e.target.value)}
                     required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                    className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-muted text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                     placeholder="Enter invitation code"
                   />
                 </div>
@@ -279,14 +275,14 @@ export default function TeamsPage() {
                   <button
                     type="button"
                     onClick={() => setShowJoinByCodeModal(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                    className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface-high border border-border rounded-md hover:bg-surface-high"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isJoiningByCode}
-                    className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
+                    className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-light disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
                   >
                     {isJoiningByCode ? 'Joining...' : 'Join Team'}
                   </button>

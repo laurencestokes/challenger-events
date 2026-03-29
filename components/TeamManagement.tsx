@@ -114,8 +114,8 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
   if (isLoading) {
     return (
       <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">Loading teams...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+        <p className="mt-2 text-text-secondary">Loading teams...</p>
       </div>
     );
   }
@@ -131,17 +131,19 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
       {/* Team Selection for Event */}
       {eventId && (
         <>
-          <h3 className="text-lg font-semibold text-white mb-4">Select Your Team for This Event</h3>
-          <p className="text-sm text-gray-400 mb-4">
+          <h3 className="text-lg font-semibold text-text-primary mb-4">
+            Select Your Team for This Event
+          </h3>
+          <p className="text-sm text-muted mb-4">
             Choose a team to compete with in this event. You can only be on one team per event.
           </p>
 
           {teams.length === 0 ? (
             <div className="text-center py-4">
-              <p className="text-gray-400 mb-4">No teams available for this event.</p>
+              <p className="text-muted mb-4">No teams available for this event.</p>
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-light rounded-md"
               >
                 Create First Team
               </button>
@@ -155,14 +157,14 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
                     key={team.id}
                     className={`relative flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
                       isSelected
-                        ? 'border-primary-500 bg-primary-900/20 shadow-md'
-                        : 'border-gray-600 hover:border-primary-400 hover:shadow-sm'
+                        ? 'border-primary bg-primary-900/20 shadow-md'
+                        : 'border-border hover:border-primary-light hover:shadow-sm'
                     }`}
                     onClick={() => handleSelectTeam(team.id)}
                   >
                     {/* Selection indicator */}
                     {isSelected && (
-                      <div className="absolute -top-2 -left-2 w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center">
+                      <div className="absolute -top-2 -left-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path
                             fillRule="evenodd"
@@ -176,19 +178,17 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
                     <div className="flex items-center space-x-4">
                       <div
                         className={`flex items-center justify-center w-5 h-5 rounded-full border-2 ${
-                          isSelected
-                            ? 'border-primary-500 bg-primary-500'
-                            : 'border-gray-300 dark:border-gray-600'
+                          isSelected ? 'border-primary bg-primary' : 'border-border'
                         }`}
                       >
-                        {isSelected && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                        {isSelected && <div className="w-2 h-2 bg-surface-low rounded-full"></div>}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
-                          <h4 className="font-semibold text-white">{team.name}</h4>
+                          <h4 className="font-semibold text-text-primary">{team.name}</h4>
                         </div>
                         {team.description && (
-                          <p className="text-sm text-gray-400 mt-1">{team.description}</p>
+                          <p className="text-sm text-muted mt-1">{team.description}</p>
                         )}
                       </div>
                     </div>
@@ -196,7 +196,7 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
                     {/* Right side indicator */}
                     <div className="flex items-center space-x-2">
                       {isSelected ? (
-                        <div className="flex items-center space-x-1 text-primary-600 dark:text-primary-400">
+                        <div className="flex items-center space-x-1 text-primary">
                           <span className="text-sm font-medium">Your Team</span>
                         </div>
                       ) : (
@@ -205,7 +205,7 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
                             e.stopPropagation();
                             handleSelectTeam(team.id);
                           }}
-                          className="px-3 py-1 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-md transition-colors"
+                          className="px-3 py-1 text-sm text-primary hover:text-primary-light hover:bg-surface-high rounded-md transition-colors"
                         >
                           Select
                         </button>
@@ -243,16 +243,14 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
       {/* Create Team Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-surface-low">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                Create New Team
-              </h3>
+              <h3 className="text-lg font-medium text-text-primary mb-4">Create New Team</h3>
               <form onSubmit={handleCreateTeam} className="space-y-4">
                 <div>
                   <label
                     htmlFor="teamName"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="block text-sm font-medium text-text-secondary"
                   >
                     Team Name *
                   </label>
@@ -262,14 +260,14 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
                     value={teamName}
                     onChange={(e) => setTeamName(e.target.value)}
                     required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                    className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-muted text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                     placeholder="Enter team name"
                   />
                 </div>
                 <div>
                   <label
                     htmlFor="teamDescription"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="block text-sm font-medium text-text-secondary"
                   >
                     Description
                   </label>
@@ -278,7 +276,7 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
                     value={teamDescription}
                     onChange={(e) => setTeamDescription(e.target.value)}
                     rows={3}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                    className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-muted text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                     placeholder="Optional team description"
                   />
                 </div>
@@ -286,13 +284,13 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                    className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface-high border border-border rounded-md hover:bg-surface-high"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md"
+                    className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-light rounded-md"
                   >
                     Create Team
                   </button>

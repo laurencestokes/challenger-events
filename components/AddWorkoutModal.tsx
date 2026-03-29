@@ -84,21 +84,24 @@ export default function AddWorkoutModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-md border border-gray-700/50">
+      <div className="panel rounded-2xl p-6 w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary-500/20 rounded-lg flex items-center justify-center">
-              <FiPlus className="w-5 h-5 text-primary-400" />
+            <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
+              <FiPlus className="w-5 h-5 text-primary-light" />
             </div>
             <h2 className="text-white text-xl font-bold">Add Workout</h2>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-muted hover:text-white transition-colors">
             <FiX className="w-6 h-6" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="eventType" className="block text-gray-300 text-sm font-medium mb-2">
+            <label
+              htmlFor="eventType"
+              className="block text-text-secondary text-sm font-medium mb-2"
+            >
               Event Type *
             </label>
             <select
@@ -106,7 +109,7 @@ export default function AddWorkoutModal({
               value={selectedEventType?.id || ''}
               onChange={(e) => handleEventTypeChange(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
               <option value="">Select an event type</option>
               {EVENT_TYPES.map((eventType) => (
@@ -119,14 +122,14 @@ export default function AddWorkoutModal({
 
           {selectedEventType?.supportsReps && (
             <div>
-              <label htmlFor="reps" className="block text-gray-300 text-sm font-medium mb-2">
+              <label htmlFor="reps" className="block text-text-secondary text-sm font-medium mb-2">
                 Number of Reps
               </label>
               <select
                 id="reps"
                 value={reps}
                 onChange={(e) => setReps(Number(e.target.value))}
-                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               >
                 {Array.from({ length: 10 }, (_, i) => i + 1).map((rep) => (
                   <option key={rep} value={rep}>
@@ -134,14 +137,14 @@ export default function AddWorkoutModal({
                   </option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-muted">
                 Your weight will be converted to estimated 1RM using the Epley formula for scoring.
               </p>
             </div>
           )}
 
           <div>
-            <label htmlFor="name" className="block text-gray-300 text-sm font-medium mb-2">
+            <label htmlFor="name" className="block text-text-secondary text-sm font-medium mb-2">
               Workout Name
             </label>
             <input
@@ -149,13 +152,16 @@ export default function AddWorkoutModal({
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               placeholder="Custom name (optional)"
             />
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-gray-300 text-sm font-medium mb-2">
+            <label
+              htmlFor="description"
+              className="block text-text-secondary text-sm font-medium mb-2"
+            >
               Description
             </label>
             <textarea
@@ -163,7 +169,7 @@ export default function AddWorkoutModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               placeholder="Optional description"
             />
           </div>
@@ -174,9 +180,9 @@ export default function AddWorkoutModal({
               type="checkbox"
               checked={isHidden}
               onChange={(e) => setIsHidden(e.target.checked)}
-              className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-600 bg-gray-700 rounded"
+              className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-border bg-surface-high rounded"
             />
-            <label htmlFor="isHidden" className="ml-2 block text-sm text-gray-300">
+            <label htmlFor="isHidden" className="ml-2 block text-sm text-text-secondary">
               Hidden Workout
             </label>
           </div>
@@ -199,7 +205,7 @@ export default function AddWorkoutModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors font-medium"
+              className="flex-1 px-4 py-3 bg-surface-high text-text-secondary rounded-lg hover:bg-surface-high transition-colors font-medium"
             >
               Cancel
             </button>

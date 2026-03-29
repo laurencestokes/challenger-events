@@ -31,21 +31,21 @@ describe('Review', () => {
 
   it('fills correct number of stars based on rating', () => {
     const { container } = render(<Review {...defaultProps} rating={3} />);
-    const filledStars = container.querySelectorAll('.text-green-500');
-    const emptyStars = container.querySelectorAll('.text-gray-300');
+    const filledStars = container.querySelectorAll('svg.text-green-500');
+    const emptyStars = container.querySelectorAll('svg.text-text-secondary');
     expect(filledStars).toHaveLength(3);
     expect(emptyStars).toHaveLength(2);
   });
 
   it('fills all stars for rating 5', () => {
     const { container } = render(<Review {...defaultProps} rating={5} />);
-    const filledStars = container.querySelectorAll('.text-green-500');
+    const filledStars = container.querySelectorAll('svg.text-green-500');
     expect(filledStars).toHaveLength(5);
   });
 
   it('fills no stars for rating 0', () => {
     const { container } = render(<Review {...defaultProps} rating={0} />);
-    const emptyStars = container.querySelectorAll('.text-gray-300');
+    const emptyStars = container.querySelectorAll('svg.text-text-secondary');
     expect(emptyStars).toHaveLength(5);
   });
 });

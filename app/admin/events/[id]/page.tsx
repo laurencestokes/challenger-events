@@ -145,15 +145,15 @@ export default function EventDetails() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200';
+        return 'bg-success-900 text-success-200';
       case 'COMPLETED':
-        return 'bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200';
+        return 'bg-accent-900 text-accent-200';
       case 'CANCELLED':
-        return 'bg-error-100 text-error-800 dark:bg-error-900 dark:text-error-200';
+        return 'bg-error-900 text-error-200';
       case 'DRAFT':
-        return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200';
+        return 'bg-secondary-900 text-secondary-200';
       default:
-        return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200';
+        return 'bg-secondary-900 text-secondary-200';
     }
   };
 
@@ -218,14 +218,14 @@ export default function EventDetails() {
   if (isLoading) {
     return (
       <ProtectedRoute>
-        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="min-h-screen">
           <div className="container mx-auto px-4 py-8">
             {/* Welcome Section Skeleton */}
             <div className="flex items-center mb-8">
-              <div className="w-16 h-16 bg-gray-700 rounded-full animate-pulse mr-4"></div>
+              <div className="w-16 h-16 bg-surface-high rounded-full animate-pulse mr-4"></div>
               <div className="flex-1">
-                <div className="h-4 bg-gray-700 rounded w-24 mb-2 animate-pulse"></div>
-                <div className="h-6 bg-gray-700 rounded w-32 animate-pulse"></div>
+                <div className="h-4 bg-surface-high rounded w-24 mb-2 animate-pulse"></div>
+                <div className="h-6 bg-surface-high rounded w-32 animate-pulse"></div>
               </div>
             </div>
 
@@ -234,20 +234,20 @@ export default function EventDetails() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center space-x-3 mb-2">
-                    <div className="h-4 bg-gray-700 rounded w-20 animate-pulse"></div>
-                    <div className="h-4 bg-gray-700 rounded w-12 animate-pulse"></div>
-                    <div className="h-4 bg-gray-700 rounded w-16 animate-pulse"></div>
-                    <div className="h-4 bg-gray-700 rounded w-20 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-20 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-12 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-16 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-20 animate-pulse"></div>
                   </div>
-                  <div className="h-8 bg-gray-700 rounded w-48 mb-2 animate-pulse"></div>
+                  <div className="h-8 bg-surface-high rounded w-48 mb-2 animate-pulse"></div>
                   <div className="flex items-center space-x-3">
-                    <div className="h-6 bg-gray-700 rounded w-16 animate-pulse"></div>
-                    <div className="h-4 bg-gray-700 rounded w-24 animate-pulse"></div>
+                    <div className="h-6 bg-surface-high rounded w-16 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-24 animate-pulse"></div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="h-8 bg-gray-700 rounded w-24 animate-pulse"></div>
-                  <div className="h-8 bg-gray-700 rounded w-20 animate-pulse"></div>
+                  <div className="h-8 bg-surface-high rounded w-24 animate-pulse"></div>
+                  <div className="h-8 bg-surface-high rounded w-20 animate-pulse"></div>
                 </div>
               </div>
             </div>
@@ -262,36 +262,36 @@ export default function EventDetails() {
               {/* Main Event Info Skeleton */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Participants Skeleton */}
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+                <div className="panel rounded-2xl  p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="h-6 bg-gray-700 rounded w-24 animate-pulse"></div>
-                    <div className="h-4 bg-gray-700 rounded w-20 animate-pulse"></div>
+                    <div className="h-6 bg-surface-high rounded w-24 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-20 animate-pulse"></div>
                   </div>
                   <div className="space-y-3">
-                    <div className="h-16 bg-gray-700 rounded-lg animate-pulse"></div>
-                    <div className="h-16 bg-gray-700 rounded-lg animate-pulse"></div>
+                    <div className="h-16 bg-surface-high rounded-lg animate-pulse"></div>
+                    <div className="h-16 bg-surface-high rounded-lg animate-pulse"></div>
                   </div>
                 </div>
 
                 {/* Workouts Skeleton */}
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+                <div className="panel rounded-2xl  p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="h-6 bg-gray-700 rounded w-16 animate-pulse"></div>
-                    <div className="h-8 bg-gray-700 rounded w-24 animate-pulse"></div>
+                    <div className="h-6 bg-surface-high rounded w-16 animate-pulse"></div>
+                    <div className="h-8 bg-surface-high rounded w-24 animate-pulse"></div>
                   </div>
                   <div className="space-y-3">
-                    <div className="h-20 bg-gray-700 rounded-lg animate-pulse"></div>
-                    <div className="h-20 bg-gray-700 rounded-lg animate-pulse"></div>
+                    <div className="h-20 bg-surface-high rounded-lg animate-pulse"></div>
+                    <div className="h-20 bg-surface-high rounded-lg animate-pulse"></div>
                   </div>
                 </div>
 
                 {/* Leaderboard Skeleton */}
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
-                  <div className="h-6 bg-gray-700 rounded w-20 mb-4 animate-pulse"></div>
+                <div className="panel rounded-2xl  p-6">
+                  <div className="h-6 bg-surface-high rounded w-20 mb-4 animate-pulse"></div>
                   <div className="space-y-3">
-                    <div className="h-12 bg-gray-700 rounded animate-pulse"></div>
-                    <div className="h-12 bg-gray-700 rounded animate-pulse"></div>
-                    <div className="h-12 bg-gray-700 rounded animate-pulse"></div>
+                    <div className="h-12 bg-surface-high rounded animate-pulse"></div>
+                    <div className="h-12 bg-surface-high rounded animate-pulse"></div>
+                    <div className="h-12 bg-surface-high rounded animate-pulse"></div>
                   </div>
                 </div>
               </div>
@@ -311,13 +311,13 @@ export default function EventDetails() {
   if (error && !event) {
     return (
       <ProtectedRoute>
-        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="min-h-screen">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center py-8">
               <p className="text-red-400">{error}</p>
               <Link
                 href="/admin/events"
-                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-light transition-colors"
               >
                 Back to Events
               </Link>
@@ -331,13 +331,13 @@ export default function EventDetails() {
   if (!event) {
     return (
       <ProtectedRoute>
-        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="min-h-screen">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center py-8">
-              <p className="text-gray-400">Event not found.</p>
+              <p className="text-muted">Event not found.</p>
               <Link
                 href="/admin/events"
-                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-light transition-colors"
               >
                 Back to Events
               </Link>
@@ -350,7 +350,7 @@ export default function EventDetails() {
 
   return (
     <ProtectedRoute>
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {/* Welcome Section */}
           <WelcomeSection />
@@ -360,32 +360,27 @@ export default function EventDetails() {
             <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
               <div>
                 <div className="flex items-center space-x-3 mb-2">
-                  <Link
-                    href="/dashboard"
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
-                  >
+                  <Link href="/dashboard" className="text-muted hover:text-text-secondary text-sm">
                     Dashboard
                   </Link>
-                  <span className="text-gray-400 dark:text-gray-500">/</span>
+                  <span className="text-muted">/</span>
                   <Link
                     href="/admin/events"
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
+                    className="text-muted hover:text-text-secondary text-sm"
                   >
                     Events
                   </Link>
-                  <span className="text-gray-400 dark:text-gray-500">/</span>
-                  <span className="text-gray-900 dark:text-white text-sm font-medium">
-                    {event.name}
-                  </span>
+                  <span className="text-muted">/</span>
+                  <span className="text-text-primary text-sm font-medium">{event.name}</span>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{event.name}</h1>
+                <h1 className="text-3xl font-bold text-text-primary">{event.name}</h1>
                 <div className="flex items-center space-x-3 mt-2">
                   <span
                     className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(event.status)}`}
                   >
                     {event.status}
                   </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                  <span className="text-sm text-text-secondary">
                     Code: <span className="font-mono font-medium">{event.code}</span>
                   </span>
                 </div>
@@ -403,7 +398,7 @@ export default function EventDetails() {
                   <>
                     <button
                       onClick={() => setShowScoreSubmissionModal(true)}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-light transition-colors"
                     >
                       Submit Score
                     </button>
@@ -417,7 +412,7 @@ export default function EventDetails() {
                 )}
                 <Link
                   href={`/admin/events/${event.id}/edit`}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className="inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-md text-text-secondary bg-surface-low hover:bg-surface-high transition-colors"
                 >
                   Edit Event
                 </Link>
@@ -430,7 +425,7 @@ export default function EventDetails() {
             {/* Main Event Info */}
             <div className="lg:col-span-2 space-y-6">
               {/* Event Card */}
-              <div className="w-full h-80 bg-gray-800 rounded-2xl relative overflow-hidden">
+              <div className="w-full h-80 bg-surface-low rounded-2xl relative overflow-hidden">
                 {/* Event Background Image */}
                 <div className="absolute inset-0">
                   {event.imageUrl ? (
@@ -508,7 +503,7 @@ export default function EventDetails() {
               </div>
 
               {/* Event Image Upload */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+              <div className="panel rounded-2xl  p-6">
                 <EventImageUpload
                   eventId={eventId}
                   onUploadComplete={handleImageUploadComplete}
@@ -522,12 +517,10 @@ export default function EventDetails() {
               </div>
 
               {/* Participants */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+              <div className="panel rounded-2xl  p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Participants
-                  </h2>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                  <h2 className="text-xl font-semibold text-text-primary">Participants</h2>
+                  <span className="text-sm text-text-secondary">
                     {event.participants?.length || 0} participants
                   </span>
                 </div>
@@ -536,23 +529,19 @@ export default function EventDetails() {
                     {event.participants.map((participant) => (
                       <div
                         key={participant.id}
-                        className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
+                        className="flex items-center justify-between p-3 border border-border rounded-lg"
                       >
                         <div>
-                          <h3 className="font-medium text-gray-900 dark:text-white">
-                            {participant.name}
-                          </h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {participant.email}
-                          </p>
+                          <h3 className="font-medium text-text-primary">{participant.name}</h3>
+                          <p className="text-sm text-text-secondary">{participant.email}</p>
                         </div>
                         <div className="text-right">
                           {participant.score !== undefined && (
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            <p className="text-sm font-medium text-text-primary">
                               Score: {participant.score}
                             </p>
                           )}
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                          <p className="text-xs text-text-secondary">
                             Joined: {formatDate(participant.joinedAt)}
                           </p>
                         </div>
@@ -561,18 +550,18 @@ export default function EventDetails() {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-gray-500 dark:text-gray-400">No participants yet.</p>
+                    <p className="text-text-secondary">No participants yet.</p>
                   </div>
                 )}
               </div>
 
               {/* Workouts */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+              <div className="panel rounded-2xl  p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Workouts</h2>
+                  <h2 className="text-xl font-semibold text-text-primary">Workouts</h2>
                   <button
                     onClick={() => setShowAddWorkoutModal(true)}
-                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-light transition-colors"
                   >
                     Add Workout
                   </button>
@@ -588,48 +577,44 @@ export default function EventDetails() {
                           key={activity.id}
                           className={`flex items-center justify-between p-3 border rounded-lg ${
                             activity.isHidden
-                              ? 'border-yellow-300 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-900/20'
-                              : 'border-gray-200 dark:border-gray-700'
+                              ? 'border-yellow-600 bg-yellow-900/20'
+                              : 'border-border'
                           }`}
                         >
                           <div>
                             <div className="flex items-center space-x-2">
-                              <h3 className="font-medium text-gray-900 dark:text-white">
-                                {activity.name}
-                              </h3>
+                              <h3 className="font-medium text-text-primary">{activity.name}</h3>
                               {activity.isHidden && (
-                                <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-900 text-yellow-200">
                                   Hidden
                                 </span>
                               )}
                               {activity.revealedAt && (
-                                <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-900 text-green-200">
                                   Revealed
                                 </span>
                               )}
                             </div>
                             {activity.description && (
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {activity.description}
-                              </p>
+                              <p className="text-sm text-text-secondary">{activity.description}</p>
                             )}
                             <div className="flex items-center space-x-2 mt-1">
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                              <span className="text-xs text-text-secondary">
                                 Type: {activity.type}
                               </span>
                               {activity.unit && (
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                <span className="text-xs text-text-secondary">
                                   Unit: {activity.unit}
                                 </span>
                               )}
                               {scoringSystem && (
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                <span className="text-xs text-text-secondary">
                                   Scoring: {scoringSystem.name}
                                 </span>
                               )}
                             </div>
                             {activity.isHidden && (
-                              <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                              <p className="text-xs text-yellow-400 mt-1">
                                 ⚠️ This workout is hidden from competitors
                               </p>
                             )}
@@ -638,7 +623,7 @@ export default function EventDetails() {
                             {activity.isHidden && (
                               <button
                                 onClick={() => handleRevealWorkout(activity.id)}
-                                className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 text-sm"
+                                className="text-green-400 hover:text-green-300 text-sm"
                               >
                                 Reveal
                               </button>
@@ -648,7 +633,7 @@ export default function EventDetails() {
                                 setSelectedActivity(activity);
                                 setShowEditWorkoutModal(true);
                               }}
-                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
+                              className="text-blue-400 hover:text-blue-300 text-sm"
                             >
                               Edit
                             </button>
@@ -657,7 +642,7 @@ export default function EventDetails() {
                                 setSelectedActivity(activity);
                                 setShowDeleteConfirmModal(true);
                               }}
-                              className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 text-sm"
+                              className="text-red-400 hover:text-red-300 text-sm"
                             >
                               Delete
                             </button>
@@ -668,8 +653,8 @@ export default function EventDetails() {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-gray-500 dark:text-gray-400">No workouts added yet.</p>
-                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                    <p className="text-text-secondary">No workouts added yet.</p>
+                    <p className="text-sm text-muted mt-1">
                       Add workouts to define the exercises and scoring systems for this event.
                     </p>
                   </div>
@@ -680,7 +665,7 @@ export default function EventDetails() {
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Quick Actions */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+              <div className="panel rounded-2xl  p-6">
                 <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
                 <div className="space-y-3">
                   <Link
@@ -707,7 +692,7 @@ export default function EventDetails() {
                         </span>
                       </div>
                       <svg
-                        className="w-5 h-5 text-gray-400 group-hover:text-green-400 transition-colors"
+                        className="w-5 h-5 text-muted group-hover:text-green-400 transition-colors"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -720,7 +705,7 @@ export default function EventDetails() {
                         />
                       </svg>
                     </div>
-                    <span className="text-sm text-gray-400 mt-1 block ml-8">
+                    <span className="text-sm text-muted mt-1 block ml-8">
                       Add guest participants & manage event participants
                     </span>
                   </Link>
@@ -728,7 +713,7 @@ export default function EventDetails() {
                 <div className="space-y-3 mt-3">
                   <Link
                     href={`/events/${eventId}/leaderboard`}
-                    className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                    className="block w-full text-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-light transition-colors"
                   >
                     📊 View Live Leaderboard
                   </Link>
@@ -741,19 +726,19 @@ export default function EventDetails() {
                   </Link>
                   <Link
                     href={`/events/${eventId}/brief`}
-                    className="block w-full text-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="block w-full text-center px-4 py-2 border border-border text-sm font-medium rounded-md text-text-secondary bg-surface-low hover:bg-surface-high transition-colors"
                   >
                     View Event Brief
                   </Link>
                   <Link
                     href={`/admin/events/${eventId}/brief`}
-                    className="block w-full text-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="block w-full text-center px-4 py-2 border border-border text-sm font-medium rounded-md text-text-secondary bg-surface-low hover:bg-surface-high transition-colors"
                   >
                     Edit Event Brief
                   </Link>
                   <button
                     onClick={() => navigator.clipboard.writeText(event.code)}
-                    className="block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="block w-full px-4 py-2 border border-border text-sm font-medium rounded-md text-text-secondary bg-surface-low hover:bg-surface-high transition-colors"
                   >
                     Copy Event Code
                   </button>
@@ -761,17 +746,17 @@ export default function EventDetails() {
               </div>
 
               {/* Event Stats */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+              <div className="panel rounded-2xl  p-6">
                 <h2 className="text-lg font-semibold text-white mb-4">Event Stats</h2>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-400">Participants</span>
+                    <span className="text-sm text-muted">Participants</span>
                     <span className="text-sm font-medium text-white">
                       {event.participants?.length || 0}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-400">Status</span>
+                    <span className="text-sm text-muted">Status</span>
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(event.status)}`}
                     >
@@ -779,7 +764,7 @@ export default function EventDetails() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-400">Created</span>
+                    <span className="text-sm text-muted">Created</span>
                     <span className="text-sm font-medium text-white">
                       {formatDate(event.createdAt)}
                     </span>

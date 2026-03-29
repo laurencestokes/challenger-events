@@ -1,0 +1,253 @@
+@import "tailwindcss";
+
+/* === Space Grotesk Font === */
+
+@font-face {
+  font-family: "Space Grotesk";
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/SpaceGrotesk-VariableFont_wght.ttf") format("truetype");
+}
+
+/* === Design Tokens: Kinetic Editorial === */
+
+@theme {
+  /* Colors: Kinetic Editorial */
+  --color-carbon: #0E0E0E;
+  --color-surface-low: #131313;
+  --color-surface-high: #1B1B1B;
+  --color-burnt: #C14A09;
+  --color-tactical: #2B59FF;
+  --color-error: #FF3B30;
+  --color-offwhite: #F0EEE9;
+  --color-muted: #A1A1A1;
+
+  /* Semantic aliases */
+  --color-primary: #C14A09;
+  --color-primary-light: #D4671E;
+  --color-background: #0E0E0E;
+  --color-text-primary: #F0EEE9;
+  --color-text-secondary: #A1A1A1;
+  --color-border: #1B1B1B;
+
+  /* Fonts */
+  --font-headline: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+  --font-body: "Space Grotesk", sans-serif;
+
+  /* Letter Spacing */
+  --tracking-tighter: -0.04em;
+  --tracking-widest: 0.2em;
+
+  /* Layout Constraints */
+  --breakpoint-content: 1440px;
+  --breakpoint-text: 800px;
+  --breakpoint-lg-nav: 1060px;
+}
+
+/* === Shared Input Components === */
+
+@layer components {
+  .input-underline {
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+  }
+
+  .input-underline::before {
+    content: "";
+    display: block;
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 2px;
+    background: var(--color-primary);
+    transform: scaleY(0);
+    transform-origin: 50% 100%;
+    transition: transform 125ms linear;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .input-underline:has([data-focused])::before,
+  .input-underline:has([data-focus-visible])::before,
+  .input-underline:has([data-focus-within])::before,
+  .input-underline:has(:focus)::before {
+    transform: scaleY(1);
+  }
+}
+
+/* === Page Break === */
+
+@layer components {
+  .page-break {
+    --pb-color: var(--color-primary);
+    --pb-color-light: var(--color-primary-light);
+
+    position: relative;
+    border: none;
+    margin: 2rem 10% 1rem;
+    border-top: 1px solid transparent;
+    border-image-source: linear-gradient(
+      to right,
+      transparent,
+      var(--pb-color) 25%,
+      var(--pb-color-light) calc(50% - 16px),
+      transparent calc(50% - 16px),
+      transparent calc(50% + 16px),
+      var(--pb-color-light) calc(50% + 16px),
+      var(--pb-color) 75%,
+      transparent
+    );
+    border-image-slice: 1;
+    height: 1rem;
+    overflow: visible;
+  }
+
+  .page-break--tactical {
+    --pb-color: var(--color-tactical);
+    --pb-color-light: #5A7FFF;
+  }
+
+  @media (min-width: 768px) {
+    .page-break {
+      margin: 4rem 10% 3rem;
+    }
+  }
+
+  .page-break::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    border-top: 1px solid transparent;
+    border-image-source: linear-gradient(
+      to right,
+      transparent,
+      var(--pb-color) 25%,
+      var(--pb-color-light) calc(50% - 16px),
+      transparent calc(50% - 16px),
+      transparent calc(50% + 16px),
+      var(--pb-color-light) calc(50% + 16px),
+      var(--pb-color) 75%,
+      transparent
+    );
+    border-image-slice: 1;
+    filter: blur(4px) brightness(2);
+  }
+
+  .page-break::after {
+    content: "";
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--pb-color-light);
+    border-bottom: none;
+    border-right: none;
+    transform: translateX(-50%) rotate(45deg);
+    filter: drop-shadow(0 0 2px var(--pb-color-light));
+    background-image: url("/icons/bolt.svg");
+    background-repeat: no-repeat;
+    background-position: 2px 0;
+  }
+}
+
+/* === Dot Matrix Background === */
+
+@layer components {
+  .bg-dot-matrix {
+    background-image: radial-gradient(
+      circle,
+      var(--color-surface-high) 1px,
+      transparent 1px
+    );
+    background-size: 12px 12px;
+  }
+
+  .bg-dot-matrix-dense {
+    background-image: radial-gradient(
+      circle,
+      var(--color-surface-high) 0.75px,
+      transparent 0.75px
+    );
+    background-size: 8px 8px;
+  }
+
+  .bg-dot-matrix-sparse {
+    background-image: radial-gradient(
+      circle,
+      var(--color-surface-high) 1px,
+      transparent 1px
+    );
+    background-size: 20px 20px;
+  }
+}
+
+/* === Navigation Animations === */
+
+@keyframes nav-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes nav-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes nav-slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes nav-slide-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+/* === Base Overrides (beyond Tailwind Preflight) === */
+
+@layer base {
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      interpolate-size: allow-keywords;
+    }
+  }
+
+  html {
+    overscroll-behavior: none;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+  }
+
+  #root,
+  #__next {
+    isolation: isolate;
+  }
+
+  [data-root] {
+    position: relative;
+    isolation: isolate;
+    z-index: 0;
+    overflow-x: hidden;
+    padding: 1rem;
+    max-width: 100vw;
+    background: var(--color-background);
+    color: var(--color-text-primary);
+  }
+
+  .content {
+    display: flow-root;
+    z-index: 2;
+    isolation: isolate;
+  }
+}

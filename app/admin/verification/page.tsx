@@ -150,14 +150,14 @@ export default function VerificationPage() {
   const getVerificationColor = (status: string) => {
     switch (status) {
       case 'VERIFIED':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return 'bg-green-900 text-green-200';
       case 'REJECTED':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'bg-red-900 text-red-200';
       case 'NEEDS_REVERIFICATION':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+        return 'bg-orange-900 text-orange-200';
       case 'PENDING':
       default:
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return 'bg-yellow-900 text-yellow-200';
     }
   };
 
@@ -170,30 +170,18 @@ export default function VerificationPage() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center space-x-3 mb-2">
-                  <Link
-                    href="/dashboard"
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
-                  >
+                  <Link href="/dashboard" className="text-muted hover:text-text-secondary text-sm">
                     Dashboard
                   </Link>
-                  <span className="text-gray-400 dark:text-gray-500">/</span>
-                  <Link
-                    href="/admin"
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
-                  >
+                  <span className="text-muted">/</span>
+                  <Link href="/admin" className="text-muted hover:text-text-secondary text-sm">
                     Admin
                   </Link>
-                  <span className="text-gray-400 dark:text-gray-500">/</span>
-                  <span className="text-gray-900 dark:text-white text-sm font-medium">
-                    Verification
-                  </span>
+                  <span className="text-muted">/</span>
+                  <span className="text-text-primary text-sm font-medium">Verification</span>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  User Verification
-                </h1>
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
-                  Review and verify user accounts
-                </p>
+                <h1 className="text-3xl font-bold text-text-primary">User Verification</h1>
+                <p className="mt-2 text-text-secondary">Review and verify user accounts</p>
               </div>
             </div>
           </div>
@@ -201,7 +189,7 @@ export default function VerificationPage() {
           {/* Stats Cards */}
           {stats && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
+              <div className="bg-surface-low rounded-lg p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
@@ -221,15 +209,13 @@ export default function VerificationPage() {
                     </div>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending</p>
-                    <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                      {stats.totalPending}
-                    </p>
+                    <p className="text-sm font-medium text-text-secondary">Pending</p>
+                    <p className="text-2xl font-semibold text-text-primary">{stats.totalPending}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
+              <div className="bg-surface-low rounded-lg p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
@@ -249,15 +235,15 @@ export default function VerificationPage() {
                     </div>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Verified</p>
-                    <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-text-secondary">Verified</p>
+                    <p className="text-2xl font-semibold text-text-primary">
                       {stats.totalVerified}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6">
+              <div className="bg-surface-low rounded-lg p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center">
@@ -277,8 +263,8 @@ export default function VerificationPage() {
                     </div>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Rejected</p>
-                    <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-text-secondary">Rejected</p>
+                    <p className="text-2xl font-semibold text-text-primary">
                       {stats.totalRejected}
                     </p>
                   </div>
@@ -288,17 +274,15 @@ export default function VerificationPage() {
           )}
 
           {/* Filter */}
-          <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg p-6 mb-6">
+          <div className="bg-surface-low rounded-lg p-6 mb-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-                Verification Requests
-              </h2>
+              <h2 className="text-lg font-medium text-text-primary">Verification Requests</h2>
               <select
                 value={statusFilter}
                 onChange={(e) =>
                   setStatusFilter(e.target.value as 'PENDING' | 'VERIFIED' | 'REJECTED' | 'ALL')
                 }
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                className="px-3 py-2 border border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
               >
                 <option value="PENDING">Pending</option>
                 <option value="VERIFIED">Verified</option>
@@ -310,66 +294,62 @@ export default function VerificationPage() {
           </div>
 
           {/* Users Table */}
-          <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white">Users</h2>
+          <div className="bg-surface-low rounded-lg">
+            <div className="px-6 py-4 border-b border-border">
+              <h2 className="text-lg font-medium text-text-primary">Users</h2>
             </div>
             <div className="p-6">
               {isLoading ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600 dark:text-gray-400">Loading users...</p>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                  <p className="mt-2 text-text-secondary">Loading users...</p>
                 </div>
               ) : error ? (
                 <div className="text-center py-8">
-                  <p className="text-error-600 dark:text-error-400">{error}</p>
+                  <p className="text-error-600">{error}</p>
                 </div>
               ) : filteredUsers.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400">No users found.</p>
+                  <p className="text-text-secondary">No users found.</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-700">
+                  <table className="min-w-full divide-y divide-surface-high">
+                    <thead className="bg-surface-high">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                           User
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                           Role
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                           Verification Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                           Details
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                           Joined
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                           Actions
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody className="bg-surface-low divide-y divide-surface-high">
                       {filteredUsers.map((user) => (
-                        <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <tr key={user.id} className="hover:bg-surface-high">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
-                              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              <div className="text-sm font-medium text-text-primary">
                                 {user.name || 'No name'}
                               </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-400">
-                                {user.email}
-                              </div>
+                              <div className="text-sm text-text-secondary">{user.email}</div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900 dark:text-white">
-                              {user.role}
-                            </span>
+                            <span className="text-sm text-text-primary">{user.role}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
@@ -378,7 +358,7 @@ export default function VerificationPage() {
                               {user.verificationStatus || 'PENDING'}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
                             <div>
                               <div>
                                 Bodyweight: {user.bodyweight ? `${user.bodyweight}kg` : 'Not set'}
@@ -389,7 +369,7 @@ export default function VerificationPage() {
                               <div>Sex: {user.sex || 'Not set'}</div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
                             {formatDate(user.createdAt)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -397,14 +377,14 @@ export default function VerificationPage() {
                               <div className="flex space-x-2">
                                 <button
                                   onClick={() => openVerificationModal(user)}
-                                  className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
+                                  className="text-blue-400 hover:text-blue-300 text-sm"
                                 >
                                   Review
                                 </button>
                               </div>
                             )}
                             {(user.verificationStatus || 'PENDING') !== 'PENDING' && (
-                              <div className="text-sm text-gray-500 dark:text-gray-400">
+                              <div className="text-sm text-text-secondary">
                                 {user.verificationNotes && (
                                   <div className="text-xs">Notes: {user.verificationNotes}</div>
                                 )}
@@ -429,17 +409,15 @@ export default function VerificationPage() {
         {/* Verification Modal */}
         {showVerificationModal && selectedUser && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-surface-low">
               <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                <h3 className="text-lg font-medium text-text-primary mb-4">
                   Verify User: {selectedUser.name || selectedUser.email}
                 </h3>
 
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    User Details
-                  </h4>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                  <h4 className="text-sm font-medium text-text-secondary mb-2">User Details</h4>
+                  <div className="text-sm text-text-secondary space-y-1">
                     <div>Email: {selectedUser.email}</div>
                     <div>Role: {selectedUser.role}</div>
                     <div>
@@ -455,10 +433,7 @@ export default function VerificationPage() {
                 </div>
 
                 <div className="mb-4">
-                  <label
-                    htmlFor="notes"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
+                  <label htmlFor="notes" className="block text-sm font-medium text-text-secondary">
                     Verification Notes (Optional)
                   </label>
                   <textarea
@@ -466,7 +441,7 @@ export default function VerificationPage() {
                     value={verificationNotes}
                     onChange={(e) => setVerificationNotes(e.target.value)}
                     rows={3}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                    className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-muted text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                     placeholder="Add any notes about this verification..."
                   />
                 </div>
@@ -475,7 +450,7 @@ export default function VerificationPage() {
                   <button
                     type="button"
                     onClick={() => setShowVerificationModal(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                    className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface-high border border-border rounded-md hover:bg-surface-high"
                   >
                     Cancel
                   </button>

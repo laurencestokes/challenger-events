@@ -318,10 +318,10 @@ export default function TeamErgControlPage() {
   if (authLoading || loading) {
     return (
       <ProtectedRoute>
-        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="min-h-screen">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary-500"></div>
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary"></div>
               <p className="text-white text-lg">Loading session...</p>
             </div>
           </div>
@@ -333,11 +333,11 @@ export default function TeamErgControlPage() {
   if (!session) {
     return (
       <ProtectedRoute>
-        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="min-h-screen">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center py-12">
               <h2 className="text-3xl font-bold mb-4 text-white">Session Not Found</h2>
-              <p className="text-gray-400">This team session does not exist.</p>
+              <p className="text-muted">This team session does not exist.</p>
             </div>
           </div>
         </div>
@@ -357,7 +357,7 @@ export default function TeamErgControlPage() {
 
   return (
     <ProtectedRoute>
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {/* Welcome Section */}
           <WelcomeSection />
@@ -369,17 +369,15 @@ export default function TeamErgControlPage() {
                 <div className="flex items-center space-x-3 mb-2">
                   <button
                     onClick={() => router.push('/admin/erg/team-session')}
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
+                    className="text-muted hover:text-text-secondary text-sm"
                   >
                     Team Sessions
                   </button>
-                  <span className="text-gray-400 dark:text-gray-500">/</span>
-                  <span className="text-gray-900 dark:text-white text-sm font-medium">
-                    Control Session
-                  </span>
+                  <span className="text-muted">/</span>
+                  <span className="text-text-primary text-sm font-medium">Control Session</span>
                 </div>
                 <h1 className="text-3xl font-bold text-white">Team Erg Session Control</h1>
-                <p className="mt-2 text-gray-400">
+                <p className="mt-2 text-muted">
                   Manage team competition: {session.teamA.name} vs {session.teamB.name}
                 </p>
               </div>
@@ -394,7 +392,7 @@ export default function TeamErgControlPage() {
             </p>
           </div>
 
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
+          <div className="panel rounded-2xl  p-6 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <span
@@ -412,7 +410,7 @@ export default function TeamErgControlPage() {
                       ? `🟡 RECONNECTING (${reconnectAttempt})`
                       : '🔴 DISCONNECTED'}
                 </span>
-                <span className="text-gray-400">
+                <span className="text-muted">
                   Session Status:{' '}
                   <span className="text-white font-medium">{sessionStatus.toUpperCase()}</span>
                 </span>
@@ -437,14 +435,14 @@ export default function TeamErgControlPage() {
           </div>
 
           {/* Display URL */}
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
+          <div className="panel rounded-2xl  p-6 mb-8">
             <h3 className="text-lg font-semibold text-white mb-3">Public Display URL</h3>
             <div className="flex items-center space-x-3">
               <input
                 type="text"
                 value={`${typeof window !== 'undefined' ? window.location.origin : ''}/erg/team-live/${sessionId}`}
                 readOnly
-                className="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm"
+                className="flex-1 px-4 py-2 bg-surface-high border border-border rounded-lg text-white text-sm"
               />
               <Button
                 onClick={copyDisplayUrl}
@@ -453,7 +451,7 @@ export default function TeamErgControlPage() {
                 Copy URL
               </Button>
             </div>
-            <p className="text-gray-400 text-sm mt-2">
+            <p className="text-muted text-sm mt-2">
               Share this URL with spectators to view the live team competition
             </p>
           </div>
@@ -464,7 +462,7 @@ export default function TeamErgControlPage() {
             <div className="bg-blue-500/10 rounded-2xl p-6 border border-blue-500/30">
               <h3 className="text-2xl font-bold text-blue-400 mb-4">{session.teamA.name}</h3>
               <div className="text-6xl font-bold text-blue-400 mb-4">{teamAScore.toFixed(1)}</div>
-              <p className="text-gray-400 mb-4">Total Team Score</p>
+              <p className="text-muted mb-4">Total Team Score</p>
 
               <div className="space-y-2">
                 <h4 className="text-lg font-semibold text-white">Active Participants:</h4>
@@ -473,18 +471,18 @@ export default function TeamErgControlPage() {
                   .map((update) => (
                     <div
                       key={update.participantId}
-                      className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-surface-low/50 rounded-lg"
                     >
                       <div>
                         <p className="font-medium text-white">{update.participantName}</p>
-                        <p className="text-sm text-gray-400">
+                        <p className="text-sm text-muted">
                           {update.metrics.distance_m}m @ {update.metrics.average_pace_s}s/500m
                         </p>
                       </div>
                       <div className="text-right">
                         <div>
                           <p className="text-green-400 font-bold text-sm">ACTIVE</p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-muted">
                             {update.calculatedScore.toFixed(1)} pts
                           </p>
                         </div>
@@ -492,7 +490,7 @@ export default function TeamErgControlPage() {
                     </div>
                   ))}
                 {participantUpdates.filter((update) => update.teamId === session.teamA.id)
-                  .length === 0 && <p className="text-gray-500 text-sm">No active participants</p>}
+                  .length === 0 && <p className="text-muted text-sm">No active participants</p>}
               </div>
             </div>
 
@@ -500,7 +498,7 @@ export default function TeamErgControlPage() {
             <div className="bg-purple-500/10 rounded-2xl p-6 border border-purple-500/30">
               <h3 className="text-2xl font-bold text-purple-400 mb-4">{session.teamB.name}</h3>
               <div className="text-6xl font-bold text-purple-400 mb-4">{teamBScore.toFixed(1)}</div>
-              <p className="text-gray-400 mb-4">Total Team Score</p>
+              <p className="text-muted mb-4">Total Team Score</p>
 
               <div className="space-y-2">
                 <h4 className="text-lg font-semibold text-white">Active Participants:</h4>
@@ -509,18 +507,18 @@ export default function TeamErgControlPage() {
                   .map((update) => (
                     <div
                       key={update.participantId}
-                      className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-surface-low/50 rounded-lg"
                     >
                       <div>
                         <p className="font-medium text-white">{update.participantName}</p>
-                        <p className="text-sm text-gray-400">
+                        <p className="text-sm text-muted">
                           {update.metrics.distance_m}m @ {update.metrics.average_pace_s}s/500m
                         </p>
                       </div>
                       <div className="text-right">
                         <div>
                           <p className="text-green-400 font-bold text-sm">ACTIVE</p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-muted">
                             {update.calculatedScore.toFixed(1)} pts
                           </p>
                         </div>
@@ -528,21 +526,21 @@ export default function TeamErgControlPage() {
                     </div>
                   ))}
                 {participantUpdates.filter((update) => update.teamId === session.teamB.id)
-                  .length === 0 && <p className="text-gray-500 text-sm">No active participants</p>}
+                  .length === 0 && <p className="text-muted text-sm">No active participants</p>}
               </div>
             </div>
           </div>
 
           {/* Erg Slot Management */}
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
+          <div className="panel rounded-2xl  p-6 mb-8">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold text-white">Erg Slot Management</h3>
               <div className="flex items-center space-x-4">
-                <label className="text-sm font-medium text-gray-300">Max Erg Slots:</label>
+                <label className="text-sm font-medium text-text-secondary">Max Erg Slots:</label>
                 <select
                   value={maxErgSlots}
                   onChange={(e) => setMaxErgSlots(parseInt(e.target.value))}
-                  className="px-3 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+                  className="px-3 py-1 bg-surface-high border border-border rounded text-white text-sm"
                 >
                   {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
                     <option key={num} value={num}>
@@ -561,7 +559,7 @@ export default function TeamErgControlPage() {
                   className={`rounded-xl p-4 border-2 ${
                     slot.isOccupied
                       ? 'bg-green-500/10 border-green-500/50'
-                      : 'bg-gray-700/50 border-gray-600'
+                      : 'bg-surface-high/50 border-border'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -570,7 +568,7 @@ export default function TeamErgControlPage() {
                       className={`px-2 py-1 rounded text-xs font-medium ${
                         slot.isOccupied
                           ? 'bg-green-500/20 text-green-400'
-                          : 'bg-gray-500/20 text-gray-400'
+                          : 'bg-surface-high0/20 text-muted'
                       }`}
                     >
                       {slot.isOccupied ? 'OCCUPIED' : 'AVAILABLE'}
@@ -580,16 +578,16 @@ export default function TeamErgControlPage() {
                   {slot.isOccupied && slot.currentCompetitor ? (
                     <div className="space-y-2">
                       <div>
-                        <p className="text-sm text-gray-300">Competitor:</p>
+                        <p className="text-sm text-text-secondary">Competitor:</p>
                         <p className="font-medium text-white">{slot.currentCompetitor.name}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-300">Team:</p>
+                        <p className="text-sm text-text-secondary">Team:</p>
                         <p className="font-medium text-white">{slot.currentCompetitor.teamName}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-300">Started:</p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-sm text-text-secondary">Started:</p>
+                        <p className="text-xs text-muted">
                           {new Date(slot.currentCompetitor.startTime).toLocaleTimeString()}
                         </p>
                       </div>
@@ -602,7 +600,7 @@ export default function TeamErgControlPage() {
                     </div>
                   ) : (
                     <div className="text-center py-4">
-                      <p className="text-gray-400 text-sm mb-3">Available for assignment</p>
+                      <p className="text-muted text-sm mb-3">Available for assignment</p>
                       <Button
                         onClick={() => {
                           // This will be handled by the assignment form below
@@ -620,17 +618,17 @@ export default function TeamErgControlPage() {
 
             {/* Competitor Assignment Form */}
             {eventCompetitors.length > 0 && (
-              <div className="border-t border-gray-600 pt-6">
+              <div className="border-t border-border pt-6">
                 <h4 className="text-lg font-medium text-white mb-4">Assign Competitor to Erg</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Select Competitor
                     </label>
                     <select
                       value={selectedCompetitorId}
                       onChange={(e) => setSelectedCompetitorId(e.target.value)}
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     >
                       <option value="">Choose competitor</option>
                       {eventCompetitors.map((competitor) => (
@@ -642,13 +640,13 @@ export default function TeamErgControlPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-text-secondary mb-2">
                       Select Team
                     </label>
                     <select
                       value={selectedTeam}
                       onChange={(e) => setSelectedTeam(e.target.value)}
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     >
                       <option value="">Choose Team</option>
                       <option value={session.teamA.id}>{session.teamA.name}</option>
@@ -679,7 +677,7 @@ export default function TeamErgControlPage() {
                     </Button>
                   </div>
                 </div>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-muted">
                   Select a competitor and team, then assign them to the next available erg slot. All
                   competitors will perform:{' '}
                   <span className="text-blue-400 font-medium">
@@ -694,7 +692,7 @@ export default function TeamErgControlPage() {
 
             {/* Development Mock Data Controls */}
             {process.env.NODE_ENV === 'development' && (
-              <div className="border-t border-gray-600 pt-6">
+              <div className="border-t border-border pt-6">
                 <h4 className="text-lg font-medium text-white mb-3">Development Mock Data</h4>
                 <div className="flex items-center space-x-4 mb-4">
                   {!isMockRunning ? (
@@ -719,14 +717,14 @@ export default function TeamErgControlPage() {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-muted">
                   Mock data simulates competitors joining/leaving and sends realistic erg data for
                   development.
                 </p>
               </div>
             )}
 
-            <p className="text-sm text-gray-400 mt-4">
+            <p className="text-sm text-muted mt-4">
               Add competitors as they arrive. Event participants have complete profile data for
               accurate score calculations.
             </p>
@@ -734,7 +732,7 @@ export default function TeamErgControlPage() {
 
           {/* Active Participants */}
           {activeParticipants.length > 0 && (
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
+            <div className="panel rounded-2xl  p-6 mb-8">
               <h3 className="text-xl font-semibold text-white mb-4">
                 Currently Active Participants
               </h3>
@@ -755,13 +753,13 @@ export default function TeamErgControlPage() {
                         <h4 className={`font-semibold text-${teamColor}-400`}>
                           {participant.participantName}
                         </h4>
-                        <span className="text-xs text-gray-400">{teamName}</span>
+                        <span className="text-xs text-muted">{teamName}</span>
                       </div>
                       <div className="text-2xl font-bold text-white mb-1">
                         {participant.calculatedScore.toFixed(1)}
                       </div>
-                      <div className="text-sm text-gray-400">Score</div>
-                      <div className="flex justify-between text-xs text-gray-400 mt-2">
+                      <div className="text-sm text-muted">Score</div>
+                      <div className="flex justify-between text-xs text-muted mt-2">
                         <span>Distance: {participant.metrics.distance_m}m</span>
                         <span>Pace: {participant.metrics.average_pace_s}s/500m</span>
                       </div>

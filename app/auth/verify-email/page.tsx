@@ -70,13 +70,11 @@ export default function VerifyEmailPage() {
 
   if (!firebaseUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">No User Found</h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
-              Please sign in again to verify your email.
-            </p>
+            <h2 className="text-3xl font-extrabold text-text-primary">No User Found</h2>
+            <p className="mt-2 text-text-secondary">Please sign in again to verify your email.</p>
             <button
               onClick={() => router.push('/auth/signin')}
               className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
@@ -90,20 +88,18 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">
-            Verify Your Email
-          </h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
+          <h2 className="text-3xl font-extrabold text-text-primary">Verify Your Email</h2>
+          <p className="mt-2 text-text-secondary">
             We&apos;ve sent a verification email to <strong>{firebaseUser.email}</strong>
           </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div className="panel rounded-lg p-6">
           <div className="space-y-4">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-text-secondary">
               <p className="mb-4">
                 To complete your registration, please check your email and click the verification
                 link.
@@ -116,15 +112,13 @@ export default function VerifyEmailPage() {
             </div>
 
             {message && (
-              <div className="text-green-600 dark:text-green-400 text-sm text-center bg-green-50 dark:bg-green-900 p-3 rounded">
+              <div className="text-green-400 text-sm text-center bg-green-900 p-3 rounded">
                 {message}
               </div>
             )}
 
             {error && (
-              <div className="text-red-600 dark:text-red-400 text-sm text-center bg-red-50 dark:bg-red-900 p-3 rounded">
-                {error}
-              </div>
+              <div className="text-red-400 text-sm text-center bg-red-900 p-3 rounded">{error}</div>
             )}
 
             <div className="space-y-3">
@@ -139,7 +133,7 @@ export default function VerifyEmailPage() {
               <button
                 onClick={handleResendVerification}
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                className="w-full flex justify-center py-2 px-4 border border-surface-high rounded-md shadow-sm text-sm font-medium text-text-secondary bg-surface-low hover:bg-surface-high focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
               >
                 {loading ? 'Sending...' : 'Resend Verification Email'}
               </button>

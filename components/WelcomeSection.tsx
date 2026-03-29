@@ -30,11 +30,11 @@ export default function WelcomeSection({
     <span className="relative inline-block group align-middle ml-2">
       <span
         aria-label="info"
-        className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] leading-none border border-gray-500 text-gray-300"
+        className="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] leading-none border border-gray-500 text-text-secondary"
       >
         i
       </span>
-      <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden w-72 rounded-md border border-gray-600/30 bg-black/90 px-3 py-2 text-xs text-white shadow-xl z-[1000] group-hover:block">
+      <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden w-72 rounded-md border border-border/30 bg-black/90 px-3 py-2 text-xs text-white shadow-xl z-[1000] group-hover:block">
         {text}
       </span>
     </span>
@@ -55,7 +55,7 @@ export default function WelcomeSection({
         </div>
         <div className="flex-1">
           <div className="flex items-center space-x-2">
-            <p className="text-gray-400 text-sm">Welcome Back</p>
+            <p className="text-muted text-sm">Welcome Back</p>
             {user?.role === 'ADMIN' && (
               <span className="px-2 py-1 text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full">
                 ADMIN

@@ -276,7 +276,7 @@ export default function ScoreSubmissionModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-md border border-gray-700/50">
+      <div className="panel rounded-2xl p-6 w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
@@ -284,7 +284,7 @@ export default function ScoreSubmissionModal({
             </div>
             <h2 className="text-white text-xl font-bold">Submit Score</h2>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-muted hover:text-white transition-colors">
             <FiX className="w-6 h-6" />
           </button>
         </div>
@@ -297,7 +297,10 @@ export default function ScoreSubmissionModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="competitor" className="block text-gray-300 text-sm font-medium mb-2">
+            <label
+              htmlFor="competitor"
+              className="block text-text-secondary text-sm font-medium mb-2"
+            >
               Competitor *
             </label>
             <select
@@ -305,7 +308,7 @@ export default function ScoreSubmissionModal({
               value={selectedCompetitor}
               onChange={(e) => handleCompetitorChange(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
               <option value="">Select a competitor</option>
               {participants.map((participant) => {
@@ -336,17 +339,17 @@ export default function ScoreSubmissionModal({
 
           {/* Competitor Details */}
           {competitorDetails && (
-            <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
+            <div className="bg-surface-high/50 p-4 rounded-lg border border-border">
               <h4 className="text-sm font-medium text-white mb-2">Competitor Details</h4>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-gray-400">Profile Weight:</span>
+                  <span className="text-muted">Profile Weight:</span>
                   <span className="ml-1 text-white">
                     {competitorDetails.bodyweight ? `${competitorDetails.bodyweight}kg` : 'Not set'}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-400">Competition Weight:</span>
+                  <span className="text-muted">Competition Weight:</span>
                   <span
                     className={`ml-1 ${competitionVerification?.status === 'VERIFIED' ? 'text-green-400 font-medium' : 'text-white'}`}
                   >
@@ -356,7 +359,7 @@ export default function ScoreSubmissionModal({
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-400">Age:</span>
+                  <span className="text-muted">Age:</span>
                   <span className="ml-1 text-white">
                     {competitorDetails.isGuest && competitorDetails.age
                       ? competitorDetails.age
@@ -374,7 +377,7 @@ export default function ScoreSubmissionModal({
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-400">Sex:</span>
+                  <span className="text-muted">Sex:</span>
                   <span className="ml-1 text-white">{competitorDetails.sex || 'Not set'}</span>
                 </div>
               </div>
@@ -395,7 +398,10 @@ export default function ScoreSubmissionModal({
           )}
 
           <div>
-            <label htmlFor="activity" className="block text-gray-300 text-sm font-medium mb-2">
+            <label
+              htmlFor="activity"
+              className="block text-text-secondary text-sm font-medium mb-2"
+            >
               Workout *
             </label>
             <select
@@ -403,7 +409,7 @@ export default function ScoreSubmissionModal({
               value={selectedActivity}
               onChange={(e) => setSelectedActivity(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
               <option value="">Select a workout</option>
               {activities.map((activity) => (
@@ -415,10 +421,10 @@ export default function ScoreSubmissionModal({
           </div>
 
           <div>
-            <label htmlFor="score" className="block text-gray-300 text-sm font-medium mb-2">
+            <label htmlFor="score" className="block text-text-secondary text-sm font-medium mb-2">
               Score *
               {selectedActivity && (
-                <span className="text-xs text-gray-400 ml-1">
+                <span className="text-xs text-muted ml-1">
                   ({getActivityUnit(selectedActivity)})
                 </span>
               )}
@@ -431,7 +437,7 @@ export default function ScoreSubmissionModal({
                 onChange={(e) => handleScoreChange(e.target.value)}
                 required
                 step={isTimeInput() ? undefined : '0.01'}
-                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 placeholder={
                   isTimeInput()
                     ? 'Enter time (e.g., 2:30 or 150)'
@@ -442,14 +448,14 @@ export default function ScoreSubmissionModal({
               />
               {selectedActivity && (
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <span className="text-sm text-gray-400 font-medium">
+                  <span className="text-sm text-muted font-medium">
                     {getActivityUnit(selectedActivity)}
                   </span>
                 </div>
               )}
             </div>
             {selectedActivity && (
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-muted">
                 {isTimeInput()
                   ? 'Enter time as mm:ss (e.g., 2:30) or seconds (e.g., 150)'
                   : isWeightInput()
@@ -460,7 +466,7 @@ export default function ScoreSubmissionModal({
           </div>
 
           <div>
-            <label htmlFor="notes" className="block text-gray-300 text-sm font-medium mb-2">
+            <label htmlFor="notes" className="block text-text-secondary text-sm font-medium mb-2">
               Notes (Optional)
             </label>
             <textarea
@@ -468,7 +474,7 @@ export default function ScoreSubmissionModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
               placeholder="Add any notes about this score..."
             />
           </div>
@@ -476,15 +482,15 @@ export default function ScoreSubmissionModal({
           {/* Team Selection - Only show if event supports teams and competitor doesn't have a team */}
           {isTeamEvent && selectedCompetitor && !competitorHasTeam && teams.length > 0 && (
             <div>
-              <label htmlFor="team" className="block text-gray-300 text-sm font-medium mb-2">
+              <label htmlFor="team" className="block text-text-secondary text-sm font-medium mb-2">
                 Assign Team (Optional)
-                <span className="text-xs text-gray-400 ml-1">- Admin only</span>
+                <span className="text-xs text-muted ml-1">- Admin only</span>
               </label>
               <select
                 id="team"
                 value={selectedTeamId}
                 onChange={(e) => setSelectedTeamId(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               >
                 <option value="">No team (leave unassigned)</option>
                 {teams.map((team) => (
@@ -493,7 +499,7 @@ export default function ScoreSubmissionModal({
                   </option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-muted">
                 Select a team for this competitor. This will apply to all future scores for this
                 event.
               </p>
@@ -526,7 +532,7 @@ export default function ScoreSubmissionModal({
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 px-4 py-3 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors font-medium"
+              className="flex-1 px-4 py-3 bg-surface-high text-text-secondary rounded-lg hover:bg-surface-high transition-colors font-medium"
             >
               Cancel
             </button>

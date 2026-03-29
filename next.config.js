@@ -10,6 +10,8 @@ const nextConfig = {
   trailingSlash: false,
   // Enable static optimization
   output: 'standalone',
+  // Transpile design system (exports raw TS/TSX)
+  transpilePackages: ['@challengerco/challenger-fitness-design-system'],
 };
 
 module.exports = nextConfig;

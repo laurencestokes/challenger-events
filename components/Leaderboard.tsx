@@ -134,8 +134,8 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
   if (isLoading) {
     return (
       <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">Loading leaderboard...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+        <p className="mt-2 text-text-secondary">Loading leaderboard...</p>
       </div>
     );
   }
@@ -143,7 +143,7 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-error-600 dark:text-error-400">{error}</p>
+        <p className="text-error">{error}</p>
       </div>
     );
   }
@@ -151,7 +151,7 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
   if (!leaderboardData) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500 dark:text-gray-400">No leaderboard data available.</p>
+        <p className="text-muted">No leaderboard data available.</p>
       </div>
     );
   }
@@ -178,58 +178,52 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
     <div className="space-y-4">
       {leaderboardData.overallLeaderboard.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-gray-500 dark:text-gray-400">No scores submitted yet.</p>
+          <p className="text-muted">No scores submitted yet.</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+          <table className="min-w-full divide-y divide-surface-high">
+            <thead className="bg-surface-high">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                   Rank
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                   {leaderboardData.isTeamEvent ? 'Competitor / Team' : 'Competitor'}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                   Total Score
                 </th>
                 {leaderboardData.workoutLeaderboards.map((workout) => (
                   <th
                     key={workout.activityId}
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider"
                   >
                     {workout.activityName}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-surface-low divide-y divide-surface-high">
               {leaderboardData.overallLeaderboard.map((entry) => (
-                <tr key={entry.userId} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <tr key={entry.userId} className="hover:bg-surface-high">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <span className="text-lg mr-2">{getRankIcon(entry.rank)}</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {entry.rank}
-                      </span>
+                      <span className="text-sm font-medium text-text-primary">{entry.rank}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        {entry.name}
-                      </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">{entry.email}</div>
+                      <div className="text-sm font-medium text-text-primary">{entry.name}</div>
+                      <div className="text-sm text-text-secondary">{entry.email}</div>
                       {entry.teamId && entry.teamName && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          Team: {entry.teamName}
-                        </div>
+                        <div className="text-xs text-text-secondary">Team: {entry.teamName}</div>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-bold text-gray-900 dark:text-white">
+                    <div className="text-sm font-bold text-text-primary">
                       {entry.totalScore ? entry.totalScore.toFixed(1) : '0.0'}
                     </div>
                   </td>
@@ -239,10 +233,10 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                       <td key={workout.activityId} className="px-6 py-4 whitespace-nowrap">
                         {workoutScore ? (
                           <div className="text-sm">
-                            <div className="font-medium text-gray-900 dark:text-white">
+                            <div className="font-medium text-text-primary">
                               {workoutScore.score ? workoutScore.score.toFixed(1) : '0.0'}
                             </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                            <div className="text-xs text-muted">
                               {workoutScore.rawValue
                                 ? formatRawValue(
                                     workoutScore.rawValue,
@@ -252,12 +246,10 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                                   )
                                 : ''}
                             </div>
-                            <div className="text-xs text-gray-400 dark:text-gray-500">
-                              Rank: {workoutScore.rank}
-                            </div>
+                            <div className="text-xs text-muted">Rank: {workoutScore.rank}</div>
                           </div>
                         ) : (
-                          <div className="text-sm text-gray-400 dark:text-gray-500">-</div>
+                          <div className="text-sm text-muted">-</div>
                         )}
                       </td>
                     );
@@ -279,58 +271,48 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
       <div className="space-y-4">
         {workout.entries.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400">
-              No scores submitted for this workout yet.
-            </p>
+            <p className="text-muted">No scores submitted for this workout yet.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+            <table className="min-w-full divide-y divide-surface-high">
+              <thead className="bg-surface-high">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     Rank
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     {leaderboardData.isTeamEvent ? 'Competitor / Team' : 'Competitor'}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     Score
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-surface-low divide-y divide-surface-high">
                 {workout.entries.map((entry) => (
-                  <tr key={entry.userId} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <tr key={entry.userId} className="hover:bg-surface-high">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <span className="text-lg mr-2">{getRankIcon(entry.rank)}</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {entry.rank}
-                        </span>
+                        <span className="text-sm font-medium text-text-primary">{entry.rank}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {entry.name}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {entry.email}
-                        </div>
+                        <div className="text-sm font-medium text-text-primary">{entry.name}</div>
+                        <div className="text-sm text-text-secondary">{entry.email}</div>
                         {entry.teamId && entry.teamName && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            Team: {entry.teamName}
-                          </div>
+                          <div className="text-xs text-text-secondary">Team: {entry.teamName}</div>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm">
-                        <div className="font-bold text-gray-900 dark:text-white">
+                        <div className="font-bold text-text-primary">
                           {entry.score ? entry.score.toFixed(1) : '0.0'}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-muted">
                           {entry.rawValue
                             ? formatRawValue(
                                 entry.rawValue,
@@ -359,55 +341,53 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
       <div className="space-y-4">
         {leaderboardData.teamOverallLeaderboard.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400">No team scores submitted yet.</p>
+            <p className="text-muted">No team scores submitted yet.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+            <table className="min-w-full divide-y divide-surface-high">
+              <thead className="bg-surface-high">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     Rank
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     Team
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     Total Score
                   </th>
                   {leaderboardData.workoutLeaderboards.map((workout) => (
                     <th
                       key={workout.activityId}
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider"
                     >
                       {workout.activityName}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-surface-low divide-y divide-surface-high">
                 {leaderboardData.teamOverallLeaderboard.map((entry) => (
-                  <tr key={entry.teamId} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <tr key={entry.teamId} className="hover:bg-surface-high">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <span className="text-lg mr-2">{getRankIcon(entry.rank)}</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {entry.rank}
-                        </span>
+                        <span className="text-sm font-medium text-text-primary">{entry.rank}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        <div className="text-sm font-medium text-text-primary">
                           {entry.teamName}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-muted">
                           Scoring: {leaderboardData.teamScoringMethod || 'SUM'}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-bold text-gray-900 dark:text-white">
+                      <div className="text-sm font-bold text-text-primary">
                         {entry.totalScore ? entry.totalScore.toFixed(1) : '0.0'}
                       </div>
                     </td>
@@ -417,15 +397,13 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
                         <td key={workout.activityId} className="px-6 py-4 whitespace-nowrap">
                           {workoutScore ? (
                             <div className="text-sm">
-                              <div className="font-medium text-gray-900 dark:text-white">
+                              <div className="font-medium text-text-primary">
                                 {workoutScore.score ? workoutScore.score.toFixed(1) : '0.0'}
                               </div>
-                              <div className="text-xs text-gray-400 dark:text-gray-500">
-                                Rank: {workoutScore.rank}
-                              </div>
+                              <div className="text-xs text-muted">Rank: {workoutScore.rank}</div>
                             </div>
                           ) : (
-                            <div className="text-sm text-gray-400 dark:text-gray-500">-</div>
+                            <div className="text-sm text-muted">-</div>
                           )}
                         </td>
                       );
@@ -451,50 +429,46 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
       <div className="space-y-4">
         {workout.entries.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-400">
-              No team scores submitted for this workout yet.
-            </p>
+            <p className="text-muted">No team scores submitted for this workout yet.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+            <table className="min-w-full divide-y divide-surface-high">
+              <thead className="bg-surface-high">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     Rank
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     Team
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     Score
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-surface-low divide-y divide-surface-high">
                 {workout.entries.map((entry) => (
-                  <tr key={entry.teamId} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <tr key={entry.teamId} className="hover:bg-surface-high">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <span className="text-lg mr-2">{getRankIcon(entry.rank)}</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {entry.rank}
-                        </span>
+                        <span className="text-sm font-medium text-text-primary">{entry.rank}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        <div className="text-sm font-medium text-text-primary">
                           {entry.teamName}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm">
-                        <div className="font-bold text-gray-900 dark:text-white">
+                        <div className="font-bold text-text-primary">
                           {entry.score ? entry.score.toFixed(1) : '0.0'}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-muted">
                           {entry.rawValue
                             ? formatRawValue(entry.rawValue, workout.activityId, entry.reps)
                             : ''}
@@ -512,13 +486,13 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-challenger rounded-lg">
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Leaderboard</h2>
+    <div className="panel rounded-lg">
+      <div className="px-6 py-4 border-b border-border">
+        <h2 className="text-xl font-semibold text-text-primary">Leaderboard</h2>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 dark:border-gray-700">
+      <div className="border-b border-border">
         <nav className="-mb-px flex space-x-8 px-6">
           {tabs.map((tab) => (
             <button
@@ -526,8 +500,8 @@ export default function Leaderboard({ eventId }: LeaderboardProps) {
               onClick={() => setActiveTab(tab.id)}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === tab.id
-                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted hover:text-text-secondary hover:border-border'
               }`}
             >
               {tab.name}

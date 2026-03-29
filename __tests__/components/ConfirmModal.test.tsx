@@ -59,13 +59,13 @@ describe('ConfirmModal', () => {
   it('applies primary styling when isDestructive is false', () => {
     render(<ConfirmModal {...defaultProps} isDestructive={false} />);
     const confirmBtn = screen.getByText('Confirm');
-    expect(confirmBtn.className).toContain('bg-primary-600');
+    expect(confirmBtn.className).toContain('bg-primary');
   });
 
   it('defaults isDestructive to false', () => {
     render(<ConfirmModal {...defaultProps} />);
     const confirmBtn = screen.getByText('Confirm');
-    expect(confirmBtn.className).toContain('bg-primary-600');
+    expect(confirmBtn.className).toContain('bg-primary');
     expect(confirmBtn.className).not.toContain('bg-red-600');
   });
 });

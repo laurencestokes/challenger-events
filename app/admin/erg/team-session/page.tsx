@@ -184,10 +184,10 @@ export default function TeamErgSessionSetupPage() {
   if (authLoading || loading) {
     return (
       <ProtectedRoute>
-        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="min-h-screen">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary-500"></div>
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary"></div>
               <p className="text-white text-lg">Loading...</p>
             </div>
           </div>
@@ -198,7 +198,7 @@ export default function TeamErgSessionSetupPage() {
 
   return (
     <ProtectedRoute>
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {/* Welcome Section */}
           <WelcomeSection />
@@ -208,19 +208,14 @@ export default function TeamErgSessionSetupPage() {
             <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
               <div>
                 <div className="flex items-center space-x-3 mb-2">
-                  <Link
-                    href="/dashboard"
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
-                  >
+                  <Link href="/dashboard" className="text-muted hover:text-text-secondary text-sm">
                     Dashboard
                   </Link>
-                  <span className="text-gray-400 dark:text-gray-500">/</span>
-                  <span className="text-gray-900 dark:text-white text-sm font-medium">
-                    Team Erg Live
-                  </span>
+                  <span className="text-muted">/</span>
+                  <span className="text-text-primary text-sm font-medium">Team Erg Live</span>
                 </div>
                 <h1 className="text-3xl font-bold text-white">Create Team Erg Competition</h1>
-                <p className="mt-2 text-gray-400">Set up live team-based erg competitions</p>
+                <p className="mt-2 text-muted">Set up live team-based erg competitions</p>
               </div>
             </div>
           </div>
@@ -232,11 +227,11 @@ export default function TeamErgSessionSetupPage() {
             </p>
           </div>
 
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8">
+          <div className="panel rounded-2xl  p-8">
             <div className="space-y-6">
               {/* Event Selection */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
                   Select Event for Competitors
                 </label>
                 <select
@@ -244,7 +239,7 @@ export default function TeamErgSessionSetupPage() {
                   onChange={(e) => {
                     setSelectedEventId(e.target.value);
                   }}
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 >
                   <option value="">Choose an event to get competitors from</option>
                   {events.map((event) => (
@@ -271,13 +266,13 @@ export default function TeamErgSessionSetupPage() {
 
               {/* Event Type Selection */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
                   Select Event Type
                 </label>
                 <select
                   value={selectedEventType}
                   onChange={(e) => setSelectedEventType(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 >
                   <option value="">Choose the event type for this competition</option>
                   {eventTypes.map((eventType) => (
@@ -296,24 +291,28 @@ export default function TeamErgSessionSetupPage() {
 
               {/* Team Names */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Team A Name</label>
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Team A Name
+                </label>
                 <input
                   type="text"
                   value={teamAName}
                   onChange={(e) => setTeamAName(e.target.value)}
                   placeholder="Enter team A name (e.g., Red Team, Team Alpha)"
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Team B Name</label>
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Team B Name
+                </label>
                 <input
                   type="text"
                   value={teamBName}
                   onChange={(e) => setTeamBName(e.target.value)}
                   placeholder="Enter team B name (e.g., Blue Team, Team Beta)"
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
 
@@ -340,15 +339,15 @@ export default function TeamErgSessionSetupPage() {
                 <Button
                   variant="secondary"
                   onClick={() => router.push('/admin')}
-                  className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-6 py-3 rounded-lg font-medium transition-colors"
+                  className="bg-surface-high hover:bg-surface-high text-text-secondary px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   Cancel
                 </Button>
               </div>
 
-              <div className="mt-6 p-6 bg-gray-700/50 rounded-lg border border-gray-600/50">
+              <div className="mt-6 p-6 bg-surface-high/50 rounded-lg border border-border/50">
                 <h3 className="font-semibold text-white mb-3">How team erg sessions work:</h3>
-                <ol className="list-decimal list-inside space-y-2 text-sm text-gray-300">
+                <ol className="list-decimal list-inside space-y-2 text-sm text-text-secondary">
                   <li>Select two teams from the dropdown above</li>
                   <li>Click "Create Team Session & Start" to generate a unique session</li>
                   <li>You'll be taken to the control page where you can manage the session</li>

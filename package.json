@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Challenger Events - Real-time fitness event management system",
   "scripts": {
+    "postinstall": "node scripts/patch-design-system.js",
     "prebuild": "node scripts/write-commit-hash.js",
     "dev": "node server.js",
     "dev:next": "next dev",
@@ -32,7 +33,9 @@
   },
   "dependencies": {
     "@challengerco/challenger-data": "^6.2.0",
+    "@challengerco/challenger-fitness-design-system": "^2.0.0",
     "@hookform/resolvers": "^3.3.4",
+    "@tailwindcss/postcss": "^4.2.2",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/react-query": "^5.90.2",
     "@tanstack/react-query-devtools": "^5.90.2",
@@ -47,10 +50,10 @@
     "firebase-admin": "^13.4.0",
     "html2canvas": "^1.4.1",
     "next": "^14.2.15",
-    "next-themes": "^0.3.0",
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
+    "react-aria-components": "^1.16.0",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.50.0",
     "react-icons": "^5.3.0",
@@ -86,6 +89,6 @@
     "npm-run-all": "^4.1.5",
     "postcss": "^8.4.47",
     "prettier": "^3.5.3",
-    "tailwindcss": "^3.4.14"
+    "tailwindcss": "^4.2.2"
   }
 }

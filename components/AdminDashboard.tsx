@@ -105,7 +105,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0F0F0F' }}>
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <WelcomeSection
@@ -119,14 +119,11 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Link
             href="/admin/events/create"
-            className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:scale-105 transition-all duration-200"
+            className="panel rounded-2xl p-6 hover:border-primary transition-colors duration-150"
           >
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
-                  style={{ backgroundColor: '#E84C04' }}
-                >
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary">
                   <svg
                     className="w-6 h-6 text-white"
                     fill="none"
@@ -143,7 +140,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-white">Create Event</h3>
+                <h3 className="text-lg font-medium text-text-primary">Create Event</h3>
                 <p className="text-sm" style={{ color: '#D9D9D9' }}>
                   Start a new competition
                 </p>
@@ -154,12 +151,12 @@ export default function AdminDashboard() {
           {/* Quick Event Creation */}
           <Link
             href="/admin/events/quick-create"
-            className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 hover:bg-gray-700/50 transition-colors group"
+            className="panel rounded-2xl p-6 hover:border-primary transition-colors duration-150 group"
           >
             <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center mr-4">
+              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mr-4">
                 <svg
-                  className="w-6 h-6 text-yellow-400"
+                  className="w-6 h-6 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -172,25 +169,20 @@ export default function AdminDashboard() {
                   />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-white group-hover:text-yellow-400 transition-colors">
-                Quick Event
-              </h3>
+              <h3 className="text-xl font-semibold text-text-primary">Quick Event</h3>
             </div>
-            <p className="text-gray-400 mb-4">
+            <p className="text-muted mb-4">
               Create on-the-fly competitions and add participants on the day
             </p>
           </Link>
 
           <Link
             href="/admin/score-tool"
-            className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:scale-105 transition-all duration-200"
+            className="panel rounded-2xl p-6 hover:border-primary transition-colors duration-150"
           >
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
-                  style={{ backgroundColor: '#DB2777' }}
-                >
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary">
                   <svg
                     className="w-6 h-6 text-white"
                     fill="none"
@@ -207,7 +199,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-white">Score Tool</h3>
+                <h3 className="text-lg font-medium text-text-primary">Score Tool</h3>
                 <p className="text-sm" style={{ color: '#D9D9D9' }}>
                   Quickly compute event scores
                 </p>
@@ -217,14 +209,11 @@ export default function AdminDashboard() {
 
           <Link
             href="/admin/events"
-            className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:scale-105 transition-all duration-200"
+            className="panel rounded-2xl p-6 hover:border-primary transition-colors duration-150"
           >
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
-                  style={{ backgroundColor: '#4682B4' }}
-                >
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary">
                   <svg
                     className="w-6 h-6 text-white"
                     fill="none"
@@ -241,7 +230,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-white">Manage Events</h3>
+                <h3 className="text-lg font-medium text-text-primary">Manage Events</h3>
                 <p className="text-sm" style={{ color: '#D9D9D9' }}>
                   View and edit competitions
                 </p>
@@ -251,14 +240,11 @@ export default function AdminDashboard() {
 
           <Link
             href="/admin/users"
-            className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:scale-105 transition-all duration-200"
+            className="panel rounded-2xl p-6 hover:border-primary transition-colors duration-150"
           >
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
-                  style={{ backgroundColor: '#E84C04' }}
-                >
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary">
                   <svg
                     className="w-6 h-6 text-white"
                     fill="none"
@@ -275,7 +261,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-white">Manage Users</h3>
+                <h3 className="text-lg font-medium text-text-primary">Manage Users</h3>
                 <p className="text-sm" style={{ color: '#D9D9D9' }}>
                   Invite and manage users
                 </p>
@@ -286,13 +272,12 @@ export default function AdminDashboard() {
           {/* Admin Image Upload - disabled for now */}
           {/* <Link
             href="/admin/images/upload"
-            className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:scale-105 transition-all duration-200"
+            className="panel rounded-2xl p-6 hover:border-primary transition-colors duration-150"
           >
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
-                  style={{ backgroundColor: '#4682B4' }}
+                  className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary"
                 >
                   <svg
                     className="w-6 h-6 text-white"
@@ -310,7 +295,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-white">Manage Images</h3>
+                <h3 className="text-lg font-medium text-text-primary">Manage Images</h3>
                 <p className="text-sm" style={{ color: '#D9D9D9' }}>
                   Upload, view, and delete images for briefs
                 </p>
@@ -320,14 +305,11 @@ export default function AdminDashboard() {
 
           <Link
             href="/teams"
-            className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:scale-105 transition-all duration-200"
+            className="panel rounded-2xl p-6 hover:border-primary transition-colors duration-150"
           >
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
-                  style={{ backgroundColor: '#E84C04' }}
-                >
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary">
                   <svg
                     className="w-6 h-6 text-white"
                     fill="none"
@@ -344,7 +326,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-white">Manage Teams</h3>
+                <h3 className="text-lg font-medium text-text-primary">Manage Teams</h3>
                 <p className="text-sm" style={{ color: '#D9D9D9' }}>
                   Create and manage teams
                 </p>
@@ -354,9 +336,9 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent Events */}
-        <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50">
-          <div className="px-6 py-4 border-b border-gray-700/50">
-            <h3 className="text-xl font-bold text-white">Recent Events</h3>
+        <div className="panel rounded-2xl">
+          <div className="px-6 py-4 border-b border-surface-high/50">
+            <h3 className="text-xl font-bold text-text-primary">Recent Events</h3>
           </div>
           <div className="p-6">
             {isLoading ? (
@@ -367,9 +349,9 @@ export default function AdminDashboard() {
               </div>
             ) : events.length === 0 ? (
               <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-surface-high rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg
-                    className="w-8 h-8 text-gray-400"
+                    className="w-8 h-8 text-muted"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -382,11 +364,10 @@ export default function AdminDashboard() {
                     />
                   </svg>
                 </div>
-                <p className="text-gray-400 text-lg mb-4">No events created yet</p>
+                <p className="text-muted text-lg mb-4">No events created yet</p>
                 <Link
                   href="/admin/events/create"
-                  className="inline-flex items-center px-6 py-3 text-white font-medium rounded-lg transition-colors hover:opacity-90"
-                  style={{ backgroundColor: '#4682B4' }}
+                  className="inline-flex items-center px-6 py-3 text-white font-medium rounded-lg transition-colors hover:opacity-90 bg-primary"
                 >
                   <svg
                     className="w-5 h-5 mr-2"
@@ -409,33 +390,36 @@ export default function AdminDashboard() {
                 {events.map((event) => (
                   <div
                     key={event.id}
-                    className="flex items-center justify-between p-6 bg-gray-900/50 border border-gray-700/50 rounded-xl hover:bg-gray-900/70 transition-colors"
+                    className="flex items-center justify-between p-6 panel rounded-xl hover:border-primary transition-colors duration-150"
                   >
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <h4 className="text-lg font-semibold text-white">{event.name}</h4>
+                        <h4 className="text-lg font-semibold text-text-primary">{event.name}</h4>
                         <span
                           className={`px-3 py-1 text-xs font-medium rounded-full ${
                             event.status === 'ACTIVE'
                               ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                               : event.status === 'COMPLETED'
                                 ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+                                : 'bg-surface-high0/20 text-muted border border-gray-500/30'
                           }`}
                         >
                           {event.status}
                         </span>
                       </div>
                       {event.description && (
-                        <p className="text-sm text-gray-400 mb-2">{event.description}</p>
+                        <p className="text-sm text-muted mb-2">{event.description}</p>
                       )}
-                      <div className="flex items-center space-x-6 text-sm text-gray-400">
+                      <div className="flex items-center space-x-6 text-sm text-muted">
                         <span>
                           Code:{' '}
-                          <span className="font-mono font-medium text-white">{event.code}</span>
+                          <span className="font-mono font-medium text-text-primary">
+                            {event.code}
+                          </span>
                         </span>
                         <span>
-                          Scope: <span className="text-white">{formatScope(event.scope)}</span>
+                          Scope:{' '}
+                          <span className="text-text-primary">{formatScope(event.scope)}</span>
                         </span>
                         <span>Start: {formatDate(event.startDate)}</span>
                         <span>End: {formatDate(event.endDate)}</span>
@@ -445,8 +429,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center space-x-3">
                       <Link
                         href={`/admin/events/${event.id}`}
-                        className="px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors hover:opacity-90"
-                        style={{ backgroundColor: '#4682B4' }}
+                        className="px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors hover:opacity-90 bg-primary"
                       >
                         Manage
                       </Link>

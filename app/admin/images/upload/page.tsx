@@ -99,7 +99,7 @@ export default function AdminImageUpload() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {/* Welcome Section */}
           <WelcomeSection />
@@ -109,27 +109,27 @@ export default function AdminImageUpload() {
             <div className="flex items-center space-x-3 mb-2">
               <button
                 onClick={() => window.history.back()}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
+                className="text-muted hover:text-text-secondary text-sm"
               >
                 Back
               </button>
-              <span className="text-gray-400 dark:text-gray-500">/</span>
-              <span className="text-gray-900 dark:text-white text-sm font-medium">
-                Image Upload
-              </span>
+              <span className="text-muted">/</span>
+              <span className="text-text-primary text-sm font-medium">Image Upload</span>
             </div>
             <h1 className="text-3xl font-bold text-white">Admin Image Upload</h1>
-            <p className="mt-2 text-gray-400">Upload and manage images for your events</p>
+            <p className="mt-2 text-muted">Upload and manage images for your events</p>
           </div>
 
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8">
+          <div className="panel rounded-2xl  p-8">
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-300 mb-2">Select Image</label>
+              <label className="block text-sm font-medium text-text-secondary mb-2">
+                Select Image
+              </label>
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
                 onChange={handleFileChange}
-                className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600 bg-gray-700 border border-gray-600 rounded-lg p-2"
+                className="block w-full text-sm text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-surface-high file:text-white hover:file:bg-gray-600 bg-surface-high border border-border rounded-lg p-2"
               />
             </div>
             <button
@@ -149,11 +149,11 @@ export default function AdminImageUpload() {
                 <div className="mb-2 text-white">
                   Upload successful! Use this markdown to embed your image:
                 </div>
-                <div className="bg-gray-700 border border-gray-600 rounded-lg p-3 font-mono text-sm mb-4 select-all text-gray-300">
+                <div className="bg-surface-high border border-border rounded-lg p-3 font-mono text-sm mb-4 select-all text-text-secondary">
                   {`![Alt text](${imageUrl})`}
                 </div>
                 <div className="mb-2 text-white">Preview:</div>
-                <div className="border border-gray-700 rounded-lg p-4 bg-gray-900/50">
+                <div className="border border-surface-high rounded-lg p-4 bg-carbon/50">
                   <Image
                     src={imageUrl}
                     alt="Uploaded"
@@ -164,18 +164,18 @@ export default function AdminImageUpload() {
                 </div>
               </div>
             )}
-            <hr className="my-8 border-gray-700/50" />
+            <hr className="my-8 border-surface-high/50" />
             <h2 className="text-xl font-semibold mb-4 text-white">Image Gallery</h2>
             {galleryLoading ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4 border-primary-500"></div>
-                <p className="text-gray-400">Loading gallery...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4 border-primary"></div>
+                <p className="text-muted">Loading gallery...</p>
               </div>
             ) : gallery.length === 0 ? (
               <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-surface-high rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg
-                    className="w-8 h-8 text-gray-400"
+                    className="w-8 h-8 text-muted"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -188,19 +188,19 @@ export default function AdminImageUpload() {
                     />
                   </svg>
                 </div>
-                <p className="text-gray-400">No images uploaded yet.</p>
+                <p className="text-muted">No images uploaded yet.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {gallery.map((img) => (
                   <div
                     key={img}
-                    className="relative group border border-gray-700/50 rounded-lg p-4 bg-gray-900/50 hover:bg-gray-900/70 transition-colors"
+                    className="relative group border border-surface-high/50 rounded-lg p-4 bg-carbon/50 hover:bg-surface-low/70 transition-colors"
                   >
                     <div className="w-full h-32 relative mb-3 rounded-lg overflow-hidden">
                       <Image src={img} alt="Uploaded" fill style={{ objectFit: 'contain' }} />
                     </div>
-                    <div className="bg-gray-700 border border-gray-600 rounded-lg p-2 font-mono text-xs select-all break-all text-gray-300">
+                    <div className="bg-surface-high border border-border rounded-lg p-2 font-mono text-xs select-all break-all text-text-secondary">
                       {`![Alt text](${img})`}
                     </div>
                     <button

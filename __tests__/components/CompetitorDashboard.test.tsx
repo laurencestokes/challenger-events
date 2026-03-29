@@ -28,10 +28,6 @@ jest.mock('recharts', () => ({
   Tooltip: () => <div />,
 }));
 
-jest.mock('next-themes', () => ({
-  useTheme: () => ({ theme: 'dark', resolvedTheme: 'dark' }),
-}));
-
 // Mock ChallengerData
 jest.mock('@challengerco/challenger-data', () => ({
   ChallengerData: jest.fn().mockImplementation(() => ({})),

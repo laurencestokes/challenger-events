@@ -220,15 +220,15 @@ export default function EventLeaderboard() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200';
+        return 'bg-success-100 text-success-800';
       case 'COMPLETED':
-        return 'bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200';
+        return 'bg-accent-100 text-accent-800';
       case 'CANCELLED':
-        return 'bg-error-100 text-error-800 dark:bg-error-900 dark:text-error-200';
+        return 'bg-error-100 text-error-800';
       case 'DRAFT':
-        return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200';
+        return 'bg-secondary-100 text-secondary-800';
       default:
-        return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-200';
+        return 'bg-secondary-100 text-secondary-800';
     }
   };
 
@@ -321,40 +321,40 @@ export default function EventLeaderboard() {
   if (isLoading) {
     return (
       <ProtectedRoute>
-        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="flex flex-col">
           <Header />
-          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+          <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
               {/* Welcome Section Skeleton */}
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center">
-                  <div className="w-16 h-16 bg-gray-700 rounded-full animate-pulse mr-4"></div>
+                  <div className="w-16 h-16 bg-surface-high rounded-full animate-pulse mr-4"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-700 rounded w-24 mb-2 animate-pulse"></div>
-                    <div className="h-6 bg-gray-700 rounded w-32 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-24 mb-2 animate-pulse"></div>
+                    <div className="h-6 bg-surface-high rounded w-32 animate-pulse"></div>
                   </div>
                 </div>
                 <div className="text-right space-y-3">
                   <div className="flex flex-col items-end">
-                    <div className="h-4 bg-gray-700 rounded w-20 mb-1 animate-pulse"></div>
-                    <div className="bg-gray-700 rounded-lg w-20 h-10 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-20 mb-1 animate-pulse"></div>
+                    <div className="bg-surface-high rounded-lg w-20 h-10 animate-pulse"></div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <div className="h-4 bg-gray-700 rounded w-16 mb-1 animate-pulse"></div>
-                    <div className="bg-gray-700 rounded-lg w-20 h-10 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-16 mb-1 animate-pulse"></div>
+                    <div className="bg-surface-high rounded-lg w-20 h-10 animate-pulse"></div>
                   </div>
                 </div>
               </div>
 
               {/* Breadcrumbs Skeleton */}
               <div className="mb-6">
-                <div className="h-4 bg-gray-700 rounded w-48 animate-pulse"></div>
+                <div className="h-4 bg-surface-high rounded w-48 animate-pulse"></div>
               </div>
 
               {/* Event Header Skeleton */}
               <div className="mb-8">
-                <div className="h-8 bg-gray-700 rounded w-80 mb-2 animate-pulse"></div>
-                <div className="h-4 bg-gray-700 rounded w-64 animate-pulse"></div>
+                <div className="h-8 bg-surface-high rounded w-80 mb-2 animate-pulse"></div>
+                <div className="h-4 bg-surface-high rounded w-64 animate-pulse"></div>
               </div>
 
               {/* Event Card Skeleton */}
@@ -363,12 +363,12 @@ export default function EventLeaderboard() {
               </div>
 
               {/* Leaderboard Skeleton */}
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 animate-pulse">
-                <div className="h-6 bg-gray-700 rounded w-40 mb-4"></div>
+              <div className="panel rounded-2xl p-6  animate-pulse">
+                <div className="h-6 bg-surface-high rounded w-40 mb-4"></div>
                 <div className="space-y-4">
-                  <div className="h-4 bg-gray-700 rounded w-full"></div>
-                  <div className="h-4 bg-gray-700 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-700 rounded w-5/6"></div>
+                  <div className="h-4 bg-surface-high rounded w-full"></div>
+                  <div className="h-4 bg-surface-high rounded w-3/4"></div>
+                  <div className="h-4 bg-surface-high rounded w-5/6"></div>
                 </div>
               </div>
             </div>
@@ -382,15 +382,15 @@ export default function EventLeaderboard() {
   if (error) {
     return (
       <ProtectedRoute>
-        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="flex flex-col">
           <Header />
-          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+          <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
               <div className="text-center py-8">
                 <p className="text-red-400">{error}</p>
                 <Link
                   href="/dashboard"
-                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary transition-colors"
                 >
                   Back to Dashboard
                 </Link>
@@ -406,15 +406,15 @@ export default function EventLeaderboard() {
   if (!leaderboardData || !event) {
     return (
       <ProtectedRoute>
-        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="flex flex-col">
           <Header />
-          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+          <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
               <div className="text-center py-8">
-                <p className="text-gray-400">Event or leaderboard data not found.</p>
+                <p className="text-muted">Event or leaderboard data not found.</p>
                 <Link
                   href="/dashboard"
-                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary transition-colors"
                 >
                   Back to Dashboard
                 </Link>
@@ -431,9 +431,9 @@ export default function EventLeaderboard() {
 
   return (
     <ProtectedRoute>
-      <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+      <div className="flex flex-col">
         <Header />
-        <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+        <div className="flex-1">
           <div className="container mx-auto px-4 py-8">
             {/* Welcome Section */}
             <div className="flex items-center justify-between mb-8">
@@ -444,7 +444,7 @@ export default function EventLeaderboard() {
                   </span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-gray-400 text-sm">Welcome Back</p>
+                  <p className="text-muted text-sm">Welcome Back</p>
                   <h1 className="text-white text-2xl font-bold">{user?.name || user?.email}</h1>
                 </div>
               </div>
@@ -472,7 +472,7 @@ export default function EventLeaderboard() {
 
             {/* Breadcrumbs */}
             <nav
-              className="mb-6 text-sm text-gray-400 flex items-center space-x-2"
+              className="mb-6 text-sm text-muted flex items-center space-x-2"
               aria-label="Breadcrumb"
             >
               <Link href="/dashboard" className="hover:text-white transition-colors">
@@ -489,19 +489,19 @@ export default function EventLeaderboard() {
             {/* Event Header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-white mb-2">Leaderboard</h1>
-              <p className="text-gray-400">
+              <p className="text-muted">
                 Track your progress and see how you rank against other competitors
               </p>
               <div className="mt-4 flex flex-col sm:flex-row gap-3">
                 <Link
                   href={`/events/${eventId}/calculator`}
-                  className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                  className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary transition-colors"
                 >
                   🧮 Score Calculator
                 </Link>
                 <Link
                   href={`/public/leaderboard/${eventId}`}
-                  className="inline-flex items-center px-4 py-2 border border-gray-600 text-gray-300 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+                  className="inline-flex items-center px-4 py-2 border border-border text-text-secondary bg-surface-low rounded-lg hover:bg-surface-high transition-colors"
                 >
                   📊 View Public Leaderboard
                 </Link>
@@ -510,7 +510,7 @@ export default function EventLeaderboard() {
 
             {/* Event Card */}
             <div className="mb-8">
-              <div className="w-full h-80 bg-gray-800 rounded-2xl relative overflow-hidden">
+              <div className="w-full h-80 bg-surface-low rounded-2xl relative overflow-hidden">
                 {/* Event Background Image */}
                 <div className="absolute inset-0">
                   {event.imageUrl ? (
@@ -588,7 +588,7 @@ export default function EventLeaderboard() {
               </div>
             </div>
             {/* Leaderboard Section */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+            <div className="panel rounded-2xl p-6 ">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-semibold text-white">Leaderboard</h2>
 
@@ -599,8 +599,8 @@ export default function EventLeaderboard() {
                       onClick={() => setViewMode('individual')}
                       className={`px-3 py-1 text-sm font-medium rounded-md ${
                         viewMode === 'individual'
-                          ? 'bg-primary-600 text-white'
-                          : 'text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600'
+                          ? 'bg-primary text-white'
+                          : 'text-muted hover:text-white bg-surface-high hover:bg-surface-high'
                       }`}
                     >
                       Individual
@@ -609,8 +609,8 @@ export default function EventLeaderboard() {
                       onClick={() => setViewMode('team')}
                       className={`px-3 py-1 text-sm font-medium rounded-md ${
                         viewMode === 'team'
-                          ? 'bg-primary-600 text-white'
-                          : 'text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600'
+                          ? 'bg-primary text-white'
+                          : 'text-muted hover:text-white bg-surface-high hover:bg-surface-high'
                       }`}
                     >
                       Team
@@ -620,7 +620,7 @@ export default function EventLeaderboard() {
               </div>
 
               {/* Tab Navigation */}
-              <div className="border-b border-gray-600 mb-6">
+              <div className="border-b border-border mb-6">
                 <nav className="flex space-x-8 overflow-x-auto">
                   {availableTabs.map((tab) => (
                     <button
@@ -628,8 +628,8 @@ export default function EventLeaderboard() {
                       onClick={() => setActiveTab(tab.id)}
                       className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                         activeTab === tab.id
-                          ? 'border-primary-500 text-primary-400'
-                          : 'border-transparent text-gray-400 hover:text-white'
+                          ? 'border-primary text-primary-light'
+                          : 'border-transparent text-muted hover:text-white'
                       }`}
                     >
                       {tab.name}
@@ -649,7 +649,7 @@ export default function EventLeaderboard() {
                           {/* 2nd Place (Silver) */}
                           {leaderboardData.overallLeaderboard[1] && (
                             <div className="order-2 md:order-1 relative z-10">
-                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
+                              <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
                                 {/* Rank Badge */}
                                 <div className="absolute -top-3 -left-3 w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center">
                                   <span className="text-white font-bold text-lg">#2</span>
@@ -674,7 +674,7 @@ export default function EventLeaderboard() {
                                     {leaderboardData.overallLeaderboard[1].name}
                                   </h3>
                                   {leaderboardData.overallLeaderboard[1].teamName && (
-                                    <p className="text-gray-400 text-sm">
+                                    <p className="text-muted text-sm">
                                       {leaderboardData.overallLeaderboard[1].teamName}
                                     </p>
                                   )}
@@ -694,10 +694,10 @@ export default function EventLeaderboard() {
                           {/* 1st Place (Gold) */}
                           {leaderboardData.overallLeaderboard[0] && (
                             <div className="order-1 md:order-2 relative z-30">
-                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
+                              <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
                                 {/* Rank Badge */}
                                 <div className="absolute -top-3 -left-3 w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
-                                  <span className="text-gray-900 font-bold text-lg">#1</span>
+                                  <span className="text-text-primary font-bold text-lg">#1</span>
                                 </div>
 
                                 {/* Avatar */}
@@ -719,7 +719,7 @@ export default function EventLeaderboard() {
                                     {leaderboardData.overallLeaderboard[0].name}
                                   </h3>
                                   {leaderboardData.overallLeaderboard[0].teamName && (
-                                    <p className="text-gray-400 text-sm">
+                                    <p className="text-muted text-sm">
                                       {leaderboardData.overallLeaderboard[0].teamName}
                                     </p>
                                   )}
@@ -739,7 +739,7 @@ export default function EventLeaderboard() {
                           {/* 3rd Place (Bronze) */}
                           {leaderboardData.overallLeaderboard[2] && (
                             <div className="order-3 relative z-20">
-                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
+                              <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
                                 {/* Rank Badge */}
                                 <div className="absolute -top-3 -left-3 w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center">
                                   <span className="text-white font-bold text-lg">#3</span>
@@ -764,7 +764,7 @@ export default function EventLeaderboard() {
                                     {leaderboardData.overallLeaderboard[2].name}
                                   </h3>
                                   {leaderboardData.overallLeaderboard[2].teamName && (
-                                    <p className="text-gray-400 text-sm">
+                                    <p className="text-muted text-sm">
                                       {leaderboardData.overallLeaderboard[2].teamName}
                                     </p>
                                   )}
@@ -792,30 +792,30 @@ export default function EventLeaderboard() {
                           </h3>
                           <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-600">
-                              <thead className="bg-gray-700">
+                              <thead className="bg-surface-high">
                                 <tr>
-                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                                     Rank
                                   </th>
-                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                                     Competitor
                                   </th>
-                                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                  <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
                                     Total Score
                                   </th>
                                   {activities.map((activity) => (
                                     <th
                                       key={activity.id}
-                                      className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+                                      className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider"
                                     >
                                       {activity.name}
                                     </th>
                                   ))}
                                 </tr>
                               </thead>
-                              <tbody className="bg-gray-800 divide-y divide-gray-600">
+                              <tbody className="bg-surface-low divide-y divide-gray-600">
                                 {leaderboardData.overallLeaderboard.map((entry) => (
-                                  <tr key={entry.userId} className="hover:bg-gray-700">
+                                  <tr key={entry.userId} className="hover:bg-surface-high">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                       <div className="flex items-center">
                                         <span className="text-lg mr-2">
@@ -833,7 +833,7 @@ export default function EventLeaderboard() {
                                         </div>
 
                                         {entry.teamId && entry.teamName && (
-                                          <div className="text-xs text-gray-400">
+                                          <div className="text-xs text-muted">
                                             Team: {entry.teamName}
                                           </div>
                                         )}
@@ -858,7 +858,7 @@ export default function EventLeaderboard() {
                                                   ? workoutScore.score.toFixed(1)
                                                   : '0.0'}
                                               </div>
-                                              <div className="text-xs text-gray-400">
+                                              <div className="text-xs text-muted">
                                                 {workoutScore.rawValue
                                                   ? (workoutScore as { scoringSystemId?: string })
                                                       .scoringSystemId
@@ -879,12 +879,12 @@ export default function EventLeaderboard() {
                                                       )
                                                   : ''}
                                               </div>
-                                              <div className="text-xs text-gray-500">
+                                              <div className="text-xs text-muted">
                                                 Rank: {workoutScore.rank}
                                               </div>
                                             </div>
                                           ) : (
-                                            <div className="text-sm text-gray-500">-</div>
+                                            <div className="text-sm text-muted">-</div>
                                           )}
                                         </td>
                                       );
@@ -906,7 +906,7 @@ export default function EventLeaderboard() {
                           {/* 2nd Place Team (Silver) */}
                           {leaderboardData.teamOverallLeaderboard[1] && (
                             <div className="order-2 md:order-1 relative z-10">
-                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
+                              <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-gray-400 shadow-lg">
                                 {/* Rank Badge */}
                                 <div className="absolute -top-3 -left-3 w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center">
                                   <span className="text-white font-bold text-lg">#2</span>
@@ -930,7 +930,7 @@ export default function EventLeaderboard() {
                                   <h3 className="text-white font-semibold text-lg">
                                     {leaderboardData.teamOverallLeaderboard[1].teamName}
                                   </h3>
-                                  <p className="text-gray-400 text-sm">Team</p>
+                                  <p className="text-muted text-sm">Team</p>
                                 </div>
 
                                 {/* Score */}
@@ -948,10 +948,10 @@ export default function EventLeaderboard() {
                           {/* 1st Place Team (Gold) */}
                           {leaderboardData.teamOverallLeaderboard[0] && (
                             <div className="order-1 md:order-2 relative z-30">
-                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
+                              <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-yellow-400 shadow-xl transform scale-105">
                                 {/* Rank Badge */}
                                 <div className="absolute -top-3 -left-3 w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
-                                  <span className="text-gray-900 font-bold text-lg">#1</span>
+                                  <span className="text-text-primary font-bold text-lg">#1</span>
                                 </div>
 
                                 {/* Team Avatar */}
@@ -972,7 +972,7 @@ export default function EventLeaderboard() {
                                   <h3 className="text-white font-semibold text-xl">
                                     {leaderboardData.teamOverallLeaderboard[0].teamName}
                                   </h3>
-                                  <p className="text-gray-400 text-sm">Team</p>
+                                  <p className="text-muted text-sm">Team</p>
                                 </div>
 
                                 {/* Score */}
@@ -990,7 +990,7 @@ export default function EventLeaderboard() {
                           {/* 3rd Place Team (Bronze) */}
                           {leaderboardData.teamOverallLeaderboard[2] && (
                             <div className="order-3 relative z-20">
-                              <div className="relative bg-gray-800 rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
+                              <div className="relative bg-surface-low rounded-2xl p-6 border-4 border-amber-600 shadow-lg">
                                 {/* Rank Badge */}
                                 <div className="absolute -top-3 -left-3 w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center">
                                   <span className="text-white font-bold text-lg">#3</span>
@@ -1014,7 +1014,7 @@ export default function EventLeaderboard() {
                                   <h3 className="text-white font-semibold text-lg">
                                     {leaderboardData.teamOverallLeaderboard[2].teamName}
                                   </h3>
-                                  <p className="text-gray-400 text-sm">Team</p>
+                                  <p className="text-muted text-sm">Team</p>
                                 </div>
 
                                 {/* Score */}
@@ -1042,13 +1042,13 @@ export default function EventLeaderboard() {
                             {leaderboardData.teamOverallLeaderboard.map((entry) => (
                               <div
                                 key={entry.teamId}
-                                className="flex items-center justify-between p-4 bg-gray-700 rounded-lg"
+                                className="flex items-center justify-between p-4 bg-surface-high rounded-lg"
                               >
                                 <div className="flex items-center space-x-4">
                                   <div className="text-2xl">{getRankIcon(entry.rank)}</div>
                                   <div>
                                     <div className="font-medium text-white">{entry.teamName}</div>
-                                    <div className="text-sm text-gray-400">
+                                    <div className="text-sm text-muted">
                                       Team Total Score: {entry.totalScore.toFixed(1)}
                                     </div>
                                   </div>
@@ -1067,7 +1067,7 @@ export default function EventLeaderboard() {
                     {/* No teams message */}
                     {(!leaderboardData.teamOverallLeaderboard ||
                       leaderboardData.teamOverallLeaderboard.length === 0) && (
-                      <div className="text-center py-8 text-gray-400">
+                      <div className="text-center py-8 text-muted">
                         No team overall scores available yet.
                       </div>
                     )}
@@ -1081,13 +1081,13 @@ export default function EventLeaderboard() {
                           ?.entries?.map((entry) => (
                             <div
                               key={entry.userId}
-                              className="flex items-center justify-between p-4 bg-gray-700 rounded-lg"
+                              className="flex items-center justify-between p-4 bg-surface-high rounded-lg"
                             >
                               <div className="flex items-center space-x-4">
                                 <div className="text-2xl">{getRankIcon(entry.rank)}</div>
                                 <div>
                                   <div className="font-medium text-white">{entry.name}</div>
-                                  <div className="text-sm text-gray-400">
+                                  <div className="text-sm text-muted">
                                     {entry.rawValue
                                       ? (entry as { scoringSystemId?: string }).scoringSystemId
                                         ? formatRawValue(
@@ -1114,13 +1114,13 @@ export default function EventLeaderboard() {
                           ?.entries?.map((entry) => (
                             <div
                               key={entry.teamId}
-                              className="flex items-center justify-between p-4 bg-gray-700 rounded-lg"
+                              className="flex items-center justify-between p-4 bg-surface-high rounded-lg"
                             >
                               <div className="flex items-center space-x-4">
                                 <div className="text-2xl">{getRankIcon(entry.rank)}</div>
                                 <div>
                                   <div className="font-medium text-white">{entry.teamName}</div>
-                                  <div className="text-sm text-gray-400">Team Score</div>
+                                  <div className="text-sm text-muted">Team Score</div>
                                 </div>
                               </div>
                               <div className="text-right">
@@ -1130,7 +1130,7 @@ export default function EventLeaderboard() {
                               </div>
                             </div>
                           )) || (
-                          <div className="text-center py-8 text-gray-400">
+                          <div className="text-center py-8 text-muted">
                             No scores available for this activity yet.
                           </div>
                         )}

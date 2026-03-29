@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react';
 import { EVENT_TYPES } from '@constants/eventTypes';
-import { useTheme } from 'next-themes';
 import {
   ResponsiveContainer,
   LineChart,
@@ -39,9 +38,8 @@ export default function PerformanceGraph({ scores }: PerformanceGraphProps) {
   const [selectedActivity, setSelectedActivity] = useState<string>('all');
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
   const [grouping, setGrouping] = useState<'all' | 'strength' | 'endurance' | 'activity'>('all');
-  const { theme, resolvedTheme } = useTheme();
-
-  const isDark = theme === 'dark' || resolvedTheme === 'dark';
+  // Always dark mode in the Kinetic Editorial design system
+  const isDark = true;
 
   // Helper function to parse dates properly
   const parseDate = (dateValue: unknown): Date => {
@@ -298,7 +296,7 @@ export default function PerformanceGraph({ scores }: PerformanceGraphProps) {
   if (scores.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-400 text-lg">
+        <p className="text-muted text-lg">
           No performance data available yet. Start adding scores to see your progress!
         </p>
       </div>
@@ -433,7 +431,7 @@ export default function PerformanceGraph({ scores }: PerformanceGraphProps) {
             onChange={(e) =>
               setGrouping(e.target.value as 'all' | 'strength' | 'endurance' | 'activity')
             }
-            className="px-3 py-2 border border-primary-500/50 rounded-lg bg-gray-800 text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="px-3 py-2 border border-primary/50 rounded-lg bg-surface-low text-text-primary text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="all">All (Total Score)</option>
             <option value="strength">Strength Only</option>
@@ -444,7 +442,7 @@ export default function PerformanceGraph({ scores }: PerformanceGraphProps) {
             <select
               value={selectedActivity}
               onChange={(e) => setSelectedActivity(e.target.value)}
-              className="px-3 py-2 border border-gray-600 rounded-lg bg-gray-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="px-3 py-2 border border-border rounded-lg bg-surface-low text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Activities</option>
               {activityNames.map((activity) => (
@@ -463,8 +461,8 @@ export default function PerformanceGraph({ scores }: PerformanceGraphProps) {
               onClick={() => setTimeRange(range)}
               className={`px-4 py-2 text-sm rounded-lg transition-colors font-medium ${
                 timeRange === range
-                  ? 'bg-primary-500 text-white shadow-lg'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  ? 'bg-primary text-white shadow-lg'
+                  : 'bg-surface-high text-text-secondary hover:bg-surface-high'
               }`}
             >
               {range === '7d'
@@ -482,7 +480,7 @@ export default function PerformanceGraph({ scores }: PerformanceGraphProps) {
       {/* Legend removed per request */}
 
       {/* Chart */}
-      <div className="w-full overflow-x-auto border border-gray-700/50 rounded-xl p-4 bg-black/30">
+      <div className="w-full overflow-x-auto border border-surface-high/50 rounded-xl p-4 bg-black/30">
         <div className="min-w-[450px] w-full h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
             {grouping === 'activity' && selectedActivity !== 'all' ? (

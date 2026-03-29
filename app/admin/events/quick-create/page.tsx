@@ -144,7 +144,7 @@ export default function QuickCreateEvent() {
 
   return (
     <ProtectedRoute requireAdmin>
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {/* Welcome Section */}
           <WelcomeSection showMetrics={true} isLoading={isLoading} />
@@ -154,25 +154,23 @@ export default function QuickCreateEvent() {
             <div className="flex items-center space-x-3 mb-2">
               <button
                 onClick={() => router.push('/admin/events')}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
+                className="text-muted hover:text-text-secondary text-sm"
               >
                 Manage Events
               </button>
-              <span className="text-gray-400 dark:text-gray-500">/</span>
-              <span className="text-gray-900 dark:text-white text-sm font-medium">
-                Quick Create Event
-              </span>
+              <span className="text-muted">/</span>
+              <span className="text-text-primary text-sm font-medium">Quick Create Event</span>
             </div>
             <h1 className="text-3xl font-bold text-white">Quick Create Event</h1>
-            <p className="mt-2 text-gray-400">
+            <p className="mt-2 text-muted">
               Create an on-the-fly competition and add participants on the day
             </p>
           </div>
 
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8">
+          <div className="panel rounded-2xl  p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-300">
+                <label htmlFor="name" className="block text-sm font-medium text-text-secondary">
                   Event Name *
                 </label>
                 <input
@@ -180,7 +178,7 @@ export default function QuickCreateEvent() {
                   id="name"
                   name="name"
                   required
-                  className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   placeholder="Enter event name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -188,14 +186,17 @@ export default function QuickCreateEvent() {
               </div>
 
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-300">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-text-secondary"
+                >
                   Description (Optional)
                 </label>
                 <textarea
                   id="description"
                   name="description"
                   rows={3}
-                  className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   placeholder="Enter event description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -203,7 +204,7 @@ export default function QuickCreateEvent() {
               </div>
 
               {/* Activity Selection */}
-              <div className="border-t border-gray-700/50 pt-6">
+              <div className="border-t border-surface-high/50 pt-6">
                 <h3 className="text-lg font-medium text-white mb-4">
                   Select Activities * (Select at least one)
                 </h3>
@@ -211,7 +212,7 @@ export default function QuickCreateEvent() {
                 <div className="space-y-6">
                   {/* Strength Activities */}
                   <div>
-                    <h4 className="text-sm font-medium text-gray-400 mb-3">Strength</h4>
+                    <h4 className="text-sm font-medium text-muted mb-3">Strength</h4>
                     <div className="space-y-3">
                       {strengthActivities.map((activity) => {
                         const isSelected = selectedActivities.includes(activity.id);
@@ -221,7 +222,7 @@ export default function QuickCreateEvent() {
                             className={`p-3 rounded-lg border transition-colors ${
                               isSelected
                                 ? 'bg-orange-500/20 border-orange-500'
-                                : 'bg-gray-700/50 border-gray-600'
+                                : 'bg-surface-high/50 border-border'
                             }`}
                           >
                             <label className="flex items-center cursor-pointer">
@@ -229,20 +230,20 @@ export default function QuickCreateEvent() {
                                 type="checkbox"
                                 checked={isSelected}
                                 onChange={() => handleActivityToggle(activity.id)}
-                                className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-600 rounded bg-gray-700"
+                                className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-border rounded bg-surface-high"
                               />
                               <div className="ml-3 flex-1">
                                 <div className="text-sm font-medium text-white">
                                   {activity.name}
                                 </div>
-                                <div className="text-xs text-gray-400">{activity.unit}</div>
+                                <div className="text-xs text-muted">{activity.unit}</div>
                               </div>
                             </label>
                             {isSelected && activity.supportsReps && (
                               <div className="mt-3 ml-7">
                                 <label
                                   htmlFor={`reps-${activity.id}`}
-                                  className="block text-xs text-gray-300 mb-1"
+                                  className="block text-xs text-text-secondary mb-1"
                                 >
                                   Reps
                                 </label>
@@ -255,7 +256,7 @@ export default function QuickCreateEvent() {
                                   onChange={(e) =>
                                     handleRepsChange(activity.id, Number(e.target.value))
                                   }
-                                  className="w-20 px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                  className="w-20 px-2 py-1 bg-surface-high border border-border rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                                 />
                               </div>
                             )}
@@ -267,7 +268,7 @@ export default function QuickCreateEvent() {
 
                   {/* Endurance Activities */}
                   <div>
-                    <h4 className="text-sm font-medium text-gray-400 mb-3">Endurance</h4>
+                    <h4 className="text-sm font-medium text-muted mb-3">Endurance</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {enduranceActivities.map((activity) => (
                         <label
@@ -275,18 +276,18 @@ export default function QuickCreateEvent() {
                           className={`flex items-center p-3 rounded-lg border cursor-pointer transition-colors ${
                             selectedActivities.includes(activity.id)
                               ? 'bg-orange-500/20 border-orange-500'
-                              : 'bg-gray-700/50 border-gray-600 hover:bg-gray-700'
+                              : 'bg-surface-high/50 border-border hover:bg-surface-high'
                           }`}
                         >
                           <input
                             type="checkbox"
                             checked={selectedActivities.includes(activity.id)}
                             onChange={() => handleActivityToggle(activity.id)}
-                            className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-600 rounded bg-gray-700"
+                            className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-border rounded bg-surface-high"
                           />
                           <div className="ml-3">
                             <div className="text-sm font-medium text-white">{activity.name}</div>
-                            <div className="text-xs text-gray-400">{activity.unit}</div>
+                            <div className="text-xs text-muted">{activity.unit}</div>
                           </div>
                         </label>
                       ))}
@@ -296,12 +297,15 @@ export default function QuickCreateEvent() {
               </div>
 
               {/* Event Settings */}
-              <div className="border-t border-gray-700/50 pt-6">
+              <div className="border-t border-surface-high/50 pt-6">
                 <h3 className="text-lg font-medium text-white mb-4">Event Settings</h3>
 
                 <div className="space-y-4 mb-6">
                   <div>
-                    <label htmlFor="scope" className="block text-sm font-medium text-gray-300 mb-1">
+                    <label
+                      htmlFor="scope"
+                      className="block text-sm font-medium text-text-secondary mb-1"
+                    >
                       Event Scope *
                     </label>
                     <select
@@ -312,7 +316,7 @@ export default function QuickCreateEvent() {
                           e.target.value as 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY',
                         )
                       }
-                      className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     >
                       <option value="INVITE_ONLY">Invite Only - Only invited users</option>
                       <option value="PUBLIC">Public - Anyone can join</option>
@@ -327,7 +331,7 @@ export default function QuickCreateEvent() {
                     <div>
                       <label
                         htmlFor="organizationId"
-                        className="block text-sm font-medium text-gray-300 mb-1"
+                        className="block text-sm font-medium text-text-secondary mb-1"
                       >
                         Organization ID *
                       </label>
@@ -337,7 +341,7 @@ export default function QuickCreateEvent() {
                         value={organizationId}
                         onChange={(e) => setOrganizationId(e.target.value)}
                         required={scope === 'ORGANIZATION'}
-                        className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         placeholder="Enter organization ID"
                       />
                     </div>
@@ -347,7 +351,7 @@ export default function QuickCreateEvent() {
                     <div>
                       <label
                         htmlFor="gymId"
-                        className="block text-sm font-medium text-gray-300 mb-1"
+                        className="block text-sm font-medium text-text-secondary mb-1"
                       >
                         Gym ID *
                       </label>
@@ -357,7 +361,7 @@ export default function QuickCreateEvent() {
                         value={gymId}
                         onChange={(e) => setGymId(e.target.value)}
                         required={scope === 'GYM'}
-                        className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         placeholder="Enter gym ID"
                       />
                     </div>
@@ -367,7 +371,7 @@ export default function QuickCreateEvent() {
                     <div>
                       <label
                         htmlFor="country"
-                        className="block text-sm font-medium text-gray-300 mb-1"
+                        className="block text-sm font-medium text-text-secondary mb-1"
                       >
                         Country
                       </label>
@@ -375,7 +379,7 @@ export default function QuickCreateEvent() {
                         id="country"
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
-                        className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       >
                         <option value="GB">🇬🇧 United Kingdom</option>
                       </select>
@@ -384,7 +388,7 @@ export default function QuickCreateEvent() {
                     <div>
                       <label
                         htmlFor="postcode"
-                        className="block text-sm font-medium text-gray-300 mb-1"
+                        className="block text-sm font-medium text-text-secondary mb-1"
                       >
                         Postcode (Optional)
                       </label>
@@ -393,7 +397,7 @@ export default function QuickCreateEvent() {
                         id="postcode"
                         value={postcode}
                         onChange={(e) => setPostcode(e.target.value)}
-                        className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         placeholder="e.g., SW1A 1AA"
                       />
                     </div>
@@ -402,7 +406,7 @@ export default function QuickCreateEvent() {
                   <div>
                     <label
                       htmlFor="status"
-                      className="block text-sm font-medium text-gray-300 mb-1"
+                      className="block text-sm font-medium text-text-secondary mb-1"
                     >
                       Event Status
                     </label>
@@ -410,7 +414,7 @@ export default function QuickCreateEvent() {
                       id="status"
                       value={status}
                       onChange={(e) => setStatus(e.target.value as 'DRAFT' | 'ACTIVE')}
-                      className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     >
                       <option value="ACTIVE">Active - Available to join immediately</option>
                       <option value="DRAFT">Draft - Save for later activation</option>
@@ -421,7 +425,7 @@ export default function QuickCreateEvent() {
                     <div>
                       <label
                         htmlFor="startDate"
-                        className="block text-sm font-medium text-gray-300 mb-1"
+                        className="block text-sm font-medium text-text-secondary mb-1"
                       >
                         Start Date (Optional)
                       </label>
@@ -430,14 +434,14 @@ export default function QuickCreateEvent() {
                         id="startDate"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       />
                     </div>
 
                     <div>
                       <label
                         htmlFor="endDate"
-                        className="block text-sm font-medium text-gray-300 mb-1"
+                        className="block text-sm font-medium text-text-secondary mb-1"
                       >
                         End Date (Optional)
                       </label>
@@ -446,7 +450,7 @@ export default function QuickCreateEvent() {
                         id="endDate"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       />
                     </div>
                   </div>
@@ -454,7 +458,7 @@ export default function QuickCreateEvent() {
               </div>
 
               {/* Team Event Settings */}
-              <div className="border-t border-gray-700/50 pt-6">
+              <div className="border-t border-surface-high/50 pt-6">
                 <h3 className="text-lg font-medium text-white mb-4">Team Competition Settings</h3>
 
                 <div className="space-y-4">
@@ -464,7 +468,7 @@ export default function QuickCreateEvent() {
                       id="isTeamEvent"
                       checked={isTeamEvent}
                       onChange={(e) => setIsTeamEvent(e.target.checked)}
-                      className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-600 rounded bg-gray-700"
+                      className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-border rounded bg-surface-high"
                     />
                     <label htmlFor="isTeamEvent" className="ml-2 block text-sm text-white">
                       Enable team competition
@@ -472,11 +476,11 @@ export default function QuickCreateEvent() {
                   </div>
 
                   {isTeamEvent && (
-                    <div className="space-y-4 pl-6 border-l-2 border-gray-700/50">
+                    <div className="space-y-4 pl-6 border-l-2 border-surface-high/50">
                       <div>
                         <label
                           htmlFor="teamScoringMethod"
-                          className="block text-sm font-medium text-gray-300"
+                          className="block text-sm font-medium text-text-secondary"
                         >
                           Team Scoring Method
                         </label>
@@ -486,7 +490,7 @@ export default function QuickCreateEvent() {
                           onChange={(e) =>
                             setTeamScoringMethod(e.target.value as 'SUM' | 'AVERAGE' | 'BEST')
                           }
-                          className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         >
                           <option value="SUM">Sum of all member scores</option>
                           <option value="AVERAGE">Average of member scores</option>
@@ -497,7 +501,7 @@ export default function QuickCreateEvent() {
                       <div>
                         <label
                           htmlFor="maxTeamSize"
-                          className="block text-sm font-medium text-gray-300"
+                          className="block text-sm font-medium text-text-secondary"
                         >
                           Maximum Team Size
                         </label>
@@ -508,7 +512,7 @@ export default function QuickCreateEvent() {
                           max="10"
                           value={maxTeamSize}
                           onChange={(e) => setMaxTeamSize(Number(e.target.value))}
-                          className="mt-1 block w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         />
                       </div>
                     </div>
@@ -526,7 +530,7 @@ export default function QuickCreateEvent() {
                 <button
                   type="button"
                   onClick={() => router.push('/admin/events')}
-                  className="px-4 py-3 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors"
+                  className="px-4 py-3 bg-surface-high text-text-secondary rounded-lg hover:bg-surface-high transition-colors"
                 >
                   Cancel
                 </button>

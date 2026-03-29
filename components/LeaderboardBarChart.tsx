@@ -113,7 +113,7 @@ export default function LeaderboardBarChart({
   if (!entries || entries.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-400">No data available</p>
+        <p className="text-muted">No data available</p>
       </div>
     );
   }
@@ -182,7 +182,7 @@ export default function LeaderboardBarChart({
         return (
           <div
             key={entry.teamId || entry.userId || entry.name}
-            className="bg-gray-800 rounded-xl p-4 border border-gray-700/50 hover:border-gray-600 transition-colors"
+            className="bg-surface-low rounded-xl p-4 border border-surface-high/50 hover:border-border transition-colors"
           >
             <div className="flex items-center gap-4 mb-3">
               {/* Rank */}
@@ -202,13 +202,13 @@ export default function LeaderboardBarChart({
               <div className="flex-shrink-0 w-[180px]">
                 <div className="text-sm font-medium text-white truncate">{entry.name}</div>
                 {entry.teamName && !isTeamView && (
-                  <div className="text-xs text-gray-400 truncate">{entry.teamName}</div>
+                  <div className="text-xs text-muted truncate">{entry.teamName}</div>
                 )}
               </div>
 
               {/* Bar Chart */}
               <div className="flex-1 min-w-0">
-                <div className="relative h-16 bg-gray-900/50 rounded-lg overflow-hidden border border-gray-700/30">
+                <div className="relative h-16 bg-carbon/50 rounded-lg overflow-hidden border border-surface-high/30">
                   {/* Bar segments */}
                   <div className="flex h-full items-stretch">
                     {isTeamView && memberSegments.length > 0
@@ -322,10 +322,10 @@ export default function LeaderboardBarChart({
 
                               {/* Hover tooltip */}
                               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                                <div className="absolute top-full left-0 mt-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap border border-gray-700 shadow-lg">
+                                <div className="absolute top-full left-0 mt-1 bg-carbon text-white text-xs rounded px-2 py-1 whitespace-nowrap border border-surface-high shadow-lg">
                                   <div className="font-semibold">{activity.name}</div>
                                   {memberScores.map((ms) => (
-                                    <div key={ms.member.userId} className="text-gray-300">
+                                    <div key={ms.member.userId} className="text-text-secondary">
                                       {ms.member.name}: {ms.score.toFixed(1)} (
                                       {formatRawValue(
                                         ms.rawValue,
@@ -396,12 +396,12 @@ export default function LeaderboardBarChart({
 
                               {/* Hover tooltip */}
                               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                                <div className="absolute top-full left-0 mt-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap border border-gray-700 shadow-lg">
+                                <div className="absolute top-full left-0 mt-1 bg-carbon text-white text-xs rounded px-2 py-1 whitespace-nowrap border border-surface-high shadow-lg">
                                   <div className="font-semibold">{activity.name}</div>
-                                  <div className="text-gray-300">
+                                  <div className="text-text-secondary">
                                     Score: {workoutScore.score.toFixed(1)}
                                   </div>
-                                  <div className="text-gray-400">
+                                  <div className="text-muted">
                                     {formatRawValue(
                                       workoutScore.rawValue,
                                       activity.id,

@@ -171,7 +171,7 @@ export default function LiveErgDisplayPage() {
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-black text-white">
         <div className="text-center">
           <h2 className="text-3xl font-bold mb-4">Session Not Found</h2>
-          <p className="text-gray-400">This competition session does not exist or has ended.</p>
+          <p className="text-muted">This competition session does not exist or has ended.</p>
         </div>
       </div>
     );
@@ -182,7 +182,7 @@ export default function LiveErgDisplayPage() {
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-black text-white">
         <div className="text-center">
           <h2 className="text-3xl font-bold mb-4">Competition Ended</h2>
-          <p className="text-gray-400 mb-8">This session has concluded.</p>
+          <p className="text-muted mb-8">This session has concluded.</p>
           {competitorData.length > 0 && (
             <div className="mt-8">
               <h3 className="text-2xl mb-6 text-yellow-400">Final Scores</h3>
@@ -215,12 +215,12 @@ export default function LiveErgDisplayPage() {
                         {competitor.name.toUpperCase()}
                       </p>
                       <p
-                        className={`text-5xl font-bold ${color} font-display`}
+                        className={`text-5xl font-bold ${color} font-headline`}
                         style={{ fontFamily: 'var(--font-orbitron)' }}
                       >
                         {data?.calculatedScore ? Math.round(data.calculatedScore) : '0'}
                       </p>
-                      <p className="text-sm text-gray-400 mt-2">
+                      <p className="text-sm text-muted mt-2">
                         {(() => {
                           const eventType = session.eventType
                             ? getEventTypeById(session.eventType)
@@ -244,11 +244,7 @@ export default function LiveErgDisplayPage() {
   }
 
   return (
-    <div
-      ref={rootRef}
-      className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col"
-      style={{ backgroundColor: '#0F0F0F' }}
-    >
+    <div ref={rootRef} className="min-h-screen bg-surface-high flex flex-col">
       {/* Header with Challenger Branding and Live Indicator */}
       <div className="container mx-auto px-4 pt-8 pb-4">
         <div ref={headerRef} className="header-card">
@@ -276,7 +272,7 @@ export default function LiveErgDisplayPage() {
             {/* View Toggle & Live Indicator */}
             <div className="flex-1 flex justify-end">
               <div className="flex flex-col items-end space-y-2">
-                <span className="px-4 py-2 text-sm md:text-base font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
+                <span className="px-4 py-2 text-sm md:text-base font-bold bg-primary text-white rounded-full  font-headline">
                   LIVE
                 </span>
                 <span
@@ -320,10 +316,7 @@ export default function LiveErgDisplayPage() {
           /* Focused View */
           <div className="space-y-6">
             {/* Main Focused Competitor */}
-            <div
-              className="backdrop-blur-sm rounded-2xl shadow-lg border-2 border-orange-500/20"
-              style={{ backgroundColor: '#0F0F0F' }}
-            >
+            <div className="backdrop-blur-sm rounded-2xl shadow-lg border-2 border-orange-500/20">
               <div className="p-4 sm:p-8">
                 {(() => {
                   const competitors =
@@ -388,12 +381,9 @@ export default function LiveErgDisplayPage() {
               if (otherCompetitors.length === 0) return null;
 
               return (
-                <div
-                  className="backdrop-blur-sm rounded-2xl shadow-lg border-2 border-orange-500/20"
-                  style={{ backgroundColor: '#0F0F0F' }}
-                >
+                <div className="backdrop-blur-sm rounded-2xl shadow-lg border-2 border-orange-500/20">
                   <div className="p-4">
-                    <h3 className="text-sm font-medium text-gray-400 mb-3 text-center">
+                    <h3 className="text-sm font-medium text-muted mb-3 text-center">
                       OTHER COMPETITORS
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -451,10 +441,7 @@ export default function LiveErgDisplayPage() {
           </div>
         ) : (
           /* Full View */
-          <div
-            className="backdrop-blur-sm rounded-2xl shadow-lg mb-6 border-2 border-orange-500/20"
-            style={{ backgroundColor: '#0F0F0F' }}
-          >
+          <div className="backdrop-blur-sm rounded-2xl shadow-lg mb-6 border-2 border-orange-500/20">
             <div className="p-4 sm:p-8">
               <div
                 className={`grid gap-4 sm:gap-6 md:gap-8 ${

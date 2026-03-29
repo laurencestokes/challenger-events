@@ -133,40 +133,40 @@ export default function EventBrief() {
   if (isLoading) {
     return (
       <ProtectedRoute>
-        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="flex flex-col">
           <Header />
-          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+          <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
               {/* Welcome Section Skeleton */}
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center">
-                  <div className="w-16 h-16 bg-gray-700 rounded-full animate-pulse mr-4"></div>
+                  <div className="w-16 h-16 bg-surface-high rounded-full animate-pulse mr-4"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-700 rounded w-24 mb-2 animate-pulse"></div>
-                    <div className="h-6 bg-gray-700 rounded w-32 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-24 mb-2 animate-pulse"></div>
+                    <div className="h-6 bg-surface-high rounded w-32 animate-pulse"></div>
                   </div>
                 </div>
                 <div className="text-right space-y-3">
                   <div className="flex flex-col items-end">
-                    <div className="h-4 bg-gray-700 rounded w-20 mb-1 animate-pulse"></div>
-                    <div className="bg-gray-700 rounded-lg w-20 h-10 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-20 mb-1 animate-pulse"></div>
+                    <div className="bg-surface-high rounded-lg w-20 h-10 animate-pulse"></div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <div className="h-4 bg-gray-700 rounded w-16 mb-1 animate-pulse"></div>
-                    <div className="bg-gray-700 rounded-lg w-20 h-10 animate-pulse"></div>
+                    <div className="h-4 bg-surface-high rounded w-16 mb-1 animate-pulse"></div>
+                    <div className="bg-surface-high rounded-lg w-20 h-10 animate-pulse"></div>
                   </div>
                 </div>
               </div>
 
               {/* Breadcrumbs Skeleton */}
               <div className="mb-6">
-                <div className="h-4 bg-gray-700 rounded w-48 animate-pulse"></div>
+                <div className="h-4 bg-surface-high rounded w-48 animate-pulse"></div>
               </div>
 
               {/* Event Header Skeleton */}
               <div className="mb-8">
-                <div className="h-8 bg-gray-700 rounded w-80 mb-2 animate-pulse"></div>
-                <div className="h-4 bg-gray-700 rounded w-64 animate-pulse"></div>
+                <div className="h-8 bg-surface-high rounded w-80 mb-2 animate-pulse"></div>
+                <div className="h-4 bg-surface-high rounded w-64 animate-pulse"></div>
               </div>
 
               {/* Event Card Skeleton */}
@@ -176,20 +176,20 @@ export default function EventBrief() {
 
               {/* Content Skeleton */}
               <div className="space-y-8">
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 animate-pulse">
-                  <div className="h-6 bg-gray-700 rounded w-32 mb-4"></div>
+                <div className="panel rounded-2xl p-6  animate-pulse">
+                  <div className="h-6 bg-surface-high rounded w-32 mb-4"></div>
                   <div className="space-y-3">
-                    <div className="h-4 bg-gray-700 rounded w-full"></div>
-                    <div className="h-4 bg-gray-700 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-700 rounded w-5/6"></div>
+                    <div className="h-4 bg-surface-high rounded w-full"></div>
+                    <div className="h-4 bg-surface-high rounded w-3/4"></div>
+                    <div className="h-4 bg-surface-high rounded w-5/6"></div>
                   </div>
                 </div>
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 animate-pulse">
-                  <div className="h-6 bg-gray-700 rounded w-40 mb-4"></div>
+                <div className="panel rounded-2xl p-6  animate-pulse">
+                  <div className="h-6 bg-surface-high rounded w-40 mb-4"></div>
                   <div className="space-y-3">
-                    <div className="h-4 bg-gray-700 rounded w-full"></div>
-                    <div className="h-4 bg-gray-700 rounded w-2/3"></div>
-                    <div className="h-4 bg-gray-700 rounded w-4/5"></div>
+                    <div className="h-4 bg-surface-high rounded w-full"></div>
+                    <div className="h-4 bg-surface-high rounded w-2/3"></div>
+                    <div className="h-4 bg-surface-high rounded w-4/5"></div>
                   </div>
                 </div>
               </div>
@@ -204,9 +204,9 @@ export default function EventBrief() {
   if (error) {
     return (
       <ProtectedRoute>
-        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="flex flex-col">
           <Header />
-          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+          <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
               <div className="text-center py-8">
                 <p className="text-red-400">
@@ -214,7 +214,7 @@ export default function EventBrief() {
                 </p>
                 <Link
                   href="/dashboard"
-                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary transition-colors"
                 >
                   Back to Dashboard
                 </Link>
@@ -230,15 +230,15 @@ export default function EventBrief() {
   if (!event) {
     return (
       <ProtectedRoute>
-        <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <div className="flex flex-col">
           <Header />
-          <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+          <div className="flex-1">
             <div className="container mx-auto px-4 py-8">
               <div className="text-center py-8">
-                <p className="text-gray-400">Event not found.</p>
+                <p className="text-muted">Event not found.</p>
                 <Link
                   href="/dashboard"
-                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary transition-colors"
                 >
                   Back to Dashboard
                 </Link>
@@ -253,9 +253,9 @@ export default function EventBrief() {
 
   return (
     <ProtectedRoute>
-      <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+      <div className="flex flex-col">
         <Header />
-        <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+        <div className="flex-1">
           <div className="container mx-auto px-4 py-8">
             {/* Welcome Section */}
             <WelcomeSection />
@@ -263,20 +263,17 @@ export default function EventBrief() {
             {/* Breadcrumbs */}
             <div className="mb-6">
               <nav className="flex items-center space-x-2 text-sm">
-                <Link
-                  href="/dashboard"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
+                <Link href="/dashboard" className="text-muted hover:text-white transition-colors">
                   Dashboard
                 </Link>
-                <span className="text-gray-500">/</span>
+                <span className="text-muted">/</span>
                 <Link
                   href={`/events/${eventId}`}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-muted hover:text-white transition-colors"
                 >
                   {event.name}
                 </Link>
-                <span className="text-gray-500">/</span>
+                <span className="text-muted">/</span>
                 <span className="text-white font-medium">Brief</span>
               </nav>
             </div>
@@ -284,12 +281,12 @@ export default function EventBrief() {
             {/* Event Header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-white mb-2">{event.name} - Event Brief</h1>
-              <p className="text-gray-400">Complete information and guidelines for competitors</p>
+              <p className="text-muted">Complete information and guidelines for competitors</p>
             </div>
 
             {/* Event Card */}
             <div className="mb-8">
-              <div className="w-full h-80 bg-gray-800 rounded-2xl relative overflow-hidden">
+              <div className="w-full h-80 bg-surface-low rounded-2xl relative overflow-hidden">
                 {/* Event Background Image */}
                 <div className="absolute inset-0">
                   {event.imageUrl ? (
@@ -353,7 +350,7 @@ export default function EventBrief() {
                       </span>
                     </div>
                     <div className="flex items-center space-x-3 text-white mt-3">
-                      <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-white/20 text-white">
+                      <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-surface-low/20 text-white">
                         {event.status}
                       </span>
                       <span className="text-sm text-white/80">
@@ -367,8 +364,8 @@ export default function EventBrief() {
 
             {/* Custom Brief Content or Default Content */}
             {event.brief ? (
-              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 mb-8">
-                <div className="prose prose-gray dark:prose-invert max-w-none">
+              <div className="panel rounded-2xl p-6  mb-8">
+                <div className="prose prose-gray max-w-none">
                   <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
                     {event.brief}
                   </ReactMarkdown>
@@ -377,43 +374,43 @@ export default function EventBrief() {
             ) : (
               <>
                 {/* Event Overview */}
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 mb-8">
+                <div className="panel rounded-2xl p-6  mb-8">
                   <h2 className="text-2xl font-semibold text-white mb-4">Event Overview</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <h3 className="text-sm font-medium text-gray-400 mb-1">Event Code</h3>
+                      <h3 className="text-sm font-medium text-muted mb-1">Event Code</h3>
                       <p className="text-lg font-mono font-medium text-white">{event.code}</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-400 mb-1">Status</h3>
+                      <h3 className="text-sm font-medium text-muted mb-1">Status</h3>
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-900 text-green-200">
                         {event.status}
                       </span>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-400 mb-1">Start Date</h3>
+                      <h3 className="text-sm font-medium text-muted mb-1">Start Date</h3>
                       <p className="text-white">{formatDate(event.startDate)}</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-400 mb-1">End Date</h3>
+                      <h3 className="text-sm font-medium text-muted mb-1">End Date</h3>
                       <p className="text-white">{formatDate(event.endDate)}</p>
                     </div>
                   </div>
                   {event.description && (
                     <div className="mt-6">
-                      <h3 className="text-sm font-medium text-gray-400 mb-2">Description</h3>
+                      <h3 className="text-sm font-medium text-muted mb-2">Description</h3>
                       <p className="text-white leading-relaxed">{event.description}</p>
                     </div>
                   )}
                 </div>
 
                 {/* Competition Format */}
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 mb-8">
+                <div className="panel rounded-2xl p-6  mb-8">
                   <h2 className="text-2xl font-semibold text-white mb-4">Competition Format</h2>
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-lg font-medium text-white mb-2">Event Type</h3>
-                      <p className="text-gray-300">
+                      <p className="text-text-secondary">
                         {event.isTeamEvent ? (
                           <>
                             This is a <strong>team competition</strong>.
@@ -434,7 +431,7 @@ export default function EventBrief() {
 
                     <div>
                       <h3 className="text-lg font-medium text-white mb-2">Scoring System</h3>
-                      <p className="text-gray-300">
+                      <p className="text-text-secondary">
                         Scores are calculated using age, sex, and bodyweight-adjusted formulas. This
                         ensures fair competition across different demographics.
                       </p>
@@ -442,7 +439,7 @@ export default function EventBrief() {
 
                     <div>
                       <h3 className="text-lg font-medium text-white mb-2">Real-time Updates</h3>
-                      <p className="text-gray-300">
+                      <p className="text-text-secondary">
                         Leaderboards update in real-time as scores are submitted. You can view live
                         rankings throughout the competition.
                       </p>
@@ -451,12 +448,12 @@ export default function EventBrief() {
                 </div>
 
                 {/* Rules and Guidelines */}
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 mb-8">
+                <div className="panel rounded-2xl p-6  mb-8">
                   <h2 className="text-2xl font-semibold text-white mb-4">Rules and Guidelines</h2>
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-lg font-medium text-white mb-2">General Rules</h3>
-                      <ul className="list-disc list-inside space-y-2 text-gray-300">
+                      <ul className="list-disc list-inside space-y-2 text-text-secondary">
                         <li>All lifts must be performed with proper form and technique</li>
                         <li>Competitors must provide accurate bodyweight measurements</li>
                         <li>Age and sex information must be accurate for fair scoring</li>
@@ -469,7 +466,7 @@ export default function EventBrief() {
                       <h3 className="text-lg font-medium text-white mb-2">
                         Equipment Requirements
                       </h3>
-                      <ul className="list-disc list-inside space-y-2 text-gray-300">
+                      <ul className="list-disc list-inside space-y-2 text-text-secondary">
                         <li>Weightlifting shoes or flat-soled shoes</li>
                         <li>Comfortable, non-restrictive clothing</li>
                         <li>Belt (optional but recommended for heavy lifts)</li>
@@ -479,7 +476,7 @@ export default function EventBrief() {
 
                     <div>
                       <h3 className="text-lg font-medium text-white mb-2">Safety Guidelines</h3>
-                      <ul className="list-disc list-inside space-y-2 text-gray-300">
+                      <ul className="list-disc list-inside space-y-2 text-text-secondary">
                         <li>Warm up properly before attempting maximum lifts</li>
                         <li>Use spotters when appropriate</li>
                         <li>Listen to your body and don't attempt lifts beyond your capability</li>
@@ -490,16 +487,16 @@ export default function EventBrief() {
                 </div>
 
                 {/* How to Participate */}
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 mb-8">
+                <div className="panel rounded-2xl p-6  mb-8">
                   <h2 className="text-2xl font-semibold text-white mb-4">How to Participate</h2>
                   <div className="space-y-4">
                     <div className="flex items-start space-x-3">
                       <div className="flex-shrink-0 w-8 h-8 bg-primary-900 rounded-full flex items-center justify-center">
-                        <span className="text-primary-400 font-semibold text-sm">1</span>
+                        <span className="text-primary-light font-semibold text-sm">1</span>
                       </div>
                       <div>
                         <h3 className="text-lg font-medium text-white mb-1">Join the Event</h3>
-                        <p className="text-gray-300">
+                        <p className="text-text-secondary">
                           Use the event code <strong>{event.code}</strong> to join this competition.
                           You can join from the main event page.
                         </p>
@@ -508,13 +505,13 @@ export default function EventBrief() {
 
                     <div className="flex items-start space-x-3">
                       <div className="flex-shrink-0 w-8 h-8 bg-primary-900 rounded-full flex items-center justify-center">
-                        <span className="text-primary-400 font-semibold text-sm">2</span>
+                        <span className="text-primary-light font-semibold text-sm">2</span>
                       </div>
                       <div>
                         <h3 className="text-lg font-medium text-white mb-1">
                           Complete Your Profile
                         </h3>
-                        <p className="text-gray-300">
+                        <p className="text-text-secondary">
                           Ensure your profile includes accurate age, sex, and bodyweight information
                           for proper scoring calculations.
                         </p>
@@ -523,11 +520,11 @@ export default function EventBrief() {
 
                     <div className="flex items-start space-x-3">
                       <div className="flex-shrink-0 w-8 h-8 bg-primary-900 rounded-full flex items-center justify-center">
-                        <span className="text-primary-400 font-semibold text-sm">3</span>
+                        <span className="text-primary-light font-semibold text-sm">3</span>
                       </div>
                       <div>
                         <h3 className="text-lg font-medium text-white mb-1">Perform Your Lifts</h3>
-                        <p className="text-gray-300">
+                        <p className="text-text-secondary">
                           Complete your lifts during the event period. All lifts must be witnessed
                           and recorded by event officials.
                         </p>
@@ -536,11 +533,11 @@ export default function EventBrief() {
 
                     <div className="flex items-start space-x-3">
                       <div className="flex-shrink-0 w-8 h-8 bg-primary-900 rounded-full flex items-center justify-center">
-                        <span className="text-primary-400 font-semibold text-sm">4</span>
+                        <span className="text-primary-light font-semibold text-sm">4</span>
                       </div>
                       <div>
                         <h3 className="text-lg font-medium text-white mb-1">Track Your Progress</h3>
-                        <p className="text-gray-300">
+                        <p className="text-text-secondary">
                           Monitor your scores and ranking on the live leaderboard. Scores are
                           updated in real-time as they're submitted.
                         </p>
@@ -550,9 +547,9 @@ export default function EventBrief() {
                 </div>
 
                 {/* Contact Information */}
-                <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                <div className="panel rounded-2xl p-6 ">
                   <h2 className="text-2xl font-semibold text-white mb-4">Questions or Concerns?</h2>
-                  <p className="text-gray-300 mb-4">
+                  <p className="text-text-secondary mb-4">
                     If you have any questions about the event format, rules, or technical issues,
                     please contact the event organizers.
                   </p>
@@ -570,13 +567,13 @@ export default function EventBrief() {
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <Link
                 href={`/events/${eventId}`}
-                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-primary transition-colors"
               >
                 Back to Event
               </Link>
               <Link
                 href={`/events/${eventId}/leaderboard`}
-                className="inline-flex items-center justify-center px-6 py-3 border border-gray-600 text-base font-medium rounded-md text-gray-300 bg-gray-800 hover:bg-gray-700 transition-colors"
+                className="inline-flex items-center justify-center px-6 py-3 border border-border text-base font-medium rounded-md text-text-secondary bg-surface-low hover:bg-surface-high transition-colors"
               >
                 View Leaderboard
               </Link>

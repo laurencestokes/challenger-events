@@ -12,11 +12,11 @@ export default function AdminDashboard() {
 
   if (authLoading) {
     return (
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary-500"></div>
-            <p className="text-white text-lg">Loading...</p>
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary"></div>
+            <p className="text-text-primary text-lg">Loading...</p>
           </div>
         </div>
       </div>
@@ -30,17 +30,15 @@ export default function AdminDashboard() {
 
   return (
     <ProtectedRoute>
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {/* Welcome Section */}
           <WelcomeSection />
 
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">Admin Dashboard</h1>
-            <p className="text-gray-400 text-lg">
-              Manage your events, users, and live competitions
-            </p>
+            <h1 className="text-4xl font-bold text-text-primary mb-2">Admin Dashboard</h1>
+            <p className="text-muted text-lg">Manage your events, users, and live competitions</p>
           </div>
 
           {/* Admin Features Grid */}
@@ -48,7 +46,7 @@ export default function AdminDashboard() {
             {/* Admin Score Tool */}
             <Link
               href="/admin/score-tool"
-              className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 hover:bg-gray-700/50 transition-colors group"
+              className="panel rounded-2xl  p-6 hover:bg-surface-high/50 transition-colors group"
             >
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-pink-500/20 rounded-lg flex items-center justify-center mr-4">
@@ -66,11 +64,11 @@ export default function AdminDashboard() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-white group-hover:text-pink-400 transition-colors">
+                <h3 className="text-xl font-semibold text-text-primary group-hover:text-pink-400 transition-colors">
                   Score Tool
                 </h3>
               </div>
-              <p className="text-gray-400 mb-4">
+              <p className="text-muted mb-4">
                 Quickly compute scores for any event without saving data
               </p>
               <div className="text-pink-400 text-sm font-medium">Open Score Tool →</div>
@@ -78,7 +76,7 @@ export default function AdminDashboard() {
             {/* Quick Event Creation */}
             <Link
               href="/admin/events/quick-create"
-              className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 hover:bg-gray-700/50 transition-colors group"
+              className="panel rounded-2xl  p-6 hover:bg-surface-high/50 transition-colors group"
             >
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center mr-4">
@@ -96,11 +94,11 @@ export default function AdminDashboard() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-white group-hover:text-yellow-400 transition-colors">
+                <h3 className="text-xl font-semibold text-text-primary group-hover:text-yellow-400 transition-colors">
                   Quick Event
                 </h3>
               </div>
-              <p className="text-gray-400 mb-4">
+              <p className="text-muted mb-4">
                 Create on-the-fly competitions and add participants on the day
               </p>
               <div className="text-yellow-400 text-sm font-medium">Create Quick Event →</div>
@@ -109,7 +107,7 @@ export default function AdminDashboard() {
             {/* Events Management */}
             <Link
               href="/admin/events"
-              className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 hover:bg-gray-700/50 transition-colors group"
+              className="panel rounded-2xl  p-6 hover:bg-surface-high/50 transition-colors group"
             >
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center mr-4">
@@ -127,11 +125,11 @@ export default function AdminDashboard() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-white group-hover:text-blue-400 transition-colors">
+                <h3 className="text-xl font-semibold text-text-primary group-hover:text-blue-400 transition-colors">
                   Events
                 </h3>
               </div>
-              <p className="text-gray-400 mb-4">
+              <p className="text-muted mb-4">
                 Create and manage competitions, view leaderboards, and handle event logistics
               </p>
               <div className="text-blue-400 text-sm font-medium">Manage Events →</div>
@@ -140,7 +138,7 @@ export default function AdminDashboard() {
             {/* User Management */}
             <Link
               href="/admin/users"
-              className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 hover:bg-gray-700/50 transition-colors group"
+              className="panel rounded-2xl  p-6 hover:bg-surface-high/50 transition-colors group"
             >
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center mr-4">
@@ -158,11 +156,11 @@ export default function AdminDashboard() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-white group-hover:text-green-400 transition-colors">
+                <h3 className="text-xl font-semibold text-text-primary group-hover:text-green-400 transition-colors">
                   Users
                 </h3>
               </div>
-              <p className="text-gray-400 mb-4">
+              <p className="text-muted mb-4">
                 View and manage user accounts, roles, and permissions
               </p>
               <div className="text-green-400 text-sm font-medium">Manage Users →</div>
@@ -171,7 +169,7 @@ export default function AdminDashboard() {
             {/* Head-to-Head Erg Sessions */}
             <Link
               href="/admin/erg/head-to-head"
-              className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 hover:bg-gray-700/50 transition-colors group"
+              className="panel rounded-2xl  p-6 hover:bg-surface-high/50 transition-colors group"
             >
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mr-4">
@@ -189,11 +187,11 @@ export default function AdminDashboard() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-white group-hover:text-purple-400 transition-colors">
+                <h3 className="text-xl font-semibold text-text-primary group-hover:text-purple-400 transition-colors">
                   Head-to-Head Erg
                 </h3>
               </div>
-              <p className="text-gray-400 mb-4">
+              <p className="text-muted mb-4">
                 Set up live head-to-head erg competitions between two competitors
               </p>
               <div className="text-purple-400 text-sm font-medium">Create Session →</div>
@@ -202,7 +200,7 @@ export default function AdminDashboard() {
             {/* Team Erg Sessions */}
             <Link
               href="/admin/erg/team-session"
-              className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 hover:bg-gray-700/50 transition-colors group"
+              className="panel rounded-2xl  p-6 hover:bg-surface-high/50 transition-colors group"
             >
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center mr-4">
@@ -220,11 +218,11 @@ export default function AdminDashboard() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-white group-hover:text-orange-400 transition-colors">
+                <h3 className="text-xl font-semibold text-text-primary group-hover:text-orange-400 transition-colors">
                   Team Erg Sessions
                 </h3>
               </div>
-              <p className="text-gray-400 mb-4">
+              <p className="text-muted mb-4">
                 Create team-based erg competitions where multiple participants contribute to team
                 scores
               </p>
@@ -234,7 +232,7 @@ export default function AdminDashboard() {
             {/* Image Upload */}
             <Link
               href="/admin/images/upload"
-              className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 hover:bg-gray-700/50 transition-colors group"
+              className="panel rounded-2xl  p-6 hover:bg-surface-high/50 transition-colors group"
             >
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center mr-4">
@@ -252,11 +250,11 @@ export default function AdminDashboard() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-white group-hover:text-cyan-400 transition-colors">
+                <h3 className="text-xl font-semibold text-text-primary group-hover:text-cyan-400 transition-colors">
                   Image Upload
                 </h3>
               </div>
-              <p className="text-gray-400 mb-4">
+              <p className="text-muted mb-4">
                 Upload and manage images for events and competitions
               </p>
               <div className="text-cyan-400 text-sm font-medium">Upload Images →</div>
@@ -265,7 +263,7 @@ export default function AdminDashboard() {
             {/* Team Management */}
             <Link
               href="/teams"
-              className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 hover:bg-gray-700/50 transition-colors group"
+              className="panel rounded-2xl  p-6 hover:bg-surface-high/50 transition-colors group"
             >
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-indigo-500/20 rounded-lg flex items-center justify-center mr-4">
@@ -283,11 +281,11 @@ export default function AdminDashboard() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-white group-hover:text-indigo-400 transition-colors">
+                <h3 className="text-xl font-semibold text-text-primary group-hover:text-indigo-400 transition-colors">
                   Team Management
                 </h3>
               </div>
-              <p className="text-gray-400 mb-4">
+              <p className="text-muted mb-4">
                 View teams and manually add users (including guests) to teams
               </p>
               <div className="text-indigo-400 text-sm font-medium">Manage Teams →</div>
@@ -296,7 +294,7 @@ export default function AdminDashboard() {
             {/* Verification */}
             <Link
               href="/admin/verification"
-              className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 hover:bg-gray-700/50 transition-colors group"
+              className="panel rounded-2xl  p-6 hover:bg-surface-high/50 transition-colors group"
             >
               <div className="flex items-center mb-4">
                 <div className="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center mr-4">
@@ -314,30 +312,30 @@ export default function AdminDashboard() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-white group-hover:text-yellow-400 transition-colors">
+                <h3 className="text-xl font-semibold text-text-primary group-hover:text-yellow-400 transition-colors">
                   Verification
                 </h3>
               </div>
-              <p className="text-gray-400 mb-4">Verify user submissions and competition results</p>
+              <p className="text-muted mb-4">Verify user submissions and competition results</p>
               <div className="text-yellow-400 text-sm font-medium">Review Submissions →</div>
             </Link>
           </div>
 
           {/* Quick Stats */}
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
-            <h2 className="text-2xl font-bold text-white mb-4">System Status</h2>
+          <div className="panel rounded-2xl  p-6">
+            <h2 className="text-2xl font-bold text-text-primary mb-4">System Status</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-400 mb-2">🟢</div>
-                <p className="text-gray-400">System Online</p>
+                <p className="text-muted">System Online</p>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-400 mb-2">📊</div>
-                <p className="text-gray-400">Live Monitoring</p>
+                <p className="text-muted">Live Monitoring</p>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-orange-400 mb-2">⚡</div>
-                <p className="text-gray-400">Real-time Updates</p>
+                <p className="text-muted">Real-time Updates</p>
               </div>
             </div>
           </div>

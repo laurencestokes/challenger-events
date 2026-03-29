@@ -27,15 +27,13 @@ export default function Home() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-accent-600 dark:text-accent-400 mb-4 font-display">
-            Error
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 font-sans">{error}</p>
+          <h1 className="text-2xl font-bold text-error mb-4 font-headline">Error</h1>
+          <p className="text-text-secondary font-body">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-md font-display font-bold hover:bg-primary-600 transition-colors"
+            className="mt-4 px-4 py-2 bg-primary text-white rounded-md font-headline font-bold hover:bg-primary-light transition-colors"
           >
             Reload
           </button>
@@ -50,20 +48,17 @@ export default function Home() {
 
   if (user) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: '#0F0F0F' }}
-      >
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary-500"></div>
-          <p className="text-white text-lg font-sans">Loading...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary"></div>
+          <p className="text-text-primary text-lg font-body">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen bg-gray-900">
+    <div className="relative min-h-screen">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
@@ -94,7 +89,7 @@ export default function Home() {
               priority
             />
             <div className="flex justify-center mt-4">
-              <span className="px-3 py-1 text-xs font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
+              <span className="px-3 py-1 text-xs font-bold bg-primary text-white rounded-full font-headline">
                 BETA
               </span>
             </div>
@@ -106,7 +101,7 @@ export default function Home() {
       <div className="absolute bottom-12 sm:bottom-16 md:bottom-20 left-0 right-0 z-20 text-center px-6">
         <Link
           href="/auth/signin"
-          className="inline-flex items-center px-6 py-3 sm:px-7 sm:py-3.5 md:px-8 md:py-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-sans font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-challenger text-base sm:text-lg"
+          className="inline-flex items-center px-6 py-3 sm:px-7 sm:py-3.5 md:px-8 md:py-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-body font-bold rounded-lg transition-all duration-200 transform hover:scale-[1.02] text-base sm:text-lg"
         >
           Sign In / Sign Up
         </Link>

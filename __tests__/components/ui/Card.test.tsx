@@ -12,8 +12,8 @@ describe('Card components', () => {
     it('applies base classes', () => {
       render(<Card>Content</Card>);
       const card = screen.getByText('Content');
-      expect(card.className).toContain('rounded-lg');
-      expect(card.className).toContain('border');
+      expect(card.className).toContain('panel');
+      expect(card.className).toContain('text-text-primary');
     });
 
     it('merges custom className', () => {

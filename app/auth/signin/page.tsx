@@ -33,11 +33,11 @@ export default function SignInPage() {
   // Show loading while checking authentication
   if (user) {
     return (
-      <div className="py-8 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: '#0F0F0F' }}>
+      <div className="py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8 mx-auto">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
-            <p className="mt-2 text-white text-lg font-sans">Loading...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-2 text-white text-lg font-body">Loading...</p>
           </div>
         </div>
       </div>
@@ -95,7 +95,7 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gray-900">
+    <div className="relative min-h-screen flex items-center justify-center bg-background">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
@@ -126,14 +126,14 @@ export default function SignInPage() {
               priority
             />
             <div className="flex justify-center mt-4">
-              <span className="px-3 py-1 text-xs font-bold bg-gradient-athletic text-white rounded-full shadow-challenger font-display">
+              <span className="px-3 py-1 text-xs font-bold bg-primary text-white rounded-full font-headline">
                 BETA
               </span>
             </div>
           </div>
 
           {/* Form Container */}
-          <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50">
+          <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-8 border border-surface-high/50">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">
                 {isForgotPassword
@@ -143,7 +143,7 @@ export default function SignInPage() {
                     : 'Sign in to your account'}
               </h2>
               {isForgotPassword && (
-                <p className="text-sm text-gray-300">
+                <p className="text-sm text-text-secondary">
                   Enter your email address and we'll send you a link to reset your password.
                 </p>
               )}
@@ -153,14 +153,17 @@ export default function SignInPage() {
               <div className="space-y-4">
                 {!isForgotPassword && isSignUp && (
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-text-secondary mb-2"
+                    >
                       Full Name
                     </label>
                     <input
                       id="name"
                       type="text"
                       required={isSignUp}
-                      className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                      className="w-full px-4 py-3 bg-surface-low/50 border border-surface-high rounded-lg text-white placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                       placeholder="Enter your full name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -171,7 +174,7 @@ export default function SignInPage() {
                 <div>
                   <label
                     htmlFor="email-address"
-                    className="block text-sm font-medium text-gray-300 mb-2"
+                    className="block text-sm font-medium text-text-secondary mb-2"
                   >
                     Email Address
                   </label>
@@ -180,7 +183,7 @@ export default function SignInPage() {
                     type="email"
                     autoComplete="email"
                     required
-                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                    className="w-full px-4 py-3 bg-surface-low/50 border border-surface-high rounded-lg text-white placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                     placeholder="Enter your email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -191,7 +194,7 @@ export default function SignInPage() {
                   <div>
                     <label
                       htmlFor="password"
-                      className="block text-sm font-medium text-gray-300 mb-2"
+                      className="block text-sm font-medium text-text-secondary mb-2"
                     >
                       Password
                     </label>
@@ -200,7 +203,7 @@ export default function SignInPage() {
                       type="password"
                       autoComplete="current-password"
                       required={!isForgotPassword}
-                      className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                      className="w-full px-4 py-3 bg-surface-low/50 border border-surface-high rounded-lg text-white placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -268,7 +271,7 @@ export default function SignInPage() {
                       <button
                         type="button"
                         onClick={handleForgotPassword}
-                        className="text-sm text-gray-400 hover:text-gray-300 transition-colors"
+                        className="text-sm text-muted hover:text-text-secondary transition-colors"
                       >
                         Forgot your password?
                       </button>

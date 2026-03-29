@@ -52,25 +52,25 @@ export default function JoinTeamModal({ isOpen, onClose, onSuccess }: JoinTeamMo
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-2xl p-6 w-full max-w-md border border-gray-700/50">
+      <div className="panel rounded-2xl p-6 w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary-500/20 rounded-lg flex items-center justify-center">
-              <FiUsers className="w-5 h-5 text-primary-400" />
+            <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
+              <FiUsers className="w-5 h-5 text-primary-light" />
             </div>
             <h2 className="text-white text-xl font-bold">Join Team by Code</h2>
           </div>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
+          <button onClick={handleClose} className="text-muted hover:text-white transition-colors">
             <FiX className="w-6 h-6" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="teamCode" className="block text-sm font-medium text-gray-300 mb-2">
+            <label
+              htmlFor="teamCode"
+              className="block text-sm font-medium text-text-secondary mb-2"
+            >
               Team Code *
             </label>
             <input
@@ -79,12 +79,10 @@ export default function JoinTeamModal({ isOpen, onClose, onSuccess }: JoinTeamMo
               value={teamCode}
               onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
               required
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-3 py-2 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="Enter team code"
             />
-            <p className="text-xs text-gray-400 mt-1">
-              Ask your team captain for the invitation code
-            </p>
+            <p className="text-xs text-muted mt-1">Ask your team captain for the invitation code</p>
           </div>
 
           {error && (
@@ -97,14 +95,14 @@ export default function JoinTeamModal({ isOpen, onClose, onSuccess }: JoinTeamMo
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              className="flex-1 px-4 py-2 bg-surface-high text-white rounded-lg hover:bg-surface-high transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? 'Joining...' : 'Join Team'}
             </button>

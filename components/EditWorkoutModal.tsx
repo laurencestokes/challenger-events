@@ -95,15 +95,12 @@ export default function EditWorkoutModal({
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+      <div className="relative top-20 mx-auto p-5 w-96 rounded-md panel">
         <div className="mt-3">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Edit Workout</h3>
+          <h3 className="text-lg font-medium text-text-primary mb-4">Edit Workout</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label
-                htmlFor="eventType"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
+              <label htmlFor="eventType" className="block text-sm font-medium text-text-secondary">
                 Event Type *
               </label>
               <select
@@ -111,7 +108,7 @@ export default function EditWorkoutModal({
                 value={selectedEventType?.id || ''}
                 onChange={(e) => handleEventTypeChange(e.target.value)}
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
               >
                 <option value="">Select an event type</option>
                 {EVENT_TYPES.map((eventType) => (
@@ -124,17 +121,14 @@ export default function EditWorkoutModal({
 
             {selectedEventType?.supportsReps && (
               <div>
-                <label
-                  htmlFor="reps"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
+                <label htmlFor="reps" className="block text-sm font-medium text-text-secondary">
                   Number of Reps
                 </label>
                 <select
                   id="reps"
                   value={reps}
                   onChange={(e) => setReps(Number(e.target.value))}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                  className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                 >
                   {Array.from({ length: 10 }, (_, i) => i + 1).map((rep) => (
                     <option key={rep} value={rep}>
@@ -142,7 +136,7 @@ export default function EditWorkoutModal({
                     </option>
                   ))}
                 </select>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-xs text-text-secondary">
                   Your weight will be converted to estimated 1RM using the Epley formula for
                   scoring.
                 </p>
@@ -150,10 +144,7 @@ export default function EditWorkoutModal({
             )}
 
             <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
+              <label htmlFor="name" className="block text-sm font-medium text-text-secondary">
                 Workout Name
               </label>
               <input
@@ -161,7 +152,7 @@ export default function EditWorkoutModal({
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-muted text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                 placeholder="Custom name (optional)"
               />
             </div>
@@ -169,7 +160,7 @@ export default function EditWorkoutModal({
             <div>
               <label
                 htmlFor="description"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                className="block text-sm font-medium text-text-secondary"
               >
                 Description
               </label>
@@ -178,7 +169,7 @@ export default function EditWorkoutModal({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-gray-700"
+                className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm placeholder-muted text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                 placeholder="Optional description"
               />
             </div>
@@ -189,36 +180,33 @@ export default function EditWorkoutModal({
                 type="checkbox"
                 checked={isHidden}
                 onChange={(e) => setIsHidden(e.target.checked)}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
               />
-              <label
-                htmlFor="isHidden"
-                className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-              >
+              <label htmlFor="isHidden" className="ml-2 block text-sm text-text-secondary">
                 Hidden Workout
               </label>
             </div>
             {isHidden && (
-              <p className="text-xs text-yellow-600 dark:text-yellow-400">
+              <p className="text-xs text-yellow-400">
                 ⚠️ This workout will be hidden from competitors until you reveal it during the
                 event.
               </p>
             )}
 
-            {error && <div className="text-sm text-red-600 dark:text-red-400">{error}</div>}
+            {error && <div className="text-sm text-red-400">{error}</div>}
 
             <div className="flex justify-end space-x-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                className="px-4 py-2 text-sm font-medium text-text-secondary bg-surface-high border border-border rounded-md hover:bg-surface-high"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isLoading || !selectedEventType}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Updating...' : 'Update Workout'}
               </button>

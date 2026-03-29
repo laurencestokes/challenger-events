@@ -141,13 +141,13 @@ export default function UserScoresPage() {
     });
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 flex flex-col">
+    <div className="flex flex-col">
       <Header />
-      <div className="flex-1" style={{ backgroundColor: '#0F0F0F' }}>
+      <div className="flex-1">
         <div className="container mx-auto px-4 py-8">
           {/* Breadcrumbs */}
           <nav
-            className="mb-6 text-sm text-gray-400 flex items-center space-x-2"
+            className="mb-6 text-sm text-muted flex items-center space-x-2"
             aria-label="Breadcrumb"
           >
             <Link href="/profile" className="hover:text-white transition-colors">
@@ -159,7 +159,7 @@ export default function UserScoresPage() {
 
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">All My Scores</h1>
-            <p className="text-gray-400">View and search through all your submitted scores</p>
+            <p className="text-muted">View and search through all your submitted scores</p>
           </div>
 
           {/* Filters */}
@@ -170,14 +170,14 @@ export default function UserScoresPage() {
                 placeholder="Search events, activities, or test IDs..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
             <div className="sm:w-48">
               <select
                 value={activityFilter}
                 onChange={(e) => setActivityFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="">All Activities</option>
                 {presentEventTypes.map((et) => (
@@ -191,26 +191,26 @@ export default function UserScoresPage() {
 
           {/* Stats */}
           <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+            <div className="panel rounded-2xl p-6 ">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary-400">{scores.length}</div>
-                <div className="text-sm text-gray-400">Total Scores</div>
+                <div className="text-2xl font-bold text-primary-light">{scores.length}</div>
+                <div className="text-sm text-muted">Total Scores</div>
               </div>
             </div>
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+            <div className="panel rounded-2xl p-6 ">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary-400">
+                <div className="text-2xl font-bold text-primary-light">
                   {canonicalActivities.length}
                 </div>
-                <div className="text-sm text-gray-400">Activities</div>
+                <div className="text-sm text-muted">Activities</div>
               </div>
             </div>
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+            <div className="panel rounded-2xl p-6 ">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary-400">
+                <div className="text-2xl font-bold text-primary-light">
                   {Array.from(new Set(scores.map((score) => score.eventId))).length}
                 </div>
-                <div className="text-sm text-gray-400">Events</div>
+                <div className="text-sm text-muted">Events</div>
               </div>
             </div>
           </div>
@@ -219,8 +219,8 @@ export default function UserScoresPage() {
           {loading ? (
             <ScoresListSkeleton />
           ) : filteredScores.length === 0 ? (
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 text-center">
-              <div className="text-gray-400">
+            <div className="panel rounded-2xl p-8  text-center">
+              <div className="text-muted">
                 {scores.length === 0 ? (
                   <p>No scores found. Start participating in events to see your scores here!</p>
                 ) : (
@@ -229,19 +229,19 @@ export default function UserScoresPage() {
               </div>
             </div>
           ) : (
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+            <div className="panel rounded-2xl p-6 ">
               <div className="space-y-3">
                 {filteredScores.map((score) => {
                   const isVerified = score.eventId; // Event scores are considered verified
                   return (
                     <div
                       key={score.id}
-                      className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/30"
+                      className="bg-carbon/50 rounded-lg p-4 border border-surface-high/30"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
-                            <span className="px-2 py-1 text-xs bg-primary-500/20 text-primary-400 rounded font-semibold">
+                            <span className="px-2 py-1 text-xs bg-primary/20 text-primary-light rounded font-semibold">
                               {getCanonicalEventName(score)}
                             </span>
                             {/* Verification Status Badge */}
@@ -249,28 +249,28 @@ export default function UserScoresPage() {
                               className={`px-2 py-1 text-xs rounded font-medium ${
                                 isVerified
                                   ? 'bg-green-500/20 text-green-400'
-                                  : 'bg-gray-500/20 text-gray-400'
+                                  : 'bg-surface-high0/20 text-muted'
                               }`}
                             >
                               {isVerified ? 'Verified' : 'Unverified'}
                             </span>
                             {score.eventName && (
-                              <span className="px-2 py-1 text-xs bg-gray-500/20 text-gray-400 rounded">
+                              <span className="px-2 py-1 text-xs bg-surface-high0/20 text-muted rounded">
                                 {score.eventName}
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center space-x-1 text-xs text-gray-400">
+                          <div className="flex items-center space-x-1 text-xs text-muted">
                             <FiClock className="w-3 h-3" />
                             <span>{formatDate(score.timestamp)}</span>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-lg font-bold text-primary-400">
+                          <div className="text-lg font-bold text-primary-light">
                             {score.calculatedScore.toFixed(1)}
                           </div>
-                          <div className="text-xs text-gray-400">Challenger Score</div>
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="text-xs text-muted">Challenger Score</div>
+                          <div className="text-xs text-muted mt-1">
                             {formatRawScoreWithReps(score)}
                           </div>
                         </div>

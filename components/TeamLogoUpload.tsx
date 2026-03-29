@@ -62,23 +62,23 @@ export default function TeamLogoUpload({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Upload Team Logo</label>
+        <label className="block text-sm font-medium text-text-secondary">Upload Team Logo</label>
         <input
           ref={fileInputRef}
           type="file"
           accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
           onChange={handleFileSelect}
           disabled={uploading}
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+          className="block w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
         />
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted">
           Supported formats: PNG, JPEG, JPG, GIF, WEBP. Max size: 5MB
         </p>
       </div>
 
       {uploading && (
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-600">
+          <div className="flex justify-between text-sm text-text-secondary">
             <span>Uploading...</span>
             <span>{Math.round(progress)}%</span>
           </div>

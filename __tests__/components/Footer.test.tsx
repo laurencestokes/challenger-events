@@ -14,38 +14,48 @@ describe('Footer', () => {
     expect(screen.getByText(/16703228/)).toBeInTheDocument();
   });
 
-  it('renders Terms of Service link', () => {
+  it('renders Terms link', () => {
     render(<Footer />);
-    const link = screen.getByText('Terms of Service');
+    const link = screen.getByText('Terms');
     expect(link).toHaveAttribute('href', '/terms-of-service');
   });
 
-  it('renders Privacy Policy link', () => {
+  it('renders Privacy link', () => {
     render(<Footer />);
-    const link = screen.getByText('Privacy Policy');
+    const link = screen.getByText('Privacy');
     expect(link).toHaveAttribute('href', '/privacy-policy');
   });
 
-  it('renders Cookie Policy link', () => {
+  it('renders Cookie link', () => {
     render(<Footer />);
-    const link = screen.getByText('Cookie Policy');
+    const link = screen.getByText('Cookies');
     expect(link).toHaveAttribute('href', '/cookie-policy');
-  });
-
-  it('renders social media links with target="_blank"', () => {
-    render(<Footer />);
-    const facebook = screen.getByLabelText('Facebook');
-    const instagram = screen.getByLabelText('Instagram');
-
-    expect(facebook).toHaveAttribute('target', '_blank');
-    expect(facebook).toHaveAttribute('rel', 'noopener noreferrer');
-    expect(instagram).toHaveAttribute('target', '_blank');
-    expect(instagram).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
   it('renders version info', () => {
     render(<Footer />);
-    // Version is either from env or fallback '0.1.0'
-    expect(screen.getByText(/v\d+\.\d+\.\d+/)).toBeInTheDocument();
+    expect(screen.getByText(/Version/)).toBeInTheDocument();
+  });
+
+  it('renders inside a footer element', () => {
+    render(<Footer />);
+    const footer = document.querySelector('footer');
+    expect(footer).toBeInTheDocument();
+  });
+
+  it('contains all content within the footer element', () => {
+    render(<Footer />);
+    const footer = document.querySelector('footer');
+    expect(footer).toContainElement(screen.getByText('Terms'));
+    expect(footer).toContainElement(screen.getByText('Privacy'));
+    expect(footer).toContainElement(screen.getByText('Cookies'));
+    expect(footer).toContainElement(screen.getByText(/16703228/));
+    expect(footer).toContainElement(screen.getByText(/Version/));
+  });
+
+  it('has constrained width via container class', () => {
+    render(<Footer />);
+    const footer = document.querySelector('footer');
+    expect(footer?.className).toContain('container');
   });
 });

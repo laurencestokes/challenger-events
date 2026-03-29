@@ -2,10 +2,6 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import PerformanceGraph from '../../components/PerformanceGraph';
 
-jest.mock('next-themes', () => ({
-  useTheme: () => ({ theme: 'dark', resolvedTheme: 'dark' }),
-}));
-
 // Mock recharts to avoid canvas/SVG issues in jsdom
 jest.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: any) => <div data-testid="chart-container">{children}</div>,

@@ -317,10 +317,10 @@ export default function SessionControlPage() {
   if (authLoading || loading) {
     return (
       <ProtectedRoute>
-        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="min-h-screen">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary-500"></div>
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4 border-primary"></div>
               <p className="text-white text-lg">Loading session...</p>
             </div>
           </div>
@@ -332,7 +332,7 @@ export default function SessionControlPage() {
   if (error || !session) {
     return (
       <ProtectedRoute>
-        <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+        <div className="min-h-screen">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -351,7 +351,7 @@ export default function SessionControlPage() {
                 </svg>
               </div>
               <h1 className="text-3xl font-bold text-white mb-4">Error</h1>
-              <p className="text-gray-400 text-lg mb-6 max-w-md mx-auto">
+              <p className="text-muted text-lg mb-6 max-w-md mx-auto">
                 {error || 'Session not found'}
               </p>
               <Button
@@ -370,7 +370,7 @@ export default function SessionControlPage() {
 
   return (
     <ProtectedRoute>
-      <div style={{ backgroundColor: '#0F0F0F' }} className="min-h-screen">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {/* Welcome Section */}
           <WelcomeSection />
@@ -380,26 +380,21 @@ export default function SessionControlPage() {
             <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
               <div>
                 <div className="flex items-center space-x-3 mb-2">
-                  <Link
-                    href="/dashboard"
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
-                  >
+                  <Link href="/dashboard" className="text-muted hover:text-text-secondary text-sm">
                     Dashboard
                   </Link>
-                  <span className="text-gray-400 dark:text-gray-500">/</span>
+                  <span className="text-muted">/</span>
                   <Link
                     href="/admin/erg/head-to-head"
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-sm"
+                    className="text-muted hover:text-text-secondary text-sm"
                   >
                     Erg Live
                   </Link>
-                  <span className="text-gray-400 dark:text-gray-500">/</span>
-                  <span className="text-gray-900 dark:text-white text-sm font-medium">
-                    Control Panel
-                  </span>
+                  <span className="text-muted">/</span>
+                  <span className="text-text-primary text-sm font-medium">Control Panel</span>
                 </div>
                 <h1 className="text-3xl font-bold text-white">Head-to-Head Control Panel</h1>
-                <p className="mt-2 text-gray-400">Session ID: {sessionId}</p>
+                <p className="mt-2 text-muted">Session ID: {sessionId}</p>
               </div>
             </div>
           </div>
@@ -424,11 +419,11 @@ export default function SessionControlPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             {/* Status Card */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+            <div className="panel rounded-2xl  p-6">
               <h3 className="text-lg font-semibold text-white mb-4">Connection Status</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-300">Socket.IO</span>
+                  <span className="text-text-secondary">Socket.IO</span>
                   <span
                     className={`px-3 py-1 rounded-full text-sm ${
                       isConnected
@@ -446,19 +441,19 @@ export default function SessionControlPage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-300">Session Status</span>
+                  <span className="text-text-secondary">Session Status</span>
                   <span
                     className={`px-3 py-1 rounded-full text-sm capitalize ${
                       sessionStatus === 'active'
                         ? 'bg-blue-900/30 text-blue-400'
-                        : 'bg-gray-900/30 text-gray-400'
+                        : 'bg-carbon/30 text-muted'
                     }`}
                   >
                     {sessionStatus}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-300">Python Client</span>
+                  <span className="text-text-secondary">Python Client</span>
                   <span
                     className={`px-3 py-1 rounded-full text-sm ${
                       competitorData.length > 0
@@ -478,7 +473,7 @@ export default function SessionControlPage() {
             </div>
 
             {/* Competitors Card */}
-            <div className="lg:col-span-2 bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6">
+            <div className="lg:col-span-2 panel rounded-2xl  p-6">
               <h3 className="text-lg font-semibold text-white mb-4">
                 Competitors (
                 {session.competitors?.length ||
@@ -549,10 +544,10 @@ export default function SessionControlPage() {
                         Competitor {index + 1}
                       </h4>
                       <p className="text-xl font-bold text-white mb-1">{competitor.name}</p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-muted">
                         {competitor.age} years, {competitor.sex}
                       </p>
-                      <p className="text-sm text-gray-400">{competitor.weight}kg</p>
+                      <p className="text-sm text-muted">{competitor.weight}kg</p>
                       {data ? (
                         <div className={`mt-4 p-4 ${color.bg} border ${color.border} rounded-lg`}>
                           <div className="space-y-2">
@@ -560,18 +555,18 @@ export default function SessionControlPage() {
                               <span className={`text-3xl font-bold ${color.text}`}>
                                 {data.calculatedScore.toFixed(1)}
                               </span>
-                              <span className="text-xs text-gray-400 uppercase">Score</span>
+                              <span className="text-xs text-muted uppercase">Score</span>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-gray-700/50">
+                            <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-surface-high/50">
                               <div>
-                                <p className="text-xs text-gray-400 uppercase">Distance</p>
+                                <p className="text-xs text-muted uppercase">Distance</p>
                                 <p className={`text-lg font-semibold ${color.text}`}>
                                   {data.metrics.distance_m.toFixed(0)}m
                                 </p>
                               </div>
                               <div>
-                                <p className="text-xs text-gray-400 uppercase">Pace</p>
+                                <p className="text-xs text-muted uppercase">Pace</p>
                                 <p className={`text-lg font-semibold ${color.text}`}>
                                   {(() => {
                                     const s = data.metrics.average_pace_s;
@@ -584,13 +579,13 @@ export default function SessionControlPage() {
                                 </p>
                               </div>
                               <div>
-                                <p className="text-xs text-gray-400 uppercase">Power</p>
+                                <p className="text-xs text-muted uppercase">Power</p>
                                 <p className={`text-lg font-semibold ${color.text}`}>
                                   {data.metrics.average_power_W.toFixed(0)}W
                                 </p>
                               </div>
                               <div>
-                                <p className="text-xs text-gray-400 uppercase">Time</p>
+                                <p className="text-xs text-muted uppercase">Time</p>
                                 <p className={`text-lg font-semibold ${color.text}`}>
                                   {Math.floor(data.metrics.duration_s / 60)}:
                                   {String(Math.floor(data.metrics.duration_s % 60)).padStart(
@@ -601,7 +596,7 @@ export default function SessionControlPage() {
                               </div>
                               {data.metrics.heartRate && (
                                 <div>
-                                  <p className="text-xs text-gray-400 uppercase">Heart Rate</p>
+                                  <p className="text-xs text-muted uppercase">Heart Rate</p>
                                   <p className={`text-lg font-semibold ${color.text}`}>
                                     {data.metrics.heartRate} bpm
                                   </p>
@@ -609,7 +604,7 @@ export default function SessionControlPage() {
                               )}
                               {data.metrics.strokeRate && (
                                 <div>
-                                  <p className="text-xs text-gray-400 uppercase">Stroke Rate</p>
+                                  <p className="text-xs text-muted uppercase">Stroke Rate</p>
                                   <p className={`text-lg font-semibold ${color.text}`}>
                                     {data.metrics.strokeRate} spm
                                   </p>
@@ -617,7 +612,7 @@ export default function SessionControlPage() {
                               )}
                               {data.metrics.calories && (
                                 <div>
-                                  <p className="text-xs text-gray-400 uppercase">Calories</p>
+                                  <p className="text-xs text-muted uppercase">Calories</p>
                                   <p className={`text-lg font-semibold ${color.text}`}>
                                     {data.metrics.calories} kcal
                                   </p>
@@ -630,7 +625,7 @@ export default function SessionControlPage() {
                         <div
                           className={`mt-4 p-4 ${color.bg} border ${color.border} rounded-lg opacity-50`}
                         >
-                          <p className="text-sm text-gray-400 text-center">Waiting for data...</p>
+                          <p className="text-sm text-muted text-center">Waiting for data...</p>
                         </div>
                       )}
                     </div>
@@ -641,22 +636,22 @@ export default function SessionControlPage() {
           </div>
 
           {/* Update Competitors Section */}
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
+          <div className="panel rounded-2xl  p-6 mb-8">
             <h3 className="text-lg font-semibold text-white mb-4">Update Competitors</h3>
-            <p className="text-sm text-gray-400 mb-4">
+            <p className="text-sm text-muted mb-4">
               Replace the current competitors with new ones. This will stop the current erg session
               and restart with the new competitors.
             </p>
 
             {/* Event Selection (Optional) */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Filter by Event (Optional)
               </label>
               <select
                 value={selectedEventId}
                 onChange={(e) => setSelectedEventId(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               >
                 <option value="">All Users</option>
                 {events.map((event) => (
@@ -665,7 +660,7 @@ export default function SessionControlPage() {
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted mt-1">
                 {selectedEventId
                   ? 'Showing participants from selected event'
                   : 'Showing all active users'}
@@ -674,13 +669,13 @@ export default function SessionControlPage() {
 
             {loadingUsers ? (
               <div className="text-center py-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto border-primary-500"></div>
-                <p className="text-gray-400 mt-2">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto border-primary"></div>
+                <p className="text-muted mt-2">
                   {selectedEventId ? 'Loading participants...' : 'Loading users...'}
                 </p>
               </div>
             ) : users.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-4">
+              <p className="text-muted text-sm text-center py-4">
                 {selectedEventId
                   ? 'No participants found for this event.'
                   : 'No active users found.'}
@@ -688,7 +683,7 @@ export default function SessionControlPage() {
             ) : (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
                     New Competitors ({newCompetitors.length}/6)
                   </label>
                   <div className="space-y-3">
@@ -702,14 +697,12 @@ export default function SessionControlPage() {
                       return (
                         <div
                           key={key}
-                          className="flex items-center gap-3 p-3 bg-gray-700/50 rounded-lg"
+                          className="flex items-center gap-3 p-3 bg-surface-high/50 rounded-lg"
                         >
                           <span className="text-orange-500 font-medium w-8">{index + 1}.</span>
                           <span className="text-white flex-1">
                             {competitor.name}
-                            {detail && (
-                              <span className="text-gray-400 text-xs ml-2">({detail})</span>
-                            )}
+                            {detail && <span className="text-muted text-xs ml-2">({detail})</span>}
                           </span>
                           <button
                             type="button"
@@ -743,7 +736,7 @@ export default function SessionControlPage() {
                             e.target.value = '';
                           }
                         }}
-                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       >
                         <option value="">Add Competitor ({newCompetitors.length + 1})</option>
                         {users
@@ -767,37 +760,37 @@ export default function SessionControlPage() {
                     )}
 
                     {newCompetitors.length < 6 && (
-                      <div className="mt-6 pt-6 border-t border-gray-700/50">
+                      <div className="mt-6 pt-6 border-t border-surface-high/50">
                         <div className="mb-3">
-                          <span className="text-gray-300 text-sm font-medium">
+                          <span className="text-text-secondary text-sm font-medium">
                             Or add manual competitor
                           </span>
                         </div>
-                        <div className="bg-gray-800/40 border border-gray-700/60 rounded-lg p-4">
+                        <div className="bg-surface-low/40 border border-surface-high/60 rounded-lg p-4">
                           <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
                             <div>
-                              <label className="block text-xs text-gray-400 mb-1">Name</label>
+                              <label className="block text-xs text-muted mb-1">Name</label>
                               <input
                                 type="text"
                                 placeholder="e.g., Jane Doe"
                                 value={manualName}
                                 onChange={(e) => setManualName(e.target.value)}
-                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-gray-400 mb-1">Sex</label>
+                              <label className="block text-xs text-muted mb-1">Sex</label>
                               <select
                                 value={manualSex}
                                 onChange={(e) => setManualSex(e.target.value as 'male' | 'female')}
-                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                               >
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs text-gray-400 mb-1">Age</label>
+                              <label className="block text-xs text-muted mb-1">Age</label>
                               <input
                                 type="number"
                                 placeholder="Age"
@@ -805,13 +798,11 @@ export default function SessionControlPage() {
                                 onChange={(e) =>
                                   setManualAge(e.target.value === '' ? '' : Number(e.target.value))
                                 }
-                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-gray-400 mb-1">
-                                Weight (kg)
-                              </label>
+                              <label className="block text-xs text-muted mb-1">Weight (kg)</label>
                               <input
                                 type="number"
                                 placeholder="kg"
@@ -821,7 +812,7 @@ export default function SessionControlPage() {
                                     e.target.value === '' ? '' : Number(e.target.value),
                                   )
                                 }
-                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                               />
                             </div>
                             <div>
@@ -867,7 +858,7 @@ export default function SessionControlPage() {
                     )}
 
                     {newCompetitors.length === 0 && (
-                      <p className="text-gray-400 text-sm text-center py-4">
+                      <p className="text-muted text-sm text-center py-4">
                         Select at least one competitor to update
                       </p>
                     )}
@@ -892,14 +883,14 @@ export default function SessionControlPage() {
           </div>
 
           {/* Public Display URL */}
-          <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 mb-8">
+          <div className="panel rounded-2xl  p-6 mb-8">
             <h3 className="text-lg font-semibold text-white mb-4">Public Display</h3>
             <div className="flex items-center gap-4 mb-4">
               <input
                 type="text"
                 value={publicUrl}
                 readOnly
-                className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                className="flex-1 px-4 py-3 bg-surface-high border border-border rounded-lg text-white"
               />
               <Button
                 onClick={copyPublicUrl}
@@ -910,7 +901,7 @@ export default function SessionControlPage() {
             </div>
             <div className="flex items-start gap-6">
               <div>
-                <p className="text-sm text-gray-400 mb-2">
+                <p className="text-sm text-muted mb-2">
                   Share this URL or QR code with spectators:
                 </p>
                 <a
@@ -922,7 +913,7 @@ export default function SessionControlPage() {
                   Open Public Display →
                 </a>
               </div>
-              <div className="bg-white p-4 rounded-lg">
+              <div className="bg-surface-low p-4 rounded-lg">
                 <QRCodeSVG value={publicUrl} size={120} />
               </div>
             </div>
@@ -936,14 +927,14 @@ export default function SessionControlPage() {
                 {!isMockRunning ? (
                   <Button
                     onClick={startMockData}
-                    className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-6 py-3 rounded-lg font-medium transition-colors"
+                    className="bg-surface-high hover:bg-surface-high text-text-secondary px-6 py-3 rounded-lg font-medium transition-colors"
                   >
                     🧪 Start Demo Mode
                   </Button>
                 ) : (
                   <Button
                     onClick={stopMockData}
-                    className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-6 py-3 rounded-lg font-medium transition-colors"
+                    className="bg-surface-high hover:bg-surface-high text-text-secondary px-6 py-3 rounded-lg font-medium transition-colors"
                   >
                     ⏸️ Stop Demo Mode
                   </Button>
@@ -1000,7 +991,7 @@ export default function SessionControlPage() {
             </Button>
             <Button
               onClick={() => window.open(publicUrl, '_blank')}
-              className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-6 py-3 rounded-lg font-medium transition-colors"
+              className="bg-surface-high hover:bg-surface-high text-text-secondary px-6 py-3 rounded-lg font-medium transition-colors"
             >
               View Public Display
             </Button>
