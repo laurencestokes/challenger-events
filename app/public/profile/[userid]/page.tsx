@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { use, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@lib/queryKeys';
 import { CANONICAL_EVENTS } from '@constants/achievements';
@@ -72,7 +72,8 @@ function getReps(score: unknown): number | undefined {
   return undefined;
 }
 
-export default function PublicProfilePage({ params }: { params: { userid: string } }) {
+export default function PublicProfilePage({ params }: { params: Promise<{ userid: string }> }) {
+  const { userid } = use(params);
   const [performanceProfileOpen, setPerformanceProfileOpen] = useState(false);
   const [detailedScoresOpen, setDetailedScoresOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -195,23 +196,23 @@ export default function PublicProfilePage({ params }: { params: { userid: string
   };
 
   const { data: profileQueryData, isLoading: profileLoading } = useQuery({
-    queryKey: queryKeys.public.profile(params.userid),
+    queryKey: queryKeys.public.profile(userid),
     queryFn: async (): Promise<PublicProfileData | null> => {
-      const res = await fetch(`/api/public/profile/${params.userid}`);
+      const res = await fetch(`/api/public/profile/${userid}`);
       if (!res.ok) return null;
       return res.json();
     },
-    enabled: !!params.userid,
+    enabled: !!userid,
   });
 
   const { data: eventScoresQueryData, isLoading: eventScoresLoading } = useQuery({
-    queryKey: queryKeys.public.userEvents(params.userid),
+    queryKey: queryKeys.public.userEvents(userid),
     queryFn: async (): Promise<EventWithScores[] | null> => {
-      const res = await fetch(`/api/public/user/events/${params.userid}`);
+      const res = await fetch(`/api/public/user/events/${userid}`);
       if (!res.ok) return null;
       return res.json();
     },
-    enabled: !!params.userid && !!profileQueryData?.user?.publicProfileEnabled,
+    enabled: !!userid && !!profileQueryData?.user?.publicProfileEnabled,
   });
 
   const data = profileQueryData ?? null;
@@ -221,7 +222,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
   const notFound = !loading && (!data?.user || !data.user.publicProfileEnabled);
 
   const handleShareClick = async () => {
-    const profileUrl = `${window.location.origin}/public/profile/${params.userid}`;
+    const profileUrl = `${window.location.origin}/public/profile/${userid}`;
     try {
       const qrCode = await generateQRCode(profileUrl);
       setQrCodeDataURL(qrCode);
@@ -233,7 +234,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
   };
 
   const handleCopyLink = async () => {
-    const profileUrl = `${window.location.origin}/public/profile/${params.userid}`;
+    const profileUrl = `${window.location.origin}/public/profile/${userid}`;
     try {
       await navigator.clipboard.writeText(profileUrl);
       setCopySuccess(true);
@@ -1173,7 +1174,7 @@ export default function PublicProfilePage({ params }: { params: { userid: string
                 <div className="flex items-center space-x-2">
                   <input
                     type="text"
-                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/public/profile/${params.userid}`}
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/public/profile/${userid}`}
                     readOnly
                     className="flex-1 px-4 py-3 bg-surface-high/50 border border-border/30 rounded-lg text-white text-sm focus:outline-none"
                     style={{ fontFamily: 'Montserrat, sans-serif' }}

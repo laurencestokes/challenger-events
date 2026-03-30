@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { use, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../contexts/AuthContext';
@@ -27,7 +27,8 @@ interface Event {
   gymId?: string;
 }
 
-export default function EditEvent({ params }: { params: { id: string } }) {
+export default function EditEvent({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -55,8 +56,8 @@ export default function EditEvent({ params }: { params: { id: string } }) {
     isLoading,
     error: fetchError,
   } = useQuery<Event>({
-    queryKey: queryKeys.events.detail(params.id),
-    queryFn: () => api.get(`/api/events/${params.id}`),
+    queryKey: queryKeys.events.detail(id),
+    queryFn: () => api.get(`/api/events/${id}`),
     enabled: !!user,
   });
 
@@ -96,12 +97,12 @@ export default function EditEvent({ params }: { params: { id: string } }) {
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const invalidateEvents = () => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.events.detail(params.id) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.events.detail(id) });
     queryClient.invalidateQueries({ queryKey: queryKeys.events.all() });
   };
 
   const updateMutation = useMutation({
-    mutationFn: (updates: object) => api.put(`/api/events/${params.id}`, updates),
+    mutationFn: (updates: object) => api.put(`/api/events/${id}`, updates),
     onSuccess: () => {
       invalidateEvents();
       setSuccess('Event updated successfully!');
@@ -110,7 +111,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => api.delete(`/api/events/${params.id}`),
+    mutationFn: () => api.delete(`/api/events/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.events.all() });
       setSuccess('Event deleted successfully!');
@@ -119,7 +120,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
   });
 
   const publishMutation = useMutation({
-    mutationFn: () => api.put(`/api/events/${params.id}`, { status: 'ACTIVE' }),
+    mutationFn: () => api.put(`/api/events/${id}`, { status: 'ACTIVE' }),
     onSuccess: () => {
       invalidateEvents();
       setStatus('ACTIVE');

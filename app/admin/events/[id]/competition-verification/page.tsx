@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useState } from 'react';
 import { useAuth } from '../../../../../contexts/AuthContext';
 import { api } from '../../../../../lib/api-client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -38,10 +38,15 @@ interface Event {
   status: string;
 }
 
-export default function CompetitionVerificationPage({ params }: { params: { id: string } }) {
+export default function CompetitionVerificationPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const eventId = params.id;
+  const eventId = id;
 
   // Modal state
   const [selectedCompetitor, setSelectedCompetitor] = useState<User | null>(null);
