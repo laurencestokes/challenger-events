@@ -112,8 +112,16 @@ export default function AddScoreModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="panel rounded-lg w-full max-w-md p-6 relative">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      role="presentation"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Add score"
+        className="panel rounded-lg w-full max-w-md p-6 relative"
+      >
         <button
           className="absolute top-2 right-2 text-muted hover:text-text-secondary"
           onClick={onClose}
@@ -135,6 +143,7 @@ export default function AddScoreModal({
             <select
               value={activityId}
               onChange={(e) => setActivityId(e.target.value)}
+              aria-label="Select test"
               className="w-full px-3 py-2 border border-border rounded bg-surface-high text-text-primary"
               required
             >

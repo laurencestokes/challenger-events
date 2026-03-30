@@ -356,6 +356,7 @@ export default function EventsPage() {
                       <select
                         value={filters.scope}
                         onChange={(e) => setFilters({ ...filters, scope: e.target.value })}
+                        aria-label="Filter by scope"
                         className="w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       >
                         <option value="ALL">All Events</option>
@@ -372,6 +373,7 @@ export default function EventsPage() {
                       <select
                         value={filters.dateRange}
                         onChange={(e) => setFilters({ ...filters, dateRange: e.target.value })}
+                        aria-label="Filter by date range"
                         className="w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       >
                         <option value="ALL">All Dates</option>
@@ -434,6 +436,7 @@ export default function EventsPage() {
                                 distanceUnit: e.target.value as 'miles' | 'km',
                               })
                             }
+                            aria-label="Distance unit"
                             className="w-full px-4 py-3 bg-surface-high border border-surface-high rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                           >
                             <option value="miles">Miles</option>

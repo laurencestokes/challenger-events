@@ -862,8 +862,16 @@ export default function TeamDetailPage() {
 
             {/* Invite User Modal */}
             {showInviteModal && (
-              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-                <div className="relative top-20 mx-auto p-5 border border-surface-high/50 w-96 shadow-lg rounded-2xl bg-surface-low">
+              <div
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50"
+                role="presentation"
+              >
+                <div
+                  className="relative top-20 mx-auto p-5 w-96 rounded-2xl panel"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Team dialog"
+                >
                   <div className="mt-3">
                     <h3 className="text-lg font-medium text-white mb-4">Invite User to Team</h3>
                     <form onSubmit={handleInviteUser} className="space-y-4">
@@ -938,8 +946,16 @@ export default function TeamDetailPage() {
 
             {/* Confirmation Modal */}
             {showConfirmModal && confirmAction && (
-              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-                <div className="relative top-20 mx-auto p-5 border border-surface-high/50 w-96 shadow-lg rounded-2xl bg-surface-low">
+              <div
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50"
+                role="presentation"
+              >
+                <div
+                  className="relative top-20 mx-auto p-5 w-96 rounded-2xl panel"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Team dialog"
+                >
                   <div className="mt-3">
                     <h3 className="text-lg font-medium text-white mb-4">
                       {confirmAction.type === 'delete'
@@ -1007,8 +1023,16 @@ export default function TeamDetailPage() {
 
             {/* Edit Team Modal */}
             {showEditModal && (
-              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-                <div className="relative top-20 mx-auto p-5 border border-surface-high/50 w-96 shadow-lg rounded-2xl bg-surface-low">
+              <div
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50"
+                role="presentation"
+              >
+                <div
+                  className="relative top-20 mx-auto p-5 w-96 rounded-2xl panel"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Team dialog"
+                >
                   <div className="mt-3">
                     <h3 className="text-lg font-medium text-white mb-4">Edit Team</h3>
                     <form onSubmit={handleEditTeam} className="space-y-4">

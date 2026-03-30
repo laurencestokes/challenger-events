@@ -540,6 +540,7 @@ export default function TeamErgControlPage() {
                 <select
                   value={maxErgSlots}
                   onChange={(e) => setMaxErgSlots(parseInt(e.target.value))}
+                  aria-label="Maximum erg slots"
                   className="px-3 py-1 bg-surface-high border border-border rounded text-white text-sm"
                 >
                   {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
@@ -628,6 +629,7 @@ export default function TeamErgControlPage() {
                     <select
                       value={selectedCompetitorId}
                       onChange={(e) => setSelectedCompetitorId(e.target.value)}
+                      aria-label="Select competitor"
                       className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     >
                       <option value="">Choose competitor</option>
@@ -646,6 +648,7 @@ export default function TeamErgControlPage() {
                     <select
                       value={selectedTeam}
                       onChange={(e) => setSelectedTeam(e.target.value)}
+                      aria-label="Select team"
                       className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     >
                       <option value="">Choose Team</option>

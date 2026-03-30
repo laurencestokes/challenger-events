@@ -282,6 +282,7 @@ export default function VerificationPage() {
                 onChange={(e) =>
                   setStatusFilter(e.target.value as 'PENDING' | 'VERIFIED' | 'REJECTED' | 'ALL')
                 }
+                aria-label="Filter by verification status"
                 className="px-3 py-2 border border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
               >
                 <option value="PENDING">Pending</option>
@@ -408,8 +409,16 @@ export default function VerificationPage() {
 
         {/* Verification Modal */}
         {showVerificationModal && selectedUser && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-surface-low">
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50"
+            role="presentation"
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Verify user"
+              className="relative top-20 mx-auto p-5 w-96 rounded-md panel"
+            >
               <div className="mt-3">
                 <h3 className="text-lg font-medium text-text-primary mb-4">
                   Verify User: {selectedUser.name || selectedUser.email}

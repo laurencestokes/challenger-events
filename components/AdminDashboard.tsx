@@ -390,46 +390,46 @@ export default function AdminDashboard() {
                 {events.map((event) => (
                   <div
                     key={event.id}
-                    className="flex items-center justify-between p-6 panel rounded-xl hover:border-primary transition-colors duration-150"
+                    className="panel p-4 sm:p-6 rounded-xl hover:border-primary transition-colors duration-150"
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h4 className="text-lg font-semibold text-text-primary">{event.name}</h4>
-                        <span
-                          className={`px-3 py-1 text-xs font-medium rounded-full ${
-                            event.status === 'ACTIVE'
-                              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                              : event.status === 'COMPLETED'
-                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                : 'bg-surface-high0/20 text-muted border border-gray-500/30'
-                          }`}
-                        >
-                          {event.status}
-                        </span>
-                      </div>
-                      {event.description && (
-                        <p className="text-sm text-muted mb-2">{event.description}</p>
-                      )}
-                      <div className="flex items-center space-x-6 text-sm text-muted">
-                        <span>
-                          Code:{' '}
-                          <span className="font-mono font-medium text-text-primary">
-                            {event.code}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <h4 className="text-lg font-semibold text-text-primary">{event.name}</h4>
+                          <span
+                            className={`px-3 py-1 text-xs font-medium rounded-full ${
+                              event.status === 'ACTIVE'
+                                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                : event.status === 'COMPLETED'
+                                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                                  : 'bg-surface-high/20 text-muted border border-gray-500/30'
+                            }`}
+                          >
+                            {event.status}
                           </span>
-                        </span>
-                        <span>
-                          Scope:{' '}
-                          <span className="text-text-primary">{formatScope(event.scope)}</span>
-                        </span>
-                        <span>Start: {formatDate(event.startDate)}</span>
-                        <span>End: {formatDate(event.endDate)}</span>
-                        <span>Created: {formatDate(event.createdAt)}</span>
+                        </div>
+                        {event.description && (
+                          <p className="text-sm text-muted mb-2">{event.description}</p>
+                        )}
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+                          <span>
+                            Code:{' '}
+                            <span className="font-mono font-medium text-text-primary">
+                              {event.code}
+                            </span>
+                          </span>
+                          <span>
+                            Scope:{' '}
+                            <span className="text-text-primary">{formatScope(event.scope)}</span>
+                          </span>
+                          <span>Start: {formatDate(event.startDate)}</span>
+                          <span>End: {formatDate(event.endDate)}</span>
+                          <span>Created: {formatDate(event.createdAt)}</span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
                       <Link
                         href={`/admin/events/${event.id}`}
-                        className="px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors hover:opacity-90 bg-primary"
+                        className="px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors hover:opacity-90 bg-primary text-center sm:text-left"
                       >
                         Manage
                       </Link>

@@ -14,22 +14,29 @@ describe('Footer', () => {
     expect(screen.getByText(/16703228/)).toBeInTheDocument();
   });
 
-  it('renders Terms link', () => {
+  it('renders Terms of Service link', () => {
     render(<Footer />);
-    const link = screen.getByText('Terms');
+    const link = screen.getByText('Terms of Service');
     expect(link).toHaveAttribute('href', '/terms-of-service');
   });
 
-  it('renders Privacy link', () => {
+  it('renders Privacy Policy link', () => {
     render(<Footer />);
-    const link = screen.getByText('Privacy');
+    const link = screen.getByText('Privacy Policy');
     expect(link).toHaveAttribute('href', '/privacy-policy');
   });
 
-  it('renders Cookie link', () => {
+  it('renders Cookie Policy link', () => {
     render(<Footer />);
-    const link = screen.getByText('Cookies');
+    const link = screen.getByText('Cookie Policy');
     expect(link).toHaveAttribute('href', '/cookie-policy');
+  });
+
+  it('renders Instagram link with target blank', () => {
+    render(<Footer />);
+    const link = screen.getByLabelText('Instagram');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
   it('renders version info', () => {
@@ -43,19 +50,9 @@ describe('Footer', () => {
     expect(footer).toBeInTheDocument();
   });
 
-  it('contains all content within the footer element', () => {
+  it('renders the page break divider', () => {
     render(<Footer />);
-    const footer = document.querySelector('footer');
-    expect(footer).toContainElement(screen.getByText('Terms'));
-    expect(footer).toContainElement(screen.getByText('Privacy'));
-    expect(footer).toContainElement(screen.getByText('Cookies'));
-    expect(footer).toContainElement(screen.getByText(/16703228/));
-    expect(footer).toContainElement(screen.getByText(/Version/));
-  });
-
-  it('has constrained width via container class', () => {
-    render(<Footer />);
-    const footer = document.querySelector('footer');
-    expect(footer?.className).toContain('container');
+    const pageBreak = document.querySelector('.page-break');
+    expect(pageBreak).toBeInTheDocument();
   });
 });

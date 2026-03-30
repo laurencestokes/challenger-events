@@ -51,8 +51,16 @@ export default function JoinTeamModal({ isOpen, onClose, onSuccess }: JoinTeamMo
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="panel rounded-2xl p-6 w-full max-w-md">
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      role="presentation"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Join team"
+        className="panel rounded-2xl p-6 w-full max-w-md"
+      >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">

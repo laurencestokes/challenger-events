@@ -219,6 +219,7 @@ function QuickScoreSubmissionForm({ onScoreAdded }: { onScoreAdded: () => void }
           <select
             value={activityId}
             onChange={(e) => setActivityId(e.target.value)}
+            aria-label="Select test"
             className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             required
           >
@@ -802,6 +803,7 @@ export default function Profile() {
                             </label>
                             <select
                               {...register('sex')}
+                              aria-label="Sex"
                               className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                             >
                               <option value="">Select...</option>

@@ -83,8 +83,16 @@ export default function AddWorkoutModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="panel rounded-2xl p-6 w-full max-w-md">
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      role="presentation"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Add workout"
+        className="panel rounded-2xl p-6 w-full max-w-md"
+      >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
@@ -109,6 +117,7 @@ export default function AddWorkoutModal({
               value={selectedEventType?.id || ''}
               onChange={(e) => handleEventTypeChange(e.target.value)}
               required
+              aria-label="Event type"
               className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
               <option value="">Select an event type</option>
@@ -129,6 +138,7 @@ export default function AddWorkoutModal({
                 id="reps"
                 value={reps}
                 onChange={(e) => setReps(Number(e.target.value))}
+                aria-label="Number of reps"
                 className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               >
                 {Array.from({ length: 10 }, (_, i) => i + 1).map((rep) => (

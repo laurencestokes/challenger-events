@@ -275,8 +275,16 @@ export default function ScoreSubmissionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="panel rounded-2xl p-6 w-full max-w-md">
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      role="presentation"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Submit score"
+        className="panel rounded-2xl p-6 w-full max-w-md"
+      >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
@@ -308,6 +316,7 @@ export default function ScoreSubmissionModal({
               value={selectedCompetitor}
               onChange={(e) => handleCompetitorChange(e.target.value)}
               required
+              aria-label="Select competitor"
               className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
               <option value="">Select a competitor</option>
@@ -409,6 +418,7 @@ export default function ScoreSubmissionModal({
               value={selectedActivity}
               onChange={(e) => setSelectedActivity(e.target.value)}
               required
+              aria-label="Select workout"
               className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
               <option value="">Select a workout</option>
@@ -490,6 +500,7 @@ export default function ScoreSubmissionModal({
                 id="team"
                 value={selectedTeamId}
                 onChange={(e) => setSelectedTeamId(e.target.value)}
+                aria-label="Assign team"
                 className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               >
                 <option value="">No team (leave unassigned)</option>

@@ -460,6 +460,7 @@ export default function ManageUsers() {
                 <select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
+                  aria-label="Filter by role"
                   className="flex-1 min-w-0 px-3 py-2 border border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm bg-surface-high"
                 >
                   <option value="ALL">All Roles</option>
@@ -471,6 +472,7 @@ export default function ManageUsers() {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
+                  aria-label="Filter by status"
                   className="flex-1 min-w-0 px-3 py-2 border border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm bg-surface-high"
                 >
                   <option value="ALL">All Status</option>
@@ -480,6 +482,7 @@ export default function ManageUsers() {
                 <select
                   value={verificationFilter}
                   onChange={(e) => setVerificationFilter(e.target.value)}
+                  aria-label="Filter by verification status"
                   className="flex-1 min-w-0 px-3 py-2 border border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm bg-surface-high"
                 >
                   <option value="ALL">All Verification</option>
@@ -562,6 +565,7 @@ export default function ManageUsers() {
                           <select
                             value={user.role}
                             onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                            aria-label="Change user role"
                             className="border-border rounded-md text-text-primary focus:outline-none focus:ring-2 focus:ring-primary bg-surface-high text-xs px-2 py-1"
                           >
                             <option value="ADMIN">Admin</option>
@@ -685,6 +689,7 @@ export default function ManageUsers() {
                               <select
                                 value={user.role}
                                 onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                aria-label="Change user role"
                                 className="text-sm border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-surface-high"
                               >
                                 <option value="ADMIN">Admin</option>
@@ -737,6 +742,7 @@ export default function ManageUsers() {
                                   onChange={(e) =>
                                     handleVerificationChange(user.id, e.target.value)
                                   }
+                                  aria-label="Change verification status"
                                   className="text-xs border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-surface-high"
                                 >
                                   <option value="PENDING">Pending</option>
@@ -808,10 +814,20 @@ export default function ManageUsers() {
 
         {/* Invite User Modal */}
         {showInviteModal && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-surface-low">
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50"
+            role="presentation"
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="invite-user-title"
+              className="relative top-20 mx-auto p-5 w-96 rounded-md panel"
+            >
               <div className="mt-3">
-                <h3 className="text-lg font-medium text-text-primary mb-4">Invite User</h3>
+                <h3 id="invite-user-title" className="text-lg font-medium text-text-primary mb-4">
+                  Invite User
+                </h3>
                 <form onSubmit={handleInviteUser} className="space-y-4">
                   <div>
                     <label
@@ -840,6 +856,7 @@ export default function ManageUsers() {
                       onChange={(e) =>
                         setInviteRole(e.target.value as 'ADMIN' | 'COMPETITOR' | 'VIEWER')
                       }
+                      aria-label="Invite role"
                       className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                     >
                       <option value="COMPETITOR">Competitor</option>

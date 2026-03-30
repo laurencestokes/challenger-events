@@ -431,6 +431,7 @@ export default function PerformanceGraph({ scores }: PerformanceGraphProps) {
             onChange={(e) =>
               setGrouping(e.target.value as 'all' | 'strength' | 'endurance' | 'activity')
             }
+            aria-label="Score grouping"
             className="px-3 py-2 border border-primary/50 rounded-lg bg-surface-low text-text-primary text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="all">All (Total Score)</option>
@@ -442,6 +443,7 @@ export default function PerformanceGraph({ scores }: PerformanceGraphProps) {
             <select
               value={selectedActivity}
               onChange={(e) => setSelectedActivity(e.target.value)}
+              aria-label="Filter by activity"
               className="px-3 py-2 border border-border rounded-lg bg-surface-low text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Activities</option>

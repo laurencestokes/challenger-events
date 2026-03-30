@@ -238,6 +238,7 @@ export default function AdminScoreToolPage() {
                   className="flex h-10 w-full rounded-md border border-border bg-surface-low px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                   value={selectedEventId}
                   onChange={(e) => setSelectedEventId(e.target.value)}
+                  aria-label="Event type"
                 >
                   {EVENT_TYPES.map((et) => (
                     <option key={et.id} value={et.id}>

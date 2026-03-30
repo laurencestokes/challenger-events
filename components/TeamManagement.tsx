@@ -242,10 +242,20 @@ export default function TeamManagement({ eventId, onTeamJoined }: TeamManagement
 
       {/* Create Team Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-surface-low">
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50"
+          role="presentation"
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="create-team-title"
+            className="relative top-20 mx-auto p-5 w-96 rounded-md panel"
+          >
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-text-primary mb-4">Create New Team</h3>
+              <h3 id="create-team-title" className="text-lg font-medium text-text-primary mb-4">
+                Create New Team
+              </h3>
               <form onSubmit={handleCreateTeam} className="space-y-4">
                 <div>
                   <label

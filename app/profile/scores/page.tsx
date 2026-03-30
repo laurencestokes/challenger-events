@@ -177,6 +177,7 @@ export default function UserScoresPage() {
               <select
                 value={activityFilter}
                 onChange={(e) => setActivityFilter(e.target.value)}
+                aria-label="Filter by activity"
                 className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="">All Activities</option>

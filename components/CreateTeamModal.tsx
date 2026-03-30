@@ -86,8 +86,16 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="panel rounded-2xl p-6 w-full max-w-md">
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      role="presentation"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Create team"
+        className="panel rounded-2xl p-6 w-full max-w-md"
+      >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
@@ -148,6 +156,7 @@ export default function CreateTeamModal({ isOpen, onClose, onSuccess }: CreateTe
                 onChange={(e) =>
                   setScope(e.target.value as 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY')
                 }
+                aria-label="Team scope"
                 className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               >
                 <option value="INVITE_ONLY">Invite Only - Only invited members</option>

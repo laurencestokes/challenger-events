@@ -839,8 +839,16 @@ export default function TeamsPage() {
 
       {/* Admin: Add Member Modal */}
       {isAdmin && isAddMemberModalOpen && (
-        <div className="fixed inset-0 bg-carbon/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-6 border w-full max-w-2xl shadow-lg rounded-lg bg-surface-low border-surface-high">
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50"
+          role="presentation"
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Add members to team"
+            className="relative top-20 mx-auto p-6 w-full max-w-2xl rounded-lg panel"
+          >
             <div className="mb-4">
               <h3 className="text-xl font-bold text-white mb-2">
                 {selectedTeam ? `Add Members to ${selectedTeam.name}` : 'Add Members to Team'}
@@ -941,6 +949,7 @@ export default function TeamsPage() {
                 <select
                   value={memberRole}
                   onChange={(e) => setMemberRole(e.target.value as 'MEMBER' | 'CAPTAIN')}
+                  aria-label="Member role"
                   className="w-full px-3 py-2 border border-border rounded-md bg-surface-high text-white focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="MEMBER">Member</option>

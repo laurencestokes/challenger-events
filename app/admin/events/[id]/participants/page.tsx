@@ -451,6 +451,7 @@ export default function EventParticipantsPage() {
                                   }
                                 }}
                                 disabled={assigningTeam === participant.id}
+                                aria-label="Assign team"
                                 className="text-sm bg-surface-high border border-border rounded px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 min-w-[150px]"
                               >
                                 <option value="">
@@ -549,6 +550,7 @@ export default function EventParticipantsPage() {
                                   }
                                 }}
                                 disabled={assigningTeam === participant.id}
+                                aria-label="Assign team"
                                 className="text-sm bg-surface-high border border-border rounded px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-50 min-w-[150px]"
                               >
                                 <option value="">
@@ -726,6 +728,7 @@ export default function EventParticipantsPage() {
                     <select
                       id="sex"
                       required
+                      aria-label="Sex"
                       className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                       value={sex}
                       onChange={(e) => setSex(e.target.value as 'M' | 'F')}

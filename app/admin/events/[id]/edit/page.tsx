@@ -340,6 +340,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                           e.target.value as 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY',
                         )
                       }
+                      aria-label="Event scope"
                       className="mt-1 block w-full border border-border rounded-md px-3 py-2 text-text-primary bg-surface-high focus:outline-none focus:ring-primary focus:border-primary"
                     >
                       <option value="PUBLIC">Public - Anyone can join</option>
@@ -406,6 +407,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                       id="country"
                       value={country}
                       onChange={(e) => setCountry(e.target.value)}
+                      aria-label="Country"
                       className="mt-1 block w-full border border-border rounded-md px-3 py-2 text-text-primary bg-surface-high focus:outline-none focus:ring-primary focus:border-primary"
                     >
                       <option value="GB">United Kingdom</option>
@@ -441,6 +443,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                   onChange={(e) =>
                     setStatus(e.target.value as 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED')
                   }
+                  aria-label="Event status"
                   className="mt-1 block w-full border border-border rounded-md px-3 py-2 text-text-primary bg-surface-high focus:outline-none focus:ring-primary focus:border-primary"
                 >
                   <option value="DRAFT">Draft</option>
@@ -485,6 +488,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
                           onChange={(e) =>
                             setTeamScoringMethod(e.target.value as 'SUM' | 'AVERAGE' | 'BEST')
                           }
+                          aria-label="Team scoring method"
                           className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                         >
                           <option value="SUM">Sum of all member scores</option>

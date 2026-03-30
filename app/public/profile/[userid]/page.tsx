@@ -1056,8 +1056,16 @@ export default function PublicProfilePage({ params }: { params: { userid: string
 
         {/* Social Media Image Generator Modal */}
         {isImageGeneratorModalOpen && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-[#131313] rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-border/30">
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            role="presentation"
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Social media image generator"
+              className="bg-[#131313] rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-border/30"
+            >
               <div className="flex justify-between items-center mb-6">
                 <h2
                   className="text-white text-2xl font-bold"
@@ -1123,8 +1131,16 @@ export default function PublicProfilePage({ params }: { params: { userid: string
 
       {/* Share Modal */}
       {isShareModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#131313]/70 backdrop-blur-sm rounded-2xl p-6 w-full max-w-md border border-border/30">
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          role="presentation"
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Share profile"
+            className="bg-[#131313]/70 backdrop-blur-sm rounded-2xl p-6 w-full max-w-md border border-border/30"
+          >
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">

@@ -94,10 +94,20 @@ export default function EditWorkoutModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 w-96 rounded-md panel">
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50"
+      role="presentation"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-workout-title"
+        className="relative top-20 mx-auto p-5 w-96 rounded-md panel"
+      >
         <div className="mt-3">
-          <h3 className="text-lg font-medium text-text-primary mb-4">Edit Workout</h3>
+          <h3 id="edit-workout-title" className="text-lg font-medium text-text-primary mb-4">
+            Edit Workout
+          </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="eventType" className="block text-sm font-medium text-text-secondary">
@@ -108,6 +118,7 @@ export default function EditWorkoutModal({
                 value={selectedEventType?.id || ''}
                 onChange={(e) => handleEventTypeChange(e.target.value)}
                 required
+                aria-label="Event type"
                 className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
               >
                 <option value="">Select an event type</option>
@@ -128,6 +139,7 @@ export default function EditWorkoutModal({
                   id="reps"
                   value={reps}
                   onChange={(e) => setReps(Number(e.target.value))}
+                  aria-label="Number of reps"
                   className="mt-1 block w-full px-3 py-2 border border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm bg-surface-high"
                 >
                   {Array.from({ length: 10 }, (_, i) => i + 1).map((rep) => (

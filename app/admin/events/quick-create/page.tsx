@@ -316,6 +316,7 @@ export default function QuickCreateEvent() {
                           e.target.value as 'PUBLIC' | 'ORGANIZATION' | 'GYM' | 'INVITE_ONLY',
                         )
                       }
+                      aria-label="Event scope"
                       className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     >
                       <option value="INVITE_ONLY">Invite Only - Only invited users</option>
@@ -379,6 +380,7 @@ export default function QuickCreateEvent() {
                         id="country"
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
+                        aria-label="Country"
                         className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       >
                         <option value="GB">🇬🇧 United Kingdom</option>
@@ -414,6 +416,7 @@ export default function QuickCreateEvent() {
                       id="status"
                       value={status}
                       onChange={(e) => setStatus(e.target.value as 'DRAFT' | 'ACTIVE')}
+                      aria-label="Event status"
                       className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     >
                       <option value="ACTIVE">Active - Available to join immediately</option>
@@ -490,6 +493,7 @@ export default function QuickCreateEvent() {
                           onChange={(e) =>
                             setTeamScoringMethod(e.target.value as 'SUM' | 'AVERAGE' | 'BEST')
                           }
+                          aria-label="Team scoring method"
                           className="mt-1 block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         >
                           <option value="SUM">Sum of all member scores</option>

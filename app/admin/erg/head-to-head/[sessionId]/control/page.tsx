@@ -651,6 +651,7 @@ export default function SessionControlPage() {
               <select
                 value={selectedEventId}
                 onChange={(e) => setSelectedEventId(e.target.value)}
+                aria-label="Filter by event"
                 className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               >
                 <option value="">All Users</option>
@@ -736,6 +737,7 @@ export default function SessionControlPage() {
                             e.target.value = '';
                           }
                         }}
+                        aria-label="Add competitor"
                         className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                       >
                         <option value="">Add Competitor ({newCompetitors.length + 1})</option>
@@ -783,6 +785,7 @@ export default function SessionControlPage() {
                               <select
                                 value={manualSex}
                                 onChange={(e) => setManualSex(e.target.value as 'male' | 'female')}
+                                aria-label="Sex"
                                 className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                               >
                                 <option value="male">Male</option>

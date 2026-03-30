@@ -149,6 +149,12 @@
   background-size: 12px 12px;
 }
 
+/* === DS Footer: constrain to body content width === */
+
+.max-w-\[var\(--breakpoint-content\)\] {
+  max-width: var(--breakpoint-content);
+}
+
 /* === Layout: content offset for fixed header === */
 
 header.fixed + * {
