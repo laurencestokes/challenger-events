@@ -4,9 +4,10 @@ import { broadcastToEvent } from '@lib/sse-manager';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string; activityId: string } },
+  { params }: { params: Promise<{ id: string; activityId: string }> },
 ) {
   try {
+    const { id, activityId } = await params;
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -22,32 +23,32 @@ export async function POST(
     }
 
     // Check if event exists and user has admin access
-    const event = await getEvent(params.id);
+    const event = await getEvent(id);
 
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
     // Get the activity details before revealing
-    const activity = await getActivity(params.activityId);
+    const activity = await getActivity(activityId);
     if (!activity) {
       return NextResponse.json({ error: 'Activity not found' }, { status: 404 });
     }
 
     // Reveal the hidden workout
-    await revealHiddenWorkout(params.activityId);
+    await revealHiddenWorkout(activityId);
 
     // Broadcast the reveal event to all connected clients
     const revealMessage = JSON.stringify({
       type: 'workout_revealed',
-      eventId: params.id,
-      workoutId: params.activityId,
+      eventId: id,
+      workoutId: activityId,
       workoutName: activity.name,
       timestamp: new Date().toISOString(),
       message: `Workout "${activity.name}" has been revealed!`,
     });
 
-    broadcastToEvent(params.id, revealMessage);
+    broadcastToEvent(id, revealMessage);
 
     return NextResponse.json({
       success: true,

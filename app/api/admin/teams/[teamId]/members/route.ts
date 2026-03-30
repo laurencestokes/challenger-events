@@ -8,8 +8,12 @@ import {
   addTeamMember,
 } from '@lib/firestore';
 
-export async function POST(request: NextRequest, { params }: { params: { teamId: string } }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ teamId: string }> },
+) {
   try {
+    const { teamId } = await params;
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -27,8 +31,6 @@ export async function POST(request: NextRequest, { params }: { params: { teamId:
     if (!user || !isAdmin(user.role)) {
       return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
     }
-
-    const teamId = params.teamId;
     const body = await request.json();
     const { userIds, role = 'MEMBER' } = body;
 

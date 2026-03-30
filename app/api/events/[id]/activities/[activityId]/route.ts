@@ -3,9 +3,10 @@ import { getUserByUid, getEvent, updateActivity, deleteActivity, isAdmin } from 
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; activityId: string } },
+  { params }: { params: Promise<{ id: string; activityId: string }> },
 ) {
   try {
+    const { id, activityId } = await params;
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -20,7 +21,7 @@ export async function PUT(
     }
 
     // Check if event exists and user has admin access
-    const event = await getEvent(params.id);
+    const event = await getEvent(id);
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
@@ -32,7 +33,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Name and type are required' }, { status: 400 });
     }
 
-    await updateActivity(params.activityId, {
+    await updateActivity(activityId, {
       name,
       description,
       type,
@@ -51,9 +52,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; activityId: string } },
+  { params }: { params: Promise<{ id: string; activityId: string }> },
 ) {
   try {
+    const { id, activityId } = await params;
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -68,12 +70,12 @@ export async function DELETE(
     }
 
     // Check if event exists and user has admin access
-    const event = await getEvent(params.id);
+    const event = await getEvent(id);
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    await deleteActivity(params.activityId);
+    await deleteActivity(activityId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

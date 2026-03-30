@@ -200,6 +200,7 @@ export default function PublicEventLeaderboard() {
   const latestResults: LatestResult[] = leaderboardData?.latestResults ?? [];
 
   // Handle SSE events - invalidate queries on leaderboard events
+  /* eslint-disable react-hooks/set-state-in-effect -- Reacting to external SSE event */
   useEffect(() => {
     if (lastEvent?.type === 'workout_revealed' && lastEvent.workoutName) {
       setNotification({
@@ -217,6 +218,7 @@ export default function PublicEventLeaderboard() {
       queryClient.invalidateQueries({ queryKey: queryKeys.public.leaderboard(eventId) });
     }
   }, [lastEvent, eventId, queryClient]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const formatRawValue = (
     rawValue: number,

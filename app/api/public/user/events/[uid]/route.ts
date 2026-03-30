@@ -7,9 +7,9 @@ import {
   getActivitiesByEvent,
 } from '@lib/firestore';
 
-export async function GET(_request: NextRequest, { params }: { params: { uid: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ uid: string }> }) {
   try {
-    const { uid } = params;
+    const { uid } = await params;
 
     // Try to fetch user by profile name first, then by UID
     let user = await getUserByProfileName(uid);

@@ -117,6 +117,7 @@ export default function EventPage() {
   });
 
   // Handle SSE events
+  /* eslint-disable react-hooks/set-state-in-effect -- Reacting to external SSE event */
   useEffect(() => {
     if (lastEvent?.type === 'workout_revealed' && lastEvent.workoutName) {
       setNotification({
@@ -129,6 +130,7 @@ export default function EventPage() {
       queryClient.invalidateQueries({ queryKey: queryKeys.events.activities(eventId) });
     }
   }, [lastEvent, queryClient, eventId]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleJoinEvent = async () => {
     if (!event || !user) return;

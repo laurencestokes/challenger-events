@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getEvent } from '@lib/firestore';
 import { addSSEClient, removeSSEClient } from '@lib/sse-manager';
 
-export async function GET(request: NextRequest, { params }: { params: { eventId: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ eventId: string }> },
+) {
   try {
-    console.info('Public SSE: Received request for event:', params.eventId);
-
-    const { eventId } = params;
+    const { eventId } = await params;
+    console.info('Public SSE: Received request for event:', eventId);
 
     // Check if event exists
     const event = await getEvent(eventId);

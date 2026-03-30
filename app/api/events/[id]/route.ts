@@ -12,20 +12,21 @@ import {
 } from '@lib/firestore';
 import { convertFirestoreTimestamp } from '@lib/utils';
 
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const event = await getEvent(params.id);
+    const { id } = await params;
+    const event = await getEvent(id);
 
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
     // Fetch participants for this event
-    const participations = await getParticipationsByEvent(params.id);
+    const participations = await getParticipationsByEvent(id);
     const participants = await Promise.all(
       participations.map(async (participation) => {
         const user = await getUser(participation.userId);
-        const scores = await getScoresByUserAndEvent(participation.userId, params.id);
+        const scores = await getScoresByUserAndEvent(participation.userId, id);
 
         // Calculate total score if there are scores
         const totalScore =
@@ -72,8 +73,9 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -87,7 +89,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const event = await getEvent(params.id);
+    const event = await getEvent(id);
 
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
@@ -129,7 +131,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (postcode !== undefined) updates.postcode = postcode;
     if (imageUrl !== undefined) updates.imageUrl = imageUrl;
 
-    const updatedEvent = await updateEvent(params.id, updates);
+    const updatedEvent = await updateEvent(id, updates);
 
     return NextResponse.json(updatedEvent);
   } catch (error) {
@@ -138,8 +140,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -153,13 +159,13 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const event = await getEvent(params.id);
+    const event = await getEvent(id);
 
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    await deleteEvent(params.id);
+    await deleteEvent(id);
 
     return NextResponse.json({ message: 'Event deleted successfully' });
   } catch (error) {

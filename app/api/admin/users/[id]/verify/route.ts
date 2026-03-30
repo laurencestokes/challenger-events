@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserByUid, getUser, updateUser, isAdmin, serverTimestamp } from '@lib/firestore';
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -32,7 +33,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Get the user to be verified
-    const userToVerify = await getUser(params.id);
+    const userToVerify = await getUser(id);
 
     if (!userToVerify) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -52,7 +53,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       updateData.verificationNotes = verificationNotes;
     }
 
-    await updateUser(params.id, updateData);
+    await updateUser(id, updateData);
 
     return NextResponse.json({ success: true });
   } catch (error) {

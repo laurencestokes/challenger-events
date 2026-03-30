@@ -7,8 +7,9 @@ import {
   isAdmin,
 } from '@lib/firestore';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     // Check if event exists and user has admin access
-    const event = await getEvent(params.id);
+    const event = await getEvent(id);
 
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
@@ -41,14 +42,14 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // Get existing activities to determine order if not provided
     let activityOrder = order;
     if (activityOrder === undefined) {
-      const existingActivities = await getActivitiesByEvent(params.id, {
+      const existingActivities = await getActivitiesByEvent(id, {
         includeHiddenWorkouts: false,
       });
       activityOrder = existingActivities.length;
     }
 
     const activity = await createActivity({
-      eventId: params.id,
+      eventId: id,
       name,
       description,
       type,
@@ -66,8 +67,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   }
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -83,7 +85,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Check if event exists
-    const event = await getEvent(params.id);
+    const event = await getEvent(id);
 
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
@@ -94,7 +96,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const includeHidden = isAdminUser;
 
     // Get activities for the event
-    const activities = await getActivitiesByEvent(params.id, {
+    const activities = await getActivitiesByEvent(id, {
       includeHiddenWorkouts: includeHidden,
     });
 

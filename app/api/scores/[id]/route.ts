@@ -4,8 +4,12 @@ import { db } from '@lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { broadcastToEvent } from '@lib/sse-manager';
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -24,7 +28,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const scoreId = params.id;
+    const scoreId = id;
 
     // Verify the score exists and get its details
     const scoreRef = doc(db, 'scores', scoreId);

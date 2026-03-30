@@ -13,7 +13,7 @@ export default function LiveErgDisplayPage() {
   const params = useParams();
   const sessionId = params.sessionId as string;
   const queryClient = useQueryClient();
-  const [animationInitialized, setAnimationInitialized] = useState(false);
+  const animationInitializedRef = useRef(false);
   const [_competitorsUpdating, setCompetitorsUpdating] = useState(false);
   const [viewMode, setViewMode] = useState<'full' | 'focused'>('full');
   const [focusedCompetitorIndex, setFocusedCompetitorIndex] = useState(0);
@@ -88,11 +88,11 @@ export default function LiveErgDisplayPage() {
   useEffect(() => {
     console.log('Animation effect triggered:', {
       session: !!session,
-      animationInitialized,
+      animationInitialized: animationInitializedRef.current,
       rootRef: !!rootRef.current,
     });
 
-    if (session && !animationInitialized && rootRef.current) {
+    if (session && !animationInitializedRef.current && rootRef.current) {
       console.log('Initializing animations...');
 
       // Create anime.js scope
@@ -134,7 +134,7 @@ export default function LiveErgDisplayPage() {
         });
       });
 
-      setAnimationInitialized(true);
+      animationInitializedRef.current = true;
     }
 
     // Cleanup on unmount
@@ -143,7 +143,7 @@ export default function LiveErgDisplayPage() {
         scopeRef.current.revert();
       }
     };
-  }, [session, animationInitialized]);
+  }, [session]);
 
   // Animate score updates
   useEffect(() => {

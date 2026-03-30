@@ -21,7 +21,7 @@ import {
   uploadEventImage,
 } from '../../lib/api-client';
 import { getCurrentUser } from '../../lib/firebase-auth';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytesResumable } from 'firebase/storage';
 
 const mockGetCurrentUser = getCurrentUser as jest.MockedFunction<typeof getCurrentUser>;
 const mockFetch = jest.fn();

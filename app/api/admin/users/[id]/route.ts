@@ -3,8 +3,9 @@ import { db, getUser } from '@lib/firestore';
 import { collection, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { getUserByUid, isAdmin } from '@lib/firestore';
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -22,7 +23,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const { role, status } = body;
 
     // Validate the target user exists
-    const targetUserDoc = doc(db, 'users', params.id);
+    const targetUserDoc = doc(db, 'users', id);
 
     // Update user fields
     const updateData: Record<string, string> = {};
@@ -48,8 +49,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -63,7 +68,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
     }
 
-    const targetUserId = params.id;
+    const targetUserId = id;
 
     // Verify the target user exists
     const targetUser = await getUser(targetUserId);

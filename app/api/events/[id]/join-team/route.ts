@@ -9,8 +9,9 @@ import {
   updateParticipation,
 } from '@lib/firestore';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const eventId = params.id;
+    const eventId = id;
     const event = await getEvent(eventId);
 
     if (!event) {

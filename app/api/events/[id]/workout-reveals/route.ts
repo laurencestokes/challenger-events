@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUser, getEvent } from '@lib/firestore';
 import { addSSEClient, removeSSEClient } from '@lib/sse-manager';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    console.info('SSE: Received request for event:', params.id);
+    const { id } = await params;
+    console.info('SSE: Received request for event:', id);
 
     // Get token from query parameter (EventSource doesn't support custom headers)
     const url = new URL(request.url);
@@ -28,28 +29,28 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Check if event exists
-    const event = await getEvent(params.id);
+    const event = await getEvent(id);
     console.info('SSE: Event found in database:', !!event);
 
     if (!event) {
-      console.log('SSE: Event not found in database for ID:', params.id);
+      console.log('SSE: Event not found in database for ID:', id);
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    console.info('SSE: Setting up SSE connection for event:', params.id);
+    console.info('SSE: Setting up SSE connection for event:', id);
 
     // Set up SSE headers
     const response = new Response(
       new ReadableStream({
         start(controller) {
           // Add this client to the connected clients
-          addSSEClient(params.id, controller);
+          addSSEClient(id, controller);
 
           // Send initial connection message
           controller.enqueue(
             `data: ${JSON.stringify({
               type: 'connected',
-              eventId: params.id,
+              eventId: id,
               message: 'Connected to workout reveals',
             })}\n\n`,
           );
@@ -66,7 +67,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             } catch (error) {
               console.error('SSE: Error sending heartbeat:', error);
               clearInterval(heartbeat);
-              removeSSEClient(params.id, controller);
+              removeSSEClient(id, controller);
             }
           }, 30000); // Every 30 seconds
 
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             () => {
               console.info('SSE: Connection timeout reached, closing connection');
               clearInterval(heartbeat);
-              removeSSEClient(params.id, controller);
+              removeSSEClient(id, controller);
               try {
                 controller.close();
               } catch (error) {
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             console.info('SSE: Client disconnected');
             clearInterval(heartbeat);
             clearTimeout(connectionTimeout);
-            removeSSEClient(params.id, controller);
+            removeSSEClient(id, controller);
             try {
               controller.close();
             } catch (error) {

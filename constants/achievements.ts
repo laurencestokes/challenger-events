@@ -112,7 +112,7 @@ export const getCanonicalEventsByCategory = (category: 'STRENGTH' | 'ENDURANCE')
 };
 
 // For future enhancement: More sophisticated specialist logic
-export const getSpecialistAchievementsWithFlexibility = (scores: Record<string, number>) => {
+export const getSpecialistAchievementsWithFlexibility = (_scores: Record<string, number>) => {
   // This could be enhanced to allow for flexibility where someone has 2 great events
   // but one dragging them down - could still award the badge
   // For now, using simple average logic

@@ -304,6 +304,7 @@ export default function PerformanceGraph({ scores }: PerformanceGraphProps) {
   }
 
   // Custom tooltips
+  /* eslint-disable react-hooks/static-components -- Tooltip components need closure access to parent scope */
   const ActivityTooltip = ({ active, payload }: { active?: boolean; payload?: unknown[] }) => {
     if (!active || !payload || payload.length === 0) return null;
     const p = (

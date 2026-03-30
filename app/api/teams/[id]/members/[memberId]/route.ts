@@ -5,9 +5,10 @@ import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; memberId: string } },
+  { params }: { params: Promise<{ id: string; memberId: string }> },
 ) {
   try {
+    const { id, memberId } = await params;
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -20,8 +21,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const teamId = params.id;
-    const memberId = params.memberId;
+    const teamId = id;
 
     // Get team details
     const team = await getTeam(teamId);
@@ -91,9 +91,10 @@ export async function DELETE(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string; memberId: string } },
+  { params }: { params: Promise<{ id: string; memberId: string }> },
 ) {
   try {
+    const { id, memberId } = await params;
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -106,8 +107,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const teamId = params.id;
-    const memberId = params.memberId;
+    const teamId = id;
 
     // Get team details
     const team = await getTeam(teamId);

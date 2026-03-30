@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserByUid, getUserByProfileName } from '@lib/firestore';
 import { db } from '@lib/firebase';
 
-export async function GET(_request: NextRequest, { params }: { params: { userid: string } }) {
-  const { userid } = params;
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ userid: string }> },
+) {
+  const { userid } = await params;
 
   // Try to fetch user by profile name first, then by UID
   let user = await getUserByProfileName(userid);

@@ -79,6 +79,7 @@ export default function AnimatedCounter({
     };
   }, [isAnimating]);
 
+  /* eslint-disable react-hooks/set-state-in-effect -- Syncing display value with animation */
   useEffect(() => {
     if (value !== previousValue.current && scopeRef.current?.methods?.animateValue) {
       scopeRef.current.methods.animateValue(value);
@@ -87,6 +88,7 @@ export default function AnimatedCounter({
       setDisplayValue(value);
     }
   }, [value]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return (
     <div ref={counterRef} className={`text-center ${className}`}>

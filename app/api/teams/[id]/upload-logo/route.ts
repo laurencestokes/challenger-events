@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserByUid, isAdmin, updateTeamLogo, getTeam, getTeamMembers } from '@lib/firestore';
 
 // Simple endpoint to handle logo URL updates after client-side upload
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -16,7 +17,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const teamId = params.id;
+    const teamId = id;
     const body = await request.json();
     const { logoUrl } = body;
 

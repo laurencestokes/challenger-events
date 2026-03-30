@@ -12,6 +12,7 @@ export default function Home() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
+  /* eslint-disable react-hooks/set-state-in-effect -- Error handling for navigation */
   useEffect(() => {
     if (loading) return;
 
@@ -24,6 +25,7 @@ export default function Home() {
       setError('Navigation failed');
     }
   }, [user, loading, router]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   if (error) {
     return (

@@ -17,11 +17,13 @@ export default function NotificationToast({
 }: NotificationToastProps) {
   const [isVisible, setIsVisible] = useState(false);
 
+  /* eslint-disable react-hooks/set-state-in-effect -- Syncing visibility with show prop */
   useEffect(() => {
     if (show) {
       setIsVisible(true);
     }
   }, [show]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   if (!show && !isVisible) return null;
 

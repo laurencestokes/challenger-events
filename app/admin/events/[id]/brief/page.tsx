@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { api } from '@lib/api-client';
@@ -40,7 +40,7 @@ interface Participant {
 export default function EditEventBrief() {
   const params = useParams();
   const queryClient = useQueryClient();
-  const [brief, setBrief] = useState('');
+  const [brief, setBrief] = useState<string | null>(null);
   const [success, setSuccess] = useState('');
 
   const eventId = params.id as string;
@@ -55,12 +55,10 @@ export default function EditEventBrief() {
     enabled: !!eventId,
   });
 
-  useEffect(() => {
-    if (event) setBrief(event.brief || '');
-  }, [event]);
+  const resolvedBrief = brief ?? event?.brief ?? '';
 
   const saveMutation = useMutation({
-    mutationFn: () => api.put(`/api/events/${eventId}`, { brief }),
+    mutationFn: () => api.put(`/api/events/${eventId}`, { brief: resolvedBrief }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.events.detail(eventId) });
       setSuccess('Brief updated successfully!');
@@ -256,7 +254,7 @@ export default function EditEventBrief() {
               </label>
               <textarea
                 id="brief"
-                value={brief}
+                value={resolvedBrief}
                 onChange={(e) => setBrief(e.target.value)}
                 rows={20}
                 className="block w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono text-sm"

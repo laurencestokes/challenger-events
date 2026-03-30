@@ -33,7 +33,7 @@ const makeMember = (userId: string, teamId: string): TeamMember => ({
 
 describe('teamScoring', () => {
   const teamA = makeTeam('teamA', 'Team Alpha');
-  const teamB = makeTeam('teamB', 'Team Beta');
+  const _teamB = makeTeam('teamB', 'Team Beta');
   const membersA = [makeMember('u1', 'teamA'), makeMember('u2', 'teamA')];
 
   describe('calculateTeamScore', () => {

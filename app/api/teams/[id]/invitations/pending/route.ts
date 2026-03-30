@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserByUid, getTeam, getTeamMembers, getTeamInvitationsByTeamId } from '@lib/firestore';
 import { convertFirestoreTimestamp } from '@lib/utils';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     // Get the authorization header
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const teamId = params.id;
+    const teamId = id;
     if (!teamId) {
       return NextResponse.json({ error: 'Team ID is required' }, { status: 400 });
     }

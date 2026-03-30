@@ -60,6 +60,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
     enabled: !!user,
   });
 
+  /* eslint-disable react-hooks/set-state-in-effect -- Initializing form state from server data */
   useEffect(() => {
     if (!event) return;
     setName(event.name);
@@ -92,6 +93,7 @@ export default function EditEvent({ params }: { params: { id: string } }) {
       setEndDate(new Date(event.endDate).toISOString().slice(0, 16));
     }
   }, [event]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const invalidateEvents = () => {
     queryClient.invalidateQueries({ queryKey: queryKeys.events.detail(params.id) });

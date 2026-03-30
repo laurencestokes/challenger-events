@@ -3,7 +3,6 @@ import {
   ALL_ACHIEVEMENTS,
   getCanonicalEventsByCategory,
 } from '../constants/achievements';
-import { EventType } from '../constants/eventTypes';
 
 export interface Score {
   eventTypeId: string;
@@ -133,7 +132,7 @@ export const hasAchievedScoreThreshold = (
 
 // Get all earned achievements for a user
 export const calculateUserAchievements = (scores: Score[]): AchievementResult[] => {
-  const verifiedOverallScore = calculateVerifiedOverallScore(scores);
+  const _verifiedOverallScore = calculateVerifiedOverallScore(scores);
   const strengthAverage = calculateCategoryAverage(scores, 'STRENGTH');
   const enduranceAverage = calculateCategoryAverage(scores, 'ENDURANCE');
   const hybridAverage = calculateVerifiedOverallScore(scores); // Same as verified overall

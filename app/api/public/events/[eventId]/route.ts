@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getEvent } from '@lib/firestore';
 import { convertFirestoreTimestamp } from '@lib/utils';
 
-export async function GET(_request: NextRequest, { params }: { params: { eventId: string } }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ eventId: string }> },
+) {
   try {
-    const { eventId } = params;
+    const { eventId } = await params;
 
     // Get event details
     const event = await getEvent(eventId);

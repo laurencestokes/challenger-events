@@ -9,8 +9,9 @@ import {
   getTeamMembers,
 } from '@lib/firestore';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
     }
 
-    const invitationId = params.id;
+    const invitationId = id;
     const body = await request.json();
     const { action } = body; // 'accept' or 'decline'
 

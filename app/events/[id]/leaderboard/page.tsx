@@ -179,6 +179,7 @@ export default function EventLeaderboard() {
     errorObj instanceof Error ? errorObj.message : errorObj ? 'Failed to fetch data' : '';
 
   // Handle SSE events - invalidate leaderboard on any SSE event
+  /* eslint-disable react-hooks/set-state-in-effect -- Reacting to external SSE event */
   useEffect(() => {
     if (lastEvent?.type === 'workout_revealed' && lastEvent.workoutName) {
       setNotification({
@@ -191,6 +192,7 @@ export default function EventLeaderboard() {
       queryClient.invalidateQueries({ queryKey: queryKeys.events.leaderboard(eventId) });
     }
   }, [lastEvent, queryClient, eventId]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const formatRawValue = (
     rawValue: number,
@@ -311,12 +313,14 @@ export default function EventLeaderboard() {
   }, [viewMode, activities, leaderboardData?.isTeamEvent]);
 
   // Reset active tab when view mode changes
+  /* eslint-disable react-hooks/set-state-in-effect -- Syncing tab state with available tabs */
   useEffect(() => {
     const availableTabs = getAvailableTabs();
     if (availableTabs.length > 0 && !availableTabs.find((tab) => tab.id === activeTab)) {
       setActiveTab(availableTabs[0].id);
     }
   }, [viewMode, leaderboardData, activeTab, getAvailableTabs]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   if (isLoading) {
     return (

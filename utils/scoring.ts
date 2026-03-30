@@ -114,7 +114,7 @@ export function calculateSquatScore(
 }
 
 // Error function for normal distribution (kept for backward compatibility)
-function erf(x: number): number {
+function _erf(x: number): number {
   const a1 = 0.254829592;
   const a2 = -0.284496736;
   const a3 = 1.421413741;

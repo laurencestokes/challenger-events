@@ -1,5 +1,5 @@
 import { getScoringSystemById } from '@constants/scoringSystems';
-import { convertSex, parseTimeWithMilliseconds } from '@utils/scoring';
+import { convertSex } from '@utils/scoring';
 import { ChallengerData } from '@challengerco/challenger-data';
 import { convertFirestoreTimestamp } from '@lib/utils';
 
@@ -131,7 +131,7 @@ export async function calculateScore(
       const distanceForPace = value;
       const timeInSeconds = 120; // 2 minutes
       const pacePer500m = (timeInSeconds / distanceForPace) * 500;
-      const distanceWatts = Math.pow(2.8 / (pacePer500m / 500), 3); // Legacy paceToWatts
+      const _distanceWatts = Math.pow(2.8 / (pacePer500m / 500), 3); // Legacy paceToWatts
       result = challengerData.rowing500mScore(pacePer500m, sexConverted, age, bodyweight);
       break;
     default:

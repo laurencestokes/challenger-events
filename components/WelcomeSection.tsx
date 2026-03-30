@@ -13,20 +13,9 @@ interface WelcomeSectionProps {
   isLoading?: boolean;
 }
 
-export default function WelcomeSection({
-  showMetrics = false,
-  totalEvents = 0,
-  activeEvents = 0,
-  totalUsers = 0,
-  activeUsers = 0,
-  verifiedScore,
-  totalScore,
-  isLoading = false,
-}: WelcomeSectionProps) {
-  const { user } = useAuth();
-
-  // Lightweight tooltip for info hovers (local-only)
-  const Info = ({ text }: { text: string }) => (
+// Lightweight tooltip for info hovers
+function Info({ text }: { text: string }) {
+  return (
     <span className="relative inline-block group align-middle ml-2">
       <span
         aria-label="info"
@@ -39,6 +28,19 @@ export default function WelcomeSection({
       </span>
     </span>
   );
+}
+
+export default function WelcomeSection({
+  showMetrics = false,
+  totalEvents = 0,
+  activeEvents = 0,
+  totalUsers = 0,
+  activeUsers = 0,
+  verifiedScore,
+  totalScore,
+  isLoading = false,
+}: WelcomeSectionProps) {
+  const { user } = useAuth();
 
   return (
     <div className="flex items-center justify-between mb-8">

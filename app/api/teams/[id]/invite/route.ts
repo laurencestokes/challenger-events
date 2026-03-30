@@ -10,8 +10,9 @@ import {
 import { sendTeamInvitation } from '@lib/email';
 import { convertFirestoreTimestamp } from '@lib/utils';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const teamId = params.id;
+    const teamId = id;
 
     // Get team details
     const team = await getTeam(teamId);

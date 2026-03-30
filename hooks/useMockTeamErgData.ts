@@ -16,7 +16,7 @@ export function useMockTeamErgData(config: MockTeamErgConfig | null) {
   const startTimeRef = useRef<number>(0);
   const activeCompetitorsRef = useRef<Map<string, any>>(new Map());
 
-  const calculateScore = (metrics: any, baseLevel: number, fluctuation: number) => {
+  const calculateScore = (_metrics: any, baseLevel: number, fluctuation: number) => {
     // Create varied competitor profiles with different base levels
     const baseScore = baseLevel; // Base performance level (100-800)
     const paceVariation = Math.sin(Date.now() / 3000) * fluctuation; // Smooth fluctuation
@@ -180,7 +180,7 @@ export function useMockTeamErgData(config: MockTeamErgConfig | null) {
       console.log('Starting to send erg data after assignment delay...');
       // Send erg data for active competitors
       intervalRef.current = setInterval(() => {
-        const elapsed = (Date.now() - startTimeRef.current) / 1000; // seconds
+        const _elapsed = (Date.now() - startTimeRef.current) / 1000; // seconds
 
         activeCompetitorsRef.current.forEach((competitor, competitorId) => {
           const competitorElapsed = (Date.now() - competitor.startTime) / 1000;

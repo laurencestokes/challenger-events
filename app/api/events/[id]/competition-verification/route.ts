@@ -8,8 +8,9 @@ import {
   getCompetitionVerificationsByEvent,
 } from '@lib/firestore';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -24,11 +25,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     if (isAdmin(user.role)) {
       // Admin: return all verifications for the event
-      const verifications = await getCompetitionVerificationsByEvent(params.id);
+      const verifications = await getCompetitionVerificationsByEvent(id);
       return NextResponse.json({ verifications });
     } else {
       // Non-admin: return only this user's verification for the event
-      const verification = await getCompetitionVerification(user.id, params.id);
+      const verification = await getCompetitionVerification(user.id, id);
       return NextResponse.json({ verifications: verification ? [verification] : [] });
     }
   } catch (error) {
@@ -37,8 +38,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     // Check if verification already exists
-    const existingVerification = await getCompetitionVerification(competitorId, params.id);
+    const existingVerification = await getCompetitionVerification(competitorId, id);
 
     if (existingVerification) {
       // Update existing verification
@@ -76,7 +78,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       // Create new verification
       await createCompetitionVerification({
         userId: competitorId,
-        eventId: params.id,
+        eventId: id,
         bodyweight,
         verificationNotes,
         status: 'VERIFIED',

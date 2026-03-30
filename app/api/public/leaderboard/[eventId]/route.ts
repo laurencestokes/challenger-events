@@ -105,9 +105,12 @@ interface LatestResult {
   scoringSystemId?: string;
 }
 
-export async function GET(_request: NextRequest, { params }: { params: { eventId: string } }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ eventId: string }> },
+) {
   try {
-    const eventId = params.eventId;
+    const { eventId } = await params;
 
     // Get event details
     const event = await getEvent(eventId);

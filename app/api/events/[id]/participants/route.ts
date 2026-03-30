@@ -11,8 +11,9 @@ import { convertFirestoreTimestamp } from '@lib/utils';
 import { db } from '@lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -26,14 +27,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const event = await getEvent(params.id);
+    const event = await getEvent(id);
 
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
     // Fetch regular participants for this event
-    const participations = await getParticipationsByEvent(params.id);
+    const participations = await getParticipationsByEvent(id);
 
     const regularParticipants = await Promise.all(
       participations.map(async (participation) => {
@@ -86,7 +87,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const guestQuery = query(
       usersRef,
       where('isGuest', '==', true),
-      where('guestEventId', '==', params.id),
+      where('guestEventId', '==', id),
     );
     const guestSnapshot = await getDocs(guestQuery);
 

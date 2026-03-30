@@ -32,7 +32,7 @@ export interface TeamOverallScore {
 
 export const calculateTeamScore = (
   scores: Score[],
-  teamMembers: TeamMember[],
+  _teamMembers: TeamMember[],
   team: Team,
   activityId: string,
   scoringMethod: 'SUM' | 'AVERAGE' | 'BEST' = 'SUM',

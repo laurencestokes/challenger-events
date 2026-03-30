@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { getSocket, connectSocket, disconnectSocket } from '@lib/socket-client';
-import { ErgMetrics, TeamErgUpdate, TeamScore } from './useErgSocket';
+import { getSocket, connectSocket } from '@lib/socket-client';
+import { TeamErgUpdate, TeamScore } from './useErgSocket';
 
 export interface TeamErgSession {
   id: string;

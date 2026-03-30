@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { getSocket, connectSocket, disconnectSocket } from '@lib/socket-client';
+import { getSocket, connectSocket } from '@lib/socket-client';
 
 export interface ErgMetrics {
   average_power_W: number; // watts
@@ -165,7 +165,7 @@ export function useErgSocket(sessionId: string | null): UseErgSocketReturn {
       });
     };
 
-    const handleSessionEnded = (data: any) => {
+    const handleSessionEnded = (_data: any) => {
       setSessionStatus('ended');
     };
 
@@ -179,7 +179,7 @@ export function useErgSocket(sessionId: string | null): UseErgSocketReturn {
       setSessionStatus('active');
     };
 
-    const handleCompetitorsUpdated = (data: any) => {
+    const handleCompetitorsUpdated = (_data: any) => {
       // Initialize competitor data array to max size (6) to avoid array expansion issues
       const newArray = new Array(6).fill(undefined);
       setCompetitorData(newArray);

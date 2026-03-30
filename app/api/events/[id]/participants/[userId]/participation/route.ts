@@ -3,9 +3,10 @@ import { getUserByUid, isAdmin, getEvent, getUserParticipation, getUser } from '
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string; userId: string } },
+  { params }: { params: Promise<{ id: string; userId: string }> },
 ) {
   try {
+    const { id, userId: participantUserId } = await params;
     const authHeader = request.headers.get('authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -19,8 +20,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const eventId = params.id;
-    const participantUserId = params.userId;
+    const eventId = id;
 
     // Verify that the event exists
     const event = await getEvent(eventId);

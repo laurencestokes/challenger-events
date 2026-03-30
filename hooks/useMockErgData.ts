@@ -15,7 +15,7 @@ export function useMockErgData(config: MockErgConfig | null) {
   const currentConfigRef = useRef<MockErgConfig | null>(null);
   const socketRef = useRef<any>(null);
 
-  const calculateScore = (metrics: any, baseLevel: number, fluctuation: number) => {
+  const calculateScore = (_metrics: any, baseLevel: number, fluctuation: number) => {
     // Create varied competitor profiles with different base levels
     const baseScore = baseLevel; // Base performance level (100-800)
     const paceVariation = Math.sin(Date.now() / 3000) * fluctuation; // Smooth fluctuation
@@ -112,7 +112,7 @@ export function useMockErgData(config: MockErgConfig | null) {
           let maxDistance = 0;
 
           // Generate data for all competitors
-          currentConfig.competitors.forEach((competitor, index) => {
+          currentConfig.competitors.forEach((_competitor, index) => {
             const profile = competitorProfilesAssigned[index];
             const metrics = generateMetrics(profile, index);
             const score = calculateScore(metrics, profile.baseLevel, profile.fluctuation);
@@ -184,7 +184,7 @@ export function useMockErgData(config: MockErgConfig | null) {
     return () => {
       socket.off('session:competitors-updated', handleCompetitorsUpdated);
     };
-  }, [isRunning, config?.sessionId, stopMockData, startMockDataWithConfig]);
+  }, [isRunning, config?.sessionId, stopMockData, startMockDataWithConfig, autoRestartEnabled]);
 
   useEffect(() => {
     return () => {
