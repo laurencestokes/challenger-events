@@ -102,6 +102,10 @@
   color: var(--color-primary) !important;
 }
 
+.hover\:border-text-primary:hover {
+  border-color: var(--color-text-primary) !important;
+}
+
 /* === NavigationLink: typography === */
 
 .text-\[11px\] {
