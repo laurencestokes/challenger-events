@@ -96,13 +96,17 @@ export async function calculateScore(
       const bike500mTimeInSeconds = Number(value);
       result = challengerData.bike500mScore(bike500mTimeInSeconds, sexConverted, age);
       break;
-    case 'running5kmScore':
-      const running5kmTimeInSeconds = Number(value);
-      result = challengerData.running5kmScore(running5kmTimeInSeconds, sexConverted, age);
+    case 'bike10kmScore':
+      const bike10kmTimeInSeconds = Number(value);
+      result = challengerData.bike10kmScore(bike10kmTimeInSeconds, sexConverted, age);
       break;
-    case 'running1MileScore':
+    case 'ski1kmScore':
+      const ski1kmTimeInSeconds = Number(value);
+      result = challengerData.ski1kmScore(ski1kmTimeInSeconds, sexConverted, age);
+      break;
+    case 'running1mileScore':
       const running1mileTimeInSeconds = Number(value);
-      result = challengerData.running1MileScore(running1mileTimeInSeconds, sexConverted, age);
+      result = challengerData.running1mileScore(running1mileTimeInSeconds, sexConverted, age);
       break;
     case 'customWeight':
       // Simple weight-based scoring (no age/sex adjustments)

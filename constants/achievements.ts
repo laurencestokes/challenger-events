@@ -3,16 +3,7 @@ import { EVENT_TYPES } from './eventTypes';
 // Canonical events are the core events used for achievements and public profiles
 // These are hardcoded to ensure consistency and prevent accidental inclusion of non-canonical events
 export const CANONICAL_EVENTS = EVENT_TYPES.filter((event) =>
-  [
-    'squat',
-    'bench',
-    'deadlift',
-    'rowing_500m',
-    'bike_4km',
-    'ski_500m',
-    'running_5km',
-    'running_1mile',
-  ].includes(event.id),
+  ['squat', 'bench', 'deadlift', 'bike_10km', 'ski_1km', 'running_1mile'].includes(event.id),
 );
 
 // Achievement types and definitions
@@ -74,7 +65,7 @@ export const SPECIALIST_ACHIEVEMENTS: Achievement[] = [
     id: 'endurance_specialist',
     name: 'Endurance Specialist',
     description:
-      'Achieved an average verified score of 500+ across all endurance events (500m Row, 4km Bike, 500m Ski, 5km Run, 1 Mile Run)',
+      'Achieved an average verified score of 500+ across all endurance events (10km Bike, 1km Ski, 1 Mile Run)',
     image: '/achievement-images/endurance_spec.png',
     category: 'SPECIALIST',
     requirement: {

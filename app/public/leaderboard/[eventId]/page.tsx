@@ -480,20 +480,22 @@ export default function PublicEventLeaderboard() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setViewMode('individual')}
-                  className={`px-3 py-1 text-sm font-medium rounded-md ${viewMode === 'individual'
+                  className={`px-3 py-1 text-sm font-medium rounded-md ${
+                    viewMode === 'individual'
                       ? 'text-white'
                       : 'text-muted hover:text-white bg-surface-high hover:bg-surface-high'
-                    }`}
+                  }`}
                   style={viewMode === 'individual' ? { backgroundColor: '#4682b4' } : {}}
                 >
                   Individual
                 </button>
                 <button
                   onClick={() => setViewMode('team')}
-                  className={`px-3 py-1 text-sm font-medium rounded-md ${viewMode === 'team'
+                  className={`px-3 py-1 text-sm font-medium rounded-md ${
+                    viewMode === 'team'
                       ? 'text-white'
                       : 'text-muted hover:text-white bg-surface-high hover:bg-surface-high'
-                    }`}
+                  }`}
                   style={viewMode === 'team' ? { backgroundColor: '#4682b4' } : {}}
                 >
                   Team
@@ -504,20 +506,22 @@ export default function PublicEventLeaderboard() {
             <div className="flex gap-2">
               <button
                 onClick={() => setDisplayMode('table')}
-                className={`px-3 py-1 text-sm font-medium rounded-md ${displayMode === 'table'
+                className={`px-3 py-1 text-sm font-medium rounded-md ${
+                  displayMode === 'table'
                     ? 'text-white'
                     : 'text-muted hover:text-white bg-surface-high hover:bg-surface-high'
-                  }`}
+                }`}
                 style={displayMode === 'table' ? { backgroundColor: '#4682b4' } : {}}
               >
                 📊 Table
               </button>
               <button
                 onClick={() => setDisplayMode('barchart')}
-                className={`px-3 py-1 text-sm font-medium rounded-md ${displayMode === 'barchart'
+                className={`px-3 py-1 text-sm font-medium rounded-md ${
+                  displayMode === 'barchart'
                     ? 'text-white'
                     : 'text-muted hover:text-white bg-surface-high hover:bg-surface-high'
-                  }`}
+                }`}
                 style={displayMode === 'barchart' ? { backgroundColor: '#4682b4' } : {}}
               >
                 📈 Chart
@@ -533,8 +537,9 @@ export default function PublicEventLeaderboard() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === tab.id ? '' : 'border-transparent text-muted hover:text-white'
-                      }`}
+                    className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                      activeTab === tab.id ? '' : 'border-transparent text-muted hover:text-white'
+                    }`}
                     style={
                       activeTab === tab.id ? { borderBottomColor: '#4682b4', color: '#4682b4' } : {}
                     }
@@ -551,8 +556,8 @@ export default function PublicEventLeaderboard() {
                 <div className="space-y-6">
                   {/* Top 3 Podium Cards */}
                   {viewMode === 'team' &&
-                    leaderboardData.teamOverallLeaderboard &&
-                    leaderboardData.teamOverallLeaderboard.length > 0 ? (
+                  leaderboardData.teamOverallLeaderboard &&
+                  leaderboardData.teamOverallLeaderboard.length > 0 ? (
                     // Team Podium
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                       {/* 2nd Place Team (Silver) */}
@@ -866,215 +871,215 @@ export default function PublicEventLeaderboard() {
                               <tbody className="bg-surface-low divide-y divide-gray-600">
                                 {viewMode === 'team'
                                   ? (() => {
-                                    // Get all team members for each team to show individual scores
-                                    const teamMembers =
-                                      leaderboardData.overallLeaderboard?.filter(
-                                        (entry) => entry.teamId,
-                                      ) || [];
-                                    const teams = new Map<
-                                      string,
-                                      {
-                                        teamId: string;
-                                        teamName: string;
-                                        totalScore: number;
-                                        members: typeof teamMembers;
-                                      }
-                                    >();
+                                      // Get all team members for each team to show individual scores
+                                      const teamMembers =
+                                        leaderboardData.overallLeaderboard?.filter(
+                                          (entry) => entry.teamId,
+                                        ) || [];
+                                      const teams = new Map<
+                                        string,
+                                        {
+                                          teamId: string;
+                                          teamName: string;
+                                          totalScore: number;
+                                          members: typeof teamMembers;
+                                        }
+                                      >();
 
-                                    // Group members by team
-                                    teamMembers.forEach((member) => {
-                                      if (!member.teamId || !member.teamName) return;
+                                      // Group members by team
+                                      teamMembers.forEach((member) => {
+                                        if (!member.teamId || !member.teamName) return;
 
-                                      if (!teams.has(member.teamId)) {
-                                        teams.set(member.teamId, {
-                                          teamId: member.teamId,
-                                          teamName: member.teamName,
-                                          totalScore: 0,
-                                          members: [],
-                                        });
-                                      }
+                                        if (!teams.has(member.teamId)) {
+                                          teams.set(member.teamId, {
+                                            teamId: member.teamId,
+                                            teamName: member.teamName,
+                                            totalScore: 0,
+                                            members: [],
+                                          });
+                                        }
 
-                                      const team = teams.get(member.teamId)!;
-                                      team.members.push(member);
-                                      team.totalScore += member.totalScore;
-                                    });
+                                        const team = teams.get(member.teamId)!;
+                                        team.members.push(member);
+                                        team.totalScore += member.totalScore;
+                                      });
 
-                                    // Convert to array and sort by total score
-                                    return Array.from(teams.values())
-                                      .sort((a, b) => b.totalScore - a.totalScore)
-                                      .map((team, index) => (
-                                        <tr key={team.teamId} className="hover:bg-surface-high">
-                                          <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                              <span className="text-lg font-semibold text-white">
-                                                {getRankIcon(index + 1)}
-                                              </span>
-                                            </div>
-                                          </td>
-                                          <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                              <div>
-                                                <div className="text-sm font-medium text-white">
-                                                  {team.teamName}
+                                      // Convert to array and sort by total score
+                                      return Array.from(teams.values())
+                                        .sort((a, b) => b.totalScore - a.totalScore)
+                                        .map((team, index) => (
+                                          <tr key={team.teamId} className="hover:bg-surface-high">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                              <div className="flex items-center">
+                                                <span className="text-lg font-semibold text-white">
+                                                  {getRankIcon(index + 1)}
+                                                </span>
+                                              </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                              <div className="flex items-center">
+                                                <div>
+                                                  <div className="text-sm font-medium text-white">
+                                                    {team.teamName}
+                                                  </div>
                                                 </div>
                                               </div>
-                                            </div>
-                                          </td>
-                                          {activities.map((activity) => {
-                                            // Get all scores for this activity from team members
-                                            const memberScores = team.members
-                                              .map((member) => member.workoutScores[activity.id])
-                                              .filter((score) => score)
-                                              .sort((a, b) => (b?.score || 0) - (a?.score || 0));
+                                            </td>
+                                            {activities.map((activity) => {
+                                              // Get all scores for this activity from team members
+                                              const memberScores = team.members
+                                                .map((member) => member.workoutScores[activity.id])
+                                                .filter((score) => score)
+                                                .sort((a, b) => (b?.score || 0) - (a?.score || 0));
 
-                                            if (memberScores.length === 0) {
+                                              if (memberScores.length === 0) {
+                                                return (
+                                                  <td
+                                                    key={activity.id}
+                                                    className="px-6 py-4 whitespace-nowrap"
+                                                  >
+                                                    <div className="text-sm text-muted">-</div>
+                                                  </td>
+                                                );
+                                              }
+
+                                              // Show best score and individual performances
+                                              const bestScore = memberScores[0];
                                               return (
                                                 <td
                                                   key={activity.id}
                                                   className="px-6 py-4 whitespace-nowrap"
                                                 >
-                                                  <div className="text-sm text-muted">-</div>
+                                                  <div className="text-sm">
+                                                    <div className="font-medium text-white">
+                                                      {bestScore.score.toFixed(1)}
+                                                    </div>
+                                                    <div className="space-y-1 mt-1">
+                                                      {memberScores
+                                                        .slice(0, 3)
+                                                        .map((score, idx) => {
+                                                          // Find the team member who achieved this score
+                                                          const member = team.members.find(
+                                                            (m) =>
+                                                              m.workoutScores[activity.id]
+                                                                ?.score === score.score &&
+                                                              m.workoutScores[activity.id]
+                                                                ?.rawValue === score.rawValue,
+                                                          );
+                                                          return (
+                                                            <div
+                                                              key={idx}
+                                                              className="text-xs text-muted"
+                                                            >
+                                                              <span className="font-medium">
+                                                                {member?.name || 'Unknown'}
+                                                              </span>
+                                                              {' - '}
+                                                              {score.rawValue
+                                                                ? formatRawValue(
+                                                                    score.rawValue,
+                                                                    activity.id,
+                                                                    score.reps,
+                                                                    score.scoringSystemId,
+                                                                  )
+                                                                : ''}
+                                                            </div>
+                                                          );
+                                                        })}
+                                                      {memberScores.length > 3 && (
+                                                        <div className="text-xs text-muted">
+                                                          +{memberScores.length - 3} more
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                  </div>
                                                 </td>
                                               );
-                                            }
+                                            })}
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                              <div className="text-sm font-bold text-white">
+                                                {team.totalScore.toFixed(1)}
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        ));
+                                    })()
+                                  : leaderboardData.overallLeaderboard?.map((entry) => (
+                                      <tr key={entry.userId} className="hover:bg-surface-high">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                          <div className="flex items-center">
+                                            <span className="text-lg font-semibold text-white">
+                                              {getRankIcon(entry.rank)}
+                                            </span>
+                                          </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                          <div className="flex items-center">
+                                            <div>
+                                              <div className="text-sm font-medium text-white">
+                                                {entry.name}
+                                              </div>
 
-                                            // Show best score and individual performances
-                                            const bestScore = memberScores[0];
-                                            return (
-                                              <td
-                                                key={activity.id}
-                                                className="px-6 py-4 whitespace-nowrap"
-                                              >
+                                              {entry.teamId && entry.teamName && (
+                                                <div className="text-xs text-muted">
+                                                  {entry.teamName}
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </td>
+                                        {activities.map((activity) => {
+                                          const workoutScore = entry.workoutScores[activity.id];
+                                          return (
+                                            <td
+                                              key={activity.id}
+                                              className="px-6 py-4 whitespace-nowrap"
+                                            >
+                                              {workoutScore ? (
                                                 <div className="text-sm">
                                                   <div className="font-medium text-white">
-                                                    {bestScore.score.toFixed(1)}
+                                                    {workoutScore.score
+                                                      ? workoutScore.score.toFixed(1)
+                                                      : '0.0'}
                                                   </div>
-                                                  <div className="space-y-1 mt-1">
-                                                    {memberScores
-                                                      .slice(0, 3)
-                                                      .map((score, idx) => {
-                                                        // Find the team member who achieved this score
-                                                        const member = team.members.find(
-                                                          (m) =>
-                                                            m.workoutScores[activity.id]
-                                                              ?.score === score.score &&
-                                                            m.workoutScores[activity.id]
-                                                              ?.rawValue === score.rawValue,
-                                                        );
-                                                        return (
-                                                          <div
-                                                            key={idx}
-                                                            className="text-xs text-muted"
-                                                          >
-                                                            <span className="font-medium">
-                                                              {member?.name || 'Unknown'}
-                                                            </span>
-                                                            {' - '}
-                                                            {score.rawValue
-                                                              ? formatRawValue(
-                                                                score.rawValue,
-                                                                activity.id,
-                                                                score.reps,
-                                                                score.scoringSystemId,
-                                                              )
-                                                              : ''}
-                                                          </div>
-                                                        );
-                                                      })}
-                                                    {memberScores.length > 3 && (
-                                                      <div className="text-xs text-muted">
-                                                        +{memberScores.length - 3} more
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                </div>
-                                              </td>
-                                            );
-                                          })}
-                                          <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-bold text-white">
-                                              {team.totalScore.toFixed(1)}
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      ));
-                                  })()
-                                  : leaderboardData.overallLeaderboard?.map((entry) => (
-                                    <tr key={entry.userId} className="hover:bg-surface-high">
-                                      <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                          <span className="text-lg font-semibold text-white">
-                                            {getRankIcon(entry.rank)}
-                                          </span>
-                                        </div>
-                                      </td>
-                                      <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                          <div>
-                                            <div className="text-sm font-medium text-white">
-                                              {entry.name}
-                                            </div>
-
-                                            {entry.teamId && entry.teamName && (
-                                              <div className="text-xs text-muted">
-                                                {entry.teamName}
-                                              </div>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </td>
-                                      {activities.map((activity) => {
-                                        const workoutScore = entry.workoutScores[activity.id];
-                                        return (
-                                          <td
-                                            key={activity.id}
-                                            className="px-6 py-4 whitespace-nowrap"
-                                          >
-                                            {workoutScore ? (
-                                              <div className="text-sm">
-                                                <div className="font-medium text-white">
-                                                  {workoutScore.score
-                                                    ? workoutScore.score.toFixed(1)
-                                                    : '0.0'}
-                                                </div>
-                                                <div className="text-xs text-muted">
-                                                  {workoutScore.rawValue
-                                                    ? (
-                                                      workoutScore as {
-                                                        scoringSystemId?: string;
-                                                      }
-                                                    ).scoringSystemId
-                                                      ? formatRawValue(
-                                                        workoutScore.rawValue,
-                                                        activity.id,
-                                                        workoutScore.reps,
-                                                        (
+                                                  <div className="text-xs text-muted">
+                                                    {workoutScore.rawValue
+                                                      ? (
                                                           workoutScore as {
                                                             scoringSystemId?: string;
                                                           }
-                                                        ).scoringSystemId,
-                                                      )
-                                                      : formatRawValue(
-                                                        workoutScore.rawValue,
-                                                        activity.id,
-                                                        workoutScore.reps,
-                                                      )
-                                                    : ''}
+                                                        ).scoringSystemId
+                                                        ? formatRawValue(
+                                                            workoutScore.rawValue,
+                                                            activity.id,
+                                                            workoutScore.reps,
+                                                            (
+                                                              workoutScore as {
+                                                                scoringSystemId?: string;
+                                                              }
+                                                            ).scoringSystemId,
+                                                          )
+                                                        : formatRawValue(
+                                                            workoutScore.rawValue,
+                                                            activity.id,
+                                                            workoutScore.reps,
+                                                          )
+                                                      : ''}
+                                                  </div>
                                                 </div>
-                                              </div>
-                                            ) : (
-                                              <div className="text-sm text-muted">-</div>
-                                            )}
-                                          </td>
-                                        );
-                                      })}
-                                      <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-bold text-white">
-                                          {entry.totalScore.toFixed(1)}
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  ))}
+                                              ) : (
+                                                <div className="text-sm text-muted">-</div>
+                                              )}
+                                            </td>
+                                          );
+                                        })}
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                          <div className="text-sm font-bold text-white">
+                                            {entry.totalScore.toFixed(1)}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    ))}
                               </tbody>
                             </table>
                           </div>
@@ -1083,109 +1088,109 @@ export default function PublicEventLeaderboard() {
                             entries={
                               viewMode === 'team'
                                 ? (() => {
-                                  // Group by team for team view
-                                  const teamMembers = new Map<
-                                    string,
-                                    Array<{
-                                      userId: string;
-                                      name: string;
-                                      workoutScores: {
-                                        [activityId: string]: {
-                                          score: number;
-                                          rawValue: number;
-                                          reps?: number;
-                                          rank: number;
-                                          activityName: string;
-                                          scoringSystemId?: string;
-                                        };
-                                      };
-                                      totalScore: number;
-                                    }>
-                                  >();
-
-                                  const teamEntries = new Map<
-                                    string,
-                                    {
-                                      teamId: string;
-                                      teamName: string;
-                                      totalScore: number;
-                                      workoutScores: {
-                                        [activityId: string]: {
-                                          score: number;
-                                          rawValue: number;
-                                          rank: number;
-                                          activityName: string;
-                                        };
-                                      };
-                                      rank: number;
-                                    }
-                                  >();
-
-                                  leaderboardData.overallLeaderboard.forEach((member) => {
-                                    if (!member.teamId || !member.teamName) return;
-
-                                    // Add member to team
-                                    if (!teamMembers.has(member.teamId)) {
-                                      teamMembers.set(member.teamId, []);
-                                    }
-                                    teamMembers.get(member.teamId)!.push({
-                                      userId: member.userId,
-                                      name: member.name,
-                                      workoutScores: member.workoutScores,
-                                      totalScore: member.totalScore,
-                                    });
-
-                                    // Update team entry
-                                    if (!teamEntries.has(member.teamId)) {
-                                      teamEntries.set(member.teamId, {
-                                        teamId: member.teamId,
-                                        teamName: member.teamName,
-                                        totalScore: 0,
-                                        workoutScores: {},
-                                        rank: member.rank,
-                                      });
-                                    }
-
-                                    const team = teamEntries.get(member.teamId)!;
-                                    team.totalScore += member.totalScore;
-
-                                    // Aggregate workout scores (sum for team)
-                                    activities.forEach((activity) => {
-                                      const memberScore = member.workoutScores[activity.id];
-                                      if (memberScore) {
-                                        if (!team.workoutScores[activity.id]) {
-                                          team.workoutScores[activity.id] = {
-                                            score: 0,
-                                            rawValue: 0,
-                                            rank: memberScore.rank,
-                                            activityName: memberScore.activityName,
+                                    // Group by team for team view
+                                    const teamMembers = new Map<
+                                      string,
+                                      Array<{
+                                        userId: string;
+                                        name: string;
+                                        workoutScores: {
+                                          [activityId: string]: {
+                                            score: number;
+                                            rawValue: number;
+                                            reps?: number;
+                                            rank: number;
+                                            activityName: string;
+                                            scoringSystemId?: string;
                                           };
-                                        }
-                                        team.workoutScores[activity.id].score +=
-                                          memberScore.score;
+                                        };
+                                        totalScore: number;
+                                      }>
+                                    >();
+
+                                    const teamEntries = new Map<
+                                      string,
+                                      {
+                                        teamId: string;
+                                        teamName: string;
+                                        totalScore: number;
+                                        workoutScores: {
+                                          [activityId: string]: {
+                                            score: number;
+                                            rawValue: number;
+                                            rank: number;
+                                            activityName: string;
+                                          };
+                                        };
+                                        rank: number;
                                       }
+                                    >();
+
+                                    leaderboardData.overallLeaderboard.forEach((member) => {
+                                      if (!member.teamId || !member.teamName) return;
+
+                                      // Add member to team
+                                      if (!teamMembers.has(member.teamId)) {
+                                        teamMembers.set(member.teamId, []);
+                                      }
+                                      teamMembers.get(member.teamId)!.push({
+                                        userId: member.userId,
+                                        name: member.name,
+                                        workoutScores: member.workoutScores,
+                                        totalScore: member.totalScore,
+                                      });
+
+                                      // Update team entry
+                                      if (!teamEntries.has(member.teamId)) {
+                                        teamEntries.set(member.teamId, {
+                                          teamId: member.teamId,
+                                          teamName: member.teamName,
+                                          totalScore: 0,
+                                          workoutScores: {},
+                                          rank: member.rank,
+                                        });
+                                      }
+
+                                      const team = teamEntries.get(member.teamId)!;
+                                      team.totalScore += member.totalScore;
+
+                                      // Aggregate workout scores (sum for team)
+                                      activities.forEach((activity) => {
+                                        const memberScore = member.workoutScores[activity.id];
+                                        if (memberScore) {
+                                          if (!team.workoutScores[activity.id]) {
+                                            team.workoutScores[activity.id] = {
+                                              score: 0,
+                                              rawValue: 0,
+                                              rank: memberScore.rank,
+                                              activityName: memberScore.activityName,
+                                            };
+                                          }
+                                          team.workoutScores[activity.id].score +=
+                                            memberScore.score;
+                                        }
+                                      });
                                     });
-                                  });
 
-                                  // Convert to array and sort by total score, then assign ranks
-                                  const sortedTeams = Array.from(teamEntries.values())
-                                    .sort((a, b) => b.totalScore - a.totalScore)
-                                    .map((team, index) => ({
-                                      ...team,
-                                      name: team.teamName,
-                                      email: '',
-                                      userId: team.teamId,
-                                      rank: index + 1,
-                                    }));
+                                    // Convert to array and sort by total score, then assign ranks
+                                    const sortedTeams = Array.from(teamEntries.values())
+                                      .sort((a, b) => b.totalScore - a.totalScore)
+                                      .map((team, index) => ({
+                                        ...team,
+                                        name: team.teamName,
+                                        email: '',
+                                        userId: team.teamId,
+                                        rank: index + 1,
+                                      }));
 
-                                  // Store team members in a way the component can access
-                                  sortedTeams.forEach((team) => {
-                                    (team as unknown as { teamMembers: unknown }).teamMembers =
-                                      teamMembers;
-                                  });
+                                    // Store team members in a way the component can access
+                                    sortedTeams.forEach((team) => {
+                                      (team as unknown as { teamMembers: unknown }).teamMembers =
+                                        teamMembers;
+                                    });
 
-                                  return sortedTeams;
-                                })()
+                                    return sortedTeams;
+                                  })()
                                 : leaderboardData.overallLeaderboard
                             }
                             activities={activities}
@@ -1193,19 +1198,19 @@ export default function PublicEventLeaderboard() {
                               Math.max(
                                 ...(viewMode === 'team'
                                   ? (() => {
-                                    // Calculate max team total score
-                                    const teamTotals = new Map<string, number>();
-                                    leaderboardData.overallLeaderboard.forEach((member) => {
-                                      if (member.teamId) {
-                                        teamTotals.set(
-                                          member.teamId,
-                                          (teamTotals.get(member.teamId) || 0) +
-                                          member.totalScore,
-                                        );
-                                      }
-                                    });
-                                    return Array.from(teamTotals.values());
-                                  })()
+                                      // Calculate max team total score
+                                      const teamTotals = new Map<string, number>();
+                                      leaderboardData.overallLeaderboard.forEach((member) => {
+                                        if (member.teamId) {
+                                          teamTotals.set(
+                                            member.teamId,
+                                            (teamTotals.get(member.teamId) || 0) +
+                                              member.totalScore,
+                                          );
+                                        }
+                                      });
+                                      return Array.from(teamTotals.values());
+                                    })()
                                   : leaderboardData.overallLeaderboard.map((e) => e.totalScore)),
                               ) || 1
                             }
@@ -1214,41 +1219,41 @@ export default function PublicEventLeaderboard() {
                             teamMembers={
                               viewMode === 'team'
                                 ? (() => {
-                                  const teamMembersMap = new Map<
-                                    string,
-                                    Array<{
-                                      userId: string;
-                                      name: string;
-                                      workoutScores: {
-                                        [activityId: string]: {
-                                          score: number;
-                                          rawValue: number;
-                                          reps?: number;
-                                          rank: number;
-                                          activityName: string;
-                                          scoringSystemId?: string;
+                                    const teamMembersMap = new Map<
+                                      string,
+                                      Array<{
+                                        userId: string;
+                                        name: string;
+                                        workoutScores: {
+                                          [activityId: string]: {
+                                            score: number;
+                                            rawValue: number;
+                                            reps?: number;
+                                            rank: number;
+                                            activityName: string;
+                                            scoringSystemId?: string;
+                                          };
                                         };
-                                      };
-                                      totalScore: number;
-                                    }>
-                                  >();
+                                        totalScore: number;
+                                      }>
+                                    >();
 
-                                  leaderboardData.overallLeaderboard.forEach((member) => {
-                                    if (!member.teamId) return;
+                                    leaderboardData.overallLeaderboard.forEach((member) => {
+                                      if (!member.teamId) return;
 
-                                    if (!teamMembersMap.has(member.teamId)) {
-                                      teamMembersMap.set(member.teamId, []);
-                                    }
-                                    teamMembersMap.get(member.teamId)!.push({
-                                      userId: member.userId,
-                                      name: member.name,
-                                      workoutScores: member.workoutScores,
-                                      totalScore: member.totalScore,
+                                      if (!teamMembersMap.has(member.teamId)) {
+                                        teamMembersMap.set(member.teamId, []);
+                                      }
+                                      teamMembersMap.get(member.teamId)!.push({
+                                        userId: member.userId,
+                                        name: member.name,
+                                        workoutScores: member.workoutScores,
+                                        totalScore: member.totalScore,
+                                      });
                                     });
-                                  });
 
-                                  return teamMembersMap;
-                                })()
+                                    return teamMembersMap;
+                                  })()
                                 : undefined
                             }
                           />
@@ -1641,12 +1646,228 @@ export default function PublicEventLeaderboard() {
                         <tbody className="bg-surface-low divide-y divide-gray-600">
                           {viewMode === 'team'
                             ? (() => {
+                                const workoutEntries =
+                                  leaderboardData.workoutLeaderboards
+                                    ?.find((workout) => workout.activityId === activeTab)
+                                    ?.entries.filter((entry) => entry.teamId) || [];
+
+                                // Group by team and sort by best score within each team
+                                const groupedByTeam = workoutEntries.reduce(
+                                  (acc, entry) => {
+                                    const teamKey = entry.teamId || 'unknown';
+                                    if (!acc[teamKey]) {
+                                      acc[teamKey] = {
+                                        teamId: entry.teamId,
+                                        teamName: entry.teamName,
+                                        members: [],
+                                      };
+                                    }
+
+                                    // Find if member already exists
+                                    const existingMember = acc[teamKey].members.find(
+                                      (m) => m.userId === entry.userId,
+                                    );
+                                    if (existingMember) {
+                                      existingMember.performances.push({
+                                        score: entry.score,
+                                        rawValue: entry.rawValue,
+                                        reps: entry.reps,
+                                        rank: entry.rank,
+                                      });
+                                    } else {
+                                      acc[teamKey].members.push({
+                                        userId: entry.userId,
+                                        name: entry.name,
+                                        performances: [
+                                          {
+                                            score: entry.score,
+                                            rawValue: entry.rawValue,
+                                            reps: entry.reps,
+                                            rank: entry.rank,
+                                          },
+                                        ],
+                                      });
+                                    }
+                                    return acc;
+                                  },
+                                  {} as Record<
+                                    string,
+                                    {
+                                      teamId?: string;
+                                      teamName?: string;
+                                      members: Array<{
+                                        userId: string;
+                                        name: string;
+                                        performances: Array<{
+                                          score: number;
+                                          rawValue: number;
+                                          reps?: number;
+                                          rank: number;
+                                        }>;
+                                      }>;
+                                    }
+                                  >,
+                                );
+
+                                // Convert to array and sort by best team score
+                                return Object.values(groupedByTeam)
+                                  .map((team) => {
+                                    // Calculate team total score (sum of best scores)
+                                    const teamTotalScore = team.members.reduce((total, member) => {
+                                      const bestScore = Math.max(
+                                        ...member.performances.map((p) => p.score),
+                                      );
+                                      return total + bestScore;
+                                    }, 0);
+
+                                    return {
+                                      ...team,
+                                      totalScore: teamTotalScore,
+                                    };
+                                  })
+                                  .sort((a, b) => b.totalScore - a.totalScore)
+                                  .map((team, index) => (
+                                    <tr key={team.teamId} className="hover:bg-surface-high">
+                                      <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center">
+                                          <span className="text-lg font-semibold text-white">
+                                            {getRankIcon(index + 1)}
+                                          </span>
+                                        </div>
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center">
+                                          <div>
+                                            <div className="text-sm font-medium text-white">
+                                              {team.teamName}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-medium text-white">
+                                          {team.totalScore.toFixed(1)}
+                                        </div>
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="space-y-2">
+                                          {team.members
+                                            .sort((a, b) => {
+                                              const aBestScore = Math.max(
+                                                ...a.performances.map((p) => p.score),
+                                              );
+                                              const bBestScore = Math.max(
+                                                ...b.performances.map((p) => p.score),
+                                              );
+                                              return bBestScore - aBestScore;
+                                            })
+                                            .map((member) => (
+                                              <div
+                                                key={member.userId}
+                                                className="border-l-2 border-border pl-3"
+                                              >
+                                                <div className="text-xs font-medium text-text-secondary mb-1">
+                                                  {member.name}
+                                                </div>
+                                                <div className="space-y-1">
+                                                  {member.performances
+                                                    .sort((a, b) => b.score - a.score)
+                                                    .map((performance, perfIndex) => (
+                                                      <div
+                                                        key={perfIndex}
+                                                        className="text-xs text-muted"
+                                                      >
+                                                        {performance.rawValue
+                                                          ? (() => {
+                                                              const activity = activities.find(
+                                                                (a) => a.id === activeTab,
+                                                              );
+                                                              const scoringSystemId =
+                                                                activity?.scoringSystemId;
+                                                              return formatRawValue(
+                                                                performance.rawValue,
+                                                                activeTab,
+                                                                performance.reps,
+                                                                scoringSystemId,
+                                                              );
+                                                            })()
+                                                          : 'No data'}
+                                                      </div>
+                                                    ))}
+                                                </div>
+                                              </div>
+                                            ))}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ));
+                              })()
+                            : leaderboardData.workoutLeaderboards
+                                ?.find((workout) => workout.activityId === activeTab)
+                                ?.entries.sort((a, b) => a.rank - b.rank) // Sort by rank
+                                .map((entry) => (
+                                  <tr key={entry.userId} className="hover:bg-surface-high">
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                      <div className="flex items-center">
+                                        <span className="text-lg font-semibold text-white">
+                                          {getRankIcon(entry.rank)}
+                                        </span>
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                      <div className="flex items-center">
+                                        <div>
+                                          <div className="text-sm font-medium text-white">
+                                            {entry.name}
+                                          </div>
+
+                                          {entry.teamName && (
+                                            <div className="text-xs text-muted">
+                                              {entry.teamName}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                      <div className="text-sm font-medium text-white">
+                                        {entry.score.toFixed(1)}
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                      <div className="text-sm text-muted">
+                                        {entry.rawValue
+                                          ? (() => {
+                                              const activity = activities.find(
+                                                (a) => a.id === activeTab,
+                                              );
+                                              const scoringSystemId = activity?.scoringSystemId;
+                                              return formatRawValue(
+                                                entry.rawValue,
+                                                activeTab,
+                                                entry.reps,
+                                                scoringSystemId,
+                                              );
+                                            })()
+                                          : ''}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <LeaderboardBarChart
+                      entries={
+                        viewMode === 'team'
+                          ? (() => {
                               const workoutEntries =
                                 leaderboardData.workoutLeaderboards
                                   ?.find((workout) => workout.activityId === activeTab)
                                   ?.entries.filter((entry) => entry.teamId) || [];
 
-                              // Group by team and sort by best score within each team
+                              // Group by team
                               const groupedByTeam = workoutEntries.reduce(
                                 (acc, entry) => {
                                   const teamKey = entry.teamId || 'unknown';
@@ -1657,32 +1878,7 @@ export default function PublicEventLeaderboard() {
                                       members: [],
                                     };
                                   }
-
-                                  // Find if member already exists
-                                  const existingMember = acc[teamKey].members.find(
-                                    (m) => m.userId === entry.userId,
-                                  );
-                                  if (existingMember) {
-                                    existingMember.performances.push({
-                                      score: entry.score,
-                                      rawValue: entry.rawValue,
-                                      reps: entry.reps,
-                                      rank: entry.rank,
-                                    });
-                                  } else {
-                                    acc[teamKey].members.push({
-                                      userId: entry.userId,
-                                      name: entry.name,
-                                      performances: [
-                                        {
-                                          score: entry.score,
-                                          rawValue: entry.rawValue,
-                                          reps: entry.reps,
-                                          rank: entry.rank,
-                                        },
-                                      ],
-                                    });
-                                  }
+                                  acc[teamKey].members.push(entry);
                                   return acc;
                                 },
                                 {} as Record<
@@ -1690,331 +1886,60 @@ export default function PublicEventLeaderboard() {
                                   {
                                     teamId?: string;
                                     teamName?: string;
-                                    members: Array<{
-                                      userId: string;
-                                      name: string;
-                                      performances: Array<{
-                                        score: number;
-                                        rawValue: number;
-                                        reps?: number;
-                                        rank: number;
-                                      }>;
-                                    }>;
+                                    members: typeof workoutEntries;
                                   }
                                 >,
                               );
 
-                              // Convert to array and sort by best team score
-                              return Object.values(groupedByTeam)
+                              // Convert to team entries with aggregated scores
+                              const teamEntries = Object.values(groupedByTeam)
                                 .map((team) => {
-                                  // Calculate team total score (sum of best scores)
-                                  const teamTotalScore = team.members.reduce((total, member) => {
-                                    const bestScore = Math.max(
-                                      ...member.performances.map((p) => p.score),
-                                    );
-                                    return total + bestScore;
-                                  }, 0);
+                                  const teamTotalScore = team.members.reduce(
+                                    (total, member) => total + member.score,
+                                    0,
+                                  );
+                                  const bestScore = Math.max(...team.members.map((m) => m.score));
+                                  const bestMember = team.members.find(
+                                    (m) => m.score === bestScore,
+                                  );
 
                                   return {
-                                    ...team,
+                                    teamId: team.teamId,
+                                    userId: team.teamId || '',
+                                    name: team.teamName || 'Unknown Team',
+                                    email: '',
                                     totalScore: teamTotalScore,
+                                    workoutScores: {
+                                      [activeTab]: {
+                                        score: bestScore,
+                                        rawValue: bestMember?.rawValue || 0,
+                                        reps: bestMember?.reps,
+                                        rank: bestMember?.rank || 1,
+                                        activityName:
+                                          leaderboardData.workoutLeaderboards?.find(
+                                            (w) => w.activityId === activeTab,
+                                          )?.activityName || '',
+                                        scoringSystemId: bestMember?.scoringSystemId,
+                                      },
+                                    },
+                                    rank: bestMember?.rank || 1,
                                   };
                                 })
                                 .sort((a, b) => b.totalScore - a.totalScore)
-                                .map((team, index) => (
-                                  <tr key={team.teamId} className="hover:bg-surface-high">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      <div className="flex items-center">
-                                        <span className="text-lg font-semibold text-white">
-                                          {getRankIcon(index + 1)}
-                                        </span>
-                                      </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      <div className="flex items-center">
-                                        <div>
-                                          <div className="text-sm font-medium text-white">
-                                            {team.teamName}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      <div className="text-sm font-medium text-white">
-                                        {team.totalScore.toFixed(1)}
-                                      </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                      <div className="space-y-2">
-                                        {team.members
-                                          .sort((a, b) => {
-                                            const aBestScore = Math.max(
-                                              ...a.performances.map((p) => p.score),
-                                            );
-                                            const bBestScore = Math.max(
-                                              ...b.performances.map((p) => p.score),
-                                            );
-                                            return bBestScore - aBestScore;
-                                          })
-                                          .map((member) => (
-                                            <div
-                                              key={member.userId}
-                                              className="border-l-2 border-border pl-3"
-                                            >
-                                              <div className="text-xs font-medium text-text-secondary mb-1">
-                                                {member.name}
-                                              </div>
-                                              <div className="space-y-1">
-                                                {member.performances
-                                                  .sort((a, b) => b.score - a.score)
-                                                  .map((performance, perfIndex) => (
-                                                    <div
-                                                      key={perfIndex}
-                                                      className="text-xs text-muted"
-                                                    >
-                                                      {performance.rawValue
-                                                        ? (() => {
-                                                          const activity = activities.find(
-                                                            (a) => a.id === activeTab,
-                                                          );
-                                                          const scoringSystemId =
-                                                            activity?.scoringSystemId;
-                                                          return formatRawValue(
-                                                            performance.rawValue,
-                                                            activeTab,
-                                                            performance.reps,
-                                                            scoringSystemId,
-                                                          );
-                                                        })()
-                                                        : 'No data'}
-                                                    </div>
-                                                  ))}
-                                              </div>
-                                            </div>
-                                          ))}
-                                      </div>
-                                    </td>
-                                  </tr>
-                                ));
+                                .map((team, index) => ({
+                                  ...team,
+                                  rank: index + 1,
+                                }));
+
+                              return teamEntries;
                             })()
-                            : leaderboardData.workoutLeaderboards
-                              ?.find((workout) => workout.activityId === activeTab)
-                              ?.entries.sort((a, b) => a.rank - b.rank) // Sort by rank
-                              .map((entry) => (
-                                <tr key={entry.userId} className="hover:bg-surface-high">
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="flex items-center">
-                                      <span className="text-lg font-semibold text-white">
-                                        {getRankIcon(entry.rank)}
-                                      </span>
-                                    </div>
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="flex items-center">
-                                      <div>
-                                        <div className="text-sm font-medium text-white">
-                                          {entry.name}
-                                        </div>
-
-                                        {entry.teamName && (
-                                          <div className="text-xs text-muted">
-                                            {entry.teamName}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm font-medium text-white">
-                                      {entry.score.toFixed(1)}
-                                    </div>
-                                  </td>
-                                  <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-muted">
-                                      {entry.rawValue
-                                        ? (() => {
-                                          const activity = activities.find(
-                                            (a) => a.id === activeTab,
-                                          );
-                                          const scoringSystemId = activity?.scoringSystemId;
-                                          return formatRawValue(
-                                            entry.rawValue,
-                                            activeTab,
-                                            entry.reps,
-                                            scoringSystemId,
-                                          );
-                                        })()
-                                        : ''}
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <LeaderboardBarChart
-                      entries={
-                        viewMode === 'team'
-                          ? (() => {
-                            const workoutEntries =
-                              leaderboardData.workoutLeaderboards
-                                ?.find((workout) => workout.activityId === activeTab)
-                                ?.entries.filter((entry) => entry.teamId) || [];
-
-                            // Group by team
-                            const groupedByTeam = workoutEntries.reduce(
-                              (acc, entry) => {
-                                const teamKey = entry.teamId || 'unknown';
-                                if (!acc[teamKey]) {
-                                  acc[teamKey] = {
-                                    teamId: entry.teamId,
-                                    teamName: entry.teamName,
-                                    members: [],
-                                  };
-                                }
-                                acc[teamKey].members.push(entry);
-                                return acc;
-                              },
-                              {} as Record<
-                                string,
-                                {
-                                  teamId?: string;
-                                  teamName?: string;
-                                  members: typeof workoutEntries;
-                                }
-                              >,
-                            );
-
-                            // Convert to team entries with aggregated scores
-                            const teamEntries = Object.values(groupedByTeam)
-                              .map((team) => {
-                                const teamTotalScore = team.members.reduce(
-                                  (total, member) => total + member.score,
-                                  0,
-                                );
-                                const bestScore = Math.max(...team.members.map((m) => m.score));
-                                const bestMember = team.members.find(
-                                  (m) => m.score === bestScore,
-                                );
-
-                                return {
-                                  teamId: team.teamId,
-                                  userId: team.teamId || '',
-                                  name: team.teamName || 'Unknown Team',
-                                  email: '',
-                                  totalScore: teamTotalScore,
-                                  workoutScores: {
-                                    [activeTab]: {
-                                      score: bestScore,
-                                      rawValue: bestMember?.rawValue || 0,
-                                      reps: bestMember?.reps,
-                                      rank: bestMember?.rank || 1,
-                                      activityName:
-                                        leaderboardData.workoutLeaderboards?.find(
-                                          (w) => w.activityId === activeTab,
-                                        )?.activityName || '',
-                                      scoringSystemId: bestMember?.scoringSystemId,
-                                    },
-                                  },
-                                  rank: bestMember?.rank || 1,
-                                };
-                              })
-                              .sort((a, b) => b.totalScore - a.totalScore)
-                              .map((team, index) => ({
-                                ...team,
-                                rank: index + 1,
-                              }));
-
-                            return teamEntries;
-                          })()
                           : leaderboardData.workoutLeaderboards
-                            ?.find((workout) => workout.activityId === activeTab)
-                            ?.entries.map((entry) => ({
-                              userId: entry.userId,
-                              name: entry.name,
-                              teamName: entry.teamName,
-                              totalScore: entry.score,
-                              workoutScores: {
-                                [activeTab]: {
-                                  score: entry.score,
-                                  rawValue: entry.rawValue,
-                                  reps: entry.reps,
-                                  rank: entry.rank,
-                                  activityName:
-                                    leaderboardData.workoutLeaderboards?.find(
-                                      (w) => w.activityId === activeTab,
-                                    )?.activityName || '',
-                                  scoringSystemId: entry.scoringSystemId,
-                                },
-                              },
-                              rank: entry.rank,
-                            })) || []
-                      }
-                      activities={[activities.find((a) => a.id === activeTab)!].filter(Boolean)}
-                      maxScore={
-                        viewMode === 'team'
-                          ? (() => {
-                            const workoutEntries =
-                              leaderboardData.workoutLeaderboards
-                                ?.find((workout) => workout.activityId === activeTab)
-                                ?.entries.filter((entry) => entry.teamId) || [];
-
-                            const teamTotals = new Map<string, number>();
-                            workoutEntries.forEach((entry) => {
-                              if (entry.teamId) {
-                                teamTotals.set(
-                                  entry.teamId,
-                                  (teamTotals.get(entry.teamId) || 0) + entry.score,
-                                );
-                              }
-                            });
-                            return Math.max(...Array.from(teamTotals.values()), 0) || 1;
-                          })()
-                          : Math.max(
-                            ...(leaderboardData.workoutLeaderboards
                               ?.find((workout) => workout.activityId === activeTab)
-                              ?.entries.map((e) => e.score) || [0]),
-                          ) || 1
-                      }
-                      isTeamView={viewMode === 'team'}
-                      formatRawValue={formatRawValue}
-                      teamMembers={
-                        viewMode === 'team'
-                          ? (() => {
-                            const workoutEntries =
-                              leaderboardData.workoutLeaderboards
-                                ?.find((workout) => workout.activityId === activeTab)
-                                ?.entries.filter((entry) => entry.teamId) || [];
-
-                            const teamMembersMap = new Map<
-                              string,
-                              Array<{
-                                userId: string;
-                                name: string;
-                                workoutScores: {
-                                  [activityId: string]: {
-                                    score: number;
-                                    rawValue: number;
-                                    reps?: number;
-                                    rank: number;
-                                    activityName: string;
-                                    scoringSystemId?: string;
-                                  };
-                                };
-                                totalScore: number;
-                              }>
-                            >();
-
-                            workoutEntries.forEach((entry) => {
-                              if (!entry.teamId) return;
-
-                              if (!teamMembersMap.has(entry.teamId)) {
-                                teamMembersMap.set(entry.teamId, []);
-                              }
-                              teamMembersMap.get(entry.teamId)!.push({
+                              ?.entries.map((entry) => ({
                                 userId: entry.userId,
                                 name: entry.name,
+                                teamName: entry.teamName,
+                                totalScore: entry.score,
                                 workoutScores: {
                                   [activeTab]: {
                                     score: entry.score,
@@ -2028,12 +1953,92 @@ export default function PublicEventLeaderboard() {
                                     scoringSystemId: entry.scoringSystemId,
                                   },
                                 },
-                                totalScore: entry.score,
-                              });
-                            });
+                                rank: entry.rank,
+                              })) || []
+                      }
+                      activities={[activities.find((a) => a.id === activeTab)!].filter(Boolean)}
+                      maxScore={
+                        viewMode === 'team'
+                          ? (() => {
+                              const workoutEntries =
+                                leaderboardData.workoutLeaderboards
+                                  ?.find((workout) => workout.activityId === activeTab)
+                                  ?.entries.filter((entry) => entry.teamId) || [];
 
-                            return teamMembersMap;
-                          })()
+                              const teamTotals = new Map<string, number>();
+                              workoutEntries.forEach((entry) => {
+                                if (entry.teamId) {
+                                  teamTotals.set(
+                                    entry.teamId,
+                                    (teamTotals.get(entry.teamId) || 0) + entry.score,
+                                  );
+                                }
+                              });
+                              return Math.max(...Array.from(teamTotals.values()), 0) || 1;
+                            })()
+                          : Math.max(
+                              ...(leaderboardData.workoutLeaderboards
+                                ?.find((workout) => workout.activityId === activeTab)
+                                ?.entries.map((e) => e.score) || [0]),
+                            ) || 1
+                      }
+                      isTeamView={viewMode === 'team'}
+                      formatRawValue={formatRawValue}
+                      teamMembers={
+                        viewMode === 'team'
+                          ? (() => {
+                              const workoutEntries =
+                                leaderboardData.workoutLeaderboards
+                                  ?.find((workout) => workout.activityId === activeTab)
+                                  ?.entries.filter((entry) => entry.teamId) || [];
+
+                              const teamMembersMap = new Map<
+                                string,
+                                Array<{
+                                  userId: string;
+                                  name: string;
+                                  workoutScores: {
+                                    [activityId: string]: {
+                                      score: number;
+                                      rawValue: number;
+                                      reps?: number;
+                                      rank: number;
+                                      activityName: string;
+                                      scoringSystemId?: string;
+                                    };
+                                  };
+                                  totalScore: number;
+                                }>
+                              >();
+
+                              workoutEntries.forEach((entry) => {
+                                if (!entry.teamId) return;
+
+                                if (!teamMembersMap.has(entry.teamId)) {
+                                  teamMembersMap.set(entry.teamId, []);
+                                }
+                                teamMembersMap.get(entry.teamId)!.push({
+                                  userId: entry.userId,
+                                  name: entry.name,
+                                  workoutScores: {
+                                    [activeTab]: {
+                                      score: entry.score,
+                                      rawValue: entry.rawValue,
+                                      reps: entry.reps,
+                                      rank: entry.rank,
+                                      activityName:
+                                        leaderboardData.workoutLeaderboards?.find(
+                                          (w) => w.activityId === activeTab,
+                                        )?.activityName || '',
+                                      scoringSystemId: entry.scoringSystemId,
+                                    },
+                                  },
+                                  totalScore: entry.score,
+                                });
+                              });
+
+                              return teamMembersMap;
+                            })()
                           : undefined
                       }
                     />
@@ -2050,9 +2055,9 @@ export default function PublicEventLeaderboard() {
               activeTab === 'overall'
                 ? latestResults.slice(0, 5) // Limit to 5 most recent on overall tab
                 : latestResults.filter((result) => {
-                  const matches = result.activityId === activeTab;
-                  return matches;
-                });
+                    const matches = result.activityId === activeTab;
+                    return matches;
+                  });
 
             if (filteredResults.length === 0) return null;
 
@@ -2121,11 +2126,11 @@ export default function PublicEventLeaderboard() {
                               <div className="text-sm text-muted">
                                 {result.rawValue
                                   ? formatRawValue(
-                                    result.rawValue,
-                                    result.activityId,
-                                    result.reps,
-                                    result.scoringSystemId,
-                                  )
+                                      result.rawValue,
+                                      result.activityId,
+                                      result.reps,
+                                      result.scoringSystemId,
+                                    )
                                   : 'No data'}
                               </div>
                             </td>

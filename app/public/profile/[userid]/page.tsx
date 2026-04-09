@@ -9,14 +9,7 @@ import LoadingSpinner from '@components/LoadingSpinner';
 import SocialMediaImageGenerator from '@components/SocialMediaImageGenerator';
 import { beautifyRawScore } from '@utils/scoring';
 import { formatFullTimestamp, generateQRCode } from '@lib/utils';
-import {
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  ResponsiveContainer,
-} from 'recharts';
+import { BiometricRadar } from '@challengerco/challenger-fitness-design-system/server';
 import {
   calculateUserAchievements,
   getHighestScoreAchievement,
@@ -301,7 +294,10 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userid
     rowing_500m: '🚣‍♂️',
     rowing_4min: '🚣‍♂️',
     bike_500m: '🚲',
+    bike_10km: '🚲',
     ski_500m: '⛷️',
+    ski_1km: '⛷️',
+    running_1mile: '🏃‍♂️',
   };
 
   // Convert scores to achievement format
@@ -457,7 +453,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userid
             <div className="mb-3">
               <div
                 className="text-3xl font-bold mb-2"
-                style={{ fontFamily: 'Montserrat, sans-serif', color: '#e84c04' }}
+                style={{ fontFamily: 'Montserrat, sans-serif', color: '#4682B4' }}
               >
                 {showVerified.calculatedScore}
               </div>
@@ -495,8 +491,11 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userid
                 {beautifyRawScore(showUnverified.rawValue, type.id, getReps(showUnverified))}
               </div>
               <div
-                className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-900 text-yellow-200"
-                style={{ fontFamily: 'Montserrat, sans-serif' }}
+                className="px-2 py-1 rounded-full text-xs font-medium text-white"
+                style={{
+                  fontFamily: 'Montserrat, sans-serif',
+                  backgroundColor: '#e84c04',
+                }}
               >
                 Unverified
               </div>
@@ -557,64 +556,27 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userid
     return isNaN(age) ? 'Not set' : age;
   }
 
-  // Radar chart component using Recharts
+  // Radar chart component using BiometricRadar from design system
   function CustomRadarChart({
     scores,
     title,
-    color,
+    variant,
   }: {
     scores: Record<string, number>;
     title: string;
-    color: string;
+    variant: 'primary' | 'tactical';
   }) {
-    // Prepare data for Recharts using canonical events only
+    // Prepare data for BiometricRadar (expects 0-100 scale, scores are 0-1000)
     const data = CANONICAL_EVENTS.map((eventType) => ({
-      subject: eventType.name.toUpperCase(),
-      A: scores[eventType.id] || 0,
-      fullMark: 1000,
+      label: eventType.name,
+      value: Math.min(100, Math.round((scores[eventType.id] || 0) / 10)),
     }));
 
     return (
       <div className="text-center">
         <h3 className="text-white text-lg font-bold mb-4">{title}</h3>
-        <div className="w-80 h-80 mx-auto">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-              <PolarGrid stroke="#374151" />
-              <PolarAngleAxis
-                dataKey="subject"
-                tick={{
-                  fill: 'white',
-                  fontSize: 14,
-                  textAnchor: 'middle',
-                }}
-                style={{
-                  textAnchor: 'middle',
-                }}
-                tickFormatter={(value) => value}
-                axisLine={false}
-                tickLine={false}
-                radius={120}
-              />
-              <PolarRadiusAxis
-                angle={90}
-                domain={[0, 1000]}
-                tick={{
-                  fill: 'white',
-                  fontSize: 9,
-                }}
-                tickCount={6}
-              />
-              <Radar
-                name="Score"
-                dataKey="A"
-                stroke={color}
-                fill={color}
-                fillOpacity={0.3}
-                strokeWidth={2}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
+        <div className="flex justify-center">
+          <BiometricRadar data={data} size={320} variant={variant} />
         </div>
       </div>
     );
@@ -651,10 +613,17 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userid
                   className="text-6xl md:text-7xl font-bold mb-4 flex items-baseline justify-center gap-3"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
-                  <span style={{ color: '#e84c04' }}>{overallTotal}</span>
-                  <span className="text-2xl md:text-3xl font-semibold" style={{ color: '#4682B4' }}>
-                    {overallVerifiedTotal}
-                  </span>
+                  <Tooltip text="Overall score combining best scores across all events, including unverified submissions.">
+                    <span style={{ color: '#e84c04' }}>{overallTotal}</span>
+                  </Tooltip>
+                  <Tooltip text="Verified score from official events or admin-verified submissions only.">
+                    <span
+                      className="text-2xl md:text-3xl font-semibold"
+                      style={{ color: '#4682B4' }}
+                    >
+                      {overallVerifiedTotal}
+                    </span>
+                  </Tooltip>
                 </div>
                 <div
                   className="flex items-center justify-center gap-4 text-white mb-6 font-semibold"
@@ -814,8 +783,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userid
                 </p>
               </Tooltip>
               <p
-                className="text-white text-lg font-bold"
-                style={{ fontFamily: 'Montserrat, sans-serif' }}
+                className="text-lg font-bold"
+                style={{ fontFamily: 'Montserrat, sans-serif', color: '#4682B4' }}
               >
                 {overallVerifiedTotal}
               </p>
@@ -834,8 +803,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userid
                 </p>
               </Tooltip>
               <p
-                className="text-white text-lg font-bold"
-                style={{ fontFamily: 'Montserrat, sans-serif' }}
+                className="text-lg font-bold"
+                style={{ fontFamily: 'Montserrat, sans-serif', color: '#e84c04' }}
               >
                 {overallTotal}
               </p>
@@ -854,7 +823,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userid
                 </p>
               </Tooltip>
               <p className="text-lg font-bold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                <span className="text-white">{strengthTotalAll}</span>
+                <span style={{ color: '#e84c04' }}>{strengthTotalAll}</span>
                 <span className="text-muted">/</span>
                 <span style={{ color: '#4682B4' }}>{strengthTotalVerified}</span>
               </p>
@@ -864,7 +833,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userid
                 className="absolute left-0 top-1/2 transform -translate-y-1/2 w-px h-8 hidden md:block"
                 style={{ backgroundColor: '#e84c04' }}
               ></div>
-              <Tooltip text="Average performance across endurance events: Rowing 500m, Rowing 4min, Bike 500m, and Ski 500m. Format: Total/Verified (all scores vs verified-only scores).">
+              <Tooltip text="Average performance across endurance events: 10km Bike, 1km Ski, and 1 Mile Run. Format: Total/Verified (all scores vs verified-only scores).">
                 <p
                   className="text-text-secondary text-sm mb-1 cursor-help hover:text-gray-200 transition-colors"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
@@ -873,7 +842,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userid
                 </p>
               </Tooltip>
               <p className="text-lg font-bold" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                <span className="text-white">{enduranceTotalAll}</span>
+                <span style={{ color: '#e84c04' }}>{enduranceTotalAll}</span>
                 <span className="text-muted">/</span>
                 <span style={{ color: '#4682B4' }}>{enduranceTotalVerified}</span>
               </p>
@@ -1014,9 +983,9 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userid
               <CustomRadarChart
                 scores={bestVerifiedScoresByType}
                 title="VERIFIED SCORES"
-                color="#4682B4"
+                variant="tactical"
               />
-              <CustomRadarChart scores={bestScoresByType} title="ALL SCORES" color="#e84c04" />
+              <CustomRadarChart scores={bestScoresByType} title="ALL SCORES" variant="primary" />
             </div>
           )}
         </div>

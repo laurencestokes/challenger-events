@@ -274,11 +274,17 @@ export function beautifyRawScore(rawValue: number, activityId: string, reps?: nu
     return `${rawValue}kg × ${repsToShow}`;
   }
 
-  // Handle time-based activities (rowing_500m, bike_4km, ski_500m, bike_500m, running_5km, running_1mile)
+  // Handle time-based activities (rowing_500m, bike_4km, ski_500m, bike_500m, bike_10km, ski_1km, running_1mile)
   if (
-    ['rowing_500m', 'bike_4km', 'ski_500m', 'bike_500m', 'running_5km', 'running_1mile'].includes(
-      activityId,
-    )
+    [
+      'rowing_500m',
+      'bike_4km',
+      'ski_500m',
+      'bike_500m',
+      'bike_10km',
+      'ski_1km',
+      'running_1mile',
+    ].includes(activityId)
   ) {
     return formatTimeWithMilliseconds(rawValue);
   }

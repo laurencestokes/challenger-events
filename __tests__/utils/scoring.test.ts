@@ -311,11 +311,6 @@ describe('Scoring Utilities', () => {
       expect(result).toContain('1:35');
     });
 
-    it('formats running_5km as time', () => {
-      const result = beautifyRawScore(1200, 'running_5km');
-      expect(result).toContain('20:00');
-    });
-
     it('formats running_1mile as time', () => {
       const result = beautifyRawScore(360, 'running_1mile');
       expect(result).toContain('6:00');

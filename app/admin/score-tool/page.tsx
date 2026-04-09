@@ -189,7 +189,7 @@ export default function AdminScoreToolPage() {
                     type="button"
                     onClick={() => setSex('M')}
                     className={`px-3 py-2 rounded-md text-sm ${
-                      sex === 'M' ? 'bg-primary text-white' : 'bg-gray-200 text-text-primary'
+                      sex === 'M' ? 'bg-primary text-white' : 'bg-secondary text-text-primary'
                     }`}
                   >
                     Male
@@ -198,7 +198,7 @@ export default function AdminScoreToolPage() {
                     type="button"
                     onClick={() => setSex('F')}
                     className={`px-3 py-2 rounded-md text-sm ${
-                      sex === 'F' ? 'bg-primary text-white' : 'bg-gray-200 text-text-primary'
+                      sex === 'F' ? 'bg-primary text-white' : 'bg-secondary text-text-primary'
                     }`}
                   >
                     Female

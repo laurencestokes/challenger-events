@@ -16,15 +16,13 @@ describe('achievements constants', () => {
       expect(ids).toContain('squat');
       expect(ids).toContain('bench');
       expect(ids).toContain('deadlift');
-      expect(ids).toContain('rowing_500m');
-      expect(ids).toContain('bike_4km');
-      expect(ids).toContain('ski_500m');
-      expect(ids).toContain('running_5km');
+      expect(ids).toContain('bike_10km');
+      expect(ids).toContain('ski_1km');
       expect(ids).toContain('running_1mile');
     });
 
-    it('has exactly 8 canonical events', () => {
-      expect(CANONICAL_EVENTS).toHaveLength(8);
+    it('has exactly 6 canonical events', () => {
+      expect(CANONICAL_EVENTS).toHaveLength(6);
     });
 
     it('each event has a category', () => {

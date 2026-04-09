@@ -17,8 +17,9 @@ jest.mock('@challengerco/challenger-data', () => ({
     bike4kmScore: jest.fn().mockReturnValue({ score: 390 }),
     ski500mScore: jest.fn().mockReturnValue({ score: 400 }),
     bike500mScore: jest.fn().mockReturnValue({ score: 395 }),
-    running5kmScore: jest.fn().mockReturnValue({ score: 430 }),
-    running1MileScore: jest.fn().mockReturnValue({ score: 440 }),
+    bike10kmScore: jest.fn().mockReturnValue({ score: 385 }),
+    ski1kmScore: jest.fn().mockReturnValue({ score: 405 }),
+    running1mileScore: jest.fn().mockReturnValue({ score: 440 }),
   })),
   paceToWatts: jest.fn(),
 }));

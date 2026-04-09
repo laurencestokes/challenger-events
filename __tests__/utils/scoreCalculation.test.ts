@@ -11,8 +11,9 @@ jest.mock('@challengerco/challenger-data', () => ({
     bike4kmScore: jest.fn().mockReturnValue({ score: 390, percentile: 62 }),
     ski500mScore: jest.fn().mockReturnValue({ score: 400, percentile: 64 }),
     bike500mScore: jest.fn().mockReturnValue({ score: 395, percentile: 61 }),
-    running5kmScore: jest.fn().mockReturnValue({ score: 430, percentile: 68 }),
-    running1MileScore: jest.fn().mockReturnValue({ score: 440, percentile: 69 }),
+    bike10kmScore: jest.fn().mockReturnValue({ score: 385, percentile: 60 }),
+    ski1kmScore: jest.fn().mockReturnValue({ score: 405, percentile: 65 }),
+    running1mileScore: jest.fn().mockReturnValue({ score: 440, percentile: 69 }),
   })),
   paceToWatts: jest.fn().mockReturnValue(200),
 }));
@@ -66,9 +67,14 @@ describe('scoreCalculation', () => {
       expect(result.score).toBe(400);
     });
 
-    it('calculates running 5km score', async () => {
-      const result = await calculateScore('running_5km', 1200, 80, dob, 'M');
-      expect(result.score).toBe(430);
+    it('calculates bike 10km score', async () => {
+      const result = await calculateScore('bike_10km', 1080, 80, dob, 'M');
+      expect(result.score).toBe(385);
+    });
+
+    it('calculates ski 1km score', async () => {
+      const result = await calculateScore('ski_1km', 210, 80, dob, 'M');
+      expect(result.score).toBe(405);
     });
 
     it('calculates running 1 mile score', async () => {
@@ -125,11 +131,6 @@ describe('scoreCalculation', () => {
     it('calculates bike 500m score', async () => {
       const result = await calculateScore('bike_500m', 45, 80, dob, 'M');
       expect(result.score).toBe(395);
-    });
-
-    it('calculates running 5km score', async () => {
-      const result = await calculateScore('running_5km', 1200, 80, dob, 'M');
-      expect(result.score).toBe(430);
     });
 
     it('calculates running 1 mile score', async () => {
