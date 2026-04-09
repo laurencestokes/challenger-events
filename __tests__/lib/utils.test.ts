@@ -89,7 +89,7 @@ describe('lib/utils', () => {
   describe('calculateAgeFromDateOfBirth', () => {
     beforeEach(() => {
       jest.useFakeTimers();
-      jest.setSystemTime(new Date('2026-06-15'));
+      jest.setSystemTime(new Date('2026-06-15').getTime());
     });
 
     afterEach(() => {
@@ -157,7 +157,7 @@ describe('lib/utils', () => {
   describe('formatTimestamp', () => {
     beforeEach(() => {
       jest.useFakeTimers();
-      jest.setSystemTime(new Date('2026-06-15T12:00:00Z'));
+      jest.setSystemTime(new Date('2026-06-15T12:00:00Z').getTime());
     });
 
     afterEach(() => {
@@ -306,7 +306,7 @@ describe('lib/utils', () => {
   describe('formatTimestamp edge cases', () => {
     beforeEach(() => {
       jest.useFakeTimers();
-      jest.setSystemTime(new Date('2026-06-15T12:00:00Z'));
+      jest.setSystemTime(new Date('2026-06-15T12:00:00Z').getTime());
     });
 
     afterEach(() => {
