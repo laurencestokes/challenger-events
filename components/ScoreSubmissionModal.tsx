@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { api } from '@lib/api-client';
 import { calculateAgeFromDateOfBirth, convertFirestoreTimestamp } from '@lib/utils';
 import { SCORING_SYSTEMS } from '@constants/scoringSystems';
@@ -78,6 +78,40 @@ export default function ScoreSubmissionModal({
   const [competitorHasTeam, setCompetitorHasTeam] = useState(false);
   const [competitorTeamId, setCompetitorTeamId] = useState<string | null>(null);
 
+  // Competitor autocomplete state
+  const [competitorQuery, setCompetitorQuery] = useState('');
+  const [isCompetitorListOpen, setIsCompetitorListOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const competitorWrapperRef = useRef<HTMLDivElement>(null);
+
+  const getParticipantLabel = useCallback((participant: Participant): string => {
+    if (participant.isGuest) {
+      const stats = [
+        participant.age ? `${participant.age}yo` : null,
+        participant.sex || null,
+        participant.bodyweight ? `${participant.bodyweight}kg` : null,
+      ]
+        .filter(Boolean)
+        .join(', ');
+      return `${participant.name}${stats ? ` (${stats})` : ''}`;
+    }
+    return `${participant.name}${participant.email ? ` (${participant.email})` : ''}`;
+  }, []);
+
+  const sortedParticipants = useMemo(
+    () =>
+      [...participants].sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+      ),
+    [participants],
+  );
+
+  const filteredParticipants = useMemo(() => {
+    const q = competitorQuery.trim().toLowerCase();
+    if (!q) return sortedParticipants;
+    return sortedParticipants.filter((p) => getParticipantLabel(p).toLowerCase().includes(q));
+  }, [sortedParticipants, competitorQuery, getParticipantLabel]);
+
   const fetchEventData = useCallback(async () => {
     try {
       const [eventData, activitiesData] = await Promise.all([
@@ -120,9 +154,27 @@ export default function ScoreSubmissionModal({
       setCompetitionVerification(null);
       setCompetitorHasTeam(false);
       setCompetitorTeamId(null);
+      setCompetitorQuery('');
+      setIsCompetitorListOpen(false);
+      setHighlightedIndex(-1);
       setError('');
     }
   }, [isOpen, eventId, fetchEventData]);
+
+  // Close competitor dropdown when clicking outside
+  useEffect(() => {
+    if (!isCompetitorListOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        competitorWrapperRef.current &&
+        !competitorWrapperRef.current.contains(event.target as Node)
+      ) {
+        setIsCompetitorListOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isCompetitorListOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,6 +213,9 @@ export default function ScoreSubmissionModal({
       setSelectedTeamId('');
       setCompetitorHasTeam(false);
       setCompetitorTeamId(null);
+      setCompetitorQuery('');
+      setIsCompetitorListOpen(false);
+      setHighlightedIndex(-1);
 
       onScoreSubmitted();
       onClose();
@@ -258,6 +313,51 @@ export default function ScoreSubmissionModal({
     }
   };
 
+  const handleCompetitorSelect = (participant: Participant) => {
+    setCompetitorQuery(getParticipantLabel(participant));
+    setIsCompetitorListOpen(false);
+    setHighlightedIndex(-1);
+    handleCompetitorChange(participant.id);
+  };
+
+  const handleCompetitorQueryChange = (value: string) => {
+    setCompetitorQuery(value);
+    setIsCompetitorListOpen(true);
+    setHighlightedIndex(-1);
+    if (selectedCompetitor) {
+      handleCompetitorChange('');
+    }
+  };
+
+  const handleCompetitorKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!isCompetitorListOpen) setIsCompetitorListOpen(true);
+      setHighlightedIndex((prev) =>
+        filteredParticipants.length === 0 ? -1 : (prev + 1) % filteredParticipants.length,
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!isCompetitorListOpen) setIsCompetitorListOpen(true);
+      setHighlightedIndex((prev) =>
+        filteredParticipants.length === 0
+          ? -1
+          : (prev - 1 + filteredParticipants.length) % filteredParticipants.length,
+      );
+    } else if (e.key === 'Enter') {
+      if (isCompetitorListOpen && highlightedIndex >= 0) {
+        e.preventDefault();
+        const participant = filteredParticipants[highlightedIndex];
+        if (participant) handleCompetitorSelect(participant);
+      }
+    } else if (e.key === 'Escape') {
+      if (isCompetitorListOpen) {
+        e.preventDefault();
+        setIsCompetitorListOpen(false);
+      }
+    }
+  };
+
   const handleScoreChange = (value: string) => {
     if (isTimeInput()) {
       // For time input, allow mm:ss.ms format (e.g., "1:26.3") or ss.ms format (e.g., "86.3")
@@ -311,39 +411,63 @@ export default function ScoreSubmissionModal({
             >
               Competitor *
             </label>
-            <select
-              id="competitor"
-              value={selectedCompetitor}
-              onChange={(e) => handleCompetitorChange(e.target.value)}
-              required
-              aria-label="Select competitor"
-              className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            >
-              <option value="">Select a competitor</option>
-              {participants.map((participant) => {
-                // For guest participants, show only name and stats
-                if (participant.isGuest) {
-                  const stats = [
-                    participant.age ? `${participant.age}yo` : null,
-                    participant.sex || null,
-                    participant.bodyweight ? `${participant.bodyweight}kg` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(', ');
-                  return (
-                    <option key={participant.id} value={participant.id}>
-                      {participant.name} {stats ? `(${stats})` : ''}
-                    </option>
-                  );
+            <div ref={competitorWrapperRef} className="relative">
+              <input
+                id="competitor"
+                type="text"
+                value={competitorQuery}
+                onChange={(e) => handleCompetitorQueryChange(e.target.value)}
+                onFocus={() => setIsCompetitorListOpen(true)}
+                onKeyDown={handleCompetitorKeyDown}
+                placeholder="Search competitor by name..."
+                autoComplete="off"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded={isCompetitorListOpen}
+                aria-controls="competitor-listbox"
+                aria-activedescendant={
+                  highlightedIndex >= 0 && filteredParticipants[highlightedIndex]
+                    ? `competitor-option-${filteredParticipants[highlightedIndex].id}`
+                    : undefined
                 }
-                // For regular participants, show name and email (if available)
-                return (
-                  <option key={participant.id} value={participant.id}>
-                    {participant.name} {participant.email ? `(${participant.email})` : ''}
-                  </option>
-                );
-              })}
-            </select>
+                className="w-full px-4 py-3 bg-surface-high border border-border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
+              {isCompetitorListOpen && (
+                <ul
+                  id="competitor-listbox"
+                  role="listbox"
+                  className="absolute z-10 mt-1 w-full max-h-60 overflow-y-auto bg-surface-high border border-border rounded-lg shadow-lg"
+                >
+                  {filteredParticipants.length === 0 ? (
+                    <li className="px-4 py-2 text-muted text-sm">No competitors found</li>
+                  ) : (
+                    filteredParticipants.map((participant, index) => {
+                      const label = getParticipantLabel(participant);
+                      const isHighlighted = index === highlightedIndex;
+                      return (
+                        <li
+                          key={participant.id}
+                          id={`competitor-option-${participant.id}`}
+                          role="option"
+                          aria-selected={isHighlighted}
+                          onMouseDown={(e) => {
+                            // Prevent input blur before click registers
+                            e.preventDefault();
+                            handleCompetitorSelect(participant);
+                          }}
+                          onMouseEnter={() => setHighlightedIndex(index)}
+                          className={`px-4 py-2 text-white cursor-pointer ${
+                            isHighlighted ? 'bg-orange-500/20' : 'hover:bg-orange-500/10'
+                          }`}
+                        >
+                          {label}
+                        </li>
+                      );
+                    })
+                  )}
+                </ul>
+              )}
+            </div>
           </div>
 
           {/* Competitor Details */}
