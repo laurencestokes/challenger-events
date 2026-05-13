@@ -25,5 +25,5 @@ ERG_API_SECRET="your-very-long-random-secret-key-here-min-32-chars"
 # Email Configuration (Resend)
 RESEND_API_KEY="re_1234567890abcdef"
 FROM_EMAIL="noreply@yourdomain.com"
-NEXT_PUBLIC_APP_URL="https://yourdomain.com" 
+NEXT_PUBLIC_APP_URL="https://yourdomain.com"
 REVALIDATE_SECRET=your-strong-random-secret 

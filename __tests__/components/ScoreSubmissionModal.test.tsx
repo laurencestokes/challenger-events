@@ -91,6 +91,11 @@ describe('ScoreSubmissionModal', () => {
   it('populates competitor dropdown', async () => {
     render(<ScoreSubmissionModal {...defaultProps} />);
 
+    await waitFor(() => expect(mockGet).toHaveBeenCalledWith('/api/events/event1'));
+
+    // Open the typeahead list
+    fireEvent.focus(screen.getByLabelText(/Competitor/));
+
     await waitFor(() => {
       expect(screen.getByText(/Alice/)).toBeInTheDocument();
       expect(screen.getByText(/Bob/)).toBeInTheDocument();
@@ -119,19 +124,18 @@ describe('ScoreSubmissionModal', () => {
     mockPost.mockResolvedValue({ score: { id: 's1' } });
     render(<ScoreSubmissionModal {...defaultProps} />);
 
-    await waitFor(() => expect(screen.getByText(/Alice/)).toBeInTheDocument());
+    await waitFor(() => expect(mockGet).toHaveBeenCalledWith('/api/events/event1'));
 
-    // Select competitor
-    const competitorSelect = screen.getByLabelText(/Competitor/);
-    fireEvent.change(competitorSelect, { target: { value: 'u1' } });
+    // Open the competitor typeahead and pick Alice via mousedown (matches component handler)
+    fireEvent.focus(screen.getByLabelText(/Competitor/));
+    await waitFor(() => expect(screen.getByText(/Alice/)).toBeInTheDocument());
+    fireEvent.mouseDown(screen.getByText(/Alice/));
 
     // Select activity
-    const activitySelect = screen.getByLabelText(/Workout/);
-    fireEvent.change(activitySelect, { target: { value: 'act1' } });
+    fireEvent.change(screen.getByLabelText(/Workout/), { target: { value: 'act1' } });
 
     // Enter score
-    const scoreInput = screen.getByLabelText(/Score/);
-    fireEvent.change(scoreInput, { target: { value: '100' } });
+    fireEvent.change(screen.getByLabelText(/Score/), { target: { value: '100' } });
 
     fireEvent.submit(document.querySelector('form')!);
 
@@ -154,9 +158,12 @@ describe('ScoreSubmissionModal', () => {
     mockPost.mockRejectedValue(new Error('Score already exists'));
     render(<ScoreSubmissionModal {...defaultProps} />);
 
-    await waitFor(() => expect(screen.getByText(/Alice/)).toBeInTheDocument());
+    await waitFor(() => expect(mockGet).toHaveBeenCalledWith('/api/events/event1'));
 
-    fireEvent.change(screen.getByLabelText(/Competitor/), { target: { value: 'u1' } });
+    fireEvent.focus(screen.getByLabelText(/Competitor/));
+    await waitFor(() => expect(screen.getByText(/Alice/)).toBeInTheDocument());
+    fireEvent.mouseDown(screen.getByText(/Alice/));
+
     fireEvent.change(screen.getByLabelText(/Workout/), { target: { value: 'act1' } });
     fireEvent.change(screen.getByLabelText(/Score/), { target: { value: '100' } });
     fireEvent.submit(document.querySelector('form')!);

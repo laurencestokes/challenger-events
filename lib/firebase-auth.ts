@@ -61,6 +61,23 @@ export const signUpWithEmail = async (
       verificationStatus: 'VERIFIED',
     });
 
+    // Best-effort: merge any prior guest records under the same email into this new account.
+    // Failure is logged but does not fail signup — admin can retrigger later if needed.
+    try {
+      const response = await fetch('/api/auth/merge-guest-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.uid}`,
+        },
+      });
+      if (!response.ok) {
+        console.warn('Guest data merge returned non-OK status:', response.status);
+      }
+    } catch (mergeError) {
+      console.warn('Guest data merge request failed:', mergeError);
+    }
+
     return {
       id: userData.id,
       email: userData.email,

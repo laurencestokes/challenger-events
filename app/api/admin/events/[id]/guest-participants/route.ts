@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getUserByUid,
+  getUserByEmail,
   isAdmin,
   createUser,
   getEvent,
@@ -9,6 +10,9 @@ import {
 } from '@lib/firestore';
 import { db } from '@lib/firebase';
 import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { sendGuestWelcome, subscribeContact } from '@lib/email';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -35,7 +39,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     const body = await request.json();
-    const { name, age, sex, bodyweight } = body;
+    const { name, age, sex, bodyweight, email: rawEmail } = body;
 
     if (!name || !age || !sex || bodyweight === undefined) {
       return NextResponse.json(
@@ -55,10 +59,33 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
+    const providedEmail =
+      typeof rawEmail === 'string' && rawEmail.trim().length > 0
+        ? rawEmail.trim().toLowerCase()
+        : null;
+
+    if (providedEmail && !EMAIL_REGEX.test(providedEmail)) {
+      return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
+    }
+
+    if (providedEmail) {
+      const existing = await getUserByEmail(providedEmail);
+      if (existing && !existing.isGuest) {
+        return NextResponse.json(
+          {
+            error: `An account already exists for ${existing.name}. Add them as a regular participant via the event join code instead.`,
+            existingUserId: existing.id,
+            existingUserName: existing.name,
+          },
+          { status: 409 },
+        );
+      }
+    }
+
     // Generate unique uid for guest user
     const timestamp = Date.now();
     const guestUid = `guest-${eventId}-${timestamp}`;
-    const guestEmail = `guest-${eventId}-${timestamp}@temp.local`;
+    const guestEmail = providedEmail ?? `guest-${eventId}-${timestamp}@temp.local`;
 
     // Calculate dateOfBirth from age (approximate - use Jan 1st of birth year)
     const currentYear = new Date().getFullYear();
@@ -96,9 +123,21 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       verificationNotes: 'Auto-verified for guest participant',
     });
 
+    if (providedEmail) {
+      try {
+        await sendGuestWelcome(providedEmail, name, event.name);
+      } catch (emailError) {
+        console.error('Error sending guest welcome email:', emailError);
+        // Don't fail the request if the email fails
+      }
+      // subscribeContact swallows its own errors; safe to call without a wrapper
+      await subscribeContact(providedEmail, name);
+    }
+
     return NextResponse.json({
       id: guestUser.id,
       name: guestUser.name,
+      email: providedEmail ?? undefined,
       age: age,
       sex: guestUser.sex,
       bodyweight: guestUser.bodyweight,

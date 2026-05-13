@@ -72,6 +72,7 @@ export default function EventParticipantsPage() {
 
   // Form state for adding/editing guest
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [age, setAge] = useState('');
   const [sex, setSex] = useState<'M' | 'F'>('M');
   const [bodyweight, setBodyweight] = useState('');
@@ -119,6 +120,7 @@ export default function EventParticipantsPage() {
     mutationFn: async (payload: {
       editingParticipant: Participant | null;
       name: string;
+      email: string;
       ageNum: number;
       sex: 'M' | 'F';
       bodyweightNum: number;
@@ -136,6 +138,7 @@ export default function EventParticipantsPage() {
       } else {
         return api.post(`/api/admin/events/${eventId}/guest-participants`, {
           name: payload.name,
+          email: payload.email || undefined,
           age: payload.ageNum,
           sex: payload.sex,
           bodyweight: payload.bodyweightNum,
@@ -145,6 +148,7 @@ export default function EventParticipantsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.events.participants(eventId) });
       setName('');
+      setEmail('');
       setAge('');
       setSex('M');
       setBodyweight('');
@@ -217,7 +221,13 @@ export default function EventParticipantsPage() {
     setError('');
 
     if (!name || !age || !sex || !bodyweight) {
-      setError('All fields are required');
+      setError('Name, age, sex, and bodyweight are required');
+      return;
+    }
+
+    const trimmedEmail = email.trim();
+    if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setError('Please enter a valid email address');
       return;
     }
 
@@ -234,7 +244,14 @@ export default function EventParticipantsPage() {
       return;
     }
 
-    guestMutation.mutate({ editingParticipant, name, ageNum, sex, bodyweightNum });
+    guestMutation.mutate({
+      editingParticipant,
+      name,
+      email: trimmedEmail,
+      ageNum,
+      sex,
+      bodyweightNum,
+    });
   };
 
   const handleEditGuest = (participant: Participant) => {
@@ -242,6 +259,9 @@ export default function EventParticipantsPage() {
 
     setEditingParticipant(participant);
     setName(participant.name);
+    setEmail(
+      participant.email && !participant.email.endsWith('@temp.local') ? participant.email : '',
+    );
     setAge(participant.age?.toString() || '');
     setSex(participant.sex || 'M');
     setBodyweight(participant.bodyweight?.toString() || '');
@@ -259,9 +279,11 @@ export default function EventParticipantsPage() {
     setShowAddModal(false);
     setEditingParticipant(null);
     setName('');
+    setEmail('');
     setAge('');
     setSex('M');
     setBodyweight('');
+    setError('');
   };
 
   const handleViewScores = async (participant: Participant) => {
@@ -699,6 +721,29 @@ export default function EventParticipantsPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                     />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-text-secondary mb-1"
+                    >
+                      Email (optional)
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      placeholder="competitor@example.com"
+                      disabled={!!editingParticipant}
+                      className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                    {!editingParticipant && (
+                      <p className="mt-1 text-xs text-text-secondary">
+                        If provided, we&apos;ll email them a welcome and they can register later to
+                        claim their scores.
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label

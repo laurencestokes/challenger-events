@@ -21,6 +21,7 @@ npm run check-format # Verify formatting
 
 # Testing
 npm test             # Run Jest tests
+npm test -- path/to/file.test.ts  # Run a single test file
 npm run test:watch   # Watch mode
 npm run test:coverage
 
@@ -28,6 +29,8 @@ npm run test:coverage
 npm run validate     # Sequential: types, format, lint, build
 npm run validate-parallel # Same checks in parallel
 ```
+
+`postinstall` runs `scripts/patch-design-system.js`; `prebuild` runs `scripts/write-commit-hash.js`. If either fails, install/build breaks — fix the script rather than skipping it.
 
 ## Architecture Overview
 
@@ -46,6 +49,10 @@ This is a fitness competition management platform. Admins create events with act
 ### Data Layer
 
 All Firestore operations go through `lib/firestore.ts` (~1000+ lines). No ORM — raw Firebase SDK. Firebase Admin SDK is initialized in `lib/firebase-admin.ts` and used only in API routes (server-side).
+
+### Client Data Fetching
+
+TanStack Query v5 is the client-side data layer. Query keys are centralized in `lib/queryKeys.ts` (e.g. `queryKeys.events.leaderboard(id)`) — use the factory rather than inlining keys so cache invalidation stays correct. After mutations, invalidate the relevant keys to refresh the UI.
 
 ### Auth
 
@@ -80,14 +87,22 @@ Pattern in every API route:
 
 ### Scoring Systems
 
-Scoring systems are configured in `constants/scoringSystems.ts`. The `@challengerco/challenger-data` package provides powerlifting standards and Wilks/DOTS coefficient calculations.
+Scoring systems are configured in `constants/scoringSystems.ts`. The `@challengerco/challenger-data` package provides powerlifting standards and Wilks/DOTS coefficient calculations. Calculation orchestration lives in `utils/scoring.ts` and `utils/scoreCalculation.ts`; team aggregation (SUM/AVERAGE/BEST) is in `utils/teamScoring.ts`. Note the split: `lib/` is core/infra, `utils/` is domain logic.
+
+### Testing
+
+Jest with React Testing Library. Tests live in `__tests__/` mirroring source structure. Coverage is scoped (see `jest.config.js`): only `components/`, `utils/`, `constants/`, and `lib/{utils,api-client,score-totals}.ts` count toward coverage. Thresholds (lines 72, branches 55, functions 65) are enforced — adding uncovered code in a tracked path can break CI.
+
+### Deployment Constraint
+
+The custom `server.js` (Next.js + Socket.io on one port) requires a persistent Node runtime. Vercel serverless does not support this — real-time features (live leaderboards, erg sockets) only work on platforms with long-lived processes (Railway, Render, etc.).
 
 ## Environment Variables
 
 Required in `.env.local` — see `ENV_TEMPLATE.txt` for all variables. Key ones:
 - `NEXT_PUBLIC_FIREBASE_*` — Firebase client config (7 vars)
 - `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` — Firebase Admin SDK
-- `RESEND_API_KEY` — email service
+- `RESEND_API_KEY` — email service (also used to subscribe new accounts and emailed guests as Resend contacts for broadcasts)
 - `SOCKET_SECRET` — Socket.io authentication
 - `NEXT_PUBLIC_APP_URL` — base URL for links in emails
 
@@ -98,3 +113,4 @@ Required in `.env.local` — see `ENV_TEMPLATE.txt` for all variables. Key ones:
 - Git: Commitizen conventional commits (`npm run commit`)
 - Images: Firebase Storage, served via `firebasestorage.googleapis.com`
 - Tailwind custom theme: primary color is orange, `Orbitron` font for display/headings
+- Path aliases (defined in `tsconfig.json` and `jest.config.js`): `@lib/`, `@components/`, `@utils/`, `@constants/`, `@hooks/`, `@contexts/` — prefer these over relative imports
