@@ -59,6 +59,8 @@ export async function GET(request: NextRequest) {
         bodyweight: userData.bodyweight,
         dateOfBirth: userData.dateOfBirth,
         sex: userData.sex,
+        isGuest: userData.isGuest === true,
+        guestEventId: userData.guestEventId,
       };
 
       users.push(user);

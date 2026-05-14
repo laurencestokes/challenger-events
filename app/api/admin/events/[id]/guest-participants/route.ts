@@ -7,12 +7,39 @@ import {
   getEvent,
   createParticipation,
   getUser,
+  getUserParticipation,
 } from '@lib/firestore';
 import { db } from '@lib/firebase';
-import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { sendGuestWelcome, subscribeContact } from '@lib/email';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function calculateAgeFromDob(dob: unknown): number | undefined {
+  if (!dob) return undefined;
+  let birthDate: Date;
+  if (dob instanceof Date) {
+    birthDate = dob;
+  } else if (typeof dob === 'object' && dob !== null) {
+    const obj = dob as { toDate?: () => Date; seconds?: number };
+    if (typeof obj.toDate === 'function') {
+      birthDate = obj.toDate();
+    } else if (typeof obj.seconds === 'number') {
+      birthDate = new Date(obj.seconds * 1000);
+    } else {
+      return undefined;
+    }
+  } else {
+    return undefined;
+  }
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -32,13 +59,57 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const eventId = id;
 
-    // Validate that the event exists
     const event = await getEvent(eventId);
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
     const body = await request.json();
+    const mode: 'existing' | 'guest' = body?.mode === 'existing' ? 'existing' : 'guest';
+
+    if (mode === 'existing') {
+      const { userId: targetUserId } = body;
+      if (!targetUserId || typeof targetUserId !== 'string') {
+        return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+      }
+
+      const targetUser = await getUser(targetUserId);
+      if (!targetUser) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      if (targetUser.isGuest) {
+        return NextResponse.json({ error: 'Use the guest flow for guest users' }, { status: 400 });
+      }
+
+      const existingParticipation = await getUserParticipation(targetUserId, eventId);
+      if (existingParticipation) {
+        return NextResponse.json(
+          {
+            error: `${targetUser.name} is already a participant in this event`,
+            error_code: 'ALREADY_PARTICIPATING',
+          },
+          { status: 409 },
+        );
+      }
+
+      await createParticipation({
+        userId: targetUserId,
+        eventId,
+      });
+
+      return NextResponse.json({
+        id: targetUser.id,
+        name: targetUser.name,
+        email: targetUser.email,
+        sex: targetUser.sex,
+        bodyweight: targetUser.bodyweight,
+        age: calculateAgeFromDob(targetUser.dateOfBirth),
+        isGuest: false,
+      });
+    }
+
+    // mode === 'guest'
     const { name, age, sex, bodyweight, email: rawEmail } = body;
 
     if (!name || !age || !sex || bodyweight === undefined) {
@@ -73,26 +144,25 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       if (existing && !existing.isGuest) {
         return NextResponse.json(
           {
-            error: `An account already exists for ${existing.name}. Add them as a regular participant via the event join code instead.`,
+            error: `An account already exists for ${existing.name}.`,
+            error_code: 'EMAIL_BELONGS_TO_REGISTERED_USER',
             existingUserId: existing.id,
             existingUserName: existing.name,
+            existingUserEmail: existing.email,
           },
           { status: 409 },
         );
       }
     }
 
-    // Generate unique uid for guest user
     const timestamp = Date.now();
     const guestUid = `guest-${eventId}-${timestamp}`;
     const guestEmail = providedEmail ?? `guest-${eventId}-${timestamp}@temp.local`;
 
-    // Calculate dateOfBirth from age (approximate - use Jan 1st of birth year)
     const currentYear = new Date().getFullYear();
     const birthYear = currentYear - age;
     const dateOfBirth = new Date(birthYear, 0, 1);
 
-    // Create guest user account
     const guestUser = await createUser({
       uid: guestUid,
       email: guestEmail,
@@ -101,25 +171,23 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       bodyweight: bodyweight,
       dateOfBirth: dateOfBirth,
       sex: sex as 'M' | 'F',
-      verificationStatus: 'VERIFIED', // Auto-verified for guests
+      verificationStatus: 'VERIFIED',
       isGuest: true,
       guestEventId: eventId,
     });
 
-    // Create participation record
     await createParticipation({
       userId: guestUser.id,
       eventId: eventId,
     });
 
-    // Auto-create competition verification for guest participants
     const { createCompetitionVerification } = await import('@lib/firestore');
     await createCompetitionVerification({
       userId: guestUser.id,
       eventId: eventId,
       bodyweight: bodyweight,
       status: 'VERIFIED',
-      verifiedBy: user.id, // Admin who created the guest
+      verifiedBy: user.id,
       verificationNotes: 'Auto-verified for guest participant',
     });
 
@@ -128,9 +196,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         await sendGuestWelcome(providedEmail, name, event.name);
       } catch (emailError) {
         console.error('Error sending guest welcome email:', emailError);
-        // Don't fail the request if the email fails
       }
-      // subscribeContact swallows its own errors; safe to call without a wrapper
       await subscribeContact(providedEmail, name);
     }
 
@@ -144,7 +210,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       isGuest: true,
     });
   } catch (error) {
-    console.error('Error creating guest participant:', error);
+    console.error('Error creating participant:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -167,114 +233,30 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
     const eventId = id;
 
-    // Validate that the event exists
     const event = await getEvent(eventId);
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    // Query guest participants for this specific event
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('isGuest', '==', true), where('guestEventId', '==', eventId));
     const querySnapshot = await getDocs(q);
 
-    const guestParticipants = await Promise.all(
-      querySnapshot.docs.map(async (docSnapshot) => {
-        const userData = docSnapshot.data();
-        // Calculate age from dateOfBirth
-        let calculatedAge: number | undefined;
-        if (userData.dateOfBirth) {
-          const birthDate =
-            userData.dateOfBirth instanceof Date
-              ? userData.dateOfBirth
-              : userData.dateOfBirth.toDate
-                ? userData.dateOfBirth.toDate()
-                : new Date(userData.dateOfBirth.seconds * 1000);
-          const today = new Date();
-          calculatedAge = today.getFullYear() - birthDate.getFullYear();
-          const monthDiff = today.getMonth() - birthDate.getMonth();
-          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-            calculatedAge--;
-          }
-        }
-
-        return {
-          id: docSnapshot.id,
-          name: userData.name || 'Unknown',
-          age: calculatedAge,
-          sex: userData.sex,
-          bodyweight: userData.bodyweight,
-          isGuest: true,
-        };
-      }),
-    );
+    const guestParticipants = querySnapshot.docs.map((docSnapshot) => {
+      const userData = docSnapshot.data();
+      return {
+        id: docSnapshot.id,
+        name: userData.name || 'Unknown',
+        age: calculateAgeFromDob(userData.dateOfBirth),
+        sex: userData.sex,
+        bodyweight: userData.bodyweight,
+        isGuest: true,
+      };
+    });
 
     return NextResponse.json({ participants: guestParticipants });
   } catch (error) {
     console.error('Error fetching guest participants:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-}
-
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const { id } = await params;
-    const authHeader = request.headers.get('authorization');
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const userId = authHeader.split('Bearer ')[1];
-    const user = await getUserByUid(userId);
-
-    if (!user || !isAdmin(user.role)) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
-
-    const eventId = id;
-    const body = await request.json();
-    const { participantId } = body;
-
-    if (!participantId) {
-      return NextResponse.json({ error: 'Participant ID is required' }, { status: 400 });
-    }
-
-    // Validate that the event exists
-    const event = await getEvent(eventId);
-    if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-    }
-
-    // Get the guest user and verify they belong to this event
-    const guestUser = await getUser(participantId);
-    if (!guestUser || !guestUser.isGuest || guestUser.guestEventId !== eventId) {
-      return NextResponse.json(
-        { error: 'Guest participant not found or does not belong to this event' },
-        { status: 404 },
-      );
-    }
-
-    // Delete participation records for this guest and event
-    const participationsRef = collection(db, 'participations');
-    const participationQuery = query(
-      participationsRef,
-      where('userId', '==', participantId),
-      where('eventId', '==', eventId),
-    );
-    const participationSnapshot = await getDocs(participationQuery);
-    await Promise.all(participationSnapshot.docs.map((docSnapshot) => deleteDoc(docSnapshot.ref)));
-
-    // Delete the guest user
-    const userRef = doc(db, 'users', participantId);
-    await deleteDoc(userRef);
-
-    return NextResponse.json({ message: 'Guest participant deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting guest participant:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

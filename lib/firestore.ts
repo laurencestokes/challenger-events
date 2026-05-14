@@ -928,3 +928,41 @@ export const checkCompetitionVerificationRequired = async (
   const verification = await getCompetitionVerification(userId, eventId);
   return !verification || verification.status !== 'VERIFIED';
 };
+
+// Event-scoped cascade helpers (used when admin removes a participant from an event)
+export const deleteParticipationsForUserEvent = async (
+  userId: string,
+  eventId: string,
+): Promise<number> => {
+  const participationsRef = collection(db, 'participations');
+  const q = query(
+    participationsRef,
+    where('userId', '==', userId),
+    where('eventId', '==', eventId),
+  );
+  const snapshot = await getDocs(q);
+  await Promise.all(snapshot.docs.map((d) => deleteDoc(d.ref)));
+  return snapshot.size;
+};
+
+export const deleteScoresForUserEvent = async (
+  userId: string,
+  eventId: string,
+): Promise<number> => {
+  const scoresRef = collection(db, 'scores');
+  const q = query(scoresRef, where('userId', '==', userId), where('eventId', '==', eventId));
+  const snapshot = await getDocs(q);
+  await Promise.all(snapshot.docs.map((d) => deleteDoc(d.ref)));
+  return snapshot.size;
+};
+
+export const deleteCompetitionVerificationForUserEvent = async (
+  userId: string,
+  eventId: string,
+): Promise<number> => {
+  const verificationRef = collection(db, 'competitionVerifications');
+  const q = query(verificationRef, where('userId', '==', userId), where('eventId', '==', eventId));
+  const snapshot = await getDocs(q);
+  await Promise.all(snapshot.docs.map((d) => deleteDoc(d.ref)));
+  return snapshot.size;
+};

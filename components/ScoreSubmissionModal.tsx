@@ -1,11 +1,22 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { api } from '@lib/api-client';
+import { queryKeys } from '@lib/queryKeys';
 import { calculateAgeFromDateOfBirth, convertFirestoreTimestamp } from '@lib/utils';
 import { SCORING_SYSTEMS } from '@constants/scoringSystems';
 import { parseTimeWithMilliseconds } from '@utils/scoring';
 import { FiX, FiCheckCircle } from 'react-icons/fi';
+
+function dobToInputValue(raw: unknown): string {
+  const d = convertFirestoreTimestamp(raw);
+  if (!d) return '';
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 interface Activity {
   id: string;
@@ -84,6 +95,16 @@ export default function ScoreSubmissionModal({
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const competitorWrapperRef = useRef<HTMLDivElement>(null);
 
+  // Inline edit-competitor state — admins can fix scoring-relevant fields without leaving the modal.
+  const queryClient = useQueryClient();
+  const [isEditingCompetitor, setIsEditingCompetitor] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editBodyweight, setEditBodyweight] = useState('');
+  const [editDob, setEditDob] = useState('');
+  const [editSex, setEditSex] = useState<'' | 'M' | 'F'>('');
+  const [isSavingCompetitor, setIsSavingCompetitor] = useState(false);
+  const [editError, setEditError] = useState('');
+
   const getParticipantLabel = useCallback((participant: Participant): string => {
     if (participant.isGuest) {
       const stats = [
@@ -158,6 +179,8 @@ export default function ScoreSubmissionModal({
       setIsCompetitorListOpen(false);
       setHighlightedIndex(-1);
       setError('');
+      setIsEditingCompetitor(false);
+      setEditError('');
     }
   }, [isOpen, eventId, fetchEventData]);
 
@@ -268,6 +291,8 @@ export default function ScoreSubmissionModal({
     const competitor = participants.find((p) => p.id === competitorId);
     setCompetitorDetails(competitor || null);
     setSelectedTeamId(''); // Reset team selection when competitor changes
+    setIsEditingCompetitor(false);
+    setEditError('');
 
     // Fetch competition verification data if competitor is selected
     if (competitorId) {
@@ -355,6 +380,85 @@ export default function ScoreSubmissionModal({
         e.preventDefault();
         setIsCompetitorListOpen(false);
       }
+    }
+  };
+
+  const openCompetitorEdit = () => {
+    if (!competitorDetails) return;
+    setEditName(competitorDetails.name || '');
+    setEditBodyweight(competitorDetails.bodyweight ? String(competitorDetails.bodyweight) : '');
+    setEditDob(dobToInputValue(competitorDetails.dateOfBirth));
+    setEditSex(competitorDetails.sex || '');
+    setEditError('');
+    setIsEditingCompetitor(true);
+  };
+
+  const saveCompetitorEdit = async () => {
+    if (!competitorDetails) return;
+    setEditError('');
+
+    const trimmedName = editName.trim();
+    if (trimmedName.length < 1 || trimmedName.length > 100) {
+      setEditError('Name must be 1-100 characters');
+      return;
+    }
+    const payload: Record<string, unknown> = { name: trimmedName };
+    if (editBodyweight !== '') {
+      const bw = Number(editBodyweight);
+      if (!Number.isFinite(bw) || bw <= 0 || bw > 500) {
+        setEditError('Bodyweight must be between 0 and 500 kg');
+        return;
+      }
+      payload.bodyweight = bw;
+    }
+    if (editDob !== '') {
+      const d = new Date(`${editDob}T00:00:00.000Z`);
+      if (isNaN(d.getTime())) {
+        setEditError('Invalid date of birth');
+        return;
+      }
+      payload.dateOfBirth = d.toISOString();
+    }
+    if (editSex !== '') {
+      payload.sex = editSex;
+    }
+
+    setIsSavingCompetitor(true);
+    try {
+      await api.put(`/api/admin/users/${competitorDetails.id}`, payload);
+
+      const updatedDob =
+        editDob !== '' ? new Date(`${editDob}T00:00:00.000Z`) : competitorDetails.dateOfBirth;
+      const updatedDetails: Participant = {
+        ...competitorDetails,
+        name: trimmedName,
+        bodyweight: editBodyweight !== '' ? Number(editBodyweight) : competitorDetails.bodyweight,
+        dateOfBirth: updatedDob as Date | undefined,
+        sex: editSex !== '' ? (editSex as 'M' | 'F') : competitorDetails.sex,
+        age:
+          editDob !== ''
+            ? calculateAgeFromDateOfBirth(new Date(`${editDob}T00:00:00.000Z`)) || undefined
+            : competitorDetails.age,
+      };
+      setCompetitorDetails(updatedDetails);
+      setParticipants((prev) =>
+        prev.map((p) => (p.id === updatedDetails.id ? { ...p, ...updatedDetails } : p)),
+      );
+      setCompetitorQuery(getParticipantLabel(updatedDetails));
+
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.participants(eventId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.events.competitionVerification(eventId),
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.leaderboard(eventId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.public.leaderboard(eventId) });
+
+      setIsEditingCompetitor(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to save competitor';
+      setEditError(msg);
+    } finally {
+      setIsSavingCompetitor(false);
     }
   };
 
@@ -473,7 +577,18 @@ export default function ScoreSubmissionModal({
           {/* Competitor Details */}
           {competitorDetails && (
             <div className="bg-surface-high/50 p-4 rounded-lg border border-border">
-              <h4 className="text-sm font-medium text-white mb-2">Competitor Details</h4>
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium text-white">Competitor Details</h4>
+                {!isEditingCompetitor && (
+                  <button
+                    type="button"
+                    onClick={openCompetitorEdit}
+                    className="text-xs text-orange-400 hover:text-orange-300"
+                  >
+                    Edit details
+                  </button>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
                   <span className="text-muted">Profile Weight:</span>
@@ -514,6 +629,86 @@ export default function ScoreSubmissionModal({
                   <span className="ml-1 text-white">{competitorDetails.sex || 'Not set'}</span>
                 </div>
               </div>
+              {isEditingCompetitor && (
+                <div className="mt-3 pt-3 border-t border-border space-y-2">
+                  <div>
+                    <label htmlFor="edit-name" className="block text-xs text-text-secondary mb-1">
+                      Name
+                    </label>
+                    <input
+                      id="edit-name"
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="w-full px-2 py-1 text-xs bg-surface-high border border-border rounded text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="edit-bw" className="block text-xs text-text-secondary mb-1">
+                      Bodyweight (kg)
+                    </label>
+                    <input
+                      id="edit-bw"
+                      type="number"
+                      min="0"
+                      max="500"
+                      step="0.1"
+                      value={editBodyweight}
+                      onChange={(e) => setEditBodyweight(e.target.value)}
+                      className="w-full px-2 py-1 text-xs bg-surface-high border border-border rounded text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="edit-dob" className="block text-xs text-text-secondary mb-1">
+                      Date of birth
+                    </label>
+                    <input
+                      id="edit-dob"
+                      type="date"
+                      value={editDob}
+                      onChange={(e) => setEditDob(e.target.value)}
+                      className="w-full px-2 py-1 text-xs bg-surface-high border border-border rounded text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="edit-sex" className="block text-xs text-text-secondary mb-1">
+                      Sex
+                    </label>
+                    <select
+                      id="edit-sex"
+                      value={editSex}
+                      onChange={(e) => setEditSex(e.target.value as '' | 'M' | 'F')}
+                      className="w-full px-2 py-1 text-xs bg-surface-high border border-border rounded text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    >
+                      <option value="">(unset)</option>
+                      <option value="M">Male</option>
+                      <option value="F">Female</option>
+                    </select>
+                  </div>
+                  {editError && <p className="text-xs text-red-400">{editError}</p>}
+                  <div className="flex gap-2 justify-end pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingCompetitor(false);
+                        setEditError('');
+                      }}
+                      disabled={isSavingCompetitor}
+                      className="px-2 py-1 text-xs bg-surface-high text-text-secondary rounded hover:bg-surface-high transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={saveCompetitorEdit}
+                      disabled={isSavingCompetitor}
+                      className="px-2 py-1 text-xs bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors disabled:opacity-50"
+                    >
+                      {isSavingCompetitor ? 'Saving...' : 'Save'}
+                    </button>
+                  </div>
+                </div>
+              )}
               {competitionVerification?.status === 'VERIFIED' && (
                 <p className="text-xs text-green-400 mt-1">
                   ✅ Score will be calculated using competition weight (

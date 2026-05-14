@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api, apiRequest } from '@lib/api-client';
+import { api } from '@lib/api-client';
+import { getCurrentUser } from '@lib/firebase-auth';
 import { queryKeys } from '@lib/queryKeys';
 import ProtectedRoute from '@components/ProtectedRoute';
 import WelcomeSection from '@components/WelcomeSection';
@@ -23,6 +24,15 @@ interface Participant {
   joinedAt?: unknown;
   teamId?: string;
   teamName?: string;
+}
+
+interface AdminUserSummary {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  isGuest?: boolean;
+  status?: string;
 }
 
 interface Team {
@@ -51,6 +61,29 @@ interface Score {
   updatedAt: Date;
 }
 
+interface CollisionInfo {
+  existingUserId: string;
+  existingUserName: string;
+  existingUserEmail: string;
+}
+
+// Inline fetch wrapper used for participant adds: we need to inspect 409 response bodies
+// (the shared api-client throws away anything but the message).
+async function postParticipant(eventId: string, body: unknown) {
+  const user = getCurrentUser();
+  if (!user) throw new Error('User not authenticated');
+  const response = await fetch(`/api/admin/events/${eventId}/guest-participants`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${user.uid}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const payload = await response.json().catch(() => ({}));
+  return { ok: response.ok, status: response.status, payload };
+}
+
 export default function EventParticipantsPage() {
   const params = useParams();
   const router = useRouter();
@@ -69,6 +102,15 @@ export default function EventParticipantsPage() {
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [scoreToDelete, setScoreToDelete] = useState<Score | null>(null);
   const [assigningTeam, setAssigningTeam] = useState<string | null>(null);
+
+  // Add-participant modal: mode + existing-user state
+  const [addMode, setAddMode] = useState<'existing' | 'guest'>('existing');
+  const [existingSearch, setExistingSearch] = useState('');
+  const [selectedExistingUserId, setSelectedExistingUserId] = useState<string | null>(null);
+  const [collision, setCollision] = useState<CollisionInfo | null>(null);
+
+  // Remove participant confirmation
+  const [participantToRemove, setParticipantToRemove] = useState<Participant | null>(null);
 
   // Form state for adding/editing guest
   const [name, setName] = useState('');
@@ -103,6 +145,14 @@ export default function EventParticipantsPage() {
     enabled: !!eventId,
   });
 
+  // Admin users list — used to power the "Existing user" search in the add-participant modal.
+  // Lazy-loaded only when needed (modal is open + we're on existing tab or showing a collision prompt).
+  const adminUsersQuery = useQuery({
+    queryKey: queryKeys.users.all(),
+    queryFn: () => api.get('/api/admin/users'),
+    enabled: !!eventId && showAddModal && (addMode === 'existing' || !!collision),
+  });
+
   // Derived data
   const event = eventQuery.data ?? null;
   const participants: Participant[] = participantsQuery.data?.participants || [];
@@ -114,70 +164,142 @@ export default function EventParticipantsPage() {
   const isLoading = eventQuery.isLoading || participantsQuery.isLoading;
   const isLoadingOrphanedScores = orphanedScoresQuery.isFetching;
 
+  const participantIds = useMemo(() => new Set(participants.map((p) => p.id)), [participants]);
+
+  const eligibleUsers: AdminUserSummary[] = useMemo(() => {
+    const all: AdminUserSummary[] = adminUsersQuery.data?.users || [];
+    return all.filter((u) => !u.isGuest && !participantIds.has(u.id));
+  }, [adminUsersQuery.data, participantIds]);
+
+  const filteredExistingUsers = useMemo(() => {
+    const q = existingSearch.trim().toLowerCase();
+    if (!q) return eligibleUsers.slice(0, 20);
+    return eligibleUsers
+      .filter(
+        (u) =>
+          (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q),
+      )
+      .slice(0, 20);
+  }, [eligibleUsers, existingSearch]);
+
   // --- Mutations ---
 
-  const guestMutation = useMutation({
+  const addParticipantMutation = useMutation({
     mutationFn: async (payload: {
-      editingParticipant: Participant | null;
-      name: string;
-      email: string;
-      ageNum: number;
-      sex: 'M' | 'F';
-      bodyweightNum: number;
+      mode: 'existing' | 'guest';
+      userId?: string;
+      name?: string;
+      email?: string;
+      ageNum?: number;
+      sex?: 'M' | 'F';
+      bodyweightNum?: number;
     }) => {
-      if (payload.editingParticipant) {
-        const currentYear = new Date().getFullYear();
-        const birthYear = currentYear - payload.ageNum;
-        const dateOfBirth = new Date(birthYear, 0, 1);
-        return api.put(`/api/admin/users/${payload.editingParticipant.id}`, {
-          name: payload.name,
-          bodyweight: payload.bodyweightNum,
-          dateOfBirth: dateOfBirth.toISOString(),
-          sex: payload.sex,
+      if (payload.mode === 'existing') {
+        const result = await postParticipant(eventId, {
+          mode: 'existing',
+          userId: payload.userId,
         });
-      } else {
-        return api.post(`/api/admin/events/${eventId}/guest-participants`, {
-          name: payload.name,
-          email: payload.email || undefined,
-          age: payload.ageNum,
-          sex: payload.sex,
-          bodyweight: payload.bodyweightNum,
+        if (!result.ok) {
+          throw Object.assign(new Error(result.payload?.error || 'Failed to add participant'), {
+            responseBody: result.payload,
+            status: result.status,
+          });
+        }
+        return result.payload;
+      }
+
+      const result = await postParticipant(eventId, {
+        mode: 'guest',
+        name: payload.name,
+        email: payload.email || undefined,
+        age: payload.ageNum,
+        sex: payload.sex,
+        bodyweight: payload.bodyweightNum,
+      });
+      if (!result.ok) {
+        throw Object.assign(new Error(result.payload?.error || 'Failed to add participant'), {
+          responseBody: result.payload,
+          status: result.status,
         });
       }
+      return result.payload;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.events.participants(eventId) });
-      setName('');
-      setEmail('');
-      setAge('');
-      setSex('M');
-      setBodyweight('');
-      setEditingParticipant(null);
-      setShowAddModal(false);
+      closeAddModal();
     },
-    onError: (err: Error) => {
+    onError: (
+      err: Error & {
+        responseBody?: {
+          error_code?: string;
+          existingUserId?: string;
+          existingUserName?: string;
+          existingUserEmail?: string;
+        };
+      },
+    ) => {
+      if (err.responseBody?.error_code === 'EMAIL_BELONGS_TO_REGISTERED_USER') {
+        setCollision({
+          existingUserId: err.responseBody.existingUserId!,
+          existingUserName: err.responseBody.existingUserName!,
+          existingUserEmail: err.responseBody.existingUserEmail || '',
+        });
+        return;
+      }
       setError(err.message || 'Failed to save participant');
     },
   });
 
-  const deleteGuestMutation = useMutation({
-    mutationFn: (participantId: string) =>
-      apiRequest(`/api/admin/events/${eventId}/guest-participants`, {
-        method: 'DELETE',
-        body: JSON.stringify({ participantId }),
-      }),
+  // PUT against /api/admin/users/[id] — used when editing an existing guest participant from this page.
+  const editGuestMutation = useMutation({
+    mutationFn: async (payload: {
+      participantId: string;
+      name: string;
+      ageNum: number;
+      sex: 'M' | 'F';
+      bodyweightNum: number;
+    }) => {
+      const currentYear = new Date().getFullYear();
+      const birthYear = currentYear - payload.ageNum;
+      const dateOfBirth = new Date(birthYear, 0, 1);
+      return api.put(`/api/admin/users/${payload.participantId}`, {
+        name: payload.name,
+        bodyweight: payload.bodyweightNum,
+        dateOfBirth: dateOfBirth.toISOString(),
+        sex: payload.sex,
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.events.participants(eventId) });
+      closeAddModal();
     },
     onError: (err: Error) => {
-      setError(err.message || 'Failed to delete participant');
+      setError(err.message || 'Failed to update participant');
+    },
+  });
+
+  const removeParticipantMutation = useMutation({
+    mutationFn: (participantId: string) =>
+      api.delete(`/api/admin/events/${eventId}/participants/${participantId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.participants(eventId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.events.leaderboard(eventId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.events.competitionVerification(eventId),
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.public.leaderboard(eventId) });
+      queryClient.invalidateQueries({ queryKey: ['events', eventId, 'orphaned-scores'] });
+      setParticipantToRemove(null);
+    },
+    onError: (err: Error) => {
+      setError(err.message || 'Failed to remove participant');
+      setParticipantToRemove(null);
     },
   });
 
   const deleteScoreMutation = useMutation({
     mutationFn: (scoreId: string) => api.delete(`/api/scores/${scoreId}`),
     onSuccess: async () => {
-      // Re-fetch participant scores manually (on-demand, no caching)
       if (selectedParticipant) {
         const scoresData = await api.get(
           `/api/events/${eventId}/participants/${selectedParticipant.id}/scores`,
@@ -216,7 +338,22 @@ export default function EventParticipantsPage() {
 
   // --- Handlers ---
 
-  const handleAddGuest = async (e: React.FormEvent) => {
+  const closeAddModal = () => {
+    setShowAddModal(false);
+    setEditingParticipant(null);
+    setAddMode('existing');
+    setExistingSearch('');
+    setSelectedExistingUserId(null);
+    setCollision(null);
+    setName('');
+    setEmail('');
+    setAge('');
+    setSex('M');
+    setBodyweight('');
+    setError('');
+  };
+
+  const handleSubmitGuest = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -244,8 +381,19 @@ export default function EventParticipantsPage() {
       return;
     }
 
-    guestMutation.mutate({
-      editingParticipant,
+    if (editingParticipant) {
+      editGuestMutation.mutate({
+        participantId: editingParticipant.id,
+        name,
+        ageNum,
+        sex,
+        bodyweightNum,
+      });
+      return;
+    }
+
+    addParticipantMutation.mutate({
+      mode: 'guest',
       name,
       email: trimmedEmail,
       ageNum,
@@ -254,10 +402,22 @@ export default function EventParticipantsPage() {
     });
   };
 
+  const handleAddExistingUser = (userId: string) => {
+    setError('');
+    addParticipantMutation.mutate({ mode: 'existing', userId });
+  };
+
+  const handleConfirmCollision = () => {
+    if (!collision) return;
+    setError('');
+    addParticipantMutation.mutate({ mode: 'existing', userId: collision.existingUserId });
+  };
+
   const handleEditGuest = (participant: Participant) => {
     if (!participant.isGuest) return;
 
     setEditingParticipant(participant);
+    setAddMode('guest');
     setName(participant.name);
     setEmail(
       participant.email && !participant.email.endsWith('@temp.local') ? participant.email : '',
@@ -268,22 +428,8 @@ export default function EventParticipantsPage() {
     setShowAddModal(true);
   };
 
-  const handleDeleteGuest = (participantId: string) => {
-    if (!confirm('Are you sure you want to delete this guest participant?')) {
-      return;
-    }
-    deleteGuestMutation.mutate(participantId);
-  };
-
-  const handleCloseModal = () => {
-    setShowAddModal(false);
-    setEditingParticipant(null);
-    setName('');
-    setEmail('');
-    setAge('');
-    setSex('M');
-    setBodyweight('');
-    setError('');
+  const handleRemoveParticipant = (participant: Participant) => {
+    setParticipantToRemove(participant);
   };
 
   const handleViewScores = async (participant: Participant) => {
@@ -350,6 +496,14 @@ export default function EventParticipantsPage() {
   const regularParticipants = participants.filter((p) => !p.isGuest);
   const guestParticipants = participants.filter((p) => p.isGuest);
 
+  const removeConfirmMessage = (() => {
+    if (!participantToRemove) return '';
+    if (participantToRemove.isGuest) {
+      return `Remove guest "${participantToRemove.name}" from this event? Their guest profile will be deleted.`;
+    }
+    return `Remove "${participantToRemove.name}" from this event? All their scores for this event will be permanently deleted. The user's account is preserved. (Note: team memberships are not modified.)`;
+  })();
+
   return (
     <ProtectedRoute requireAdmin>
       <div className="min-h-screen">
@@ -397,10 +551,13 @@ export default function EventParticipantsPage() {
                   Add Score
                 </button>
                 <button
-                  onClick={() => setShowAddModal(true)}
+                  onClick={() => {
+                    setAddMode('existing');
+                    setShowAddModal(true);
+                  }}
                   className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
                 >
-                  Add Guest Participant
+                  Add Participant
                 </button>
               </div>
             </div>
@@ -488,7 +645,7 @@ export default function EventParticipantsPage() {
                             </td>
                           )}
                           <td className="py-3 px-4">
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap">
                               <button
                                 onClick={() => handleViewScores(participant)}
                                 className="text-blue-400 hover:text-blue-300 text-sm"
@@ -500,6 +657,12 @@ export default function EventParticipantsPage() {
                                 className="text-orange-400 hover:text-orange-300 text-sm"
                               >
                                 Add Score
+                              </button>
+                              <button
+                                onClick={() => handleRemoveParticipant(participant)}
+                                className="text-red-400 hover:text-red-300 text-sm"
+                              >
+                                Remove
                               </button>
                             </div>
                           </td>
@@ -520,7 +683,7 @@ export default function EventParticipantsPage() {
               </div>
               {guestParticipants.length === 0 ? (
                 <p className="text-muted text-center py-8">
-                  No guest participants yet. Click "Add Guest Participant" to add one.
+                  No guest participants yet. Click "Add Participant" to add one.
                 </p>
               ) : (
                 <div className="overflow-x-auto">
@@ -587,7 +750,7 @@ export default function EventParticipantsPage() {
                             </td>
                           )}
                           <td className="py-3 px-4">
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap">
                               <button
                                 onClick={() => handleViewScores(participant)}
                                 className="text-blue-400 hover:text-blue-300 text-sm"
@@ -607,10 +770,10 @@ export default function EventParticipantsPage() {
                                 Edit
                               </button>
                               <button
-                                onClick={() => handleDeleteGuest(participant.id)}
+                                onClick={() => handleRemoveParticipant(participant)}
                                 className="text-red-400 hover:text-red-300 text-sm"
                               >
-                                Delete
+                                Remove
                               </button>
                             </div>
                           </td>
@@ -698,135 +861,280 @@ export default function EventParticipantsPage() {
             )}
           </div>
 
-          {/* Add/Edit Guest Modal */}
+          {/* Add/Edit Participant Modal */}
           {showAddModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="bg-surface-low rounded-2xl border border-surface-high p-6 max-w-md w-full mx-4">
+              <div className="bg-surface-low rounded-2xl border border-surface-high p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
                 <h2 className="text-2xl font-bold text-white mb-4">
-                  {editingParticipant ? 'Edit Guest Participant' : 'Add Guest Participant'}
+                  {editingParticipant ? 'Edit Guest Participant' : 'Add Participant'}
                 </h2>
-                <form onSubmit={handleAddGuest} className="space-y-4">
-                  <div>
-                    <label
-                      htmlFor="name"
-                      className="block text-sm font-medium text-text-secondary mb-1"
-                    >
-                      Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      required
-                      className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium text-text-secondary mb-1"
-                    >
-                      Email (optional)
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      placeholder="competitor@example.com"
-                      disabled={!!editingParticipant}
-                      className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-60 disabled:cursor-not-allowed"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                    {!editingParticipant && (
-                      <p className="mt-1 text-xs text-text-secondary">
-                        If provided, we&apos;ll email them a welcome and they can register later to
-                        claim their scores.
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="age"
-                      className="block text-sm font-medium text-text-secondary mb-1"
-                    >
-                      Age *
-                    </label>
-                    <input
-                      type="number"
-                      id="age"
-                      required
-                      min="1"
-                      max="120"
-                      className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      value={age}
-                      onChange={(e) => setAge(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="sex"
-                      className="block text-sm font-medium text-text-secondary mb-1"
-                    >
-                      Sex *
-                    </label>
-                    <select
-                      id="sex"
-                      required
-                      aria-label="Sex"
-                      className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      value={sex}
-                      onChange={(e) => setSex(e.target.value as 'M' | 'F')}
-                    >
-                      <option value="M">Male</option>
-                      <option value="F">Female</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="bodyweight"
-                      className="block text-sm font-medium text-text-secondary mb-1"
-                    >
-                      Bodyweight (kg) *
-                    </label>
-                    <input
-                      type="number"
-                      id="bodyweight"
-                      required
-                      min="0"
-                      max="500"
-                      step="0.1"
-                      className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      value={bodyweight}
-                      onChange={(e) => setBodyweight(e.target.value)}
-                    />
-                  </div>
-                  {error && (
-                    <div className="bg-red-900/30 border border-red-700/50 rounded-lg p-3">
-                      <p className="text-red-400 text-sm">{error}</p>
-                    </div>
-                  )}
-                  <div className="flex justify-end gap-3 pt-4">
+
+                {/* Tabs — only when adding (not editing) */}
+                {!editingParticipant && (
+                  <div className="flex mb-4 border-b border-surface-high">
                     <button
                       type="button"
-                      onClick={handleCloseModal}
-                      className="px-4 py-2 bg-surface-high text-text-secondary rounded-lg hover:bg-surface-high transition-colors"
+                      onClick={() => {
+                        setAddMode('existing');
+                        setCollision(null);
+                        setError('');
+                      }}
+                      className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                        addMode === 'existing'
+                          ? 'border-orange-500 text-white'
+                          : 'border-transparent text-muted hover:text-text-secondary'
+                      }`}
                     >
-                      Cancel
+                      Existing user
                     </button>
                     <button
-                      type="submit"
-                      disabled={guestMutation.isPending}
-                      className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
+                      type="button"
+                      onClick={() => {
+                        setAddMode('guest');
+                        setCollision(null);
+                        setError('');
+                      }}
+                      className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                        addMode === 'guest'
+                          ? 'border-orange-500 text-white'
+                          : 'border-transparent text-muted hover:text-text-secondary'
+                      }`}
                     >
-                      {guestMutation.isPending
-                        ? 'Saving...'
-                        : editingParticipant
-                          ? 'Update'
-                          : 'Add'}
+                      Guest
                     </button>
                   </div>
-                </form>
+                )}
+
+                {/* Collision confirm panel */}
+                {collision && (
+                  <div className="mb-4 bg-orange-900/30 border border-orange-700/50 rounded-lg p-4">
+                    <p className="text-orange-200 text-sm mb-3">
+                      An account already exists for <strong>{collision.existingUserName}</strong>
+                      {collision.existingUserEmail ? ` (${collision.existingUserEmail})` : ''}. Add
+                      them as a participant?
+                    </p>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCollision(null)}
+                        className="px-3 py-1 bg-surface-high text-text-secondary rounded-lg hover:bg-surface-high transition-colors text-sm"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleConfirmCollision}
+                        disabled={addParticipantMutation.isPending}
+                        className="px-3 py-1 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm disabled:opacity-50"
+                      >
+                        {addParticipantMutation.isPending ? 'Adding...' : 'Yes, add them'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Existing user tab */}
+                {!editingParticipant && !collision && addMode === 'existing' && (
+                  <div className="space-y-3">
+                    <div>
+                      <label
+                        htmlFor="existing-search"
+                        className="block text-sm font-medium text-text-secondary mb-1"
+                      >
+                        Search by name or email
+                      </label>
+                      <input
+                        type="text"
+                        id="existing-search"
+                        autoComplete="off"
+                        className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        value={existingSearch}
+                        onChange={(e) => setExistingSearch(e.target.value)}
+                        placeholder="Start typing..."
+                      />
+                    </div>
+                    <div className="max-h-64 overflow-y-auto border border-surface-high rounded-lg">
+                      {adminUsersQuery.isLoading ? (
+                        <p className="text-muted text-sm p-3">Loading users...</p>
+                      ) : filteredExistingUsers.length === 0 ? (
+                        <p className="text-muted text-sm p-3">
+                          {existingSearch
+                            ? 'No matching users (already-participating users are hidden).'
+                            : 'No eligible users found.'}
+                        </p>
+                      ) : (
+                        <ul>
+                          {filteredExistingUsers.map((u) => (
+                            <li
+                              key={u.id}
+                              className={`flex items-center justify-between px-3 py-2 border-b border-surface-high/50 ${
+                                selectedExistingUserId === u.id ? 'bg-surface-high/50' : ''
+                              }`}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => setSelectedExistingUserId(u.id)}
+                                className="flex-1 text-left"
+                              >
+                                <p className="text-sm text-white">{u.name}</p>
+                                <p className="text-xs text-muted">{u.email}</p>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleAddExistingUser(u.id)}
+                                disabled={addParticipantMutation.isPending}
+                                className="ml-3 px-3 py-1 text-xs bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors disabled:opacity-50"
+                              >
+                                Add
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    {error && (
+                      <div className="bg-red-900/30 border border-red-700/50 rounded-lg p-3">
+                        <p className="text-red-400 text-sm">{error}</p>
+                      </div>
+                    )}
+                    <div className="flex justify-end pt-2">
+                      <button
+                        type="button"
+                        onClick={closeAddModal}
+                        className="px-4 py-2 bg-surface-high text-text-secondary rounded-lg hover:bg-surface-high transition-colors"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Guest tab (or edit-guest form) */}
+                {(editingParticipant || addMode === 'guest') && !collision && (
+                  <form onSubmit={handleSubmitGuest} className="space-y-4">
+                    <div>
+                      <label
+                        htmlFor="name"
+                        className="block text-sm font-medium text-text-secondary mb-1"
+                      >
+                        Name *
+                      </label>
+                      <input
+                        type="text"
+                        id="name"
+                        required
+                        className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="email"
+                        className="block text-sm font-medium text-text-secondary mb-1"
+                      >
+                        Email (optional)
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        placeholder="competitor@example.com"
+                        disabled={!!editingParticipant}
+                        className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                      {!editingParticipant && (
+                        <p className="mt-1 text-xs text-text-secondary">
+                          If provided, we&apos;ll email them a welcome and they can register later
+                          to claim their scores. If the email matches an existing account,
+                          we&apos;ll offer to add the registered user instead.
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="age"
+                        className="block text-sm font-medium text-text-secondary mb-1"
+                      >
+                        Age *
+                      </label>
+                      <input
+                        type="number"
+                        id="age"
+                        required
+                        min="1"
+                        max="120"
+                        className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        value={age}
+                        onChange={(e) => setAge(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="sex"
+                        className="block text-sm font-medium text-text-secondary mb-1"
+                      >
+                        Sex *
+                      </label>
+                      <select
+                        id="sex"
+                        required
+                        aria-label="Sex"
+                        className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        value={sex}
+                        onChange={(e) => setSex(e.target.value as 'M' | 'F')}
+                      >
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="bodyweight"
+                        className="block text-sm font-medium text-text-secondary mb-1"
+                      >
+                        Bodyweight (kg) *
+                      </label>
+                      <input
+                        type="number"
+                        id="bodyweight"
+                        required
+                        min="0"
+                        max="500"
+                        step="0.1"
+                        className="w-full px-4 py-2 bg-surface-high border border-border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        value={bodyweight}
+                        onChange={(e) => setBodyweight(e.target.value)}
+                      />
+                    </div>
+                    {error && (
+                      <div className="bg-red-900/30 border border-red-700/50 rounded-lg p-3">
+                        <p className="text-red-400 text-sm">{error}</p>
+                      </div>
+                    )}
+                    <div className="flex justify-end gap-3 pt-4">
+                      <button
+                        type="button"
+                        onClick={closeAddModal}
+                        className="px-4 py-2 bg-surface-high text-text-secondary rounded-lg hover:bg-surface-high transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={addParticipantMutation.isPending || editGuestMutation.isPending}
+                        className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
+                      >
+                        {addParticipantMutation.isPending || editGuestMutation.isPending
+                          ? 'Saving...'
+                          : editingParticipant
+                            ? 'Update'
+                            : 'Add'}
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             </div>
           )}
@@ -926,6 +1234,22 @@ export default function EventParticipantsPage() {
               </div>
             </div>
           )}
+
+          {/* Remove Participant Confirmation Modal */}
+          <ConfirmModal
+            isOpen={!!participantToRemove}
+            title="Remove Participant"
+            message={removeConfirmMessage}
+            confirmText="Remove"
+            cancelText="Cancel"
+            isDestructive={true}
+            onConfirm={() => {
+              if (participantToRemove) {
+                removeParticipantMutation.mutate(participantToRemove.id);
+              }
+            }}
+            onCancel={() => setParticipantToRemove(null)}
+          />
 
           {/* Delete Score Confirmation Modal */}
           <ConfirmModal

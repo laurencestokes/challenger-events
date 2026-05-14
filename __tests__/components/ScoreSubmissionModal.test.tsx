@@ -1,15 +1,23 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ScoreSubmissionModal from '../../components/ScoreSubmissionModal';
 
 const mockGet = jest.fn();
 const mockPost = jest.fn();
+const mockPut = jest.fn();
 jest.mock('../../lib/api-client', () => ({
   api: {
     get: (...args: any[]) => mockGet(...args),
     post: (...args: any[]) => mockPost(...args),
+    put: (...args: any[]) => mockPut(...args),
   },
 }));
+
+function renderWithClient(ui: React.ReactElement) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+}
 
 // Mock ChallengerData to avoid ESM import issues
 jest.mock('@challengerco/challenger-data', () => ({
@@ -70,17 +78,17 @@ describe('ScoreSubmissionModal', () => {
   });
 
   it('renders nothing when closed', () => {
-    render(<ScoreSubmissionModal {...defaultProps} isOpen={false} />);
+    renderWithClient(<ScoreSubmissionModal {...defaultProps} isOpen={false} />);
     expect(screen.queryByText('Submit Score')).not.toBeInTheDocument();
   });
 
   it('renders modal when open', async () => {
-    render(<ScoreSubmissionModal {...defaultProps} />);
+    renderWithClient(<ScoreSubmissionModal {...defaultProps} />);
     expect(screen.getByRole('heading', { name: 'Submit Score' })).toBeInTheDocument();
   });
 
   it('fetches event data on open', async () => {
-    render(<ScoreSubmissionModal {...defaultProps} />);
+    renderWithClient(<ScoreSubmissionModal {...defaultProps} />);
 
     await waitFor(() => {
       expect(mockGet).toHaveBeenCalledWith('/api/events/event1');
@@ -89,7 +97,7 @@ describe('ScoreSubmissionModal', () => {
   });
 
   it('populates competitor dropdown', async () => {
-    render(<ScoreSubmissionModal {...defaultProps} />);
+    renderWithClient(<ScoreSubmissionModal {...defaultProps} />);
 
     await waitFor(() => expect(mockGet).toHaveBeenCalledWith('/api/events/event1'));
 
@@ -103,7 +111,7 @@ describe('ScoreSubmissionModal', () => {
   });
 
   it('populates workout dropdown', async () => {
-    render(<ScoreSubmissionModal {...defaultProps} />);
+    renderWithClient(<ScoreSubmissionModal {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText('Back Squat')).toBeInTheDocument();
@@ -112,7 +120,7 @@ describe('ScoreSubmissionModal', () => {
   });
 
   it('shows validation error when fields are empty', async () => {
-    render(<ScoreSubmissionModal {...defaultProps} />);
+    renderWithClient(<ScoreSubmissionModal {...defaultProps} />);
 
     await waitFor(() => expect(mockGet).toHaveBeenCalled());
 
@@ -122,7 +130,7 @@ describe('ScoreSubmissionModal', () => {
 
   it('submits score successfully', async () => {
     mockPost.mockResolvedValue({ score: { id: 's1' } });
-    render(<ScoreSubmissionModal {...defaultProps} />);
+    renderWithClient(<ScoreSubmissionModal {...defaultProps} />);
 
     await waitFor(() => expect(mockGet).toHaveBeenCalledWith('/api/events/event1'));
 
@@ -156,7 +164,7 @@ describe('ScoreSubmissionModal', () => {
 
   it('shows error on submission failure', async () => {
     mockPost.mockRejectedValue(new Error('Score already exists'));
-    render(<ScoreSubmissionModal {...defaultProps} />);
+    renderWithClient(<ScoreSubmissionModal {...defaultProps} />);
 
     await waitFor(() => expect(mockGet).toHaveBeenCalledWith('/api/events/event1'));
 
@@ -174,17 +182,63 @@ describe('ScoreSubmissionModal', () => {
   });
 
   it('calls onClose when Cancel is clicked', async () => {
-    render(<ScoreSubmissionModal {...defaultProps} />);
+    renderWithClient(<ScoreSubmissionModal {...defaultProps} />);
     fireEvent.click(screen.getByText('Cancel'));
     expect(defaultProps.onClose).toHaveBeenCalled();
   });
 
   it('shows fetch error', async () => {
     mockGet.mockRejectedValue(new Error('Network error'));
-    render(<ScoreSubmissionModal {...defaultProps} />);
+    renderWithClient(<ScoreSubmissionModal {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText('Failed to fetch event data')).toBeInTheDocument();
     });
+  });
+
+  it('opens inline competitor edit form and submits via PUT', async () => {
+    mockPut.mockResolvedValue({ message: 'User updated successfully' });
+    renderWithClient(<ScoreSubmissionModal {...defaultProps} />);
+
+    await waitFor(() => expect(mockGet).toHaveBeenCalledWith('/api/events/event1'));
+
+    // Pick Alice
+    fireEvent.focus(screen.getByLabelText(/Competitor/));
+    await waitFor(() => expect(screen.getByText(/Alice/)).toBeInTheDocument());
+    fireEvent.mouseDown(screen.getByText(/Alice/));
+
+    // The Edit details button should now appear next to the Competitor Details header
+    const editBtn = await screen.findByRole('button', { name: /edit details/i });
+    fireEvent.click(editBtn);
+
+    // Adjust bodyweight and save
+    const bwInput = screen.getByLabelText(/Bodyweight \(kg\)/);
+    fireEvent.change(bwInput, { target: { value: '70' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+
+    await waitFor(() => {
+      expect(mockPut).toHaveBeenCalledWith(
+        '/api/admin/users/u1',
+        expect.objectContaining({ bodyweight: 70 }),
+      );
+    });
+  });
+
+  it('shows inline edit validation error for out-of-range bodyweight', async () => {
+    renderWithClient(<ScoreSubmissionModal {...defaultProps} />);
+
+    await waitFor(() => expect(mockGet).toHaveBeenCalledWith('/api/events/event1'));
+
+    fireEvent.focus(screen.getByLabelText(/Competitor/));
+    await waitFor(() => expect(screen.getByText(/Alice/)).toBeInTheDocument());
+    fireEvent.mouseDown(screen.getByText(/Alice/));
+
+    fireEvent.click(await screen.findByRole('button', { name: /edit details/i }));
+    fireEvent.change(screen.getByLabelText(/Bodyweight \(kg\)/), { target: { value: '600' } });
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+
+    expect(screen.getByText(/Bodyweight must be between 0 and 500 kg/)).toBeInTheDocument();
+    expect(mockPut).not.toHaveBeenCalled();
   });
 });

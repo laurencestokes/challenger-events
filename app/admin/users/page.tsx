@@ -29,6 +29,7 @@ interface User {
   bodyweight?: number;
   dateOfBirth?: unknown;
   sex?: 'M' | 'F';
+  isGuest?: boolean;
 }
 
 interface UserStats {
@@ -51,6 +52,7 @@ export default function ManageUsers() {
   const [roleFilter, setRoleFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [verificationFilter, setVerificationFilter] = useState('ALL');
+  const [guestFilter, setGuestFilter] = useState<'ALL' | 'REGISTERED' | 'GUEST'>('ALL');
 
   // UI state
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -98,8 +100,14 @@ export default function ManageUsers() {
       filtered = filtered.filter((user) => user.verificationStatus === verificationFilter);
     }
 
+    if (guestFilter === 'GUEST') {
+      filtered = filtered.filter((user) => user.isGuest === true);
+    } else if (guestFilter === 'REGISTERED') {
+      filtered = filtered.filter((user) => !user.isGuest);
+    }
+
     return filtered;
-  }, [users, searchTerm, roleFilter, statusFilter, verificationFilter]);
+  }, [users, searchTerm, roleFilter, statusFilter, verificationFilter, guestFilter]);
 
   const verifyMutation = useMutation({
     mutationFn: ({
@@ -491,6 +499,18 @@ export default function ManageUsers() {
                   <option value="REJECTED">Rejected</option>
                   <option value="NEEDS_REVERIFICATION">Needs Re-verification</option>
                 </select>
+                <select
+                  value={guestFilter}
+                  onChange={(e) =>
+                    setGuestFilter(e.target.value as 'ALL' | 'REGISTERED' | 'GUEST')
+                  }
+                  aria-label="Filter by account type"
+                  className="flex-1 min-w-0 px-3 py-2 border border-border rounded-md shadow-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm bg-surface-high"
+                >
+                  <option value="ALL">All Accounts</option>
+                  <option value="REGISTERED">Registered Only</option>
+                  <option value="GUEST">Guests Only</option>
+                </select>
               </div>
             </div>
           </div>
@@ -601,6 +621,12 @@ export default function ManageUsers() {
                             >
                               {user.status === 'ACTIVE' ? 'Suspend' : 'Activate'}
                             </button>
+                            <Link
+                              href={`/admin/users/${user.id}/edit`}
+                              className="text-xs text-orange-400 hover:text-orange-300"
+                            >
+                              Edit
+                            </Link>
                             <button
                               onClick={() => {
                                 setUserToDelete(user);
@@ -782,6 +808,12 @@ export default function ManageUsers() {
                                 >
                                   {user.status === 'ACTIVE' ? 'Suspend' : 'Activate'}
                                 </button>
+                                <Link
+                                  href={`/admin/users/${user.id}/edit`}
+                                  className="text-xs text-left text-orange-400 hover:text-orange-300"
+                                >
+                                  Edit
+                                </Link>
                                 <button
                                   onClick={() => {
                                     // TODO: Implement password reset
